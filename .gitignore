@@ -1,0 +1,13 @@
+# Python ignores
+*.py[o|c]
+
+# UNIX ignores
+*~
+
+# Project artifacts
+dist
+*.egg-info
+_build
+
+# IDE cruft
+.idea
