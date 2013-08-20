@@ -1,22 +1,30 @@
-.. Odin documentation master file, created by
-   sphinx-quickstart on Tue Aug 20 18:57:24 2013.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+####################################
+ODIN - Object Data Mapper for Python
+####################################
 
-Welcome to Odin's documentation!
-================================
 
-Contents:
+Quick links
+***********
+
+* `Documentation <https://odin.readthedocs.org/en/latest/>`_
+* `Project home <https://github.com/timsavage/odin>`_
+* `Issue tracker <https://github.com/timsavage/odin/issues>`_
+
+
+Contents
+********
 
 .. toctree::
    :maxdepth: 2
 
+   resources
+   fields
+   documentation
 
 
 Indices and tables
-==================
+******************
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
