@@ -2,7 +2,7 @@
 import os
 import unittest
 import odin
-from odin.csv_parse import ResourceReader
+from odin.codecs.csv_codec import ResourceReader
 
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 

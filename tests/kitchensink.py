@@ -6,6 +6,7 @@ import os
 import unittest
 import sys
 import odin
+from odin.codecs import json_codec
 from odin import exceptions
 
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
@@ -54,7 +55,7 @@ class KitchenSinkTestCase(unittest.TestCase):
 
         library = Library(name="Public Library", books=[book])
 
-        actual = odin.dumps(library, pretty_print=False)
+        actual = json_codec.dumps(library, pretty_print=False)
         expected = '{"books": [' \
                    '{"publisher": {"name": "Macmillan", "$": "Publisher"}, "num_pages": 471, ' \
                    '"$": "library.Book", "title": "Consider Phlebas", "fiction": true, ' \
@@ -74,10 +75,10 @@ class KitchenSinkTestCase(unittest.TestCase):
             library.full_clean()
 
     def test_load_valid_data(self):
-        library = odin.load(open(os.path.join(FIXTURE_PATH_ROOT, "book-valid.json")))
+        library = json_codec.load(open(os.path.join(FIXTURE_PATH_ROOT, "book-valid.json")))
 
         self.assertEqual("Consider Phlebas", library.books[0].title)
 
     def test_load_invalid_data(self):
         with self.assertRaises(exceptions.ValidationError):
-            odin.load(open(os.path.join(FIXTURE_PATH_ROOT, "book-invalid.json")))
+            json_codec.load(open(os.path.join(FIXTURE_PATH_ROOT, "book-invalid.json")))
