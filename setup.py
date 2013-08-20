@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='odin',
-    version="0.3.0",
+    version="0.4.0",
     url='https://github.com/timsavage/odin',
     license='LICENSE',
     author='Tim Savage',
