@@ -26,7 +26,7 @@ class Field(object):
 
     def __init__(self, verbose_name=None, verbose_name_plural=None, name=None, null=False, choices=None,
                  use_default_if_not_provided=False, default=NOT_PROVIDED, help_text='', validators=[],
-                 error_messages=None):
+                 error_messages=None, is_attribute=False):
         """
         Initialisation of a Field.
 
@@ -39,8 +39,9 @@ class Field(object):
         :param use_default_if_not_provided: Use the default value if a field is not provided in a document.
         :param help_text: Help text to describe this field when generating a schema.
         :param validators: Additional validators, these should be a callable that takes a single value.
-        :param error_messages: Dictionary that overrides error messages (or providers additional messages for custom
-            validation.
+        :param error_messages: Dictionary that overrides error messages (or provides additional messages for custom
+            validation).
+        :param is_attribute: Special flag for codecs that support attributes on nodes (ie XML)
         """
         self.verbose_name, self.verbose_name_plural = verbose_name, verbose_name_plural
         self.name = name
@@ -48,6 +49,7 @@ class Field(object):
         self.default, self.use_default_if_not_provided = default, use_default_if_not_provided
         self.help_text = help_text
         self.validators = self.default_validators + validators
+        self.is_attribute = is_attribute
 
         messages = {}
         for c in reversed(self.__class__.__mro__):
