@@ -27,6 +27,7 @@ class ResourceOptions(object):
     def contribute_to_class(self, cls, name):
         cls._meta = self
         self.name = cls.__name__
+        self.module_name = cls.__module__
 
         if self.meta:
             meta_attrs = self.meta.__dict__.copy()
@@ -44,8 +45,6 @@ class ResourceOptions(object):
                 raise TypeError("'class Meta' got invalid attribute(s): %s" % ','.join(meta_attrs.keys()))
         del self.meta
 
-        if self.name_space is NOT_PROVIDED:
-            self.name_space = cls.__module__
         if not self.verbose_name:
             self.verbose_name = self.name.replace('_', ' ').strip('_ ')
         if not self.verbose_name_plural:
@@ -67,7 +66,8 @@ class ResourceOptions(object):
         """
         Full name of resource including namespace (if specified)
         """
-        if self.name_space:
+        name_space = self.module_name if self.name_space is NOT_PROVIDED else self.name_space
+        if name_space:
             return "%s.%s" % (self.name_space, self.name)
         else:
             return self.name
@@ -115,9 +115,9 @@ class ResourceBase(type):
         base_meta = getattr(new_class, '_meta', None)
 
         new_class.add_to_class('_meta', ResourceOptions(meta))
-        if not abstract:
+        if not abstract and base_meta:
             # Namespace is inherited
-            if not new_class._meta.name_space and base_meta:
+            if (not new_class._meta.name_space) or (new_class._meta.name_space is NOT_PROVIDED):
                 new_class._meta.name_space = base_meta.name_space
 
         # Bail out early if we have already created this class.
