@@ -18,7 +18,7 @@ class ResourceOptions(object):
         self.virtual_fields = []
 
         self.name = None
-        self.name_space = None
+        self.name_space = NOT_PROVIDED
         self.verbose_name = None
         self.verbose_name_plural = None
         self.abstract = False
@@ -44,6 +44,8 @@ class ResourceOptions(object):
                 raise TypeError("'class Meta' got invalid attribute(s): %s" % ','.join(meta_attrs.keys()))
         del self.meta
 
+        if self.name_space is NOT_PROVIDED:
+            self.name_space = cls.__module__
         if not self.verbose_name:
             self.verbose_name = self.name.replace('_', ' ').strip('_ ')
         if not self.verbose_name_plural:
