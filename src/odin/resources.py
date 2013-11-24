@@ -230,22 +230,32 @@ class Resource(six.with_metaclass(ResourceBase)):
             if f.null and raw_value is None:
                 continue
             try:
-                setattr(self, f.attname, f.clean(raw_value))
+                raw_value = f.clean(raw_value)
             except ValidationError as e:
                 errors[f.name] = e.messages
+
+            # Check for resource level clean methods.
+            clean_method = getattr(self, "clean_%s" % f.attname, None)
+            if callable(clean_method):
+                try:
+                    raw_value = clean_method(raw_value)
+                except ValidationError as e:
+                    errors.setdefault(f.name, []).append(e.messages)
+
+            setattr(self, f.attname, raw_value)
 
         if errors:
             raise ValidationError(errors)
 
 
-def create_resource_from_dict(obj, resource_name=None):
+def create_resource_from_dict(d, resource_name=None, full_clean=True):
     """
-    Create a resource from a dict object.
+    Create a resource from a dict.
     """
-    assert isinstance(obj, dict)
+    assert isinstance(d, dict)
 
     # Get the correct resource name
-    document_resource_name = obj.pop(RESOURCE_TYPE_FIELD, resource_name)
+    document_resource_name = d.pop(RESOURCE_TYPE_FIELD, resource_name)
     if not (document_resource_name or resource_name):
         raise exceptions.ValidationError("Resource not defined.")
 
@@ -257,13 +267,13 @@ def create_resource_from_dict(obj, resource_name=None):
     if resource_name and not (resource_name == document_resource_name or
                               resource_name in resource_type._meta.parent_resource_names):
         raise exceptions.ValidationError(
-            "Expected resource `%s` does not match resource defined in JSRN document `%s`." % (
+            "Expected resource `%s` does not match resource defined in document `%s`." % (
                 resource_name, document_resource_name))
 
     errors = {}
     attrs = {}
     for f in resource_type._meta.fields:
-        value = obj.pop(f.name, NOT_PROVIDED)
+        value = d.pop(f.name, NOT_PROVIDED)
         try:
             attrs[f.attname] = f.clean(value)
         except exceptions.ValidationError as ve:
@@ -273,7 +283,8 @@ def create_resource_from_dict(obj, resource_name=None):
         raise exceptions.ValidationError(errors)
 
     new_resource = resource_type(**attrs)
-    if obj:
-        new_resource.extra_attrs(obj)
-    new_resource.full_clean()
+    if d:
+        new_resource.extra_attrs(d)
+    if full_clean:
+        new_resource.full_clean()
     return new_resource
