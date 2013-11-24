@@ -23,6 +23,7 @@ class Field(object):
         'blank': 'This field cannot be blank.',
         'required': 'This field is required.',
     }
+    data_type = None
 
     def __init__(self, verbose_name=None, verbose_name_plural=None, name=None, null=False, choices=None,
                  use_default_if_not_provided=False, default=NOT_PROVIDED, help_text='', validators=[],
@@ -32,12 +33,12 @@ class Field(object):
 
         :param verbose_name: Display name of field.
         :param verbose_name_plural: Plural display name of field.
-        :param name: Name of field in JSON form.
+        :param name: Name of the serialised field.
         :param null: This value can be null/None.
         :param choices: Collection of valid choices for this field.
         :param default: Default value for this field.
         :param use_default_if_not_provided: Use the default value if a field is not provided in a document.
-        :param help_text: Help text to describe this field when generating a schema.
+        :param help_text: Help text to describe this field.
         :param validators: Additional validators, these should be a callable that takes a single value.
         :param error_messages: Dictionary that overrides error messages (or provides additional messages for custom
             validation).
@@ -91,7 +92,7 @@ class Field(object):
     def to_python(self, value):
         """
         Converts the input value into the expected Python data type, raising
-        django.core.exceptions.ValidationError if the data can't be converted.
+        odin.exceptions.ValidationError if the data can't be converted.
         Returns the converted value. Subclasses should override this.
         """
         return value
@@ -139,11 +140,14 @@ class Field(object):
         self.run_validators(value)
         return value
 
-    def to_json(self, value):
+    def to_string(self, value):
         """
-        Prepare value for saving into JSON structure.
+        Convert a value into a string (for codecs that do not support a particular data type)
         """
         return value
+
+    # This method will be deprecated
+    to_json = to_string
 
     def has_default(self):
         """
@@ -172,12 +176,13 @@ class BooleanField(Field):
     default_error_messages = {
         'invalid': "'%s' value must be either True or False."
     }
+    data_type = bool
 
     def to_python(self, value):
         if value is None:
             return None
         if value in (True, False):
-            # if value is 1 or 0 than it's equal to True or False, but we want
+            # if value is 1 or 0 then it's equal to True or False, but we want
             # to return a true bool for semantic reasons.
             return bool(value)
         if isinstance(value, six.string_types):
@@ -191,6 +196,8 @@ class BooleanField(Field):
 
 
 class StringField(Field):
+    data_type = str
+
     def __init__(self, max_length=None, **kwargs):
         super(StringField, self).__init__(**kwargs)
         if max_length is not None:
@@ -215,6 +222,7 @@ class FloatField(ScalarField):
     default_error_messages = {
         'invalid': "'%s' value must be a float.",
     }
+    data_type = float
 
     def to_python(self, value):
         if value in EMPTY_VALUES:
@@ -230,6 +238,7 @@ class IntegerField(ScalarField):
     default_error_messages = {
         'invalid': "'%s' value must be a integer.",
     }
+    data_type = int
 
     def to_python(self, value):
         if value in EMPTY_VALUES:
@@ -251,13 +260,12 @@ class DateTimeField(Field):
     Use the ``assume_local`` flag to customise how naive (datetime values with no timezone) are handled and also how
     dates are decoded. If ``assume_local`` is True (the default) naive dates are
 
-    For naive Python date times they are assumed to represent the current system timezone. Unless ``use_local`` is False
-    dates is
-    specified on the field.
+    For naive Python datetimes they are assumed to represent the current system timezone. Unless ``use_local`` is False
     """
     default_error_messages = {
         'invalid': "Not a valid date string.",
     }
+    data_type = datetime.datetime
 
     def __init__(self, assume_local=True, *arg, **kwargs):
         super(DateTimeField, self).__init__(*arg, **kwargs)
@@ -275,21 +283,22 @@ class DateTimeField(Field):
         msg = self.error_messages['invalid']
         raise exceptions.ValidationError(msg)
 
-    def to_json(self, value):
+    def to_string(self, value):
         if value is None:
             return None
         if isinstance(value, datetime.datetime):
             datetimeutil.to_ecma_date_string(value, self.assume_local)
 
 
-class ObjectField(Field):
+class DictField(Field):
     default_error_messages = {
         'invalid': "Must be an object.",
     }
+    data_type = dict
 
     def __init__(self, **kwargs):
         kwargs.setdefault("default", dict)
-        super(ObjectField, self).__init__(**kwargs)
+        super(DictField, self).__init__(**kwargs)
 
     def to_python(self, value):
         if value is None:
@@ -303,10 +312,16 @@ class ObjectField(Field):
             raise exceptions.ValidationError(msg)
 
 
+# Object field is to be deprecated
+class ObjectField(DictField):
+    pass
+
+
 class ArrayField(Field):
     default_error_messages = {
         'invalid': "Must be an array.",
     }
+    data_type = list
 
     def __init__(self, **kwargs):
         kwargs.setdefault("default", list)
@@ -324,6 +339,8 @@ class ArrayField(Field):
 
 
 class TypedArrayField(ArrayField):
+    data_type = list
+
     def __init__(self, field, **kwargs):
         self.field = field
         super(TypedArrayField, self).__init__(**kwargs)
