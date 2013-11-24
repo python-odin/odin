@@ -6,8 +6,8 @@ from odin import exceptions, datetimeutil
 from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator
 
 __all__ = (
-    'BooleanField', 'StringField', 'IntegerField', 'FloatField',
-    'DateTimeField', 'DictField', 'ObjectField', 'ArrayField'
+    'BooleanField', 'StringField', 'IntegerField', 'FloatField', 'DateTimeField',
+    'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField',
 )
 
 
