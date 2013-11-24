@@ -3,10 +3,10 @@ from odin.resources import create_resource_from_dict
 from odin.fields import Field
 from odin.validators import EMPTY_VALUES
 
-__all__ = ('ObjectAs', 'ArrayOf',)
+__all__ = ('DictAs', 'ObjectAs', 'ArrayOf',)
 
 
-class ObjectAs(Field):
+class DictAs(Field):
     default_error_messages = {
         'invalid': "Must be a object of type ``%r``.",
     }
@@ -15,11 +15,11 @@ class ObjectAs(Field):
         try:
             resource._meta
         except AttributeError:
-            raise TypeError("``%r`` is not a valid type for a related field." % of)
+            raise TypeError("``%r`` is not a valid type for a related field." % resource)
         self.of = resource
 
         kwargs.setdefault('default', lambda:resource())
-        super(ObjectAs, self).__init__(**kwargs)
+        super(DictAs, self).__init__(**kwargs)
 
     def to_python(self, value):
         if value is None:
@@ -32,12 +32,16 @@ class ObjectAs(Field):
         raise exceptions.ValidationError(msg)
 
     def validate(self, value):
-        super(ObjectAs, self).validate(value)
+        super(DictAs, self).validate(value)
         if value not in EMPTY_VALUES:
             value.full_clean()
 
 
-class ArrayOf(ObjectAs):
+class ObjectAs(DictAs):
+    pass
+
+
+class ArrayOf(DictAs):
     default_error_messages = {
         'invalid': "Must be a list of ``%r`` objects.",
         'null': "List cannot contain null entries.",
@@ -79,7 +83,8 @@ class ArrayOf(ObjectAs):
         raise exceptions.ValidationError(msg)
 
     def validate(self, value):
-        super(ObjectAs, self).validate(value)
+        # Skip The direct super method and apply it to each list item.
+        super(DictAs, self).validate(value)
         if value not in EMPTY_VALUES:
             super_validate = super(ArrayOf, self).validate
             self._process_list(value, super_validate)
