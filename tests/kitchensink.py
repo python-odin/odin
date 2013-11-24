@@ -15,9 +15,15 @@ FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 class Author(odin.Resource):
     name = odin.StringField()
 
+    class Meta:
+        name_space = None
+
 
 class Publisher(odin.Resource):
     name = odin.StringField()
+
+    class Meta:
+        name_space = None
 
 
 class LibraryBook(odin.Resource):
@@ -43,6 +49,9 @@ class Book(LibraryBook):
 class Library(odin.Resource):
     name = odin.StringField()
     books = odin.ArrayOf(LibraryBook)
+
+    class Meta:
+        name_space = None
 
 
 class KitchenSinkTestCase(unittest.TestCase):
