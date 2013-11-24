@@ -5,7 +5,10 @@ import six
 from odin import exceptions, datetimeutil
 from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator
 
-__all__ = ('BooleanField', 'StringField', 'IntegerField', 'FloatField', 'ObjectField', 'ArrayField')
+__all__ = (
+    'BooleanField', 'StringField', 'IntegerField', 'FloatField',
+    'DateTimeField', 'DictField', 'ObjectField', 'ArrayField'
+)
 
 
 class NOT_PROVIDED:
@@ -200,6 +203,7 @@ class StringField(Field):
 
     def __init__(self, max_length=None, **kwargs):
         super(StringField, self).__init__(**kwargs)
+        self.max_length = max_length
         if max_length is not None:
             self.validators.append(MaxLengthValidator(max_length))
 
@@ -212,26 +216,12 @@ class StringField(Field):
 class ScalarField(Field):
     def __init__(self, min_value=None, max_value=None, **kwargs):
         super(ScalarField, self).__init__(**kwargs)
+        self.min_value = min_value
         if min_value is not None:
             self.validators.append(MinValueValidator(min_value))
+        self.max_value = max_value
         if max_value is not None:
             self.validators.append(MaxValueValidator(max_value))
-
-
-class FloatField(ScalarField):
-    default_error_messages = {
-        'invalid': "'%s' value must be a float.",
-    }
-    data_type = float
-
-    def to_python(self, value):
-        if value in EMPTY_VALUES:
-            return None
-        try:
-            return float(value)
-        except ValueError:
-            msg = self.error_messages['invalid'] % value
-            raise exceptions.ValidationError(msg)
 
 
 class IntegerField(ScalarField):
@@ -242,10 +232,26 @@ class IntegerField(ScalarField):
 
     def to_python(self, value):
         if value in EMPTY_VALUES:
-            return value
+            return
         try:
             return int(value)
         except (TypeError, ValueError):
+            msg = self.error_messages['invalid'] % value
+            raise exceptions.ValidationError(msg)
+
+
+class FloatField(ScalarField):
+    default_error_messages = {
+        'invalid': "'%s' value must be a float.",
+    }
+    data_type = float
+
+    def to_python(self, value):
+        if value in EMPTY_VALUES:
+            return
+        try:
+            return float(value)
+        except ValueError:
             msg = self.error_messages['invalid'] % value
             raise exceptions.ValidationError(msg)
 
@@ -258,22 +264,20 @@ class DateTimeField(Field):
     standard encodes all dates as UTC.
 
     Use the ``assume_local`` flag to customise how naive (datetime values with no timezone) are handled and also how
-    dates are decoded. If ``assume_local`` is True (the default) naive dates are
-
-    For naive Python datetimes they are assumed to represent the current system timezone. Unless ``use_local`` is False
+    dates are decoded. If ``assume_local`` is True naive dates are assumed to represent the current system timezone.
     """
     default_error_messages = {
         'invalid': "Not a valid date string.",
     }
     data_type = datetime.datetime
 
-    def __init__(self, assume_local=True, *arg, **kwargs):
+    def __init__(self, assume_local=False, *arg, **kwargs):
         super(DateTimeField, self).__init__(*arg, **kwargs)
         self.assume_local = assume_local
 
     def to_python(self, value):
         if value in EMPTY_VALUES:
-            return value
+            return
         if isinstance(value, datetime.datetime):
             return value
         try:
@@ -284,15 +288,13 @@ class DateTimeField(Field):
         raise exceptions.ValidationError(msg)
 
     def to_string(self, value):
-        if value is None:
-            return None
         if isinstance(value, datetime.datetime):
-            datetimeutil.to_ecma_date_string(value, self.assume_local)
+            return datetimeutil.to_ecma_date_string(value, self.assume_local)
 
 
 class DictField(Field):
     default_error_messages = {
-        'invalid': "Must be an object.",
+        'invalid': "Must be a dict.",
     }
     data_type = dict
 
