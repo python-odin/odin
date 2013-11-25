@@ -61,6 +61,13 @@ class Field(object):
         messages.update(error_messages or {})
         self.error_messages = messages
 
+    def __deepcopy__(self, memodict):
+        # We don't have to deepcopy very much here, since most things are not
+        # intended to be altered after initial creation.
+        obj = copy.copy(self)
+        memodict[id(self)] = obj
+        return obj
+
     def __repr__(self):
         """
         Displays the module, class and name of the field.
