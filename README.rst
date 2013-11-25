@@ -2,13 +2,18 @@
 Odin - Object Data Mapping for Python
 #####################################
 
-Based off my previous library for mapping JSON to python objects Odin branches from just supporting JSON to supporting
+Based off a previous library for mapping JSON to python objects Odin branches from just supporting JSON to supporting
 many other data representations, allowing them to be mapped into converted into a Python object graph, validated against
 a set of validators and mapped into other formats.
 
 .. image:: https://travis-ci.org/timsavage/odin.png?branch=master
     :target: https://travis-ci.org/timsavage/odin
     :alt: Travis CI Status
+
+.. image:: https://coveralls.io/repos/timsavage/odin/badge.png?branch=master
+    :target: https://coveralls.io/r/timsavage/odin?branch=master
+    :alt: Coveralls
+
 
 Highlights
 **********
@@ -35,11 +40,11 @@ Upcoming features
 
 * Customisable generation of documentation of resources (for integration into `Sphinx <http://sphinx-doc.org/>`_)
 * Complete documentation (around 70-80% complete for current features)
+* Support for CSV
 
 **Planning**
 
 * Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms)
-* Support for CSV
 
 
 Requires
@@ -51,6 +56,10 @@ Requires
 
 * jinja2 >= 2.7 - For documentation generation
 * simplejson - Odin will use simplejson if it is available or fallback to the builtin json library
+
+**Contrib**
+
+* pint - Support for physical quantities using the `Pint <http://pint.readthedocs.org/>`_ library.
 
 
 Example
@@ -70,7 +79,7 @@ Example
     class Book(odin.Resource):
         title = odin.StringField()
         authors = odin.ArrayOf(Author)
-        publisher = odin.ObjectAs(Publisher)
+        publisher = odin.DictAs(Publisher)
         genre = odin.StringField()
         num_pages = odin.IntegerField()
 
@@ -84,7 +93,8 @@ Example
             num_pages=471
         )
     >>> b.authors.append(Author(name="Iain M. Banks"))
-    >>> odin.dumps(b, pretty_print=True)
+    >>> from odin.codecs import json_codec
+    >>> json_codec.dumps(b, pretty_print=True)
     {
         "$": "Book",
         "authors": [
