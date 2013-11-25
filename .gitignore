@@ -1,5 +1,6 @@
 # Python ignores
 *.py[o|c]
+*.coverage
 
 # UNIX ignores
 *~
