@@ -13,10 +13,14 @@ class ResourceReader(csv.DictReader):
 
     # Python 2
     def next(self):
-        d = csv.DictReader.next(self)
-        return create_resource_from_dict(d, self.resources._meta.resource_name)
+        return create_resource_from_dict(
+            csv.DictReader.next(self),
+            self.resources._meta.resource_name
+        )
 
     # Python 3
     def __next__(self):
-        d = csv.DictReader.__next__(self)
-        return create_resource_from_dict(d, self.resources._meta.resource_name)
+        return create_resource_from_dict(
+            csv.DictReader.__next__(self),
+            self.resources._meta.resource_name
+        )
