@@ -15,7 +15,6 @@ class ResourceOptions(object):
         self.meta = meta
         self.parents = []
         self.fields = []
-        self.virtual_fields = []
 
         self.name = None
         self.name_space = NOT_PROVIDED
@@ -52,14 +51,6 @@ class ResourceOptions(object):
 
     def add_field(self, field):
         self.fields.append(field)
-        if hasattr(self, '_field_cache'):
-            del self._field_cache
-
-        if hasattr(self, '_name_map'):
-            del self._name_map
-
-    def add_virtual_field(self, field):
-        self.virtual_fields.append(field)
 
     @property
     def resource_name(self):
@@ -130,8 +121,7 @@ class ResourceBase(type):
             new_class.add_to_class(obj_name, obj)
 
         # All the fields of any type declared on this model
-        new_fields = new_class._meta.fields + new_class._meta.virtual_fields
-        field_attnames = set([f.attname for f in new_fields])
+        field_attnames = set([f.attname for f in new_class._meta.fields])
 
         for base in parents:
             if not hasattr(base, '_meta'):
@@ -187,7 +177,7 @@ class Resource(six.with_metaclass(ResourceBase)):
         return '<%s: %s>' % (self.__class__.__name__, self)
 
     def __str__(self):
-        return '%s resource' % self.__class__.__name__
+        return '%s resource' % self._meta.resource_name
 
     def extra_attrs(self, attrs):
         """
@@ -242,7 +232,7 @@ class Resource(six.with_metaclass(ResourceBase)):
                 try:
                     raw_value = clean_method(raw_value)
                 except ValidationError as e:
-                    errors.setdefault(f.name, []).append(e.messages)
+                    errors.setdefault(f.name, []).extend(e.messages)
 
             setattr(self, f.attname, raw_value)
 
