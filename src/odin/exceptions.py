@@ -14,7 +14,7 @@ class ValidationError(Exception):
             self.message_dict = message
 
         if isinstance(message, list):
-            self.messages = [msg for msg in message]
+            self.messages = message
         else:
             self.messages = [message]
             self.code = code
