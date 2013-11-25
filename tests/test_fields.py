@@ -1,10 +1,103 @@
 # -*- coding: utf-8 -*-
 import unittest
 import datetime
-from odin import StringField, BooleanField, IntegerField, FloatField, DateTimeField
-from odin.datetimeutil import UTC, utc
-from odin.validators import MinLengthValidator, MinValueValidator, MaxValueValidator, MaxLengthValidator
+from odin.fields import (Field, StringField, BooleanField, IntegerField, FloatField, DateTimeField,
+                         DictField, ArrayField, TypedArrayField)
+from odin.datetimeutil import utc
+from odin.validators import MinValueValidator, MaxValueValidator, MaxLengthValidator
 from odin.exceptions import ValidationError
+
+
+class ObjectValue(object):
+    pass
+
+
+class FieldTestCase(unittest.TestCase):
+    def test_error_messages_no_overrides(self):
+        target = Field()
+
+        self.assertDictEqual({
+            'invalid_choice': 'Value %r is not a valid choice.',
+            'null': 'This field cannot be null.',
+            'blank': 'This field cannot be blank.',
+            'required': 'This field is required.',
+        }, target.error_messages)
+
+    def test_error_messages_override_add(self):
+        target = Field(error_messages={
+            'null': 'Override',
+            'other': 'Other Value',
+        })
+
+        self.assertDictEqual({
+            'invalid_choice': 'Value %r is not a valid choice.',
+            'null': 'Override',
+            'blank': 'This field cannot be blank.',
+            'required': 'This field is required.',
+            'other': 'Other Value',
+        }, target.error_messages)
+
+    def test_set_attributes_from_name(self):
+        target = Field()
+        target.set_attributes_from_name("test_name")
+
+        self.assertEqual("test_name", target.name)
+        self.assertEqual("test_name", target.attname)
+        self.assertEqual("test name", target.verbose_name)
+        self.assertEqual("test names", target.verbose_name_plural)
+
+    def test_set_attributes_from_name_with_name(self):
+        target = Field(name="init_name")
+        target.set_attributes_from_name("test_name")
+
+        self.assertEqual("init_name", target.name)
+        self.assertEqual("test_name", target.attname)
+        self.assertEqual("init name", target.verbose_name)
+        self.assertEqual("init names", target.verbose_name_plural)
+
+    def test_set_attributes_from_name_with_verbose_name(self):
+        target = Field(verbose_name="init Verbose Name")
+        target.set_attributes_from_name("test_name")
+
+        self.assertEqual("test_name", target.name)
+        self.assertEqual("test_name", target.attname)
+        self.assertEqual("init Verbose Name", target.verbose_name)
+        self.assertEqual("init Verbose Names", target.verbose_name_plural)
+
+    def test_has_default(self):
+        target = Field()
+
+        self.assertFalse(target.has_default())
+
+    def test_has_default_supplied(self):
+        target = Field(default="123")
+
+        self.assertTrue(target.has_default())
+
+    def test_get_default(self):
+        target = Field()
+
+        self.assertIsNone(target.get_default())
+
+    def test_get_default_supplied(self):
+        target = Field(default="123")
+
+        self.assertEqual("123", target.get_default())
+
+    def test_get_default_callable(self):
+        target = Field(default=lambda: "321")
+
+        self.assertEqual("321", target.get_default())
+
+    def test_value_from_object(self):
+        target = Field()
+        target.set_attributes_from_name("test_name")
+
+        an_obj = ObjectValue()
+        setattr(an_obj, "test_name", "test_value")
+
+        actual = target.value_from_object(an_obj)
+        self.assertEqual("test_value", actual)
 
 
 class FieldsTests(unittest.TestCase):
@@ -190,3 +283,66 @@ class FieldsTests(unittest.TestCase):
         f = DateTimeField(assume_local=False)
         self.assertEqual('2013-11-24T18:43:00.000Z', f.to_string(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)))
         self.assertEqual(None, f.to_string(None))
+
+    # DictField ###############################################################
+
+    def test_dictfield_1(self):
+        f = DictField()
+        self.assertRaises(ValidationError, f.clean, None)
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertEqual({}, f.clean({}))
+        self.assertEqual({'foo': 'bar'}, f.clean({'foo': 'bar'}))
+        self.assertEqual({'foo': 'bar'}, f.clean({'foo': 'bar', '$': 'eek'}))
+        self.assertEqual(f.default, dict)
+
+    def test_dictfield_2(self):
+        f = DictField(null=True)
+        self.assertEqual(None, f.clean(None))
+        self.assertEqual({}, f.clean({}))
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertEqual({'foo': 'bar'}, f.clean({'foo': 'bar'}))
+        self.assertEqual({'foo': 'bar'}, f.clean({'foo': 'bar', '$': 'eek'}))
+
+    # ArrayField ##############################################################
+
+    def test_arrayfield_1(self):
+        f = ArrayField()
+        self.assertRaises(ValidationError, f.clean, None)
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertEqual([], f.clean([]))
+        self.assertEqual(['foo', 'bar'], f.clean(['foo', 'bar']))
+        self.assertEqual(['foo', 'bar', '$', 'eek'], f.clean(['foo', 'bar', '$', 'eek']))
+        self.assertEqual(f.default, list)
+
+    def test_arrayfield_2(self):
+        f = ArrayField(null=True)
+        self.assertEqual(None, f.clean(None))
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertEqual([], f.clean([]))
+        self.assertEqual(['foo', 'bar'], f.clean(['foo', 'bar']))
+        self.assertEqual(['foo', 'bar', '$', 'eek'], f.clean(['foo', 'bar', '$', 'eek']))
+
+    # TypedArrayField #########################################################
+
+    def test_typedarrayfield_1(self):
+        f = TypedArrayField(IntegerField())
+        self.assertRaises(ValidationError, f.clean, None)
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertEqual([], f.clean([]))
+        self.assertRaises(ValidationError, f.clean, ['foo', 'bar'])
+        self.assertEqual([1, 2, 3], f.clean([1, 2, 3]))
+        self.assertEqual(f.default, list)
+
+    def test_typedarrayfield_2(self):
+        f = TypedArrayField(IntegerField(), null=True)
+        self.assertEqual(None, f.clean(None))
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertEqual([], f.clean([]))
+        self.assertRaises(ValidationError, f.clean, ['foo', 'bar'])
+        self.assertEqual([1, 2, 3], f.clean([1, 2, 3]))

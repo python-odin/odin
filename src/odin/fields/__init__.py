@@ -61,13 +61,6 @@ class Field(object):
         messages.update(error_messages or {})
         self.error_messages = messages
 
-    def __deepcopy__(self, memodict):
-        # We don't have to deepcopy very much here, since most things are not
-        # intended to be altered after initial creation.
-        obj = copy.copy(self)
-        memodict[id(self)] = obj
-        return obj
-
     def __repr__(self):
         """
         Displays the module, class and name of the field.
@@ -314,8 +307,8 @@ class DictField(Field):
             raise exceptions.ValidationError(msg)
 
 
-# Object field is to be deprecated
 class ObjectField(DictField):
+    # Object field is to be deprecated
     pass
 
 
@@ -332,12 +325,10 @@ class ArrayField(Field):
     def to_python(self, value):
         if value is None:
             return value
-
-        try:
-            return list(value)
-        except (TypeError, ValueError):
-            msg = self.error_messages['invalid']
-            raise exceptions.ValidationError(msg)
+        if isinstance(value, (list, tuple)):
+            return value
+        msg = self.error_messages['invalid']
+        raise exceptions.ValidationError(msg)
 
 
 class TypedArrayField(ArrayField):
