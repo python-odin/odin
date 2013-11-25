@@ -69,7 +69,7 @@ class ArrayOf(DictAs):
 
     def to_python(self, value):
         if value is None:
-            return []
+            return None
         if isinstance(value, list):
             super_to_python = super(ArrayOf, self).to_python
 
