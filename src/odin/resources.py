@@ -68,7 +68,7 @@ class ResourceOptions(object):
         """
         name_space = self.module_name if self.name_space is NOT_PROVIDED else self.name_space
         if name_space:
-            return "%s.%s" % (self.name_space, self.name)
+            return "%s.%s" % (name_space, self.name)
         else:
             return self.name
 
