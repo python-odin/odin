@@ -30,9 +30,7 @@ class ValidationError(Exception):
         return repr(self.messages)
 
     def __repr__(self):
-        if hasattr(self, 'message_dict'):
-            return 'ValidationError(%s)' % repr(self.message_dict)
-        return 'ValidationError(%s)' % repr(self.messages)
+        return 'ValidationError(%s)' % self
 
     @property
     def error_messages(self):
