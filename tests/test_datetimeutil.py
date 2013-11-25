@@ -4,6 +4,15 @@ import datetime
 from odin import datetimeutil
 
 
+class UTCTestCase(unittest.TestCase):
+    def test_constants(self):
+        self.assertEqual(datetime.timedelta(0), datetimeutil.utc.utcoffset(datetime.datetime.now()))
+        self.assertEqual('UTC', datetimeutil.utc.tzname(datetime.datetime.now()))
+        self.assertEqual(datetime.timedelta(0), datetimeutil.utc.dst(datetime.datetime.now()))
+        self.assertEqual('UTC', str(datetimeutil.utc))
+        self.assertEqual('<timezone: UTC>', repr(datetimeutil.utc))
+
+
 class ParseDateStringTestCase(unittest.TestCase):
     def test_valid_string(self):
         actual = datetimeutil.parse_ecma_date_string("2013-07-13T16:54:46.123Z", False)
