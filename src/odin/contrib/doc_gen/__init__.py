@@ -9,7 +9,7 @@ except ImportError:
     raise ImportError("Jinja2 is required for documentation generation support.")
 from odin import registration
 
-__all__ = ('RESTRUCTURED_TEXT', 'dump', 'dumps')
+__all__ = ('FORMAT_TEMPLATE_RST', 'FORMAT_TEMPLATE_HTML', 'dump', 'dumps')
 
 _TEMPLATE_ROOT = os.path.join(os.path.dirname(__file__), 'templates')
 
