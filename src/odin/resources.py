@@ -179,6 +179,13 @@ class Resource(six.with_metaclass(ResourceBase)):
     def __str__(self):
         return '%s resource' % self._meta.resource_name
 
+    def items(self):
+        """
+        Returns an iterator of field, value tuples
+        """
+        for field in self._meta.fields:
+            yield field, field.prepare(field.value_from_object(self))
+
     def extra_attrs(self, attrs):
         """
         Called during deserialisation of data if there are any extra fields defined in the document.
