@@ -143,6 +143,15 @@ class Field(object):
         self.run_validators(value)
         return value
 
+    def prepare(self, value):
+        """
+        Prepare a value for serialisation. This may be to convert from an internal python specific type into a format
+        suitable for serialisation.
+        :param value:
+        :return:
+        """
+        return value
+
     def to_string(self, value):
         """
         Convert a value into a string (for codecs that do not support a particular data type)
