@@ -46,3 +46,8 @@ class FloatQField(Field):
             return value.to(self.units)
         except DimensionalityError as de:
             raise exceptions.ValidationError(de)
+
+    def prepare(self, value):
+        if value in EMPTY_VALUES:
+            return None
+        return value.magnitude, str(value.units)

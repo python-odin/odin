@@ -6,6 +6,9 @@ from odin.exceptions import ValidationError
 
 
 class PintFieldsTestCase(unittest.TestCase):
+    def test_floatq_field_init(self):
+        self.assertRaises(ValueError, FloatQField, None)
+
     def test_floatqfield_1(self):
         f = FloatQField('kWh')
         self.assertRaises(ValidationError, f.clean, None)
@@ -17,3 +20,7 @@ class PintFieldsTestCase(unittest.TestCase):
         self.assertEqual(10.2 * registry['kWh'], f.clean((10.2, registry.kilowatt_hour)))
         self.assertEqual(10.2 * registry.watt_hour, f.clean(10.2 * registry.watt_hour))
 
+    def test_floatqfield_prepare(self):
+        f = FloatQField('kWh')
+        self.assertEqual(None, f.prepare(None))
+        self.assertEqual((10.2, 'kilowatt_hour'), f.prepare(10.2 * registry['kWh']))
