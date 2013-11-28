@@ -1,0 +1,4 @@
+*********
+Resources
+*********
+{% block body %}{% endblock %}
