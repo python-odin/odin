@@ -1,2 +1,5 @@
 [run]
 source = odin
+
+[report]
+omit = */contrib/doc_gen/*
