@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from copy import deepcopy
 import unittest
 import datetime
 from odin.fields import (Field, StringField, BooleanField, IntegerField, FloatField, DateTimeField,
@@ -10,6 +11,19 @@ from odin.exceptions import ValidationError
 
 class ObjectValue(object):
     pass
+
+
+class TestValidator(object):
+    message = 'Default message'
+    code = 'test_code'
+
+    def __init__(self, fail, *params):
+        self.fail = fail
+        self.params = params
+
+    def __call__(self, value):
+        if self.fail:
+            raise ValidationError(code=self.code, message=self.message, params=self.params)
 
 
 class FieldTestCase(unittest.TestCase):
@@ -98,6 +112,44 @@ class FieldTestCase(unittest.TestCase):
 
         actual = target.value_from_object(an_obj)
         self.assertEqual("test_value", actual)
+
+    def test__repr(self):
+        target = Field()
+        self.assertEqual("<odin.fields.Field>", repr(target))
+        target.set_attributes_from_name("eek")
+        self.assertEqual("<odin.fields.Field: eek>", repr(target))
+
+    def test__deep_copy(self):
+        field = Field(name="Test")
+        target_copy = deepcopy(field)
+        target_assign = field
+        self.assertIs(field, target_assign)
+        self.assertIsNot(field, target_copy)
+        self.assertEqual(field.name, target_copy.name)
+
+    def test_run_validators_and_override_validator_message(self):
+        target = Field(error_messages={'test_code': 'Override message'}, validators=[TestValidator(True)])
+
+        try:
+            target.run_validators("Placeholder")
+        except ValidationError as ve:
+            self.assertEqual('Override message', ve.messages[0])
+        else:
+            raise AssertionError("Validation Error not raised.")
+
+    def test_run_validators_and_override_validator_message_with_params(self):
+        target = Field(error_messages={'test_code': 'Override message: %s'}, validators=[TestValidator(True, "123")])
+
+        try:
+            target.run_validators("Placeholder")
+        except ValidationError as ve:
+            self.assertEqual(['Override message: 123'], ve.messages)
+        else:
+            raise AssertionError("Validation Error not raised.")
+
+    def test_default_to_python_raises_not_implemented(self):
+        target = Field()
+        self.assertRaises(NotImplementedError, target.to_python, "Anything...")
 
 
 class FieldsTests(unittest.TestCase):
