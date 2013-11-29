@@ -3,7 +3,10 @@ try:
     import simplejson as json
 except ImportError:
     import json
+import six
 from odin import resources
+
+JSON_SUPPORTED_TYPES = six.string_types + (int, float, list, dict, tuple)
 
 
 class JSRNEncoder(json.JSONEncoder):
@@ -12,7 +15,7 @@ class JSRNEncoder(json.JSONEncoder):
     """
     def default(self, o):
         if isinstance(o, resources.Resource):
-            obj = {f.name: f.to_json(f.value_from_object(o)) for f in o._meta.fields}
+            obj = {f.name: v if f.data_type in JSON_SUPPORTED_TYPES else f.to_string(v) for f, v in o.items() }
             obj[resources.RESOURCE_TYPE_FIELD] = o._meta.resource_name
             return obj
         return super(JSRNEncoder, self)

@@ -18,7 +18,7 @@ class DictAs(Field):
             raise TypeError("``%r`` is not a valid type for a related field." % resource)
         self.of = resource
 
-        kwargs.setdefault('default', lambda:resource())
+        kwargs.setdefault('default', lambda: resource())
         super(DictAs, self).__init__(**kwargs)
 
     def to_python(self, value):
