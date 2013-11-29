@@ -9,7 +9,7 @@ from odin import resources
 JSON_SUPPORTED_TYPES = six.string_types + (int, float, list, dict, tuple)
 
 
-class JSRNEncoder(json.JSONEncoder):
+class OdinEncoder(json.JSONEncoder):
     """
     Encoder for JSRN resources.
     """
@@ -18,7 +18,7 @@ class JSRNEncoder(json.JSONEncoder):
             obj = {f.name: v if f.data_type in JSON_SUPPORTED_TYPES else f.to_string(v) for f, v in o.items() }
             obj[resources.RESOURCE_TYPE_FIELD] = o._meta.resource_name
             return obj
-        return super(JSRNEncoder, self)
+        return super(OdinEncoder, self)
 
 
 def build_object_graph(obj, resource_name=None):
@@ -73,7 +73,7 @@ def dump(resource, fp, pretty_print=False):
     :param fp: The rile pointer that represents the output file.
     :param pretty_print: Pretty print the output, ie apply newline characters and indentation.
     """
-    return json.dump(resource, fp, cls=JSRNEncoder, indent=4 if pretty_print else None)
+    return json.dump(resource, fp, cls=OdinEncoder, indent=4 if pretty_print else None)
 
 
 def dumps(resource, pretty_print=True):
@@ -83,4 +83,4 @@ def dumps(resource, pretty_print=True):
     :param resource: The root resource to dump to a JSON encoded file.
     :param pretty_print: Pretty print the output, ie apply newline characters and indentation.
     """
-    return json.dumps(resource, cls=JSRNEncoder, indent=4 if pretty_print else None)
+    return json.dumps(resource, cls=OdinEncoder, indent=4 if pretty_print else None)
