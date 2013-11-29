@@ -98,7 +98,7 @@ class Field(object):
         odin.exceptions.ValidationError if the data can't be converted.
         Returns the converted value. Subclasses should override this.
         """
-        return value
+        raise NotImplementedError()
 
     def run_validators(self, value):
         if value in EMPTY_VALUES:
