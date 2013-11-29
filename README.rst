@@ -6,6 +6,9 @@ Based off a previous library for mapping JSON to python objects Odin branches fr
 many other data representations, allowing them to be mapped into converted into a Python object graph, validated against
 a set of validators and mapped into other formats.
 
+.. image:: https://pypip.in/v/odin/badge.png
+        :target: https://crate.io/packages/odin
+
 .. image:: https://travis-ci.org/timsavage/odin.png?branch=master
     :target: https://travis-ci.org/timsavage/odin
     :alt: Travis CI Status
@@ -54,11 +57,11 @@ Requires
 
 **Optional**
 
-* jinja2 >= 2.7 - For documentation generation
 * simplejson - Odin will use simplejson if it is available or fallback to the builtin json library
 
 **Contrib**
 
+* jinja2 >= 2.7 - For documentation generation
 * pint - Support for physical quantities using the `Pint <http://pint.readthedocs.org/>`_ library.
 
 
@@ -112,3 +115,10 @@ Example
         "title": "Consider Phlebas"
     }
 
+
+Special Mention
+***************
+
+I would like to acknowledge the strong influence on the design of Odin from the Django ORM and it's notable contributor
+Malcolm Tredinnick. He was a valued colleague who's untimely passing left a large void in our company and the wider
+community.
