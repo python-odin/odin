@@ -2,21 +2,27 @@ from setuptools import setup
 
 setup(
     name='odin',
-    version="0.4.0",
+    version="0.4.1",
     url='https://github.com/timsavage/odin',
     license='LICENSE',
     author='Tim Savage',
     author_email='tim.savage@poweredbypenguins.org',
     description='Object Data Mapping for Python',
     long_description=open("README.rst").read(),
-    package_dir={'': 'src'},
-    packages=['odin', 'odin.fields'],
+    packages=[
+        'odin',
+        'odin.codecs',
+        'odin.contrib',
+        'odin.contrib.doc_gen',
+        'odin.contrib.pint',
+        'odin.fields',
+    ],
     install_requires=['six'],
     extras_require={
-        # Extra performance
-        'performance': ['simplejson'],
-        # Documentation support using Jinja2
-        'doc': ["jinja2>=2.7"],
+        # Documentation generation
+        'doc_gen': ["jinja2>=2.7"],
+        # Pint integration
+        'pint': ["pint"],
     },
 
     classifiers=[
