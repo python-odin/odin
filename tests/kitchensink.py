@@ -64,7 +64,7 @@ class KitchenSinkTestCase(unittest.TestCase):
 
         library = Library(name="Public Library", books=[book])
 
-        actual = json_codec.dumps(library, pretty_print=False)
+        actual = json_codec.dumps(library)
         expected = '{"books": [' \
                    '{"publisher": {"name": "Macmillan", "$": "Publisher"}, "num_pages": 471, ' \
                    '"$": "library.Book", "title": "Consider Phlebas", "fiction": true, ' \
