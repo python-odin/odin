@@ -17,6 +17,7 @@ class ResourceOptions(object):
         self.fields = []
 
         self.name = None
+        self.class_name = None
         self.name_space = NOT_PROVIDED
         self.verbose_name = None
         self.verbose_name_plural = None
@@ -26,7 +27,7 @@ class ResourceOptions(object):
     def contribute_to_class(self, cls, name):
         cls._meta = self
         self.name = cls.__name__
-        self.module_name = cls.__module__
+        self.class_name =  "%s.%s" % (cls.__module__, cls.__name__)
 
         if self.meta:
             meta_attrs = self.meta.__dict__.copy()
@@ -57,9 +58,8 @@ class ResourceOptions(object):
         """
         Full name of resource including namespace (if specified)
         """
-        name_space = self.module_name if self.name_space is NOT_PROVIDED else self.name_space
-        if name_space:
-            return "%s.%s" % (name_space, self.name)
+        if self.name_space:
+            return "%s.%s" % (self.name_space, self.name)
         else:
             return self.name
 
@@ -110,6 +110,10 @@ class ResourceBase(type):
             # Namespace is inherited
             if (not new_class._meta.name_space) or (new_class._meta.name_space is NOT_PROVIDED):
                 new_class._meta.name_space = base_meta.name_space
+
+        # Generate a namespace if one is not provided
+        if new_class._meta.name_space is NOT_PROVIDED:
+            new_class._meta.name_space = module
 
         # Bail out early if we have already created this class.
         r = registration.get_resource(new_class._meta.resource_name)
@@ -179,12 +183,11 @@ class Resource(six.with_metaclass(ResourceBase)):
     def __str__(self):
         return '%s resource' % self._meta.resource_name
 
-    def items(self):
+    def to_dict(self):
         """
-        Returns an iterator of field, value tuples
+        Convert this resource into a dict
         """
-        for field in self._meta.fields:
-            yield field, field.prepare(field.value_from_object(self))
+        return { f.name: f.prepare(f.value_from_object(self)) for f in self._meta.fields }
 
     def extra_attrs(self, attrs):
         """
