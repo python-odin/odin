@@ -26,7 +26,6 @@ class Field(object):
         'blank': 'This field cannot be blank.',
         'required': 'This field is required.',
     }
-    data_type = None
 
     def __init__(self, verbose_name=None, verbose_name_plural=None, name=None, null=False, choices=None,
                  use_default_if_not_provided=False, default=NOT_PROVIDED, help_text='', validators=[],
@@ -145,21 +144,11 @@ class Field(object):
 
     def prepare(self, value):
         """
-        Prepare a value for serialisation. This may be to convert from an internal python specific type into a format
-        suitable for serialisation.
+        Prepare a value for serialisation.
         :param value:
         :return:
         """
         return value
-
-    def to_string(self, value):
-        """
-        Convert a value into a string (for codecs that do not support a particular data type)
-        """
-        return value
-
-    # This method will be deprecated
-    to_json = to_string
 
     def has_default(self):
         """
@@ -188,7 +177,6 @@ class BooleanField(Field):
     default_error_messages = {
         'invalid': "'%s' value must be either True or False."
     }
-    data_type = bool
 
     def to_python(self, value):
         if value is None:
@@ -208,8 +196,6 @@ class BooleanField(Field):
 
 
 class StringField(Field):
-    data_type = str
-
     def __init__(self, max_length=None, **kwargs):
         super(StringField, self).__init__(**kwargs)
         self.max_length = max_length
@@ -237,7 +223,6 @@ class IntegerField(ScalarField):
     default_error_messages = {
         'invalid': "'%s' value must be a integer.",
     }
-    data_type = int
 
     def to_python(self, value):
         if value in EMPTY_VALUES:
@@ -253,7 +238,6 @@ class FloatField(ScalarField):
     default_error_messages = {
         'invalid': "'%s' value must be a float.",
     }
-    data_type = float
 
     def to_python(self, value):
         if value in EMPTY_VALUES:
@@ -278,7 +262,6 @@ class DateTimeField(Field):
     default_error_messages = {
         'invalid': "Not a valid date string.",
     }
-    data_type = datetime.datetime
 
     def __init__(self, assume_local=False, *arg, **kwargs):
         super(DateTimeField, self).__init__(*arg, **kwargs)
@@ -305,7 +288,6 @@ class DictField(Field):
     default_error_messages = {
         'invalid': "Must be a dict.",
     }
-    data_type = dict
 
     def __init__(self, **kwargs):
         kwargs.setdefault("default", dict)
@@ -332,7 +314,6 @@ class ArrayField(Field):
     default_error_messages = {
         'invalid': "Must be an array.",
     }
-    data_type = list
 
     def __init__(self, **kwargs):
         kwargs.setdefault("default", list)
@@ -348,8 +329,6 @@ class ArrayField(Field):
 
 
 class TypedArrayField(ArrayField):
-    data_type = list
-
     def __init__(self, field, **kwargs):
         self.field = field
         super(TypedArrayField, self).__init__(**kwargs)
