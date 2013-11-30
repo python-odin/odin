@@ -1,24 +1,32 @@
 # coding=utf-8
+import datetime
+
 try:
     import simplejson as json
 except ImportError:
     import json
-import six
 from odin import resources
 
-JSON_SUPPORTED_TYPES = six.string_types + (int, float, list, dict, tuple)
+
+JSON_TYPES = {
+    datetime.datetime: lambda v: str(v)
+}
 
 
 class OdinEncoder(json.JSONEncoder):
     """
-    Encoder for JSRN resources.
+    Encoder for Odin resources.
     """
+
     def default(self, o):
         if isinstance(o, resources.Resource):
-            obj = {f.name: v if f.data_type in JSON_SUPPORTED_TYPES else f.to_string(v) for f, v in o.items() }
+            obj = o.to_dict()
             obj[resources.RESOURCE_TYPE_FIELD] = o._meta.resource_name
             return obj
-        return super(OdinEncoder, self)
+        elif o.__class__ in JSON_TYPES:
+            return JSON_TYPES[o.__class__](o)
+        else:
+            return super(OdinEncoder, self)
 
 
 def build_object_graph(obj, resource_name=None):
@@ -65,22 +73,21 @@ def loads(s, resource=None):
     return build_object_graph(json.loads(s), resource_name)
 
 
-def dump(resource, fp, pretty_print=False):
+def dump(resource, fp, cls=OdinEncoder, **kwargs):
     """
     Dump to a JSON encoded file.
 
     :param resource: The root resource to dump to a JSON encoded file.
     :param fp: The rile pointer that represents the output file.
-    :param pretty_print: Pretty print the output, ie apply newline characters and indentation.
     """
-    return json.dump(resource, fp, cls=OdinEncoder, indent=4 if pretty_print else None)
+    return json.dump(resource, fp, cls=cls, **kwargs)
 
 
-def dumps(resource, pretty_print=True):
+def dumps(resource, cls=OdinEncoder, **kwargs):
     """
     Dump to a JSON encoded string.
 
     :param resource: The root resource to dump to a JSON encoded file.
     :param pretty_print: Pretty print the output, ie apply newline characters and indentation.
     """
-    return json.dumps(resource, cls=OdinEncoder, indent=4 if pretty_print else None)
+    return json.dumps(resource, cls=cls, **kwargs)
