@@ -19,8 +19,3 @@ class PintFieldsTestCase(unittest.TestCase):
         self.assertEqual(10.2 * registry['kWh'], f.clean((10.2, 'kWh')))
         self.assertEqual(10.2 * registry['kWh'], f.clean((10.2, registry.kilowatt_hour)))
         self.assertEqual(10.2 * registry.watt_hour, f.clean(10.2 * registry.watt_hour))
-
-    def test_floatqfield_prepare(self):
-        f = FloatQField('kWh')
-        self.assertEqual(None, f.prepare(None))
-        self.assertEqual((10.2, 'kilowatt_hour'), f.prepare(10.2 * registry['kWh']))
