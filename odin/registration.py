@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from odin.exceptions import RegistrationException
 
 
 class ResourceCache(object):
@@ -28,11 +29,14 @@ class ResourceCache(object):
         Register a resource (or resources)
         """
         for resource in resources:
-            resource_name = resource._meta.resource_name.lower()
-            if resource_name in self.resources:
-                continue
+            if resource in self.resources.values():
+                raise RegistrationException("This resource %r has already been registered" % resource)
 
+            resource_name = resource._meta.resource_name.lower()
             self.resources[resource_name] = resource
+            if resource_name != resource._meta.class_name:
+                self.resources[resource._meta.class_name] = resource
+
 
 cache = ResourceCache()
 
