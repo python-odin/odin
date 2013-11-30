@@ -49,3 +49,7 @@ class ValidationError(Exception):
         else:
             error_dict[NON_FIELD_ERRORS] = self.messages
         return error_dict
+
+
+class RegistrationException(Exception):
+    pass
