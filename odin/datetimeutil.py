@@ -5,9 +5,9 @@ import time
 import six
 
 ZERO = datetime.timedelta(0)
-STD_OFFSET = datetime.timedelta(seconds=-time.timezone)
-DST_OFFSET = datetime.timedelta(seconds=-time.altzone) if time.daylight else STD_OFFSET
-DST_DIFF = DST_OFFSET - STD_OFFSET
+LOCAL_STD_OFFSET = datetime.timedelta(seconds=-time.timezone)
+LOCAL_DST_OFFSET = datetime.timedelta(seconds=-time.altzone) if time.daylight else LOCAL_STD_OFFSET
+LOCAL_DST_DIFF = LOCAL_DST_OFFSET - LOCAL_STD_OFFSET
 
 
 class UTC(datetime.tzinfo):
@@ -35,16 +35,10 @@ class LocalTimezone(datetime.tzinfo):
     The current local timezone (according to the platform)
     """
     def utcoffset(self, dt):
-        if self._is_dst(dt):
-            return DST_OFFSET
-        else:
-            return STD_OFFSET
+        return LOCAL_DST_OFFSET if self._is_dst(dt) else LOCAL_STD_OFFSET
 
     def dst(self, dt):
-        if self._is_dst(dt):
-            return DST_DIFF
-        else:
-            return ZERO
+        return LOCAL_DST_DIFF if self._is_dst(dt) else ZERO
 
     def tzname(self, dt):
         return time.tzname[self._is_dst(dt)]
