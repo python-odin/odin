@@ -290,3 +290,19 @@ def create_resource_from_dict(d, resource_name=None, full_clean=True):
     if full_clean:
         new_resource.full_clean()
     return new_resource
+
+
+def build_object_graph(d, resource_name=None):
+    """
+    Generate an object graph from a dict
+
+    :raises ValidationError: During building of the object graph and issues discovered are raised as a ValidationError.
+    """
+
+    if isinstance(d, dict):
+        return create_resource_from_dict(d, resource_name)
+
+    if isinstance(d, list):
+        return [build_object_graph(o, resource_name) for o in d]
+
+    return d
