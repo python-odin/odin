@@ -1,5 +1,7 @@
 # coding=utf-8
 import datetime
+from odin import serializers
+from odin.resources import build_object_graph
 
 try:
     import simplejson as json
@@ -9,7 +11,7 @@ from odin import resources
 
 
 JSON_TYPES = {
-    datetime.datetime: lambda v: str(v)
+    datetime.datetime: serializers.datetime_ecma_format
 }
 
 
@@ -27,22 +29,6 @@ class OdinEncoder(json.JSONEncoder):
             return JSON_TYPES[o.__class__](o)
         else:
             return super(OdinEncoder, self)
-
-
-def build_object_graph(obj, resource_name=None):
-    """
-    From the decoded JSON structure, generate an object graph.
-
-    :raises ValidationError: During building of the object graph and issues discovered are raised as a ValidationError.
-    """
-
-    if isinstance(obj, dict):
-        return resources.create_resource_from_dict(obj, resource_name)
-
-    if isinstance(obj, list):
-        return [build_object_graph(o, resource_name) for o in obj]
-
-    return obj
 
 
 def load(fp, *args, **kwargs):
