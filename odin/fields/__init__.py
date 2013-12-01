@@ -279,10 +279,6 @@ class DateTimeField(Field):
         msg = self.error_messages['invalid']
         raise exceptions.ValidationError(msg)
 
-    def to_string(self, value):
-        if isinstance(value, datetime.datetime):
-            return datetimeutil.to_ecma_date_string(value, self.assume_local)
-
 
 class DictField(Field):
     default_error_messages = {
