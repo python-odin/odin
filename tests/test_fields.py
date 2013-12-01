@@ -331,10 +331,6 @@ class FieldsTests(unittest.TestCase):
         self.assertEqual(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
                          f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)))
 
-    def test_datetimefield_tostring(self):
-        f = DateTimeField(assume_local=False)
-        self.assertEqual('2013-11-24T18:43:00.000Z', f.to_string(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)))
-        self.assertEqual(None, f.to_string(None))
 
     # DictField ###############################################################
 
