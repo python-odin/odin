@@ -11,15 +11,15 @@ class DictAs(Field):
         'invalid': "Must be a object of type ``%r``.",
     }
 
-    def __init__(self, resource, **kwargs):
+    def __init__(self, resource, **options):
         try:
             resource._meta
         except AttributeError:
             raise TypeError("``%r`` is not a valid type for a related field." % resource)
         self.of = resource
 
-        kwargs.setdefault('default', lambda: resource())
-        super(DictAs, self).__init__(**kwargs)
+        options.setdefault('default', lambda: resource())
+        super(DictAs, self).__init__(**options)
 
     def to_python(self, value):
         if value is None:
@@ -47,9 +47,9 @@ class ArrayOf(DictAs):
         'null': "List cannot contain null entries.",
     }
 
-    def __init__(self, resource, **kwargs):
-        kwargs.setdefault('default', list)
-        super(ArrayOf, self).__init__(resource, **kwargs)
+    def __init__(self, resource, **options):
+        options.setdefault('default', list)
+        super(ArrayOf, self).__init__(resource, **options)
 
     def _process_list(self, value_list, method):
         values = []

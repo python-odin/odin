@@ -196,8 +196,8 @@ class BooleanField(Field):
 
 
 class StringField(Field):
-    def __init__(self, max_length=None, **kwargs):
-        super(StringField, self).__init__(**kwargs)
+    def __init__(self, max_length=None, **options):
+        super(StringField, self).__init__(**options)
         self.max_length = max_length
         if max_length is not None:
             self.validators.append(MaxLengthValidator(max_length))
@@ -209,8 +209,8 @@ class StringField(Field):
 
 
 class ScalarField(Field):
-    def __init__(self, min_value=None, max_value=None, **kwargs):
-        super(ScalarField, self).__init__(**kwargs)
+    def __init__(self, min_value=None, max_value=None, **options):
+        super(ScalarField, self).__init__(**options)
         self.min_value = min_value
         if min_value is not None:
             self.validators.append(MinValueValidator(min_value))
@@ -263,8 +263,8 @@ class DateTimeField(Field):
         'invalid': "Not a valid date string.",
     }
 
-    def __init__(self, assume_local=False, *arg, **kwargs):
-        super(DateTimeField, self).__init__(*arg, **kwargs)
+    def __init__(self, assume_local=False, **options):
+        super(DateTimeField, self).__init__(**options)
         self.assume_local = assume_local
 
     def to_python(self, value):
@@ -285,9 +285,9 @@ class DictField(Field):
         'invalid': "Must be a dict.",
     }
 
-    def __init__(self, **kwargs):
-        kwargs.setdefault("default", dict)
-        super(DictField, self).__init__(**kwargs)
+    def __init__(self, **options):
+        options.setdefault("default", dict)
+        super(DictField, self).__init__(**options)
 
     def to_python(self, value):
         if value is None:
@@ -311,9 +311,9 @@ class ArrayField(Field):
         'invalid': "Must be an array.",
     }
 
-    def __init__(self, **kwargs):
-        kwargs.setdefault("default", list)
-        super(ArrayField, self).__init__(**kwargs)
+    def __init__(self, **options):
+        options.setdefault("default", list)
+        super(ArrayField, self).__init__(**options)
 
     def to_python(self, value):
         if value is None:
@@ -325,9 +325,9 @@ class ArrayField(Field):
 
 
 class TypedArrayField(ArrayField):
-    def __init__(self, field, **kwargs):
+    def __init__(self, field, **options):
         self.field = field
-        super(TypedArrayField, self).__init__(**kwargs)
+        super(TypedArrayField, self).__init__(**options)
 
     def to_python(self, value):
         value = super(TypedArrayField, self).to_python(value)
