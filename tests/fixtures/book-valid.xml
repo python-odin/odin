@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Library name="Public Library">
+    <Books>
+        <Book fiction="True">
+            <Author>
+                <Name>Iain M. Banks</Name>
+            </Author>
+            <Genre>sci-fi</Genre>
+            <NumPages>471</NumPages>
+            <Publisher>
+                <Name>Macmillan</Name>
+            </Publisher>
+            <RRP>19.5</RRP>
+            <Title>Consider Phlebas</Title>
+        </Book>
+    </Books>
+</Library>
