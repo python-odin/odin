@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
 import unittest
-from odin.contrib.pint import units, FloatQField
+from odin.contrib.pint.fields import PintField, FloatField
 from odin.contrib.pint.units import registry
 from odin.exceptions import ValidationError
 
 
 class PintFieldsTestCase(unittest.TestCase):
-    def test_floatq_field_init(self):
-        self.assertRaises(ValueError, FloatQField, None)
+    # PintField ###############################################################
 
-    def test_floatqfield_1(self):
-        f = FloatQField('kWh')
+    def test_pintfield_init(self):
+        self.assertRaises(ValueError, PintField, None)
+
+    # FloatField ##############################################################
+
+    def test_floatfield_1(self):
+        f = FloatField('kWh')
         self.assertRaises(ValidationError, f.clean, None)
         self.assertRaises(ValidationError, f.clean, 10.2 * registry.meter)
         self.assertRaises(ValidationError, f.clean, 'abc')
