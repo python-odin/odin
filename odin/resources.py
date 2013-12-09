@@ -50,6 +50,12 @@ class ResourceOptions(object):
         if not self.verbose_name_plural:
             self.verbose_name_plural = self.verbose_name + 's'
 
+    @property
+    def field_map(self):
+        if not hasattr(self, '_field_map'):
+            self._field_map = {f.attname: f for f in self.fields}
+        return self._field_map
+
     def add_field(self, field):
         self.fields.append(field)
 
