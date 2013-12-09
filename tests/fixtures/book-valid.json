@@ -11,7 +11,7 @@
                 }
             ],
             "fiction": true,
-            "published": "1987-01-01T00:00:00.000Z",
+            "published": ["1987-01-01T00:00:00.000Z"],
             "genre": "sci-fi",
             "num_pages": 471,
             "publisher": {

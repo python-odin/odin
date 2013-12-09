@@ -6,55 +6,15 @@ import os
 import unittest
 import sys
 import datetime
-import odin
+
 from odin.codecs import json_codec
 from odin import exceptions
 from odin.datetimeutil import utc
 
+from resources import *
+
+
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
-
-
-class Author(odin.Resource):
-    name = odin.StringField()
-
-    class Meta:
-        name_space = None
-
-
-class Publisher(odin.Resource):
-    name = odin.StringField()
-
-    class Meta:
-        name_space = None
-
-
-class LibraryBook(odin.Resource):
-    class Meta:
-        abstract = True
-        name_space = "library"
-
-
-class Book(LibraryBook):
-    title = odin.StringField()
-    num_pages = odin.IntegerField()
-    rrp = odin.FloatField()
-    fiction = odin.BooleanField()
-    genre = odin.StringField(choices=(
-        ('sci-fi', 'Science Fiction'),
-        ('fantasy', 'Fantasy'),
-        ('others', 'Others'),
-    ))
-    published = odin.DateTimeField()
-    authors = odin.ArrayOf(Author)
-    publisher = odin.ObjectAs(Publisher)
-
-
-class Library(odin.Resource):
-    name = odin.StringField()
-    books = odin.ArrayOf(LibraryBook)
-
-    class Meta:
-        name_space = None
 
 
 class KitchenSinkTestCase(unittest.TestCase):
