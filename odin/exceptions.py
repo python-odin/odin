@@ -51,5 +51,25 @@ class ValidationError(Exception):
         return error_dict
 
 
-class RegistrationException(Exception):
-    pass
+class RegistrationError(Exception):
+    """
+    Exception raised during registration of resources or mappings
+    """
+
+
+class MappingError(Exception):
+    """
+    Exceptions related to mapping, will typically be a more specific `MappingSetupError` or `MappingExecutionError`.
+    """
+
+
+class MappingSetupError(MappingError):
+    """
+    Exception raised during the setup of mapping rules.
+    """
+
+
+class MappingExecutionError(MappingError):
+    """
+    Exception raised during the execution of mapping rules.
+    """

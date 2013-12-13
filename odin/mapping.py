@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import six
+from odin.exceptions import MappingSetupError
 from odin.resources import Resource
 
 __all__ = ('Mapping', 'map_field')
@@ -31,11 +32,11 @@ class MappingBase(type):
 
         from_resource = attrs.get('from_resource')
         if not issubclass(from_resource, Resource):
-            raise ValueError('`from_resource` is not a Resource type')
+            raise MappingSetupError('`from_resource` is not a Resource type')
 
         to_resource = attrs.get('to_resource')
         if not issubclass(to_resource, Resource):
-            raise ValueError('`to_resource` is not a Resource type')
+            raise MappingSetupError('`to_resource` is not a Resource type')
 
         exclude_fields = attrs.get('exclude_fields') or tuple()
         mappings = attrs.pop('mappings') or []
