@@ -2,10 +2,10 @@
 from odin.exceptions import RegistrationError
 
 
-def generate_mapping_cache_name(source, destination):
+def generate_mapping_cache_name(from_resource, to_resource):
     return "%s.%s > %s.%s" % (
-        source.__module__, source.__name__,
-        destination.__module__, destination.__name__,
+        from_resource.__module__, from_resource.__name__,
+        to_resource.__module__, to_resource.__name__,
     )
 
 
@@ -19,12 +19,6 @@ class ResourceCache(object):
 
     def __init__(self):
         self.__dict__ = self.__shared_state
-
-    def __iter__(self):
-        """
-        Iterate through registered resources.
-        """
-        return self.resources.itervalues()
 
     def get_resource(self, resource_name):
         """
@@ -45,19 +39,27 @@ class ResourceCache(object):
             if resource_name != resource._meta.class_name:
                 self.resources[resource._meta.class_name] = resource
 
-    def get_mapping(self, source, destination):
-        mapping_name = generate_mapping_cache_name(source, destination)
+    def get_mapping(self, from_resource, to_resource):
+        """
+        Get a mapping based on the from and to resources
+        """
+        mapping_name = generate_mapping_cache_name(from_resource, to_resource)
         return self.mappings[mapping_name]
 
-
     def register_mappings(self, *mappings):
+        """
+        Register a mapping (or mappings)
+        """
         for mapping in mappings:
-            mapping_name = generate_mapping_cache_name(mapping.source, )
-
-
+            mapping_name = generate_mapping_cache_name(mapping.from_resource, mapping.to_resource)
+            if mapping_name in self.mappings:
+                raise RegistrationError("A mapping for %s has already been registered" % mapping_name)
+            self.mappings[mapping_name] = mapping
 
 
 cache = ResourceCache()
 
 get_resource = cache.get_resource
 register_resources = cache.register_resources
+get_mapping = cache.get_mapping
+register_mappings = cache.register_mappings
