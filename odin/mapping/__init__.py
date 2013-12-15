@@ -76,7 +76,7 @@ class MappingBase(type):
             return map_from, action, map_to
 
         exclude_fields = attrs.get('exclude_fields') or tuple()
-        unmapped_fields = {attname for attname in from_fields if attname not in exclude_fields}
+        unmapped_fields = [attname for attname in from_fields if attname not in exclude_fields]
         mapping_rules = []
 
         # Add basic mappings

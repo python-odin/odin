@@ -16,7 +16,7 @@ class MappingBaseTestCase(unittest.TestCase):
     maxDiff = None
 
     def test_full_mapping(self):
-        self.assertEqual([
+        self.assertListEqual([
             (('from_field1',), None, ('to_field1',)),
             (('from_field2',), int, ('to_field2',)),
             (('from_field3', 'from_field4'), sum_fields, ('to_field3',)),
