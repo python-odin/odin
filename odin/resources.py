@@ -195,9 +195,19 @@ class Resource(six.with_metaclass(ResourceBase)):
         """
         return { f.name: f.prepare(f.value_from_object(self)) for f in self._meta.fields }
 
+    def convert_to(self, to_resource):
+        """
+        Convert this resource into a specified to resource.
+
+        A mapping must be defined for conversion between this resource and to_resource or an exception will be raised.
+        """
+        self.full_clean()
+        mapping = registration.get_mapping(self.__class__, to_resource)
+        return mapping(self).convert()
+
     def extra_attrs(self, attrs):
         """
-        Called during deserialisation of data if there are any extra fields defined in the document.
+        Called during de-serialisation of data if there are any extra fields defined in the document.
 
         This allows the resource to decide how to handle these fields. By default they are ignored.
         """

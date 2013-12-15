@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import odin
+from odin.mapping.helpers import sum_fields
 
 
 class Author(odin.Resource):
@@ -88,6 +89,7 @@ class FromResource(odin.Resource):
     from_field_c2 = odin.StringField()
     from_field_c3 = odin.StringField()
     from_field_c4 = odin.StringField()
+    not_auto_c5 = odin.StringField()
 
 
 class ToResource(odin.Resource):
@@ -104,18 +106,20 @@ class ToResource(odin.Resource):
     to_field_c1 = odin.StringField()
     to_field_c2 = odin.StringField()
     to_field_c3 = odin.StringField()
+    not_auto_c5 = odin.StringField()
+
 
 
 class FromToMapping(odin.Mapping):
     from_resource = FromResource
     to_resource = ToResource
 
-    exclude_fields = ('excluded',)
+    exclude_fields = ('excluded1',)
 
     mappings = (
         ('from_field1', None, 'to_field1'),
         ('from_field2', int, 'to_field2'),
-        (('from_field3', 'from_field4'), sum, 'to_field3'),
+        (('from_field3', 'from_field4'), sum_fields, 'to_field3'),
     )
 
     @odin.map_field(('from_field_c1', 'from_field_c2', 'from_field_c3'), 'to_field_c1')
@@ -124,4 +128,8 @@ class FromToMapping(odin.Mapping):
 
     @odin.map_field('from_field_c4', ('to_field_c2', 'to_field_c3'))
     def one_to_multi(self, field):
-        return field.partition('-')
+        return field.split('-', 1)
+
+    @odin.map_field('not_auto_c5')
+    def _not_auto_c5(self, field):
+        return field.upper()
