@@ -136,7 +136,7 @@ class Mapping(six.with_metaclass(MappingBase)):
             try:
                 to_values = action(*from_values)
             except TypeError as ex:
-                raise MappingExecutionError('%s applying rule %s' % (ex.message, mapping_rule))
+                raise MappingExecutionError('%s applying rule %s' % (ex, mapping_rule))
             else:
                 to_values = force_tuple(to_values)
 
