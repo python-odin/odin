@@ -15,8 +15,13 @@ class FakeToResource(odin.Resource):
 class MappingBaseTestCase(unittest.TestCase):
     maxDiff = None
 
+    def assertMappingEquivalent(self, a, b):
+        flat_a = sorted(str(i) for i in a)
+        flat_b = sorted(str(i) for i in b)
+        self.assertListEqual(flat_a, flat_b)
+
     def test_full_mapping(self):
-        self.assertListEqual([
+        self.assertMappingEquivalent([
             (('from_field1',), None, ('to_field1',)),
             (('from_field2',), int, ('to_field2',)),
             (('from_field3', 'from_field4'), sum_fields, ('to_field3',)),

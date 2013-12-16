@@ -18,8 +18,8 @@ FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 class KitchenSinkTestCase(unittest.TestCase):
-    @unittest.skipIf(sys.version_info[0] > 2, "Disabled as Python 2 and Python 3 appear to output result differently. "
-                                              "This test needs a better way of determining a positive outcome.")
+    @unittest.skipIf(sys.version_info[0] > 2 and sys.version_info[1] > 2, "Disabled as Python 3.3 randomises the hash "
+                                                                          "function, changing the order of the output.")
     def test_dumps_with_valid_data(self):
         book = Book(title="Consider Phlebas", num_pages=471, rrp=19.50, genre="sci-fi", fiction=True,
                     published=datetime.datetime(1987, 1 , 1, tzinfo=utc))
