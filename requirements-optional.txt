@@ -1,3 +1,2 @@
 jinja2>=2.7
-simplejson
 pint
