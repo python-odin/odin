@@ -24,8 +24,9 @@ Highlights
 * Class based declarative style
 * Fields for building composite resources
 * Field and Resource level validation
+* Resource to resource mapping
 * Easy extension to support custom fields
-* Python 2.7+ and Python 3.3+ supported
+* Python 2.7+ and Python 3.2+ supported
 
 
 Quick links
@@ -85,7 +86,6 @@ Example
         publisher = odin.DictAs(Publisher)
         genre = odin.StringField()
         num_pages = odin.IntegerField()
-
 
 ::
 
