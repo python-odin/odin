@@ -3,10 +3,10 @@ import copy
 import datetime
 import six
 from odin import exceptions, datetimeutil
-from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator
+from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url
 
 __all__ = (
-    'BooleanField', 'StringField', 'IntegerField', 'FloatField', 'DateTimeField',
+    'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateTimeField',
     'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField',
 )
 
@@ -206,6 +206,12 @@ class StringField(Field):
         if isinstance(value, six.string_types) or value is None:
             return value
         return str(value)
+
+
+class UrlField(StringField):
+    def __init__(self, **options):
+        options.setdefault('validators', []).append(validate_url)
+        super(UrlField, self).__init__(**options)
 
 
 class ScalarField(Field):
