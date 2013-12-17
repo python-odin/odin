@@ -21,6 +21,22 @@ class Author(odin.Resource):
         self.extras = attrs
 
 
+# Resources for abstract namespace test.
+class ResourceA(odin.Resource):
+    class Meta:
+        abstract = True
+        namespace = "example"
+
+
+class ResourceB(ResourceA):
+    class Meta:
+        abstract = True
+
+
+class ResourceC(ResourceB):
+    pass
+
+
 class ResourceTestCase(unittest.TestCase):
     def test_constructor_1(self):
         r = Author(name="Foo")
@@ -81,3 +97,7 @@ class ResourceTestCase(unittest.TestCase):
             self.assertEqual(["No no no no"], ve.message_dict['__all__'])
         else:
             raise AssertionError("ValidationError not raised.")
+
+    # Fix for #11
+    def test_multiple_abstract_namespaces(self):
+        self.assertEqual('example.ResourceC', ResourceC._meta.resource_name)

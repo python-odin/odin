@@ -88,3 +88,7 @@ class ArrayOf(DictAs):
         if value not in EMPTY_VALUES:
             super_validate = super(ArrayOf, self).validate
             self._process_list(value, super_validate)
+
+    def __iter__(self):
+        # This does nothing but it does prevent inspections from complaining.
+        return None

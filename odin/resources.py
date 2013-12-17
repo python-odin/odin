@@ -7,7 +7,7 @@ from odin.fields import NOT_PROVIDED
 
 
 RESOURCE_TYPE_FIELD = '$'
-META_OPTION_NAMES = ('name', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group', )
+META_OPTION_NAMES = ('name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group', )
 
 
 class ResourceOptions(object):
@@ -27,7 +27,7 @@ class ResourceOptions(object):
     def contribute_to_class(self, cls, name):
         cls._meta = self
         self.name = cls.__name__
-        self.class_name =  "%s.%s" % (cls.__module__, cls.__name__)
+        self.class_name = "%s.%s" % (cls.__module__, cls.__name__)
 
         if self.meta:
             meta_attrs = self.meta.__dict__.copy()
@@ -36,7 +36,11 @@ class ResourceOptions(object):
                     del meta_attrs[name]
             for attr_name in META_OPTION_NAMES:
                 if attr_name in meta_attrs:
-                    setattr(self, attr_name, meta_attrs.pop(attr_name))
+                    # Allow meta to be defined as namespace
+                    if attr_name == 'namespace':
+                        setattr(self, 'name_space', meta_attrs.pop(attr_name))
+                    else:
+                        setattr(self, attr_name, meta_attrs.pop(attr_name))
                 elif hasattr(self.meta, attr_name):
                     setattr(self, attr_name, getattr(self.meta, attr_name))
 
@@ -112,12 +116,13 @@ class ResourceBase(type):
         base_meta = getattr(new_class, '_meta', None)
 
         new_class.add_to_class('_meta', ResourceOptions(meta))
-        if not abstract and base_meta:
+
+        # Generate a namespace if one is not provided
+        if new_class._meta.name_space is NOT_PROVIDED and base_meta:
             # Namespace is inherited
             if (not new_class._meta.name_space) or (new_class._meta.name_space is NOT_PROVIDED):
                 new_class._meta.name_space = base_meta.name_space
 
-        # Generate a namespace if one is not provided
         if new_class._meta.name_space is NOT_PROVIDED:
             new_class._meta.name_space = module
 
