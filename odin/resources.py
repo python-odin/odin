@@ -116,12 +116,13 @@ class ResourceBase(type):
         base_meta = getattr(new_class, '_meta', None)
 
         new_class.add_to_class('_meta', ResourceOptions(meta))
-        if not abstract and base_meta:
+
+        # Generate a namespace if one is not provided
+        if new_class._meta.name_space is NOT_PROVIDED and base_meta:
             # Namespace is inherited
             if (not new_class._meta.name_space) or (new_class._meta.name_space is NOT_PROVIDED):
                 new_class._meta.name_space = base_meta.name_space
 
-        # Generate a namespace if one is not provided
         if new_class._meta.name_space is NOT_PROVIDED:
             new_class._meta.name_space = module
 
