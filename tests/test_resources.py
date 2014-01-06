@@ -37,6 +37,10 @@ class ResourceC(ResourceB):
     pass
 
 
+class ResourceD(ResourceC):
+    pass
+
+
 class ResourceTestCase(unittest.TestCase):
     def test_constructor_1(self):
         r = Author(name="Foo")
@@ -101,3 +105,9 @@ class ResourceTestCase(unittest.TestCase):
     # Fix for #11
     def test_multiple_abstract_namespaces(self):
         self.assertEqual('example.ResourceC', ResourceC._meta.resource_name)
+
+    def test_parents_1(self):
+        self.assertListEqual([], ResourceA._meta.parents)
+        self.assertListEqual([ResourceA], ResourceB._meta.parents)
+        self.assertListEqual([ResourceA, ResourceB], ResourceC._meta.parents)
+        self.assertListEqual([ResourceA, ResourceB, ResourceC], ResourceD._meta.parents)
