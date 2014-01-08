@@ -17,6 +17,10 @@ a set of validators and mapped into other formats.
     :target: https://coveralls.io/r/timsavage/odin?branch=master
     :alt: Coveralls
 
+.. image:: https://requires.io/github/timsavage/odin/requirements.png?branch=master
+   :target: https://requires.io/github/timsavage/odin/requirements/?branch=master
+   :alt: Requirements Status
+
 
 Highlights
 **********
