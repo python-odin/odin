@@ -17,7 +17,9 @@ install:
   - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then pip install pint --use-mirrors; fi
   - pip install coveralls --use-mirrors
 
-script: nosetests --all-modules --with-coverage --cover-package odin tests/
+script:
+  - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then nosetests --all-modules --with-coverage --cover-package odin tests/ ; fi
+  - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then nosetests --all-modules --with-coverage --cover-package odin tests/ tests/contrib ; fi
 
 after_success:
   - coveralls
