@@ -198,9 +198,9 @@ class Resource(six.with_metaclass(ResourceBase)):
         """
         Convert this resource into a dict
         """
-        return { f.name: f.prepare(f.value_from_object(self)) for f in self._meta.fields }
+        return {f.name: f.prepare(f.value_from_object(self)) for f in self._meta.fields}
 
-    def convert_to(self, to_resource):
+    def convert_to(self, to_resource, **field_values):
         """
         Convert this resource into a specified to resource.
 
@@ -208,7 +208,7 @@ class Resource(six.with_metaclass(ResourceBase)):
         """
         self.full_clean()
         mapping = registration.get_mapping(self.__class__, to_resource)
-        return mapping(self).convert()
+        return mapping(self).convert(**field_values)
 
     def extra_attrs(self, attrs):
         """

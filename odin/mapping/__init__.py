@@ -146,8 +146,11 @@ class Mapping(six.with_metaclass(MappingBase)):
 
         return {f: to_values[i] for i, f in enumerate(to_fields)}
 
-    def convert(self):
-        values = {}
+    def convert(self, **field_values):
+        """
+        Convert the provided source into a target resource.
+        """
+        values = field_values
 
         for mapping_rule in self._mapping_rules:
             values.update(self._apply_rule(mapping_rule))
