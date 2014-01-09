@@ -6,8 +6,12 @@ Based off a previous library for mapping JSON to python objects Odin branches fr
 many other data representations, allowing them to be mapped into converted into a Python object graph, validated against
 a set of validators and mapped into other formats.
 
+.. image:: https://pypip.in/license/odin/badge.png
+    :target: https://pypi.python.org/pypi/odin/
+    :alt: License
+
 .. image:: https://pypip.in/v/odin/badge.png
-        :target: https://crate.io/packages/odin
+        :target: https://pypi.python.org/pypi/odin/
 
 .. image:: https://travis-ci.org/timsavage/odin.png?branch=master
     :target: https://travis-ci.org/timsavage/odin
