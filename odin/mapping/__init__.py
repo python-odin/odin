@@ -155,7 +155,7 @@ class Mapping(six.with_metaclass(MappingBase)):
         return self.to_resource(**values)
 
 
-def map_field(from_field, to_field=None):
+def map_field(from_field=None, to_field=None):
     """
     Field decorator for custom mappings
     :param from_field:
@@ -163,6 +163,8 @@ def map_field(from_field, to_field=None):
     :return:
     """
     def inner(func):
-        func._mapping = (from_field, func.__name__, to_field or from_field)
+        from_ = from_field or func.__name__
+        to_ = to_field or from_
+        func._mapping = (from_, func.__name__, to_)
         return func
     return inner
