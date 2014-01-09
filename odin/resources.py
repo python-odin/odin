@@ -155,6 +155,7 @@ class ResourceBase(type):
             for field in parent_fields:
                 new_class.add_to_class(field.attname, copy.deepcopy(field))
 
+            new_class._meta.parents += base._meta.parents
             new_class._meta.parents.append(base)
 
         if abstract:

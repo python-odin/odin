@@ -2,10 +2,10 @@
 from copy import deepcopy
 import unittest
 import datetime
-from odin.fields import (Field, StringField, BooleanField, IntegerField, FloatField, DateTimeField,
-                         DictField, ArrayField, TypedArrayField)
+from odin.fields import *
+from odin.fields import Field
 from odin.datetimeutil import utc
-from odin.validators import MinValueValidator, MaxValueValidator, MaxLengthValidator
+from odin.validators import MinValueValidator, MaxValueValidator, MaxLengthValidator, RegexValidator
 from odin.exceptions import ValidationError
 
 
@@ -225,6 +225,16 @@ class FieldsTests(unittest.TestCase):
         self.assertRaises(ValidationError, f.clean, '1234567890a')
         self.assertEqual(f.max_length, 10)
         self.assertValidatorIn(MaxLengthValidator, f.validators)
+
+    # URLField ################################################################
+
+    def test_urlfield_1(self):
+        f = UrlField()
+        self.assertEqual('http://www.github.com', f.clean('http://www.github.com'))
+        self.assertRaises(ValidationError, f.clean, 'eek')
+        self.assertRaises(ValidationError, f.clean, None)
+        self.assertEqual(f.max_length, None)
+        self.assertValidatorIn(RegexValidator, f.validators)
 
 
     # IntegerField ############################################################

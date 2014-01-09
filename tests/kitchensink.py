@@ -3,7 +3,6 @@
 Do load/dump tests on known valid and invalid documents.
 """
 import os
-import unittest
 import sys
 import datetime
 
@@ -11,15 +10,14 @@ from odin.codecs import json_codec
 from odin import exceptions
 from odin.datetimeutil import utc
 
+from _test_case import TestCase
 from resources import *
 
 
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
-class KitchenSinkTestCase(unittest.TestCase):
-    @unittest.skipIf(sys.version_info[0] > 2 and sys.version_info[1] > 2, "Disabled as Python 3.3 randomises the hash "
-                                                                          "function, changing the order of the output.")
+class KitchenSinkTestCase(TestCase):
     def test_dumps_with_valid_data(self):
         book = Book(title="Consider Phlebas", num_pages=471, rrp=19.50, genre="sci-fi", fiction=True,
                     published=datetime.datetime(1987, 1 , 1, tzinfo=utc))
@@ -28,15 +26,34 @@ class KitchenSinkTestCase(unittest.TestCase):
 
         library = Library(name="Public Library", books=[book])
 
-        actual = json_codec.dumps(library)
-        expected = '{"books": [' \
-                   '{"publisher": {"name": "Macmillan", "$": "Publisher"}, "num_pages": 471, ' \
-                   '"$": "library.Book", "title": "Consider Phlebas", ' \
-                   '"authors": [{"name": "Iain M. Banks", "$": "Author"}], ' \
-                   '"fiction": true, "published": "1987-01-01T00:00:00.000Z", "genre": "sci-fi", "rrp": 19.5}], ' \
-                   '"name": "Public Library", "$": "Library"}'
+        self.assertJSONEqual("""
+{
+    "$": "Library",
+    "name": "Public Library",
+    "books": [
+        {
+            "$": "library.Book",
+            "publisher": {
+                "$": "Publisher",
+                "name": "Macmillan"
+            },
+            "num_pages": 471,
+            "title": "Consider Phlebas",
+            "authors": [
+                {
+                    "$": "Author",
+                    "name": "Iain M. Banks"
+                }
+            ],
+            "fiction": true,
+            "published": "1987-01-01T00:00:00.000Z",
+            "genre": "sci-fi",
+            "rrp": 19.5
+        }
+    ]
+}
+        """, json_codec.dumps(library))
 
-        self.assertEqual(expected, actual)
 
     def test_full_clean_invalid_data(self):
         book = Book(title="Consider Phlebas", num_pages=471, rrp=19.50, genre="space opera", fiction=True)

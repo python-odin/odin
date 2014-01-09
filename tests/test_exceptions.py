@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import unittest
-import sys
 from odin import exceptions
 
 
@@ -23,8 +22,6 @@ class ValidationException(unittest.TestCase):
         self.assertEqual("['Test message', 'Test message 2']", str(target))
         self.assertEqual("ValidationError(['Test message', 'Test message 2'])", repr(target))
 
-    @unittest.skipIf(sys.version_info[0] > 2 and sys.version_info[1] > 2, "Disabled as Python 3.3 randomises the hash "
-                                                                          "function.")
     def test_with_dict(self):
         test_message_dict = {
             "Test Key 1": ["Test Message 1"],
@@ -37,6 +34,7 @@ class ValidationException(unittest.TestCase):
             "Test Key 1": ["Test Message 1"],
             "Test Key 2": ["Test Message 2"],
         }], target.messages)
-        self.assertEqual("{'Test Key 2': ['Test Message 2'], 'Test Key 1': ['Test Message 1']}", str(target))
-        self.assertEqual("ValidationError({'Test Key 2': ['Test Message 2'], 'Test Key 1': ['Test Message 1']})",
-                         repr(target))
+
+        expected = str({'Test Key 2': ['Test Message 2'], 'Test Key 1': ['Test Message 1']})
+        self.assertEqual(expected, str(target))
+        self.assertEqual("ValidationError(%s)" % expected, repr(target))

@@ -1,22 +1,20 @@
-from setuptools import setup
+from setuptools import setup, find_packages
+
+try:
+    long_description = open("README.rst").read()
+except IOError:
+    long_description = ""
 
 setup(
     name='odin',
-    version="0.4.1",
+    version='0.4.1.2',
     url='https://github.com/timsavage/odin',
     license='LICENSE',
     author='Tim Savage',
     author_email='tim.savage@poweredbypenguins.org',
     description='Object Data Mapping for Python',
-    long_description=open("README.rst").read(),
-    packages=[
-        'odin',
-        'odin.codecs',
-        'odin.contrib',
-        'odin.contrib.doc_gen',
-        'odin.contrib.pint',
-        'odin.fields',
-    ],
+    long_description=long_description,
+    packages= find_packages(),
     install_requires=['six'],
     extras_require={
         # Documentation generation
