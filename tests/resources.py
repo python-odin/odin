@@ -128,7 +128,7 @@ class FromToMapping(odin.Mapping):
 
     @odin.map_field('from_field_c4', ('to_field_c2', 'to_field_c3'))
     def one_to_multi(self, field):
-        return field.split('-', 1)
+        return tuple(field.split('-', 1))
 
     @odin.map_field('not_auto_c5')
     def _not_auto_c5(self, field):

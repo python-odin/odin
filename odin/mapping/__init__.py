@@ -7,7 +7,7 @@ from odin.resources import Resource
 __all__ = ('Mapping', 'map_field')
 
 
-force_tuple = lambda x: x if isinstance(x, (tuple, list)) else (x,)
+force_tuple = lambda x: x if isinstance(x, tuple) else (x,)
 
 
 class MappingBase(type):
