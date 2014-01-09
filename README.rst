@@ -34,7 +34,9 @@ Highlights
 * Field and Resource level validation
 * Resource to resource mapping
 * Easy extension to support custom fields
-* Python 2.7+ and Python 3.2+ supported
+* Python 2.7+, Python 3.2+ and PyPy :sup:`1` supported
+
+:sup:`1` certain contrib items are not supported. Pint is not installable with PyPy.
 
 
 Quick links
