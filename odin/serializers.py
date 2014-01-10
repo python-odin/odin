@@ -10,7 +10,7 @@ class DatetimeEcmaFormat(object):
     input_type = datetime.datetime
 
     def __init__(self, assume_local=True):
-        self.assume_local = True
+        self.assume_local = assume_local
 
     def __call__(self, value):
         assert isinstance(value, self.input_type)
