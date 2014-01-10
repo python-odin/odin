@@ -3,7 +3,7 @@
     <dd>
         <strong>{{ field.verbose_name|title }}</strong>
         {% if field.optional %}<em>Optional</em>{% endif %}
-        {% if field.help_text %} - {{ field.help_text }}{% endif %}
+        {% if field.doc_text %} - {{ field.doc_text }}{% endif %}
         {% if field.choices %}
         <div class="choices">
             Options:

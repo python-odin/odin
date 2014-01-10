@@ -44,7 +44,7 @@ class ResourceDocumentation(object):
         if self._fields is None:
             self._fields = sorted(({
                 "name": f.name,
-                "help_text": f.help_text,
+                "doc_text": f.doc_text,
                 "verbose_name": f.verbose_name,
                 "verbose_name_plural": f.verbose_name_plural,
                 "choices": [c[0] for c in f.choices or []],
