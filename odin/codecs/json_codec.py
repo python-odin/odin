@@ -1,14 +1,12 @@
 # coding=utf-8
 import datetime
 from odin import serializers
-from odin.resources import build_object_graph
+from odin import resources
 
 try:
     import simplejson as json
 except ImportError:
     import json
-from odin import resources
-
 
 JSON_TYPES = {
     datetime.datetime: serializers.datetime_ecma_format
@@ -56,7 +54,7 @@ def loads(s, resource=None):
         resource_name = resource._meta.resource_name
     else:
         resource_name = resource
-    return build_object_graph(json.loads(s), resource_name)
+    return resources.build_object_graph(json.loads(s), resource_name)
 
 
 def dump(resource, fp, cls=OdinEncoder, **kwargs):
