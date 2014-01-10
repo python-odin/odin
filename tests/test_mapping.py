@@ -101,7 +101,7 @@ class MappingBaseTestCase(unittest.TestCase):
                 from_resource = FakeFromResource
                 to_resource = FakeToResource
 
-                @odin.map_field('unknown_field', 'title')
+                @odin.map_field(from_field='unknown_field', to_field='title')
                 def multi_to_one(self, *fields):
                     pass
 
@@ -163,7 +163,7 @@ class MappingBaseTestCase(unittest.TestCase):
                 from_resource = FakeFromResource
                 to_resource = FakeToResource
 
-                @odin.map_field('title', 'unknown_field')
+                @odin.map_field(from_field='title', to_field='unknown_field')
                 def multi_to_one(self, *fields):
                     pass
 
