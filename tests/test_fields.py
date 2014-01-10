@@ -33,7 +33,6 @@ class FieldTestCase(unittest.TestCase):
         self.assertDictEqual({
             'invalid_choice': 'Value %r is not a valid choice.',
             'null': 'This field cannot be null.',
-            'blank': 'This field cannot be blank.',
             'required': 'This field is required.',
         }, target.error_messages)
 
@@ -46,7 +45,6 @@ class FieldTestCase(unittest.TestCase):
         self.assertDictEqual({
             'invalid_choice': 'Value %r is not a valid choice.',
             'null': 'Override',
-            'blank': 'This field cannot be blank.',
             'required': 'This field is required.',
             'other': 'Other Value',
         }, target.error_messages)
