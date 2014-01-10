@@ -14,7 +14,7 @@ setup(
     author_email='tim.savage@poweredbypenguins.org',
     description='Object Data Mapping for Python',
     long_description=long_description,
-    packages= find_packages(),
+    packages=find_packages(),
     install_requires=['six'],
     extras_require={
         # Documentation generation
