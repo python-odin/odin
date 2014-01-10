@@ -4,7 +4,7 @@ Generating resource documentation
 
 .. note:: When using document generation Jinja2 is required.
 
-JSRN has built in support for generating documentation of resources that have been registered. This is where the various
+Odin has built in support for generating documentation of resources that have been registered. This is where the various
 ``verbose_name``, ``help_text`` and *doc strings* are used generate documentation.
 
 
@@ -29,7 +29,7 @@ The *resources.rst* file can now be registered into your *Sphinx* documentation.
 Doc-gen API
 ***********
 
-The documentation generation API consists of two methods in the vain of the main JSRN API:
+The documentation generation API consists of two methods in the vain of the main Odin API:
  * ``odin.doc_gen.dump`` - Output documentation to a file, requires a file pointer.
  * ``odin.doc_gen.dumps`` - Return the documentation as a string
 

@@ -1,6 +1,6 @@
-=========
-Resources
-=========
+###################
+Resources Instances
+###################
 
 A resource is the definition of the data structure that data is mapped into.
 
