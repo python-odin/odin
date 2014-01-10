@@ -17,4 +17,3 @@ class DatetimeEcmaFormat(object):
         return datetimeutil.to_ecma_date_string(value, self.assume_local)
 
 datetime_ecma_format = DatetimeEcmaFormat()
-

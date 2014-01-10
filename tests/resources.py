@@ -122,14 +122,14 @@ class FromToMapping(odin.Mapping):
         (('from_field3', 'from_field4'), sum_fields, 'to_field3'),
     )
 
-    @odin.map_field(('from_field_c1', 'from_field_c2', 'from_field_c3'), 'to_field_c1')
+    @odin.map_field(from_field=('from_field_c1', 'from_field_c2', 'from_field_c3'), to_field='to_field_c1')
     def multi_to_one(self, *fields):
         return '-'.join(fields)
 
-    @odin.map_field('from_field_c4', ('to_field_c2', 'to_field_c3'))
+    @odin.map_field(from_field='from_field_c4', to_field=('to_field_c2', 'to_field_c3'))
     def one_to_multi(self, field):
         return tuple(field.split('-', 1))
 
-    @odin.map_field('not_auto_c5')
+    @odin.map_field(from_field='not_auto_c5')
     def _not_auto_c5(self, field):
         return field.upper()

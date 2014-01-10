@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import collections
 import six
 from odin import registration
 from odin.exceptions import MappingSetupError, MappingExecutionError
@@ -158,7 +159,7 @@ class Mapping(six.with_metaclass(MappingBase)):
         return self.to_resource(**values)
 
 
-def map_field(from_field=None, to_field=None):
+def map_field(func=None, from_field=None, to_field=None):
     """
     Field decorator for custom mappings
     :param from_field:
@@ -166,8 +167,31 @@ def map_field(from_field=None, to_field=None):
     :return:
     """
     def inner(func):
-        from_ = from_field or func.__name__
-        to_ = to_field or from_
+        from_ = force_tuple(from_field or func.__name__)
+        to_ = force_tuple(to_field or from_)
         func._mapping = (from_, func.__name__, to_)
         return func
-    return inner
+
+    return inner(func) if func else inner
+
+
+def _list_processor_wrapper(func):
+    def inner(value):
+        value = func(value)
+        if isinstance(collections.Iterable):
+            return list(value)
+        else:
+            return value
+
+
+def map_list_field(func=None, from_field=None, to_field=None):
+    """
+    Field decorator for custom mappings that return a single list.
+
+    This mapper also allows for returning an iterator that will be converted
+    into a list during the mapping operation.
+    """
+    def inner(func):
+        return map_field(_list_processor_wrapper(func), from_field, to_field)
+
+    return inner(func) if func else inner

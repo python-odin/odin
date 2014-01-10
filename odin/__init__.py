@@ -3,7 +3,7 @@ __author_email__ = "tim.savage@poweredbypenguins.org"
 __copyright__ = "Copyright (C) 2013 Tim Savage"
 __version__ = "0.4.2"
 
-from odin.fields import *
-from odin.fields.composite import *
-from odin.mapping import *
-from odin.resources import Resource
+from odin.fields import *  # noqa
+from odin.fields.composite import *  # noqa
+from odin.mapping import *  # noqa
+from odin.resources import Resource  # noqa
