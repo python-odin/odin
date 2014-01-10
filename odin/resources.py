@@ -4,10 +4,11 @@ import six
 from odin import exceptions, registration
 from odin.exceptions import ValidationError
 from odin.fields import NOT_PROVIDED
+from odin.utils import cached_property
 
 
 RESOURCE_TYPE_FIELD = '$'
-META_OPTION_NAMES = ('name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group', )
+META_OPTION_NAMES = ('name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group')
 
 
 class ResourceOptions(object):
@@ -54,11 +55,9 @@ class ResourceOptions(object):
         if not self.verbose_name_plural:
             self.verbose_name_plural = self.verbose_name + 's'
 
-    @property
+    @cached_property
     def field_map(self):
-        if not hasattr(self, '_field_map'):
-            self._field_map = {f.attname: f for f in self.fields}
-        return self._field_map
+        return {f.attname: f for f in self.fields}
 
     def add_field(self, field):
         self.fields.append(field)
@@ -73,14 +72,12 @@ class ResourceOptions(object):
         else:
             return self.name
 
-    @property
+    @cached_property
     def parent_resource_names(self):
         """
         List of parent resource names.
         """
-        if not hasattr(self, '_parent_resource_names'):
-            self._parent_resource_names = [p._meta.resource_name for p in self.parents]
-        return self._parent_resource_names
+        return [p._meta.resource_name for p in self.parents]
 
     def __repr__(self):
         return '<Options for %s>' % self.resource_name
