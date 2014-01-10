@@ -11,16 +11,6 @@ __all__ = ('Mapping', 'map_field', 'map_list_field')
 force_tuple = lambda x: x if isinstance(x, (list, tuple)) else (x,)
 
 
-def _list_processor_wrapper(func):
-    def inner(value):
-        value = func(value)
-        if isinstance(collections.Iterable):
-            return list(value)
-        else:
-            return value
-    return inner
-
-
 class MappingBase(type):
     """
     Meta-class for all Mappings
@@ -58,9 +48,8 @@ class MappingBase(type):
         to_fields = to_resource._meta.field_map
 
         def attr_mapping_to_mapping_rule(m, def_type, ref):
-            """
-            Parse mapping attributes and force to from_fields, action, to_fields tuple.
-            """
+            # Parse, validate and normalise defined mapping rules so rules can be executed without having to
+            # perform checks during a mapping operation.
             to_list = False
             try:
                 map_from, action, map_to, to_list = m
@@ -77,20 +66,31 @@ class MappingBase(type):
 
             if isinstance(action, six.string_types):
                 if action not in attrs:
-                    raise MappingSetupError('Action named %s defined in %s `%s` was not defined on mapping object.' % (action, def_type, ref))
+                    raise MappingSetupError('Action named %s defined in %s `%s` was not defined on mapping object.' % (
+                        action, def_type, ref))
                 if not callable(attrs[action]):
-                    raise MappingSetupError('Action named %s defined in %s `%s` is not callable.' % (action, def_type, ref))
+                    raise MappingSetupError('Action named %s defined in %s `%s` is not callable.' % (
+                        action, def_type, ref))
             elif action is not None and not callable(action):
                 raise MappingSetupError('Action on %s `%s` is not callable.' % (def_type, ref))
 
             map_to = force_tuple(map_to)
             if to_list and len(map_to) != 1:
-                raise MappingSetupError('The %s `%m` specifies a to_list mapping, these can only be applied to a single target field.' % (def_type, m))
+                raise MappingSetupError('The %s `%s` specifies a to_list mapping, these can only be applied to a '
+                                        'single target field.' % (def_type, m))
             for f in map_to:
                 if not f in to_fields:
                     raise MappingSetupError('Field `%s` of %s `%s` not found on to resource. ' % (f, def_type, ref))
 
             return map_from, action, map_to, to_list
+
+        def remove_from_unmapped_fields(rule):
+            # Remove any fields that are handled by a mapping rule from unmapped_fields list.
+            map_from, _, map_to, _ = rule
+            if len(map_from) == 1 and map_from[0] in unmapped_fields:
+                unmapped_fields.remove(map_from[0])
+            if len(map_to) == 1 and map_to[0] in unmapped_fields:
+                unmapped_fields.remove(map_to[0])
 
         exclude_fields = attrs.get('exclude_fields') or tuple()
         unmapped_fields = [attname for attname in from_fields if attname not in exclude_fields]
@@ -98,26 +98,22 @@ class MappingBase(type):
 
         # Add basic mappings
         for idx, mapping in enumerate(attrs.pop('mappings', [])):
-            map_from, action, map_to, to_list = attr_mapping_to_mapping_rule(mapping, 'basic mapping', idx)
-            mapping_rules.append((map_from, action, map_to, to_list))
-            if len(map_from) == 1 and map_from[0] in unmapped_fields:
-                unmapped_fields.remove(map_from[0])
-            if len(map_to) == 1 and map_to[0] in unmapped_fields:
-                unmapped_fields.remove(map_to[0])
+            mapping_rule = attr_mapping_to_mapping_rule(mapping, 'basic mapping', idx)
+            mapping_rules.append(mapping_rule)
+            remove_from_unmapped_fields(mapping_rule)
 
         # Add custom mappings
         for attr in attrs.values():
+            # Methods with a _mapping attribute have been decorated by either `map_field` or `map_list_field`
+            # decorators.
             if hasattr(attr, '_mapping'):
-                map_from, action, map_to, to_list = attr_mapping_to_mapping_rule(attr._mapping, 'custom mapping', attr)
-                mapping_rules.append((map_from, action, map_to, to_list))
-                if len(map_from) == 1 and map_from[0] in unmapped_fields:
-                    unmapped_fields.remove(map_from[0])
-                if len(map_to) == 1 and map_to[0] in unmapped_fields:
-                    unmapped_fields.remove(map_to[0])
-
+                mapping_rule = attr_mapping_to_mapping_rule(getattr(attr, '_mapping'), 'custom mapping', attr)
+                mapping_rules.append(mapping_rule)
+                remove_from_unmapped_fields(mapping_rule)
+                # Remove mapping
                 delattr(attr, '_mapping')
 
-        # Add auto mapped fields
+        # Add auto mapped fields that are yet to be mapped.
         for field in unmapped_fields:
             if field in to_fields:
                 mapping_rules.append(((field,), None, (field,), False))
