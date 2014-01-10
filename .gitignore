@@ -9,6 +9,7 @@
 dist
 *.egg-info
 _build
+.tox
 
 # IDE cruft
 .idea

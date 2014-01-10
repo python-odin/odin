@@ -1,3 +1,5 @@
 -r requirements.txt
 -r requirements-optional.txt
+tox
 nose
+coverage
