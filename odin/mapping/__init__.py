@@ -5,10 +5,20 @@ from odin import registration
 from odin.exceptions import MappingSetupError, MappingExecutionError
 from odin.resources import Resource
 
-__all__ = ('Mapping', 'map_field')
+__all__ = ('Mapping', 'map_field', 'map_list_field')
 
 
-force_tuple = lambda x: x if isinstance(x, tuple) else (x,)
+force_tuple = lambda x: x if isinstance(x, (list, tuple)) else (x,)
+
+
+def _list_processor_wrapper(func):
+    def inner(value):
+        value = func(value)
+        if isinstance(collections.Iterable):
+            return list(value)
+        else:
+            return value
+    return inner
 
 
 class MappingBase(type):
@@ -51,10 +61,14 @@ class MappingBase(type):
             """
             Parse mapping attributes and force to from_fields, action, to_fields tuple.
             """
+            to_list = False
             try:
-                map_from, action, map_to = m
+                map_from, action, map_to, to_list = m
             except ValueError:
-                raise MappingSetupError('Bad mapping definition `%s` in %s `%s`.' % (m, def_type, ref))
+                try:
+                    map_from, action, map_to = m
+                except ValueError:
+                    raise MappingSetupError('Bad mapping definition `%s` in %s `%s`.' % (m, def_type, ref))
 
             map_from = force_tuple(map_from)
             for f in map_from:
@@ -70,11 +84,13 @@ class MappingBase(type):
                 raise MappingSetupError('Action on %s `%s` is not callable.' % (def_type, ref))
 
             map_to = force_tuple(map_to)
+            if to_list and len(map_to) != 1:
+                raise MappingSetupError('The %s `%m` specifies a to_list mapping, these can only be applied to a single target field.' % (def_type, m))
             for f in map_to:
                 if not f in to_fields:
                     raise MappingSetupError('Field `%s` of %s `%s` not found on to resource. ' % (f, def_type, ref))
 
-            return map_from, action, map_to
+            return map_from, action, map_to, to_list
 
         exclude_fields = attrs.get('exclude_fields') or tuple()
         unmapped_fields = [attname for attname in from_fields if attname not in exclude_fields]
@@ -82,8 +98,8 @@ class MappingBase(type):
 
         # Add basic mappings
         for idx, mapping in enumerate(attrs.pop('mappings', [])):
-            map_from, action, map_to = attr_mapping_to_mapping_rule(mapping, 'basic mapping', idx)
-            mapping_rules.append((map_from, action, map_to))
+            map_from, action, map_to, to_list = attr_mapping_to_mapping_rule(mapping, 'basic mapping', idx)
+            mapping_rules.append((map_from, action, map_to, to_list))
             if len(map_from) == 1 and map_from[0] in unmapped_fields:
                 unmapped_fields.remove(map_from[0])
             if len(map_to) == 1 and map_to[0] in unmapped_fields:
@@ -92,8 +108,8 @@ class MappingBase(type):
         # Add custom mappings
         for attr in attrs.values():
             if hasattr(attr, '_mapping'):
-                map_from, action, map_to = attr_mapping_to_mapping_rule(attr._mapping, 'custom mapping', attr)
-                mapping_rules.append((map_from, action, map_to))
+                map_from, action, map_to, to_list = attr_mapping_to_mapping_rule(attr._mapping, 'custom mapping', attr)
+                mapping_rules.append((map_from, action, map_to, to_list))
                 if len(map_from) == 1 and map_from[0] in unmapped_fields:
                     unmapped_fields.remove(map_from[0])
                 if len(map_to) == 1 and map_to[0] in unmapped_fields:
@@ -104,7 +120,7 @@ class MappingBase(type):
         # Add auto mapped fields
         for field in unmapped_fields:
             if field in to_fields:
-                mapping_rules.append(((field,), None, (field,)))
+                mapping_rules.append(((field,), None, (field,), False))
 
         # Update mappings
         attrs['_mapping_rules'] = mapping_rules
@@ -125,7 +141,7 @@ class Mapping(six.with_metaclass(MappingBase)):
         self.source = source
 
     def _apply_rule(self, mapping_rule):
-        from_fields, action, to_fields = mapping_rule
+        from_fields, action, to_fields, to_list = mapping_rule
 
         from_values = tuple(getattr(self.source, f) for f in from_fields)
 
@@ -138,11 +154,15 @@ class Mapping(six.with_metaclass(MappingBase)):
                 to_values = action(*from_values)
             except TypeError as ex:
                 raise MappingExecutionError('%s applying rule %s' % (ex, mapping_rule))
-            else:
-                to_values = force_tuple(to_values)
+
+        if to_list:
+            if isinstance(to_values, collections.Iterable):
+                to_values = (list(to_values),)
+        else:
+            to_values = force_tuple(to_values)
 
         if len(to_fields) != len(to_values):
-            raise MappingExecutionError('Rule expects %s arguments (%s received) applying rule %s' % (
+            raise MappingExecutionError('Rule expects %s fields (%s received) applying rule %s' % (
                 len(to_fields), len(to_values), mapping_rule))
 
         return {f: to_values[i] for i, f in enumerate(to_fields)}
@@ -159,7 +179,7 @@ class Mapping(six.with_metaclass(MappingBase)):
         return self.to_resource(**values)
 
 
-def map_field(func=None, from_field=None, to_field=None):
+def map_field(func=None, from_field=None, to_field=None, to_list=False):
     """
     Field decorator for custom mappings
     :param from_field:
@@ -167,21 +187,12 @@ def map_field(func=None, from_field=None, to_field=None):
     :return:
     """
     def inner(func):
-        from_ = force_tuple(from_field or func.__name__)
-        to_ = force_tuple(to_field or from_)
-        func._mapping = (from_, func.__name__, to_)
+        from_ = from_field or func.__name__
+        to_ = to_field or from_
+        func._mapping = (from_, func.__name__, to_, to_list)
         return func
 
     return inner(func) if func else inner
-
-
-def _list_processor_wrapper(func):
-    def inner(value):
-        value = func(value)
-        if isinstance(collections.Iterable):
-            return list(value)
-        else:
-            return value
 
 
 def map_list_field(func=None, from_field=None, to_field=None):
@@ -191,7 +202,4 @@ def map_list_field(func=None, from_field=None, to_field=None):
     This mapper also allows for returning an iterator that will be converted
     into a list during the mapping operation.
     """
-    def inner(func):
-        return map_field(_list_processor_wrapper(func), from_field, to_field)
-
-    return inner(func) if func else inner
+    return map_field(func, from_field, to_field, True)

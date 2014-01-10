@@ -22,14 +22,14 @@ class MappingBaseTestCase(unittest.TestCase):
 
     def test_full_mapping(self):
         self.assertMappingEquivalent([
-            (('from_field1',), None, ('to_field1',)),
-            (('from_field2',), int, ('to_field2',)),
-            (('from_field3', 'from_field4'), sum_fields, ('to_field3',)),
-            (('from_field_c1', 'from_field_c2', 'from_field_c3'), 'multi_to_one', ('to_field_c1',)),
-            (('from_field_c4',), 'one_to_multi', ('to_field_c2', 'to_field_c3')),
-            (('not_auto_c5',), '_not_auto_c5', ('not_auto_c5',)),
-            (('count',), None, ('count',)),
-            (('title',), None, ('title',)),
+            (('from_field1',), None, ('to_field1',), False),
+            (('from_field2',), int, ('to_field2',), False),
+            (('from_field3', 'from_field4'), sum_fields, ('to_field3',), False),
+            (('from_field_c1', 'from_field_c2', 'from_field_c3'), 'multi_to_one', ('to_field_c1',), False),
+            (('from_field_c4',), 'one_to_multi', ('to_field_c2', 'to_field_c3'), False),
+            (('not_auto_c5',), '_not_auto_c5', ('not_auto_c5',), False),
+            (('count',), None, ('count',), False),
+            (('title',), None, ('title',), False),
         ], FromToMapping._mapping_rules)
 
     def test_map(self):
@@ -185,10 +185,10 @@ class MappingTestCase(unittest.TestCase):
     def test_invalid_from_value_count(self):
         with self.assertRaises(MappingExecutionError):
             target = FromToMapping(FromResource())
-            target._apply_rule((('from_field_c1', 'from_field_c2'), 'one_to_multi', ('title')))
+            target._apply_rule((('from_field_c1', 'from_field_c2'), 'one_to_multi', ('title'), False))
 
     def test_invalid_to_value_count(self):
         with self.assertRaises(MappingExecutionError):
             target = FromToMapping(FromResource(title='Test'))
-            target._apply_rule((('title',), 'multi_to_one', ('from_field_c1', 'from_field_c2')))
+            target._apply_rule((('title',), 'multi_to_one', ('from_field_c1', 'from_field_c2'), False))
 
