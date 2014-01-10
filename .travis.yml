@@ -9,7 +9,7 @@ python:
 branches:
   only:
     - master
-    #- development
+    - development
 
 install:
   - pip install -r requirements.txt --use-mirrors
