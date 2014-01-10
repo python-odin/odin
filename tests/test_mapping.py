@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import unittest
 import odin
 from odin.exceptions import MappingSetupError, MappingExecutionError
@@ -10,6 +11,7 @@ class FakeFromResource(odin.Resource):
 
 class FakeToResource(odin.Resource):
     title = odin.StringField()
+    name = odin.StringField()
 
 
 class MappingBaseTestCase(unittest.TestCase):
@@ -25,9 +27,11 @@ class MappingBaseTestCase(unittest.TestCase):
             (('from_field1',), None, ('to_field1',), False),
             (('from_field2',), int, ('to_field2',), False),
             (('from_field3', 'from_field4'), sum_fields, ('to_field3',), False),
+            (('from_field1',), None, ('same_but_different',), False),
             (('from_field_c1', 'from_field_c2', 'from_field_c3'), 'multi_to_one', ('to_field_c1',), False),
             (('from_field_c4',), 'one_to_multi', ('to_field_c2', 'to_field_c3'), False),
             (('not_auto_c5',), '_not_auto_c5', ('not_auto_c5',), False),
+            (('comma_separated_string',), 'comma_separated_string', ('array_string',), True),
             (('count',), None, ('count',), False),
             (('title',), None, ('title',), False),
         ], FromToMapping._mapping_rules)
@@ -44,12 +48,14 @@ class MappingBaseTestCase(unittest.TestCase):
             from_field2="62",
             from_field3=44,
             from_field4=25,
+            same_but_different="def",
             # Custom mappings
             from_field_c1="foo",
             from_field_c2="bar",
             from_field_c3="eek",
             from_field_c4="first-second-third",
             not_auto_c5="do something",
+            comma_separated_string="foo,bar,eek",
         )
 
         to_resource = from_resource.convert_to(ToResource)
@@ -60,10 +66,12 @@ class MappingBaseTestCase(unittest.TestCase):
         self.assertEqual('abc', to_resource.to_field1)
         self.assertEqual(62, to_resource.to_field2)
         self.assertEqual(69, to_resource.to_field3)
+        self.assertEqual('abc', to_resource.same_but_different)
         self.assertEqual('foo-bar-eek', to_resource.to_field_c1)
         self.assertEqual('first', to_resource.to_field_c2)
         self.assertEqual('second-third', to_resource.to_field_c3)
         self.assertEqual("DO SOMETHING", to_resource.not_auto_c5)
+        self.assertEqual(['foo', 'bar', 'eek'], to_resource.array_string)
 
     def test_missing_from_resource(self):
         with self.assertRaises(MappingSetupError):
@@ -175,6 +183,16 @@ class MappingBaseTestCase(unittest.TestCase):
 
                 mappings = (
                     'i_forgot', None, 'tuples'
+                )
+
+    def test_invalid_list_to_multiple_mapping(self):
+        with self.assertRaises(MappingSetupError):
+            class _(odin.Mapping):
+                from_resource = FakeFromResource
+                to_resource = FakeToResource
+
+                mappings = (
+                    ('title', None, ('title', 'name'), True),
                 )
 
 
