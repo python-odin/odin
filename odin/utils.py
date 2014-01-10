@@ -15,9 +15,7 @@ def camel_to_lower_separated(s, sep):
     Note any separator at the start or end is stripped.
 
     """
-    def repl(match_obj):
-        return sep + match_obj.group(0).lower()
-    return _CAMEL_CASE_RE.sub(repl, s).strip(sep)
+    return _CAMEL_CASE_RE.sub(lambda m: sep + m.group(0).lower(), s).strip(sep)
 
 
 def camel_to_lower_underscore(s):
@@ -44,9 +42,10 @@ def lower_underscore_to_camel(value):
 
       background_color -> backgroundColor
     """
-    def repl(match_obj):
-        return match_obj.group(1).upper()
-    return _LOWER_UNDERSCORE_CASE_RE.sub(repl, value.lower())
+    return _LOWER_UNDERSCORE_CASE_RE.sub(
+        lambda m: m.group(1).upper(),
+        value.lower()
+    )
 
 
 def lower_dash_to_camel(value):
@@ -55,9 +54,10 @@ def lower_dash_to_camel(value):
 
       background-color -> backgroundColor
     """
-    def repl(match_obj):
-        return match_obj.group(1).upper()
-    return _LOWER_DASH_CASE_RE.sub(repl, value.lower())
+    return _LOWER_DASH_CASE_RE.sub(
+        lambda m: m.group(1).upper(),
+        value.lower()
+    )
 
 
 class cached_property(object):
