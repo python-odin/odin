@@ -30,7 +30,7 @@ class MappingBaseTestCase(unittest.TestCase):
             (('from_field1',), None, ('same_but_different',), False),
             (('from_field_c1', 'from_field_c2', 'from_field_c3'), 'multi_to_one', ('to_field_c1',), False),
             (('from_field_c4',), 'one_to_multi', ('to_field_c2', 'to_field_c3'), False),
-            (('not_auto_c5',), '_not_auto_c5', ('not_auto_c5',), False),
+            (('not_auto_c5',), 'not_auto_c5', ('not_auto_c5',), False),
             (('comma_separated_string',), 'comma_separated_string', ('array_string',), True),
             (('count',), None, ('count',), False),
             (('title',), None, ('title',), False),

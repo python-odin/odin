@@ -183,9 +183,12 @@ def map_field(func=None, from_field=None, to_field=None, to_list=False):
     :return:
     """
     def inner(func):
-        from_ = from_field or func.__name__
-        to_ = to_field or from_
-        func._mapping = (from_, func.__name__, to_, to_list)
+        func._mapping = (
+            from_field or func.__name__,
+            func.__name__,
+            to_field or func.__name__,
+            to_list
+        )
         return func
 
     return inner(func) if func else inner

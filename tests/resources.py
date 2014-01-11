@@ -134,8 +134,8 @@ class FromToMapping(odin.Mapping):
     def one_to_multi(self, value):
         return value.split('-', 1)
 
-    @odin.map_field(from_field='not_auto_c5')
-    def _not_auto_c5(self, value):
+    @odin.map_field
+    def not_auto_c5(self, value):
         return value.upper()
 
     @odin.map_list_field(to_field='array_string')
