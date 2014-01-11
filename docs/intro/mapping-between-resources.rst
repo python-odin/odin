@@ -6,7 +6,7 @@ Mapping between resources
 Defining a mapping
 ==================
 
-::
+Given the following resources::
 
     import odin
 
@@ -20,35 +20,52 @@ Defining a mapping
         event_hour = odin.IntegerField()
         event_minute = odin.IntegerField()
 
-    class CalendarEventToEventFrom(odin.Mapping):
-        from_resource = CalendarEventResource
-        to_resource = CalendarEventFromResource
 
+A mapping can be defined to map from a basic ``Event`` to the ``EventFrom``::
+
+    class CalendarEventToEventFrom(odin.Mapping):
+        from_resource = CalendarEvent
+        to_resource = CalendarEventFrom
+
+        # Simple mappings (From Field, Transformation, To Field)
         mappings = (
-            # (From Field, Transformation, To Field)
             ('start_date', None, 'event_date'),
         )
 
-        @odin.map_field
-        def name(self, v):
-            return v.upper()
-
+        # Mapping to multiple fields
         @odin.map_field(to_field=('event_hour', 'event_minute'))
         def start_date(self, v):
+            # Return a tuple that is mapped to fields defined as to_fields
             return v.hour, v.minute
+
+
+When a field name is matched on both resources it will be automatically mapped, for other fields mappings need to be
+specified along with a transformation method or alternatively a method with a :py:meth:`map_field` decorator can be used
+to handle more complex mappings.
+
+.. hint::
+    Both simple mappings and :py:meth:`map_field` can accept multiple fields as input and output, although care has to
+    be taken that the transformation method accepts and returns the same number of parameters.
 
 
 Converting between resources
 ============================
 
-::
+Once a mapping has been defined the :py:meth:`Resource.map_field` is then used to convert between resources::
 
     # Create and instance of a CalendarEvent
-    >>> event = CalendarEventResource(
+    >>> event = CalendarEvent(
         name='Launch Party',
-        start_date=datetime.datetime(2014, 01, 11, 22, 30)
-        )
+        start_date=datetime.datetime(2014, 01, 11, 22, 30))
 
     # Convert to CalendarEventFrom
     >>> event_from = event.convert_to(CalendarEventFrom)
+    >>> event_from
+    <CalendarEventFrom: example.resources.CalendarEventFrom resource>
+
+    >>> event.to_dict()
+    {'event_date': datetime.datetime(2014, 01, 11, 22, 30),
+     'event_hour': 22,
+     'event_minute': 30,
+     'name': 'Launch Party'}
 
