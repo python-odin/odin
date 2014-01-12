@@ -54,6 +54,32 @@ class LocalTimezone(datetime.tzinfo):
     def __repr__(self):
         return "<timezone: %s>" % self
 
+
+class FixedTimezone(datetime.tzinfo):
+    """
+    A fixed timezone for when a timezone is specified by a numerical offset and no dst information is available.
+    """
+    def __init__(self, offset_hours, offset_minutes, name):
+        super(FixedTimezone, self).__init__()
+        self.offset = datetime.timedelta(hours=offset_hours, minutes=offset_minutes)
+        self.name = name
+
+    def utcoffset(self, dt):
+        return self.offset
+
+    def dst(self, dt):
+        return ZERO
+
+    def tzname(self, dt):
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return "<timezone %r %r>" % (self.name, self.offset)
+
+
 utc = UTC()
 local = LocalTimezone()
 
@@ -73,42 +99,101 @@ def get_tz_aware_dt(dt, assumed_tz=local):
         return dt.replace(tzinfo=assumed_tz)
 
 
-ECMA_ISO_DATE_STRING_RE = re.compile(r"^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z$")
+ISO8601_DATE_STRING_RE = re.compile(
+    r"^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})$")
+ISO8601_TIME_STRING_RE = re.compile(
+    r"^(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})(\.(?P<microseconds>\d+))?"
+    r"(?P<timezone>Z|((?P<tz_sign>[-+])(?P<tz_hour>\d{2})(:(?P<tz_minute>\d{2}))?))?$")
+ISO8601_DATETIME_STRING_RE = re.compile(
+    r"^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})T"
+    r"(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})(\.(?P<microseconds>\d+))?"
+    r"(?P<timezone>Z|((?P<tz_sign>[-+])(?P<tz_hour>\d{2})(:(?P<tz_minute>\d{2}))?))?$")
 
 
-def parse_ecma_date_string(date_string, to_local_time=True):
+def parse_iso_date_string(date_string):
     """
-    Parse a date in the string format defined in ECMA-262.
-
-    See ECMA international standard: ECMA-262 section 15.9.1.15
-
-    ``to_local_time`` option will return the datetime in the current local timezone.
+    Parse a date in the string format defined in ISO 8601.
     """
     if not isinstance(date_string, six.string_types):
         raise ValueError("Expected string")
 
-    match = ECMA_ISO_DATE_STRING_RE.match(date_string)
-    if not match:
-        raise ValueError("Expected ECMA 262 formatted date string.")
+    matches = ISO8601_DATE_STRING_RE.match(date_string)
+    if not matches:
+        raise ValueError("Expected ISO 8601 formatted date string.")
 
-    dtt = (
-        int(match.group(1)),  # Year
-        int(match.group(2)),  # Month
-        int(match.group(3)),  # Day
-        int(match.group(4)),  # Hour
-        int(match.group(5)),  # Minute
-        int(match.group(6)),  # Second
-        int(match.group(7))*1000,  # Microsecond
-        utc  # Timezone
+    groups = matches.groupdict()
+    return datetime.date(
+        int(groups['year']),
+        int(groups['month']),
+        int(groups['day']),
     )
-    dt = datetime.datetime(*dtt)
-    if to_local_time:
-        return dt.astimezone(local)
-    else:
-        return dt
 
 
-def to_ecma_date_string(dt, assume_local_time=True):
+def _parse_timezone(groups, default_timezone=utc):
+    if groups['timezone'] is None:
+        return default_timezone
+
+    if groups['timezone'] == 'Z':
+        return utc
+
+    sign = groups['tz_sign']
+    hours = int(groups['tz_hour'])
+    minutes = int(groups['tz_minute'] or 0)
+    name = "%s%02d:%02d" % (sign, hours, minutes)
+
+    if sign == '-':
+        hours = -hours
+        minutes = -minutes
+
+    return FixedTimezone(hours, minutes, name)
+
+
+def parse_iso_time_string(time_string, default_timezone=utc):
+    """
+    Parse a time in the string format defined in ISO 8601.
+    """
+    if not isinstance(time_string, six.string_types):
+        raise ValueError("Expected string")
+
+    matches = ISO8601_TIME_STRING_RE.match(time_string)
+    if not matches:
+        raise ValueError("Expected ISO 8601 formatted time string.")
+
+    groups = matches.groupdict()
+    tz = _parse_timezone(groups, default_timezone)
+    return datetime.time(
+        int(groups['hour']),
+        int(groups['minute']),
+        int(groups['second']),
+        int(groups['microseconds'] or 0),
+        tz)
+
+
+def parse_iso_datetime_string(datetime_string, default_timezone=utc):
+    """
+    Parse a datetime in the string format defined in ISO 8601.
+    """
+    if not isinstance(datetime_string, six.string_types):
+        raise ValueError("Expected string")
+
+    matches = ISO8601_DATETIME_STRING_RE.match(datetime_string)
+    if not matches:
+        raise ValueError("Expected ISO 8601 formatted datetime string.")
+
+    groups = matches.groupdict()
+    tz = _parse_timezone(groups, default_timezone)
+    return datetime.datetime(
+        int(groups['year']),
+        int(groups['month']),
+        int(groups['day']),
+        int(groups['hour']),
+        int(groups['minute']),
+        int(groups['second']),
+        int(groups['microseconds'] or 0),
+        tz)
+
+
+def to_ecma_datetime_string(dt, assume_local_time=True):
     """
     Convert a python datetime into the string format defined in ECMA-262.
 
