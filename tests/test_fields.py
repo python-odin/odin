@@ -319,6 +319,44 @@ class FieldsTests(unittest.TestCase):
         self.assertEqual(100.4, f.max_value)
         self.assertValidatorIn(MaxValueValidator, f.validators)
 
+    # DateField ###############################################################
+
+    def test_datefield_1(self):
+        f = DateField()
+        self.assertRaises(ValidationError, f.clean, None)
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertEqual(datetime.date(2013, 11, 24), f.clean('2013-11-24'))
+        self.assertEqual(datetime.date(2013, 11, 24), f.clean(datetime.date(2013, 11, 24)))
+        self.assertEqual(datetime.date(2013, 11, 24), f.clean(datetime.datetime(2013, 11, 24, 1, 14)))
+
+    def test_datefield_2(self):
+        f = DateField(null=True)
+        self.assertEqual(None, f.clean(None))
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertEqual(datetime.date(2013, 11, 24), f.clean('2013-11-24'))
+        self.assertEqual(datetime.date(2013, 11, 24), f.clean(datetime.date(2013, 11, 24)))
+        self.assertEqual(datetime.date(2013, 11, 24), f.clean(datetime.datetime(2013, 11, 24, 1, 14)))
+
+    # TimeField ###############################################################
+
+    def test_timefield_1(self):
+        f = TimeField(assume_local=False)
+        self.assertRaises(ValidationError, f.clean, None)
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertEqual(datetime.time(18, 43, tzinfo=utc), f.clean('18:43:00.000Z'))
+        self.assertEqual(datetime.time(18, 43, tzinfo=utc), f.clean(datetime.time(18, 43, tzinfo=utc)))
+
+    def test_timefield_2(self):
+        f = TimeField(assume_local=False, null=True)
+        self.assertEqual(None, f.clean(None))
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertEqual(datetime.time(18, 43, tzinfo=utc), f.clean('18:43:00.000Z'))
+        self.assertEqual(datetime.time(18, 43, tzinfo=utc), f.clean(datetime.time(18, 43, tzinfo=utc)))
+
     # DateTimeField ###########################################################
 
     def test_datetimefield_1(self):

@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-
-
-
-"""
 import copy
 import datetime
 import six
@@ -11,7 +6,7 @@ from odin import exceptions, datetimeutil
 from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url
 
 __all__ = (
-    'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateTimeField',
+    'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField', 'TimeField', 'DateTimeField',
     'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField',
 )
 
@@ -182,6 +177,8 @@ class BooleanField(Field):
     default_error_messages = {
         'invalid': "'%s' value must be either True or False."
     }
+    true_strings = ('t', 'true', 'yes', 'on', '1')
+    false_strings = ('f', 'false', 'no', 'off', '0')
 
     def to_python(self, value):
         if value is None:
@@ -192,9 +189,9 @@ class BooleanField(Field):
             return bool(value)
         if isinstance(value, six.string_types):
             lvalue = value.lower()
-            if lvalue in ('t', 'true', 'yes', 'on', '1'):
+            if lvalue in self.true_strings:
                 return True
-            if lvalue in ('f', 'false', 'no', 'off', '0'):
+            if lvalue in self.false_strings:
                 return False
         msg = self.error_messages['invalid'] % str(value)
         raise exceptions.ValidationError(msg)
@@ -260,9 +257,64 @@ class FloatField(ScalarField):
             raise exceptions.ValidationError(msg)
 
 
-class DateTimeField(Field):
+class DateField(Field):
     """
     Field that handles date values encoded as a string.
+
+    The format of the string is that defined by ISO-8601.
+
+    """
+    default_error_messages = {
+        'invalid': "Not a valid date string.",
+    }
+
+    def to_python(self, value):
+        if value in EMPTY_VALUES:
+            return
+        if isinstance(value, datetime.datetime):
+            return value.date()
+        if isinstance(value, datetime.date):
+            return value
+        try:
+            return datetimeutil.parse_iso_date_string(value)
+        except ValueError:
+            pass
+        msg = self.error_messages['invalid']
+        raise exceptions.ValidationError(msg)
+
+
+class TimeField(Field):
+    """
+    Field that handles time values encoded as a string.
+
+    The format of the string is that defined by ISO-8601.
+
+    """
+    default_error_messages = {
+        'invalid': "Not a valid time string.",
+    }
+
+    def __init__(self, assume_local=False, **options):
+        super(TimeField, self).__init__(**options)
+        self.assume_local = assume_local
+
+    def to_python(self, value):
+        if value in EMPTY_VALUES:
+            return
+        if isinstance(value, datetime.time):
+            return value
+        try:
+            default_timezone = datetimeutil.local if self.assume_local else datetimeutil.utc
+            return datetimeutil.parse_iso_time_string(value, default_timezone)
+        except ValueError:
+            pass
+        msg = self.error_messages['invalid']
+        raise exceptions.ValidationError(msg)
+
+
+class DateTimeField(Field):
+    """
+    Field that handles datetime values encoded as a string.
 
     The format of the string is that defined by ECMA international standard ECMA-262 section 15.9.1.15. Note that the
     standard encodes all dates as UTC.
@@ -271,7 +323,7 @@ class DateTimeField(Field):
     dates are decoded. If ``assume_local`` is True naive dates are assumed to represent the current system timezone.
     """
     default_error_messages = {
-        'invalid': "Not a valid date string.",
+        'invalid': "Not a valid datetime string.",
     }
 
     def __init__(self, assume_local=False, **options):
@@ -284,7 +336,8 @@ class DateTimeField(Field):
         if isinstance(value, datetime.datetime):
             return value
         try:
-            return datetimeutil.parse_ecma_date_string(value, self.assume_local)
+            default_timezone = datetimeutil.local if self.assume_local else datetimeutil.utc
+            return datetimeutil.parse_iso_datetime_string(value, default_timezone)
         except ValueError:
             pass
         msg = self.error_messages['invalid']
