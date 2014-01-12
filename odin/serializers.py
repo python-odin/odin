@@ -14,6 +14,6 @@ class DatetimeEcmaFormat(object):
 
     def __call__(self, value):
         assert isinstance(value, self.input_type)
-        return datetimeutil.to_ecma_date_string(value, self.assume_local)
+        return datetimeutil.to_ecma_datetime_string(value, self.assume_local)
 
 datetime_ecma_format = DatetimeEcmaFormat()
