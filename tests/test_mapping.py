@@ -1,17 +1,28 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import collections
 import unittest
 import odin
 from odin.exceptions import MappingSetupError, MappingExecutionError
 from resources import *
 
 
-class FakeFromResource(odin.Resource):
+class SimpleFromResource(odin.Resource):
     title = odin.StringField()
+
+
+class SimpleToResource(odin.Resource):
+    title = odin.StringField()
+
 
 class FakeToResource(odin.Resource):
     title = odin.StringField()
     name = odin.StringField()
+
+
+class SimpleFromTo(odin.Mapping):
+    from_resource = SimpleFromResource
+    to_resource = SimpleToResource
 
 
 class MappingBaseTestCase(unittest.TestCase):
@@ -81,12 +92,12 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_missing_to_resource(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = FakeFromResource
+                from_resource = SimpleFromResource
 
     def test_unknown_from_field_mappings(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = FakeFromResource
+                from_resource = SimpleFromResource
                 to_resource = FakeToResource
 
                 mappings = (
@@ -96,7 +107,7 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_unknown_from_field_mappings_multiple(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = FakeFromResource
+                from_resource = SimpleFromResource
                 to_resource = FakeToResource
 
                 mappings = (
@@ -106,7 +117,7 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_unknown_from_field_custom(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = FakeFromResource
+                from_resource = SimpleFromResource
                 to_resource = FakeToResource
 
                 @odin.map_field(from_field='unknown_field', to_field='title')
@@ -116,7 +127,7 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_bad_action_not_callable(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = FakeFromResource
+                from_resource = SimpleFromResource
                 to_resource = FakeToResource
 
                 mappings = (
@@ -126,7 +137,7 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_bad_action_not_defined(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = FakeFromResource
+                from_resource = SimpleFromResource
                 to_resource = FakeToResource
 
                 mappings = (
@@ -136,7 +147,7 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_bad_action_defined_not_callable(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = FakeFromResource
+                from_resource = SimpleFromResource
                 to_resource = FakeToResource
 
                 do_transform = 123
@@ -148,7 +159,7 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_unknown_to_field_mappings(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = FakeFromResource
+                from_resource = SimpleFromResource
                 to_resource = FakeToResource
 
                 mappings = (
@@ -158,7 +169,7 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_unknown_to_field_mappings_multiple(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = FakeFromResource
+                from_resource = SimpleFromResource
                 to_resource = FakeToResource
 
                 mappings = (
@@ -168,7 +179,7 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_unknown_to_field_custom(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = FakeFromResource
+                from_resource = SimpleFromResource
                 to_resource = FakeToResource
 
                 @odin.map_field(from_field='title', to_field='unknown_field')
@@ -178,7 +189,7 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_bad_mapping(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = FakeFromResource
+                from_resource = SimpleFromResource
                 to_resource = FakeToResource
 
                 mappings = (
@@ -188,7 +199,7 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_invalid_list_to_multiple_mapping(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = FakeFromResource
+                from_resource = SimpleFromResource
                 to_resource = FakeToResource
 
                 mappings = (
@@ -198,7 +209,7 @@ class MappingBaseTestCase(unittest.TestCase):
 
 class MappingTestCase(unittest.TestCase):
     def test_not_valid_from_resource(self):
-        self.assertRaises(TypeError, FromToMapping, FakeFromResource())
+        self.assertRaises(TypeError, FromToMapping, SimpleFromResource())
 
     def test_invalid_from_value_count(self):
         with self.assertRaises(MappingExecutionError):
@@ -210,3 +221,20 @@ class MappingTestCase(unittest.TestCase):
             target = FromToMapping(FromResource(title='Test'))
             target._apply_rule((('title',), 'multi_to_one', ('from_field_c1', 'from_field_c2'), False))
 
+    def test_apply_single_resource(self):
+        f = SimpleFromResource(title="ABC")
+        t = SimpleFromTo.apply(f)
+
+        self.assertIsInstance(t, SimpleToResource)
+        self.assertEqual("ABC", t.title)
+
+    def test_apply_multiple_resources(self):
+        from_resources = [
+            SimpleFromResource(title="Foo"),
+            SimpleFromResource(title="Bar"),
+            SimpleFromResource(title="Eek"),
+        ]
+
+        to_resource_iter = SimpleFromTo.apply(from_resources)
+        self.assertIsInstance(to_resource_iter, collections.Iterator)
+        self.assertListEqual(['Foo', 'Bar', 'Eek'], [t.title for t in to_resource_iter])
