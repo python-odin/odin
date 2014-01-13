@@ -36,7 +36,7 @@ The above ``Book`` resource would create a JSON object like this:
 Some technical notes:
  * The ``$`` field is a special field that defines the type of ``Resource``.
  * The name of the resource, ``resources.Book``, is automatically derived from some resource metadata but can be 
- overridden.
+   overridden.
 
 Fields
 ======

@@ -1,6 +1,6 @@
-################
-Resource Mapping
-################
+#######
+Mapping
+#######
 
 Resource Mapping API reference. For introductory material, see `Mapping between resources`.
 
