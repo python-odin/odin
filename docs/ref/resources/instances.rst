@@ -5,8 +5,8 @@ Resources Instances
 A resource is the definition of the data structure that data is mapped into.
 
 The basics:
- * Each model is a Python class that subclasses odin.Resource.
- * Each attribute of the model represents a object field.
+ * Each resource is a Python class that subclasses :py:class:`odin.Resource`.
+ * Each field attribute of the resource is defined by a :py:class:`odin.Field` subclass.
 
 Quick example
 =============
