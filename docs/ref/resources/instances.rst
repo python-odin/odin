@@ -21,8 +21,7 @@ This example model defines a ``Book``, which has a ``title``, ``genre`` and ``nu
         genre = odin.StringField()
         num_pages = odin.IntegerField()
 
-``title``, ``genre`` and ``num_pages`` are fields. Each field is specified as a class attribute, and each attribute
-maps to an attribute on a JSON object.
+``title``, ``genre`` and ``num_pages`` are fields. Each field is specified as a class attribute.
 
 The above ``Book`` resource would create a JSON object like this:
 ::
@@ -36,7 +35,8 @@ The above ``Book`` resource would create a JSON object like this:
 
 Some technical notes:
  * The ``$`` field is a special field that defines the type of ``Resource``.
- * The name of the resource, ``resources.Book``, is automatically derived from some resource metadata but can be overridden.
+ * The name of the resource, ``resources.Book``, is automatically derived from some resource metadata but can be 
+ overridden.
 
 Fields
 ======
@@ -66,7 +66,6 @@ determine a few things:
 * The data type (e.g. ``Integer``, ``String``).
 * Validation requirements.
 
-ODIN ships with all fields supported by JSON as well as some additional fields to support other Python datatypes.
 
 Field options
 -------------
@@ -75,14 +74,6 @@ Each field takes a certain set of field-specific arguments (documented in the re
 
 There’s also a set of common arguments available to all field types. All are optional. They’re fully explained in the
 reference, but here’s a quick summary of the most often-used ones:
-
-``required``
-    If ``True``, This field must be defined on an object in the JSON document. Default is ``True``.
-
-``blank``
-    If ``True``, the field is allowed to be blank. Default is ``False``.
-
-    Note that this is different than ``null``.
 
 ``null``
     If ``True``, the field is allowed to be null. Default is ``False``.
@@ -103,16 +94,16 @@ reference, but here’s a quick summary of the most often-used ones:
             ('others', 'Others'),
         )
 
-    The first element in each tuple is the value that will be stored in the JSON document, the second element is a
-    display value.
+    The first element in each tuple is the value that will be stored field or serialised document, the second element is 
+    a display value.
 
 Again, these are just short descriptions of the most common field options.
 
 Verbose field names
 -------------------
 
-Each field type, except for ``ObjectAs`` and ``ArrayOf``, takes an optional first positional argument – a verbose name.
-If the verbose name isn’t given, JSRN will automatically create it using the field’s attribute name, converting
+Each field type, except for ``DictAs`` and ``ArrayOf``, takes an optional first positional argument – a verbose name.
+If the verbose name isn’t given, Odin will automatically create it using the field’s attribute name, converting
 underscores to spaces.
 
 In this example, the verbose name is "person's first name":
@@ -125,26 +116,26 @@ In this example, the verbose name is "first name":
 
     first_name = odin.StringField()
 
-``ObjectAs`` and ``ArrayOf`` require the first argument to be a resource class, so use the ``verbose_name`` keyword
+``DictAs`` and ``ArrayOf`` require the first argument to be a resource class, so use the ``verbose_name`` keyword
 argument:
 ::
 
-    publisher = odin.ObjectAs(Publisher, verbose_name="the publisher")
+    publisher = odin.DictAs(Publisher, verbose_name="the publisher")
     authors = odin.ArrayOf(Author, verbose_name="list of authors")
 
 Relationships
 -------------
 
-To really model more complex documents objects and lists need to be able to be combined, JSRN offers ways to define
-these structures, ``ObjectAs`` and ``ArrayOf`` fields handle these structures.
+To really model more complex documents objects and lists need to be able to be combined, Odin offers ways to define
+these structures, :py:class:`DictAs` and :py:class:`ArrayOf` fields handle these structures.
 
-ObjectAs relationships
-``````````````````````
+DictAs relationships
+````````````````````
 
-To define a object-as relationship, use ``odin.ObjectAs``. You use it just like any other Field type by including it as
-a class attribute of your resource.
+To define a object-as relationship, use :py:class:`odin.DictAs`. You use it just like any other Field type by including
+it as a class attribute of your resource.
 
-``ObjectAs`` requires a positional argument: the class to which the resource is related.
+:py:class:`DictAs` requires a positional argument: the class to which the resource is related.
 
 For example, if a ``Book`` resource has a ``Publisher`` – that is, a single ``Publisher`` publishes a book.
 ::
@@ -153,7 +144,7 @@ For example, if a ``Book`` resource has a ``Publisher`` – that is, a single ``
         # ...
 
     class Book(odin.Resource):
-        publisher = odin.ObjectAs(Publisher)
+        publisher = odin.DictAs(Publisher)
         # ...
 
 This would produce a JSON document of:
@@ -236,17 +227,17 @@ verbose_name_plural). None are required, and adding class Meta to a resource is 
 
 ``abstract``
     Marks the current resource as an **abstract** resource. See the section :ref:`resources-abstract` for more detail of
-    the abstract attribute. The default value for *abstract* is ``None``.
+    the abstract attribute. The default value for *abstract* is :py:const:`False`.
 
 ``doc_group``
     A grouping for documentation purposes. This is purely optional but is useful for grouping common elements together.
-    The default value for *doc_group* is ``None``.
+    The default value for *doc_group* is :py:class:`None`.
 
 
 Resource inheritance
 ====================
 
-Resource inheritance in JSRN works almost identically to the way normal class inheritance works in Python. The only
+Resource inheritance in Odin works almost identically to the way normal class inheritance works in Python. The only
 decision you have to make is whether you want the parent resources to be resources in their own right, or if the parents
 are just holders of common information that will only be visible through the child resources.
 
