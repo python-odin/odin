@@ -131,6 +131,18 @@ class Mapping(six.with_metaclass(MappingBase)):
     exclude_fields = []
     mappings = []
 
+    @classmethod
+    def apply(cls, source_resource):
+        """
+        Apply conversion either a single resource or a list of resources using the mapping defined by this class.
+
+        If a list of resources is supplied an iterable is returned.
+        """
+        if isinstance(source_resource, (list, tuple)):
+            return (cls(s).convert() for s in source_resource)
+        else:
+            return cls(source_resource).convert()
+
     def __init__(self, source):
         if not isinstance(source, self.from_resource):
             raise TypeError('Source parameter must be an instance of %s' % self.from_resource)
