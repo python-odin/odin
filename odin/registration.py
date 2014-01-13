@@ -31,9 +31,6 @@ class ResourceCache(object):
         Register a resource (or resources)
         """
         for resource in resources:
-            if resource in self.resources.values():
-                raise RegistrationError("This resource %r has already been registered" % resource)
-
             resource_name = resource._meta.resource_name.lower()
             self.resources[resource_name] = resource
             if resource_name != resource._meta.class_name:
@@ -52,8 +49,6 @@ class ResourceCache(object):
         """
         for mapping in mappings:
             mapping_name = generate_mapping_cache_name(mapping.from_resource, mapping.to_resource)
-            if mapping_name in self.mappings:
-                raise RegistrationError("A mapping for %s has already been registered" % mapping_name)
             self.mappings[mapping_name] = mapping
 
 
