@@ -2,7 +2,6 @@
 Mapping between resources
 #########################
 
-
 Defining a mapping
 ==================
 
@@ -44,14 +43,16 @@ specified along with a transformation method or alternatively a method with a :p
 to handle more complex mappings.
 
 .. hint::
-    Both simple mappings and :py:meth:`map_field` can accept multiple fields as input and output, although care has to
-    be taken that the transformation method accepts and returns the same number of parameters.
+    Both simple mappings and :py:meth:`map_field` can accept multiple fields as input and output, although care must be
+    taken to ensure that the transformation method accepts and returns the same number of parameters as is defined in
+    the mapping.
 
 
 Converting between resources
 ============================
 
-Once a mapping has been defined the :py:meth:`Resource.map_field` is then used to convert between resources::
+Once a mapping has been defined the :py:meth:`Resource.convert_to` or :py:meth:`Mapping.apply` are used to convert
+between resources::
 
     # Create and instance of a CalendarEvent
     >>> event = CalendarEvent(
@@ -68,4 +69,7 @@ Once a mapping has been defined the :py:meth:`Resource.map_field` is then used t
      'event_hour': 22,
      'event_minute': 30,
      'name': 'Launch Party'}
+
+    # Or use the mapping definition CalendarEventToEventFrom
+    >>> event_from = CalendarEventToEventFrom.apply(event)
 
