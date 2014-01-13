@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from odin.exceptions import RegistrationError
 
 
 def generate_mapping_cache_name(from_resource, to_resource):
