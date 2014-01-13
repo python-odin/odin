@@ -193,22 +193,48 @@ BooleanField
 
 A true/false field.
 
+.. _field-date_field:
+
+DateField
+=========
+``class DateField([**options])``
+
+A :py:class:`date` field or date encoded in `ISO-8601 date string <http://en.wikipedia.org/wiki/ISO_8601#Dates>`_
+format.
+
+.. _field-time_field:
+
+TimeField
+=========
+``class TimeField([assume_local=True, **options])``
+
+A :py:class:`time` field or time encoded in `ISO-8601 time string <http://en.wikipedia.org/wiki/ISO_8601#Times>`_
+format.
+
+TimeField has an extra argument:
+
+:py:attr:`TimeField.assume_local`
+    This adjusts the behaviour of how a naive time (time objects with no timezone) or time strings with no timezone
+    specified. By default assume_local is :py:const:`True`, in this state naive :py:class:`time` objects are assumed to
+    be in the current system timezone. Similarly on decoding a time string the output :py:class:`time` will be converted
+    to the current system timezone.
+
 .. _field-date_time_field:
 
 DateTimeField
 =============
 ``class DateTimeField([**options])``
 
-A string encoded date time field, that represents a JavaScript Date. The format of the string is that defined by ECMA
-international standard ECMA-262 section 15.9.1.15. Note that the standard encodes all dates as UTC.
+A :py:class:`datetime` field or date encoded in
+`ISO-8601 datetime string <http://en.wikipedia.org/wiki/ISO_8601#Combined_date_and_time_representations>`_ format.
 
 DateTimeField has an extra argument:
 
 :py:attr:`DateTimeField.assume_local`
-    This adjusts the behaviour of how naive date times (date time objects with no timezone) are handled. By default
-    assume_local is True, in this state naive date times are assumed to be in the current system timezone so a
-    conversion is applied when encoding to be in UTC. Similarly on decoding a datetime string the output datetime will
-    be converted to the current system timezone.
+    This adjusts the behaviour of how a naive time (date time objects with no timezone) or date time strings with no
+    timezone specified. By default assume_local is :py:const:`True`, in this state naive :py:class:`datetime` objects
+    are assumed to be in the current system timezone. Similarly on decoding a date time string the output
+    :py:class:`datetime` will be converted to the current system timezone.
 
 .. _field-array_field:
 

@@ -166,7 +166,8 @@ def parse_iso_time_string(time_string, default_timezone=utc):
         int(groups['minute']),
         int(groups['second']),
         int(groups['microseconds'] or 0),
-        tz)
+        tz
+    )
 
 
 def parse_iso_datetime_string(datetime_string, default_timezone=utc):
@@ -190,7 +191,8 @@ def parse_iso_datetime_string(datetime_string, default_timezone=utc):
         int(groups['minute']),
         int(groups['second']),
         int(groups['microseconds'] or 0),
-        tz)
+        tz
+    )
 
 
 def to_ecma_datetime_string(dt, assume_local_time=True):

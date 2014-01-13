@@ -289,6 +289,9 @@ class TimeField(Field):
 
     The format of the string is that defined by ISO-8601.
 
+    Use the ``assume_local`` flag to customise how naive (datetime values with no timezone) are handled and also how
+    dates are decoded. If ``assume_local`` is True naive dates are assumed to represent the current system timezone.
+
     """
     default_error_messages = {
         'invalid': "Not a valid time string.",
@@ -316,11 +319,11 @@ class DateTimeField(Field):
     """
     Field that handles datetime values encoded as a string.
 
-    The format of the string is that defined by ECMA international standard ECMA-262 section 15.9.1.15. Note that the
-    standard encodes all dates as UTC.
+    The format of the string is that defined by ISO-8601.
 
     Use the ``assume_local`` flag to customise how naive (datetime values with no timezone) are handled and also how
     dates are decoded. If ``assume_local`` is True naive dates are assumed to represent the current system timezone.
+
     """
     default_error_messages = {
         'invalid': "Not a valid datetime string.",
