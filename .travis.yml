@@ -14,12 +14,11 @@ branches:
 install:
   - pip install -r requirements.txt --use-mirrors
   - pip install "jinja2>=2.7" --use-mirrors
-  - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then pip install pint --use-mirrors; fi
-  - pip install coveralls --use-mirrors
+  - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then pip install pint coveralls --use-mirrors; fi
 
 script:
   - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then nosetests --all-modules --with-coverage --cover-package odin tests/ ; fi
   - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then nosetests --all-modules --with-coverage --cover-package odin tests/ tests/contrib ; fi
 
 after_success:
-  - coveralls
+  - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then coveralls; fi
