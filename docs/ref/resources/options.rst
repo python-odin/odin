@@ -2,5 +2,4 @@
 Resource Meta options
 #####################
 
-.. todo::
-    To be written
+*Todo* : To be written

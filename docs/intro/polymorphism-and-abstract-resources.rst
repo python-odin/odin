@@ -2,5 +2,4 @@
 Polymorphism and abstract resources
 ###################################
 
-.. todo::
-    To be written
+*Todo* : To be written
