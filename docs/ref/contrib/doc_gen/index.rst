@@ -5,7 +5,7 @@ Generating resource documentation
 .. note:: When using document generation Jinja2 is required.
 
 Odin has built in support for generating documentation of resources that have been registered. This is where the various
-``verbose_name``, ``help_text`` and *doc strings* are used generate documentation.
+``verbose_name``, ``doc_text`` and *doc strings* are used generate documentation.
 
 
 Quick example
