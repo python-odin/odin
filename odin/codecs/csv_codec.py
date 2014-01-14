@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Parse CSV files into Odin Resources
-"""
 import csv
 from odin.resources import create_resource_from_dict
 
