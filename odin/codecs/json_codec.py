@@ -17,7 +17,6 @@ class OdinEncoder(json.JSONEncoder):
     """
     Encoder for Odin resources.
     """
-
     def default(self, o):
         if isinstance(o, resources.Resource):
             obj = o.to_dict()
@@ -29,13 +28,17 @@ class OdinEncoder(json.JSONEncoder):
             return super(OdinEncoder, self)
 
 
-def load(fp, *args, **kwargs):
+def load(fp, resource=None):
     """
     Load a from a JSON encoded file.
 
-    See ``loads`` for a complete explanation of other parameters and operation of this method.
+    See :py:meth:`loads` for mo details of the loading operation.
+
+    :param fp: a file pointer to read JSON data from.
+    :param resource: A resource instance or a resource name to use as the base for creating a resource.
+    :returns: A resource object or object graph of resources loaded from file.
     """
-    return loads(fp.read(), *args, **kwargs)
+    return loads(fp.read(), resource)
 
 
 def loads(s, resource=None):
@@ -49,6 +52,7 @@ def loads(s, resource=None):
 
     :param s: String to load and parse.
     :param resource: A resource instance or a resource name to use as the base for creating a resource.
+    :returns: A resource object or object graph of resources parsed from supplied string.
     """
     if isinstance(resource, type) and issubclass(resource, resources.Resource):
         resource_name = resource._meta.resource_name
@@ -62,9 +66,10 @@ def dump(resource, fp, cls=OdinEncoder, **kwargs):
     Dump to a JSON encoded file.
 
     :param resource: The root resource to dump to a JSON encoded file.
-    :param fp: The rile pointer that represents the output file.
+    :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
+    :param fp: The file pointer that represents the output file.
     """
-    return json.dump(resource, fp, cls=cls, **kwargs)
+    json.dump(resource, fp, cls=cls, **kwargs)
 
 
 def dumps(resource, cls=OdinEncoder, **kwargs):
@@ -72,6 +77,7 @@ def dumps(resource, cls=OdinEncoder, **kwargs):
     Dump to a JSON encoded string.
 
     :param resource: The root resource to dump to a JSON encoded file.
-    :param pretty_print: Pretty print the output, ie apply newline characters and indentation.
+    :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
+    :returns: JSON encoded string.
     """
     return json.dumps(resource, cls=cls, **kwargs)
