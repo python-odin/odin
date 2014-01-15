@@ -361,7 +361,6 @@ class DictField(Field):
             return value
         try:
             val = dict(value)
-            val.pop("$", None)  # Ensure that any $ items are cleaned out
             return val
         except (TypeError, ValueError):
             msg = self.error_messages['invalid']

@@ -20,7 +20,7 @@ class OdinEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, resources.Resource):
             obj = o.to_dict()
-            obj[resources.RESOURCE_TYPE_FIELD] = o._meta.resource_name
+            obj[o._meta.type_field] = o._meta.resource_name
             return obj
         elif o.__class__ in JSON_TYPES:
             return JSON_TYPES[o.__class__](o)
@@ -54,11 +54,7 @@ def loads(s, resource=None):
     :param resource: A resource instance or a resource name to use as the base for creating a resource.
     :returns: A resource object or object graph of resources parsed from supplied string.
     """
-    if isinstance(resource, type) and issubclass(resource, resources.Resource):
-        resource_name = resource._meta.resource_name
-    else:
-        resource_name = resource
-    return resources.build_object_graph(json.loads(s), resource_name)
+    return resources.build_object_graph(json.loads(s), resource)
 
 
 def dump(resource, fp, cls=OdinEncoder, **kwargs):

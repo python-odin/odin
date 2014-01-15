@@ -387,7 +387,6 @@ class FieldsTests(unittest.TestCase):
         self.assertRaises(ValidationError, f.clean, 123)
         self.assertEqual({}, f.clean({}))
         self.assertEqual({'foo': 'bar'}, f.clean({'foo': 'bar'}))
-        self.assertEqual({'foo': 'bar'}, f.clean({'foo': 'bar', '$': 'eek'}))
         self.assertEqual(f.default, dict)
 
     def test_dictfield_2(self):
@@ -397,7 +396,6 @@ class FieldsTests(unittest.TestCase):
         self.assertRaises(ValidationError, f.clean, 'abc')
         self.assertRaises(ValidationError, f.clean, 123)
         self.assertEqual({'foo': 'bar'}, f.clean({'foo': 'bar'}))
-        self.assertEqual({'foo': 'bar'}, f.clean({'foo': 'bar', '$': 'eek'}))
 
     # ArrayField ##############################################################
 

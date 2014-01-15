@@ -7,8 +7,10 @@ from odin.fields import NOT_PROVIDED
 from odin.utils import cached_property
 
 
-RESOURCE_TYPE_FIELD = '$'
-META_OPTION_NAMES = ('name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group')
+DEFAULT_TYPE_FIELD = '$'
+META_OPTION_NAMES = (
+    'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group', 'type_field'
+)
 
 
 class ResourceOptions(object):
@@ -24,6 +26,7 @@ class ResourceOptions(object):
         self.verbose_name_plural = None
         self.abstract = False
         self.doc_group = None
+        self.type_field = DEFAULT_TYPE_FIELD
 
     def contribute_to_class(self, cls, name):
         cls._meta = self
@@ -269,17 +272,26 @@ class Resource(six.with_metaclass(ResourceBase)):
             raise ValidationError(errors)
 
 
-def create_resource_from_dict(d, resource_name=None, full_clean=True):
+def create_resource_from_dict(d, resource=None, full_clean=True):
     """
     Create a resource from a dict.
     """
     assert isinstance(d, dict)
 
     # Get the correct resource name
-    document_resource_name = d.pop(RESOURCE_TYPE_FIELD, resource_name)
+    if isinstance(resource, type) and issubclass(resource, Resource):
+        resource_name = resource._meta.resource_name
+        type_field = resource._meta.type_field
+    else:
+        resource_name = resource
+        type_field = DEFAULT_TYPE_FIELD
+
+    # Get the correct resource name
+    document_resource_name = d.pop(type_field, resource_name)
     if not (document_resource_name or resource_name):
         raise exceptions.ValidationError("Resource not defined.")
 
+    # Get an instance of a resource type
     resource_type = registration.get_resource(document_resource_name)
     if not resource_type:
         raise exceptions.ValidationError("Resource `%s` is not registered." % document_resource_name)
@@ -311,7 +323,7 @@ def create_resource_from_dict(d, resource_name=None, full_clean=True):
     return new_resource
 
 
-def build_object_graph(d, resource_name=None):
+def build_object_graph(d, resource=None):
     """
     Generate an object graph from a dict
 
@@ -319,9 +331,9 @@ def build_object_graph(d, resource_name=None):
     """
 
     if isinstance(d, dict):
-        return create_resource_from_dict(d, resource_name)
+        return create_resource_from_dict(d, resource)
 
     if isinstance(d, list):
-        return [build_object_graph(o, resource_name) for o in d]
+        return [build_object_graph(o, resource) for o in d]
 
     return d
