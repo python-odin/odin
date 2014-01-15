@@ -195,7 +195,7 @@ def parse_iso_datetime_string(datetime_string, default_timezone=utc):
     )
 
 
-def to_ecma_datetime_string(dt, assume_local_time=True):
+def to_ecma_datetime_string(dt, default_timezone=local):
     """
     Convert a python datetime into the string format defined in ECMA-262.
 
@@ -206,6 +206,6 @@ def to_ecma_datetime_string(dt, assume_local_time=True):
     """
     assert isinstance(dt, datetime.datetime)
 
-    dt = get_tz_aware_dt(dt, local if assume_local_time else utc).astimezone(utc)
+    dt = get_tz_aware_dt(dt, default_timezone).astimezone(utc)
     return "%4i-%02i-%02iT%02i:%02i:%02i.%03iZ" % (
         dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond/1000)

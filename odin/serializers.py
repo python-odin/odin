@@ -49,11 +49,11 @@ class DatetimeEcmaFormat(object):
     """
     input_type = datetime.datetime
 
-    def __init__(self, assume_local=True):
-        self.assume_local = assume_local
+    def __init__(self, assume_local=True, default_timezone=datetimeutil.local):
+        self.default_timezone = datetimeutil.local if assume_local else default_timezone
 
     def __call__(self, value):
         assert isinstance(value, self.input_type)
-        return datetimeutil.to_ecma_datetime_string(value, self.assume_local)
+        return datetimeutil.to_ecma_datetime_string(value, self.default_timezone)
 
 datetime_ecma_format = DatetimeEcmaFormat()
