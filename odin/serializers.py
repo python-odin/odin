@@ -20,7 +20,7 @@ class TimeIsoFormat(object):
 
     def __call__(self, value):
         assert isinstance(value, datetime.time)
-        if value.tzinfo() is None:
+        if value.tzinfo is None:
             value = value.replace(tzinfo=self.default_timezone)
         return value.isoformat()
 
@@ -36,7 +36,7 @@ class DatetimeIsoFormat(object):
 
     def __call__(self, value):
         assert isinstance(value, datetime.datetime)
-        if value.tzinfo() is None:
+        if value.tzinfo is None:
             value = value.replace(tzinfo=self.default_timezone)
         return value.isoformat()
 

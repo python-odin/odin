@@ -20,11 +20,12 @@ FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 class KitchenSinkTestCase(TestCase):
     def test_dumps_with_valid_data(self):
         book = Book(title="Consider Phlebas", num_pages=471, rrp=19.50, genre="sci-fi", fiction=True,
-                    published=datetime.datetime(1987, 1 , 1, tzinfo=utc))
+                    published=datetime.datetime(1987, 1, 1, tzinfo=utc))
         book.publisher = Publisher(name="Macmillan")
         book.authors.append(Author(name="Iain M. Banks"))
 
         library = Library(name="Public Library", books=[book])
+        actual = json_codec.dumps(library)
 
         self.assertJSONEqual("""
 {
@@ -46,13 +47,13 @@ class KitchenSinkTestCase(TestCase):
                 }
             ],
             "fiction": true,
-            "published": "1987-01-01T00:00:00.000Z",
+            "published": "1987-01-01T00:00:00+00:00",
             "genre": "sci-fi",
             "rrp": 19.5
         }
     ]
 }
-        """, json_codec.dumps(library))
+        """, actual)
 
 
     def test_full_clean_invalid_data(self):
