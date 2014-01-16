@@ -28,4 +28,4 @@ if __name__ == '__main__':
     )
     book.full_clean()
 
-    print xml_codec.dumps(book, line_ending='\n')
+    print(xml_codec.dumps(book, line_ending='\n'))

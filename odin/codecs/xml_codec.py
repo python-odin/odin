@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from xml import sax
 import datetime
-import StringIO
+from io import StringIO
 from odin import serializers
 from odin import fields
 from odin.fields import composite
@@ -120,6 +120,6 @@ def dumps(resource, **kwargs):
     :param resource: Resource to dump
     :return:
     """
-    f = StringIO.StringIO()
+    f = StringIO()
     dump(f, resource, **kwargs)
     return f.getvalue()
