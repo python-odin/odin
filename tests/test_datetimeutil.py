@@ -127,10 +127,10 @@ class ParseIsoDateTimeStringTestCase(unittest.TestCase):
 class ToDateStringTestCase(unittest.TestCase):
     def test_naive_datetime(self):
         dt = datetime.datetime(2013, 7, 13, 16, 54, 46, 123000)
-        actual = datetimeutil.to_ecma_datetime_string(dt, False)  # assume UTC to simplify this particular test
+        actual = datetimeutil.to_ecma_datetime_string(dt, datetimeutil.utc)  # assume UTC to simplify this particular test
         self.assertEqual("2013-07-13T16:54:46.123Z", actual)
 
     def test_aware_datetime(self):
         dt = datetime.datetime(2013, 7, 13, 16, 54, 46, 123000, datetimeutil.utc)
-        actual = datetimeutil.to_ecma_datetime_string(dt, False)
+        actual = datetimeutil.to_ecma_datetime_string(dt, datetimeutil.utc)
         self.assertEqual("2013-07-13T16:54:46.123Z", actual)

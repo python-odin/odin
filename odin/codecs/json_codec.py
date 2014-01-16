@@ -9,7 +9,9 @@ except ImportError:
     import json
 
 JSON_TYPES = {
-    datetime.datetime: serializers.datetime_ecma_format
+    datetime.date: serializers.date_iso_format,
+    datetime.time: serializers.time_iso_format,
+    datetime.datetime: serializers.datetime_iso_format,
 }
 
 
@@ -32,7 +34,7 @@ def load(fp, resource=None):
     """
     Load a from a JSON encoded file.
 
-    See :py:meth:`loads` for mo details of the loading operation.
+    See :py:meth:`loads` for more details of the loading operation.
 
     :param fp: a file pointer to read JSON data from.
     :param resource: A resource instance or a resource name to use as the base for creating a resource.
