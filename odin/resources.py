@@ -82,6 +82,20 @@ class ResourceOptions(object):
         """
         return [p._meta.resource_name for p in self.parents]
 
+    @cached_property
+    def attribute_fields(self):
+        """
+        List of fields where is_attribute is True.
+        """
+        return [f for f in self.fields if f.is_attribute]
+
+    @cached_property
+    def element_fields(self):
+        """
+        List of fields where is_attribute is False.
+        """
+        return [f for f in self.fields if not f.is_attribute]
+
     def __repr__(self):
         return '<Options for %s>' % self.resource_name
 
