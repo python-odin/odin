@@ -366,10 +366,7 @@ class DictField(Field):
             msg = self.error_messages['invalid']
             raise exceptions.ValidationError(msg)
 
-
-class ObjectField(DictField):
-    # Object field is to be deprecated
-    pass
+ObjectField = DictField
 
 
 class ArrayField(Field):
