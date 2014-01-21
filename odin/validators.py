@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# This file is largely verbatim from the Django project.
+# This file is largely verbatim from the Django project, the wheel works well, no need to re-invent it.
 import re
 import six
 from odin import exceptions
@@ -91,3 +91,35 @@ class MinLengthValidator(LengthValidator):
     compare = lambda self, a, b: a < b
     message = 'Ensure this value has at least %(limit_value)d characters (it has %(show_value)d).'
     code = 'min_length'
+
+
+def simple_validator(assertion=None, message='The supplied value is invalid', code='invalid'):
+    """
+    Create a simple validator.
+
+    :param assertion: An Validation exception will be raised if this check returns a none True value.
+    :param message: Message to raised in Validation exception if validation fails.
+    :param code: Code to included in Validation exception. This can be used to customise the message at the resource
+        level.
+
+    Usage::
+
+        >>> none_validator = create_validator(lambda x: x is not None, message="This value cannot be none")
+
+    This can also be used as a decorator::
+
+        @create_validator(message="This value cannot be none")
+        def none_validator(v):
+            return v is not None
+    """
+    def inner(func):
+        def wrapper(value):
+            params = {'show_value': value}
+            if not func(value):
+                raise exceptions.ValidationError(message % params, code=code, params=params)
+        return wrapper
+
+    if assertion:
+        return inner(assertion)
+    else:
+        return inner
