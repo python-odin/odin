@@ -60,6 +60,12 @@ class ValidatorTestCase(unittest.TestCase):
         self.assertRaises(ValidationError, target, -10)
         target(11)
 
+    def test_length_validator(self):
+        target = validators.LengthValidator(10)
+        target("1234567890")
+        self.assertRaises(ValidationError, target, "123456789")
+        self.assertRaises(ValidationError, target, "12345678901")
+
     def test_max_length_validator(self):
         target = validators.MaxLengthValidator(10)
 

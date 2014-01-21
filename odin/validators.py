@@ -75,7 +75,7 @@ class MinValueValidator(BaseValidator):
 
 
 class LengthValidator(BaseValidator):
-    compare = lambda self, a, b: a == b
+    compare = lambda self, a, b: a != b
     clean = lambda self, x: len(x)
     message = 'Ensure this value has at exactly %(limit_value)d characters (it has %(show_value)d).'
     code = 'length'
