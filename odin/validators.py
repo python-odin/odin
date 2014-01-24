@@ -104,7 +104,7 @@ def simple_validator(assertion=None, message='The supplied value is invalid', co
 
     Usage::
 
-        >>> none_validator = create_validator(lambda x: x is not None, message="This value cannot be none")
+        >>> none_validator = simple_validator(lambda x: x is not None, message="This value cannot be none")
 
     This can also be used as a decorator::
 
