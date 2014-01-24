@@ -5,8 +5,7 @@ Odin - Object Data Mapping for Python
 Odin provides a declarative framework for defining resources (classes) and their relationships, validation of the fields 
 that make up the resources and mapping between different resources or an object graph of resources.
 
-The library then externds this with serialisation tools for external data formats, JSON is currently the best supported
-format.
+The library then expands on the basic features this with serialisation tools importing and exporting data.
 
 .. image:: https://pypip.in/license/odin/badge.png
     :target: https://pypi.python.org/pypi/odin/
