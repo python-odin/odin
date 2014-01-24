@@ -1,14 +1,41 @@
 # -*- coding: utf-8 -*-
 import collections
 import six
-from odin import registration
+from odin import registration, ListOf, DictAs
 from odin.exceptions import MappingSetupError, MappingExecutionError
 from odin.resources import Resource
+from odin.mapping.helpers import MapListOf, MapDictAs
 
 __all__ = ('Mapping', 'map_field', 'map_list_field')
 
 
 force_tuple = lambda x: x if isinstance(x, (list, tuple)) else (x,)
+
+
+def generate_auto_mapping(name, from_fields, to_fields):
+    """
+    Generate the auto mapping between two fields.
+    """
+    from_field = from_fields[name]
+    to_field = to_fields[name]
+
+    # Handle ListOf fields
+    if isinstance(from_field, ListOf) and isinstance(to_field, ListOf):
+        try:
+            mapping = registration.get_mapping(from_field.of, to_field.of)
+            return (name,), MapListOf(mapping), (name,), True
+        except KeyError:
+            pass
+
+    # Handle DictAs fields
+    elif isinstance(from_field, DictAs) and isinstance(to_field, DictAs):
+        try:
+            mapping = registration.get_mapping(from_field.of, to_field.of)
+            return (name,), MapDictAs(mapping), (name,), False
+        except KeyError:
+            pass
+
+    return (name,), None, (name,), False
 
 
 class MappingBase(type):
@@ -116,7 +143,7 @@ class MappingBase(type):
         # Add auto mapped fields that are yet to be mapped.
         for field in unmapped_fields:
             if field in to_fields:
-                mapping_rules.append(((field,), None, (field,), False))
+                mapping_rules.append(generate_auto_mapping(field, from_fields, to_fields))
 
         # Update mappings
         attrs['_mapping_rules'] = mapping_rules
@@ -132,21 +159,29 @@ class Mapping(six.with_metaclass(MappingBase)):
     mappings = []
 
     @classmethod
-    def apply(cls, source_resource):
+    def apply(cls, source_resource, context=None):
         """
         Apply conversion either a single resource or a list of resources using the mapping defined by this class.
 
         If a list of resources is supplied an iterable is returned.
         """
         if isinstance(source_resource, (list, tuple)):
-            return (cls(s).convert() for s in source_resource)
+            return (cls(s, context).convert() for s in source_resource)
         else:
-            return cls(source_resource).convert()
+            return cls(source_resource, context).convert()
 
-    def __init__(self, source):
+    def __init__(self, source, context=None):
+        """
+        Initialise instance of mapping.
+
+        :param source: The source resource, this must be an instance of :py:attr:`Mapping.from_resource`.
+        :param context: An optional context value, this can be any value you want to aid in mapping; if :py:const:`None`
+         is provided this will default to an empty dict.
+        """
         if not isinstance(source, self.from_resource):
             raise TypeError('Source parameter must be an instance of %s' % self.from_resource)
         self.source = source
+        self.context = context or {}
 
     def _apply_rule(self, mapping_rule):
         from_fields, action, to_fields, to_list = mapping_rule
