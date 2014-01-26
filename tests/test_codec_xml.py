@@ -18,7 +18,7 @@ if __name__ == '__main__':
     #     xml_codec.load(f)
 
     book = Book(
-        title="Consider Phlebas",
+        title='Consider Phlebas & Other stories',
         num_pages=471,
         rrp=19.50,
         genre="sci-fi",

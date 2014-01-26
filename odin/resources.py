@@ -191,6 +191,19 @@ class ResourceBase(type):
             setattr(cls, name, value)
 
 
+def field_iter(resource, fields=None):
+    """
+    Return an iterator for to iterate over a resources fields.
+    :param resource: Resource to iterate over
+    :param fields: Fields to use; if ``None`` defaults to all of the resources fields.
+    :return:
+    """
+    if fields is None:
+        fields = resource._meta.fields
+    for f in fields:
+        yield f, f.prepare(f.value_from_object(resource))
+
+
 class Resource(six.with_metaclass(ResourceBase)):
     def __init__(self, **kwargs):
         for field in iter(self._meta.fields):
@@ -209,11 +222,17 @@ class Resource(six.with_metaclass(ResourceBase)):
     def __str__(self):
         return '%s resource' % self._meta.resource_name
 
+    def __iter__(self):
+        """
+        Iterate over a resource, returning field/value pairs.
+        """
+        return field_iter(self)
+
     def to_dict(self):
         """
         Convert this resource into a dict
         """
-        return {f.name: f.prepare(f.value_from_object(self)) for f in self._meta.fields}
+        return dict((f.name, v) for f, v in self)
 
     def convert_to(self, to_resource, context=None, **field_values):
         """
@@ -267,6 +286,7 @@ class Resource(six.with_metaclass(ResourceBase)):
 
             if f.null and raw_value is None:
                 continue
+
             try:
                 raw_value = f.clean(raw_value)
             except ValidationError as e:

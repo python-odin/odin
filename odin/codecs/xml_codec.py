@@ -2,15 +2,21 @@
 from xml import sax
 import datetime
 from io import StringIO
+from xml.sax import saxutils
+import six
 from odin import serializers
 from odin import fields
 from odin.fields import composite
+from odin.resources import field_iter
 
 XML_TYPES = {
     datetime.date: serializers.date_iso_format,
     datetime.time: serializers.time_iso_format,
     datetime.datetime: serializers.datetime_iso_format,
 }
+if not six.PY3:
+    XML_TYPES[unicode] = lambda v: v
+
 XML_RESOURCE_LIST_FIELDS = [composite.ListOf]
 XML_RESOURCE_DICT_FIELDS = [composite.DictAs]
 XML_LIST_FIELDS = [fields.ArrayField, fields.TypedArrayField]
@@ -78,6 +84,13 @@ def loads(s, resource=None):
     sax.parseString(s, handler)
 
 
+def _serialize_to_string(value):
+    if value.__class__ in XML_TYPES:
+        return XML_TYPES[value.__class__](value)
+    else:
+        return str(value)
+
+
 def dump(fp, resource, line_ending=''):
     """
     Dump a resource to a file like object.
@@ -88,29 +101,27 @@ def dump(fp, resource, line_ending=''):
     meta = resource._meta
 
     # Write container and any attributes
-    attributes = ' '.join('%s="%s"' % (f.name, f.value_from_object(resource)) for f in meta.attribute_fields)
-    if attributes:
-        fp.write("<%s %s>%s" % (meta.name, attributes, line_ending))
-    else:
-        fp.write("<%s>%s" % (meta.name, line_ending))
+    attributes = ''.join(
+        u" %s=%s" % (f.name, saxutils.quoteattr(_serialize_to_string(v)))  # Encode attributes
+        for f, v in field_iter(resource, resource._meta.attribute_fields)
+    )
+    fp.write(u"<%s%s>%s" % (meta.name, attributes, line_ending))
 
-    for field in resource._meta.element_fields:
-        value = field.value_from_object(resource)
+    # Write any element fields
+    for field, value in field_iter(resource, resource._meta.element_fields):
         if field.__class__ in XML_RESOURCE_LIST_FIELDS:
-            fp.write("<%s>%s" % (field.name, line_ending))
+            fp.write(u"<%s>%s" % (field.name, line_ending))
             for v in value:
                 dump(fp, v, line_ending)
-            fp.write("</%s>%s" % (field.name, line_ending))
+            fp.write(u"</%s>%s" % (field.name, line_ending))
 
         elif field.__class__ in XML_RESOURCE_DICT_FIELDS:
             dump(fp, value, line_ending)
 
         else:
-            if value.__class__ in XML_TYPES:
-                value = XML_TYPES[value.__class__](value)
-            fp.write("<%s>%s</%s>%s" % (field.name, value, field.name, line_ending))
+            fp.write(u"<%s>%s</%s>%s" % (field.name, saxutils.escape(_serialize_to_string(value)), field.name, line_ending))
 
-    fp.write("</%s>%s" % (meta.name, line_ending))
+    fp.write(u"</%s>%s" % (meta.name, line_ending))
 
 
 def dumps(resource, **kwargs):
