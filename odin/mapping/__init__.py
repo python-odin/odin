@@ -12,7 +12,7 @@ __all__ = ('Mapping', 'map_field', 'map_list_field')
 force_tuple = lambda x: x if isinstance(x, (list, tuple)) else (x,)
 
 
-def generate_auto_mapping(name, from_fields, to_fields):
+def _generate_auto_mapping(name, from_fields, to_fields):
     """
     Generate the auto mapping between two fields.
     """
@@ -23,7 +23,7 @@ def generate_auto_mapping(name, from_fields, to_fields):
     if isinstance(from_field, ListOf) and isinstance(to_field, ListOf):
         try:
             mapping = registration.get_mapping(from_field.of, to_field.of)
-            return (name,), MapListOf(mapping), (name,), True
+            return (name,), MapListOf(mapping), (name,), True, True
         except KeyError:
             pass
 
@@ -31,11 +31,11 @@ def generate_auto_mapping(name, from_fields, to_fields):
     elif isinstance(from_field, DictAs) and isinstance(to_field, DictAs):
         try:
             mapping = registration.get_mapping(from_field.of, to_field.of)
-            return (name,), MapDictAs(mapping), (name,), False
+            return (name,), MapDictAs(mapping), (name,), False, True
         except KeyError:
             pass
 
-    return (name,), None, (name,), False
+    return (name,), None, (name,), False, False
 
 
 class MappingBase(type):
@@ -78,8 +78,9 @@ class MappingBase(type):
             # Parse, validate and normalise defined mapping rules so rules can be executed without having to
             # perform checks during a mapping operation.
             to_list = False
+            bind = False
             try:
-                map_from, action, map_to, to_list = m
+                map_from, action, map_to, to_list, bind = m
             except ValueError:
                 try:
                     map_from, action, map_to = m
@@ -109,11 +110,11 @@ class MappingBase(type):
                 if not f in to_fields:
                     raise MappingSetupError('Field `%s` of %s `%s` not found on to resource. ' % (f, def_type, ref))
 
-            return map_from, action, map_to, to_list
+            return map_from, action, map_to, to_list, bind
 
         def remove_from_unmapped_fields(rule):
             # Remove any fields that are handled by a mapping rule from unmapped_fields list.
-            map_from, _, map_to, _ = rule
+            map_from, _, map_to, _, _ = rule
             if len(map_from) == 1 and map_from[0] in unmapped_fields:
                 unmapped_fields.remove(map_from[0])
             if len(map_to) == 1 and map_to[0] in unmapped_fields:
@@ -143,7 +144,7 @@ class MappingBase(type):
         # Add auto mapped fields that are yet to be mapped.
         for field in unmapped_fields:
             if field in to_fields:
-                mapping_rules.append(generate_auto_mapping(field, from_fields, to_fields))
+                mapping_rules.append(_generate_auto_mapping(field, from_fields, to_fields))
 
         # Update mappings
         attrs['_mapping_rules'] = mapping_rules
@@ -164,27 +165,30 @@ class Mapping(six.with_metaclass(MappingBase)):
         Apply conversion either a single resource or a list of resources using the mapping defined by this class.
 
         If a list of resources is supplied an iterable is returned.
+
+        :param source_resource: The source resource, this must be an instance of :py:attr:`Mapping.from_resource`.
+        :param context: An optional context value, this can be any value you want to aid in mapping
         """
         if isinstance(source_resource, (list, tuple)):
             return (cls(s, context).convert() for s in source_resource)
         else:
             return cls(source_resource, context).convert()
 
-    def __init__(self, source, context=None):
+    def __init__(self, source_resource, context=None):
         """
         Initialise instance of mapping.
 
-        :param source: The source resource, this must be an instance of :py:attr:`Mapping.from_resource`.
-        :param context: An optional context value, this can be any value you want to aid in mapping; if :py:const:`None`
-         is provided this will default to an empty dict.
+        :param source_resource: The source resource, this must be an instance of :py:attr:`Mapping.from_resource`.
+        :param context: An optional context value, this can be any value you want to aid in mapping
         """
-        if not isinstance(source, self.from_resource):
+        if not isinstance(source_resource, self.from_resource):
             raise TypeError('Source parameter must be an instance of %s' % self.from_resource)
-        self.source = source
+        self.source = source_resource
         self.context = context or {}
 
     def _apply_rule(self, mapping_rule):
-        from_fields, action, to_fields, to_list = mapping_rule
+        # Unpack mapping definition and fetch from values
+        from_fields, action, to_fields, to_list, bind = mapping_rule
 
         from_values = tuple(getattr(self.source, f) for f in from_fields)
 
@@ -193,8 +197,12 @@ class Mapping(six.with_metaclass(MappingBase)):
         else:
             if isinstance(action, six.string_types):
                 action = getattr(self, action)
+
             try:
-                to_values = action(*from_values)
+                if bind:
+                    to_values = action(self, *from_values)
+                else:
+                    to_values = action(*from_values)
             except TypeError as ex:
                 raise MappingExecutionError('%s applying rule %s' % (ex, mapping_rule))
 
@@ -213,6 +221,8 @@ class Mapping(six.with_metaclass(MappingBase)):
     def convert(self, **field_values):
         """
         Convert the provided source into a target resource.
+
+        :param field_values: Initial field values (or fields not provided by source resource);
         """
         values = field_values
 
@@ -224,28 +234,34 @@ class Mapping(six.with_metaclass(MappingBase)):
 
 def map_field(func=None, from_field=None, to_field=None, to_list=False):
     """
-    Field decorator for custom mappings
-    :param from_field:
-    :param to_field:
-    :return:
+    Field decorator for custom mappings.
+
+    :param from_field: Name of the field to map from; default is to use the function name.
+    :param to_field: Name of the field to map to; default is to use the function name.
+    :param to_list: Assume the result is a list (rather than a multi value tuple).
     """
     def inner(func):
         func._mapping = (
             from_field or func.__name__,
             func.__name__,
             to_field or func.__name__,
-            to_list
+            to_list,
+            False  # These functions will always be false, this method is a class method and therefore already has
+                   # access to the mapping instance.
         )
         return func
 
     return inner(func) if func else inner
 
 
-def map_list_field(func=None, from_field=None, to_field=None):
+def map_list_field(*args, **kwargs):
     """
     Field decorator for custom mappings that return a single list.
 
-    This mapper also allows for returning an iterator that will be converted
-    into a list during the mapping operation.
+    This mapper also allows for returning an iterator or generator that will be converted into a list during the
+    mapping operation.
+
+    Parameters are identical to the :py:meth:`map_field` method except ``to_list`` which is forced to be True.
     """
-    return map_field(func, from_field, to_field, True)
+    kwargs['to_list'] = True
+    return map_field(*args, **kwargs)

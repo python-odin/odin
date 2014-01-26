@@ -40,27 +40,31 @@ split_field = SlitField
 class MapListOf(object):
     """
     Helper for mapping a ListOf field.
+
+    This helper should be used along with the bind flag so the context object can be maintained.
     """
     __slots__ = ('mapping',)
 
     def __init__(self, mapping):
         self.mapping = mapping
 
-    def __call__(self, field_value):
+    def __call__(self, bound_self, field_value):
         if field_value is None:
             return
         for f in field_value:
-            yield self.mapping.apply(f)
+            yield self.mapping.apply(f, context=bound_self.context)
 
 
 class MapDictAs(object):
     """
     Helper for mapping a DictAs field.
+
+    This helper should be used along with the bind flag so the context object can be maintained.
     """
     __slots__ = ('mapping',)
 
     def __init__(self, mapping):
         self.mapping = mapping
 
-    def __call__(self, field_value):
-        return self.mapping.apply(field_value)
+    def __call__(self, bound_self, field_value):
+        return self.mapping.apply(field_value, context=bound_self.context)

@@ -35,16 +35,16 @@ class MappingBaseTestCase(unittest.TestCase):
 
     def test_full_mapping(self):
         self.assertMappingEquivalent([
-            (('from_field1',), None, ('to_field1',), False),
-            (('from_field2',), int, ('to_field2',), False),
-            (('from_field3', 'from_field4'), sum_fields, ('to_field3',), False),
-            (('from_field1',), None, ('same_but_different',), False),
-            (('from_field_c1', 'from_field_c2', 'from_field_c3'), 'multi_to_one', ('to_field_c1',), False),
-            (('from_field_c4',), 'one_to_multi', ('to_field_c2', 'to_field_c3'), False),
-            (('not_auto_c5',), 'not_auto_c5', ('not_auto_c5',), False),
-            (('comma_separated_string',), 'comma_separated_string', ('array_string',), True),
-            (('count',), None, ('count',), False),
-            (('title',), None, ('title',), False),
+            (('from_field1',), None, ('to_field1',), False, False),
+            (('from_field2',), int, ('to_field2',), False, False),
+            (('from_field3', 'from_field4'), sum_fields, ('to_field3',), False, False),
+            (('from_field1',), None, ('same_but_different',), False, False),
+            (('from_field_c1', 'from_field_c2', 'from_field_c3'), 'multi_to_one', ('to_field_c1',), False, False),
+            (('from_field_c4',), 'one_to_multi', ('to_field_c2', 'to_field_c3'), False, False),
+            (('not_auto_c5',), 'not_auto_c5', ('not_auto_c5',), False, False),
+            (('comma_separated_string',), 'comma_separated_string', ('array_string',), True, False),
+            (('count',), None, ('count',), False, False),
+            (('title',), None, ('title',), False, False),
         ], FromToMapping._mapping_rules)
 
     def test_map(self):
@@ -203,7 +203,7 @@ class MappingBaseTestCase(unittest.TestCase):
                 to_resource = FakeToResource
 
                 mappings = (
-                    ('title', None, ('title', 'name'), True),
+                    ('title', None, ('title', 'name'), True, False),
                 )
 
 
@@ -214,12 +214,12 @@ class MappingTestCase(unittest.TestCase):
     def test_invalid_from_value_count(self):
         with self.assertRaises(MappingExecutionError):
             target = FromToMapping(FromResource())
-            target._apply_rule((('from_field_c1', 'from_field_c2'), 'one_to_multi', ('title'), False))
+            target._apply_rule((('from_field_c1', 'from_field_c2'), 'one_to_multi', ('title'), False, False))
 
     def test_invalid_to_value_count(self):
         with self.assertRaises(MappingExecutionError):
             target = FromToMapping(FromResource(title='Test'))
-            target._apply_rule((('title',), 'multi_to_one', ('from_field_c1', 'from_field_c2'), False))
+            target._apply_rule((('title',), 'multi_to_one', ('from_field_c1', 'from_field_c2'), False, False))
 
     def test_apply_single_resource(self):
         f = SimpleFromResource(title="ABC")
