@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from xml import sax
 import datetime
 from io import StringIO
@@ -102,26 +103,26 @@ def dump(fp, resource, line_ending=''):
 
     # Write container and any attributes
     attributes = ''.join(
-        u" %s=%s" % (f.name, saxutils.quoteattr(_serialize_to_string(v)))  # Encode attributes
+        " %s=%s" % (f.name, saxutils.quoteattr(_serialize_to_string(v)))  # Encode attributes
         for f, v in field_iter(resource, resource._meta.attribute_fields)
     )
-    fp.write(u"<%s%s>%s" % (meta.name, attributes, line_ending))
+    fp.write("<%s%s>%s" % (meta.name, attributes, line_ending))
 
     # Write any element fields
     for field, value in field_iter(resource, resource._meta.element_fields):
         if field.__class__ in XML_RESOURCE_LIST_FIELDS:
-            fp.write(u"<%s>%s" % (field.name, line_ending))
+            fp.write("<%s>%s" % (field.name, line_ending))
             for v in value:
                 dump(fp, v, line_ending)
-            fp.write(u"</%s>%s" % (field.name, line_ending))
+            fp.write("</%s>%s" % (field.name, line_ending))
 
         elif field.__class__ in XML_RESOURCE_DICT_FIELDS:
             dump(fp, value, line_ending)
 
         else:
-            fp.write(u"<%s>%s</%s>%s" % (field.name, saxutils.escape(_serialize_to_string(value)), field.name, line_ending))
+            fp.write("<%s>%s</%s>%s" % (field.name, saxutils.escape(_serialize_to_string(value)), field.name, line_ending))
 
-    fp.write(u"</%s>%s" % (meta.name, line_ending))
+    fp.write("</%s>%s" % (meta.name, line_ending))
 
 
 def dumps(resource, **kwargs):
