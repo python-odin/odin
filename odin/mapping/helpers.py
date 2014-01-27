@@ -52,7 +52,7 @@ class MapListOf(object):
         if field_value is None:
             return
         for f in field_value:
-            yield self.mapping.apply(f, context=bound_self.context)
+            yield self.mapping(f, context=bound_self.context).convert()
 
 
 class MapDictAs(object):
@@ -67,4 +67,6 @@ class MapDictAs(object):
         self.mapping = mapping
 
     def __call__(self, bound_self, field_value):
-        return self.mapping.apply(field_value, context=bound_self.context)
+        if field_value is None:
+            return
+        return self.mapping(field_value, context=bound_self.context).convert()
