@@ -4,7 +4,7 @@ import six
 from odin import exceptions, registration
 from odin.exceptions import ValidationError
 from odin.fields import NOT_PROVIDED
-from odin.utils import cached_property
+from odin.utils import cached_property, field_iter
 
 
 DEFAULT_TYPE_FIELD = '$'
@@ -189,19 +189,6 @@ class ResourceBase(type):
             value.contribute_to_class(cls, name)
         else:
             setattr(cls, name, value)
-
-
-def field_iter(resource, fields=None):
-    """
-    Return an iterator for to iterate over a resources fields.
-    :param resource: Resource to iterate over
-    :param fields: Fields to use; if ``None`` defaults to all of the resources fields.
-    :return:
-    """
-    if fields is None:
-        fields = resource._meta.fields
-    for f in fields:
-        yield f, f.prepare(f.value_from_object(resource))
 
 
 class Resource(six.with_metaclass(ResourceBase)):

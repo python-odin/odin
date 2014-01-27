@@ -81,3 +81,16 @@ class cached_property(object):
                 cache = instance._cache = {}
             cache[self.__name__] = value
         return value
+
+
+def field_iter(resource, fields=None):
+    """
+    Return an iterator for to iterate over a resources fields.
+    :param resource: Resource to iterate over
+    :param fields: Fields to use; if ``None`` defaults to all of the resources fields.
+    :return:
+    """
+    if fields is None:
+        fields = resource._meta.fields
+    for f in fields:
+        yield f, f.prepare(f.value_from_object(resource))
