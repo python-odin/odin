@@ -38,20 +38,20 @@ def _generate_auto_mapping(name, from_fields, to_fields):
     return (name,), None, (name,), False, False
 
 
-class MappingBase(type):
+class MappingMeta(type):
     """
     Meta-class for all Mappings
     """
     def __new__(cls, name, bases, attrs):
-        super_new = super(MappingBase, cls).__new__
+        super_new = super(MappingMeta, cls).__new__
 
         # attrs will never be empty for classes declared in the standard way
         # (ie. with the `class` keyword). This is quite robust.
         if name == 'NewBase' and attrs == {}:
             return super_new(cls, name, bases, attrs)
 
-        parents = [b for b in bases if isinstance(b, MappingBase) and not (b.__name__ == 'NewBase'
-                                                                           and b.__mro__ == (b, object))]
+        parents = [b for b in bases if isinstance(b, MappingMeta) and not (b.__name__ == 'NewBase'
+                                                                           and b.__mro__ == (b, MappingBase, object))]
         if not parents:
             # If this isn't a subclass of Mapping, don't do anything special.
             return super_new(cls, name, bases, attrs)
@@ -153,11 +153,9 @@ class MappingBase(type):
         return registration.get_mapping(from_resource, to_resource)
 
 
-class Mapping(six.with_metaclass(MappingBase)):
+class MappingBase(object):
     from_resource = None
     to_resource = None
-    exclude_fields = []
-    mappings = []
 
     @classmethod
     def apply(cls, source_resource, context=None):
@@ -224,12 +222,22 @@ class Mapping(six.with_metaclass(MappingBase)):
 
         :param field_values: Initial field values (or fields not provided by source resource);
         """
+        assert hasattr(self, '_mapping_rules')
+
         values = field_values
 
         for mapping_rule in self._mapping_rules:
             values.update(self._apply_rule(mapping_rule))
 
         return self.to_resource(**values)
+
+
+class Mapping(six.with_metaclass(MappingMeta, MappingBase)):
+    """
+    Definition of a mapping between two Odin resources.
+    """
+    exclude_fields = []
+    mappings = []
 
 
 def map_field(func=None, from_field=None, to_field=None, to_list=False):
