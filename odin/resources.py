@@ -4,7 +4,7 @@ import six
 from odin import exceptions, registration
 from odin.exceptions import ValidationError
 from odin.fields import NOT_PROVIDED
-from odin.utils import cached_property, field_iter
+from odin.utils import cached_property, field_iter_items
 
 
 DEFAULT_TYPE_FIELD = '$'
@@ -213,7 +213,7 @@ class Resource(six.with_metaclass(ResourceBase)):
         """
         Iterate over a resource, returning field/value pairs.
         """
-        return field_iter(self)
+        return field_iter_items(self)
 
     def to_dict(self):
         """

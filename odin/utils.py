@@ -83,14 +83,51 @@ class cached_property(object):
         return value
 
 
-def field_iter(resource, fields=None):
+def field_iter(resource):
+    """Return an iterator that yields fields from a resource.
+
+    :param resource: Resource to iterate over.
+    :returns: an iterator that returns fields.
+
     """
-    Return an iterator for to iterate over a resources fields.
-    :param resource: Resource to iterate over
-    :param fields: Fields to use; if ``None`` defaults to all of the resources fields.
-    :return:
+    return iter(resource._meta.fields)
+
+
+def field_iter_items(resource, fields=None):
+    """Return an iterator that yields fields and their values from a resource.
+
+    :param resource: Resource to iterate over.
+    :param fields: Fields to use; if :const:`None` defaults to all of the resources fields.
+    :returns: an iterator that returns (field, value) tuples.
+
     """
     if fields is None:
         fields = resource._meta.fields
     for f in fields:
         yield f, f.prepare(f.value_from_object(resource))
+
+
+def attribute_field_iter_items(resource):
+    """Return an iterator that yields fields and their values from a resource that have the attribute flag set.
+
+    :param resource: Resource to iterate over.
+    :returns: an iterator that returns (field, value) tuples.
+
+    :note::
+        This iterator is designed for codecs that have a distinction between attribute and element fields (eg XML).
+
+    """
+    return field_iter_items(resource, resource._meta.attribute_fields)
+
+
+def element_field_iter_items(resource):
+    """Return an iterator that yields fields and their values from a resource that do not have the attribute flag set.
+
+    :param resource: Resource to iterate over.
+    :returns: an iterator that returns (field, value) tuples.
+
+    :note::
+        This iterator is designed for codecs that have a distinction between attribute and element fields (eg XML).
+
+    """
+    return field_iter_items(resource, resource._meta.element_fields)

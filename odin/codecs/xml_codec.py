@@ -8,7 +8,7 @@ import six
 from odin import serializers
 from odin import fields
 from odin.fields import composite
-from odin.resources import field_iter
+from odin.utils import attribute_field_iter_items, element_field_iter_items
 
 XML_TYPES = {
     datetime.date: serializers.date_iso_format,
@@ -16,7 +16,7 @@ XML_TYPES = {
     datetime.datetime: serializers.datetime_iso_format,
 }
 if not six.PY3:
-    XML_TYPES[unicode] = lambda v: v
+    XML_TYPES[unicode] = lambda v: v  # noqa
 
 XML_RESOURCE_LIST_FIELDS = [composite.ListOf]
 XML_RESOURCE_DICT_FIELDS = [composite.DictAs]
@@ -104,12 +104,12 @@ def dump(fp, resource, line_ending=''):
     # Write container and any attributes
     attributes = ''.join(
         " %s=%s" % (f.name, saxutils.quoteattr(_serialize_to_string(v)))  # Encode attributes
-        for f, v in field_iter(resource, resource._meta.attribute_fields)
+        for f, v in attribute_field_iter_items(resource)
     )
     fp.write("<%s%s>%s" % (meta.name, attributes, line_ending))
 
     # Write any element fields
-    for field, value in field_iter(resource, resource._meta.element_fields):
+    for field, value in element_field_iter_items(resource):
         if field.__class__ in XML_RESOURCE_LIST_FIELDS:
             fp.write("<%s>%s" % (field.name, line_ending))
             for v in value:
@@ -120,7 +120,8 @@ def dump(fp, resource, line_ending=''):
             dump(fp, value, line_ending)
 
         else:
-            fp.write("<%s>%s</%s>%s" % (field.name, saxutils.escape(_serialize_to_string(value)), field.name, line_ending))
+            fp.write("<%s>%s</%s>%s" %
+                     (field.name, saxutils.escape(_serialize_to_string(value)), field.name, line_ending))
 
     fp.write("</%s>%s" % (meta.name, line_ending))
 
