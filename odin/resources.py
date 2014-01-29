@@ -192,16 +192,16 @@ class ResourceBase(type):
 
 
 class Resource(six.with_metaclass(ResourceBase)):
-    def __init__(self, **kwargs):
+    def __init__(self, **field_values):
         for field in iter(self._meta.fields):
             try:
-                val = kwargs.pop(field.attname)
+                val = field_values.pop(field.attname)
             except KeyError:
                 val = field.get_default()
             setattr(self, field.attname, val)
 
-        if kwargs:
-            raise TypeError("'%s' is an invalid keyword argument for this function" % list(kwargs)[0])
+        if field_values:
+            raise TypeError("'%s' is an invalid keyword argument for this function" % list(field_values)[0])
 
     def __repr__(self):
         return '<%s: %s>' % (self.__class__.__name__, self)
