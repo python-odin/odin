@@ -30,7 +30,7 @@ class OdinEncoder(json.JSONEncoder):
             return super(OdinEncoder, self)
 
 
-def load(fp, resource=None):
+def load(fp, resource=None, full_clean=True):
     """
     Load a from a JSON encoded file.
 
@@ -38,12 +38,13 @@ def load(fp, resource=None):
 
     :param fp: a file pointer to read JSON data from.
     :param resource: A resource instance or a resource name to use as the base for creating a resource.
+    :param full_clean: Do a full clean of the object as part of the loading process.
     :returns: A resource object or object graph of resources loaded from file.
     """
-    return loads(fp.read(), resource)
+    return loads(fp.read(), resource, full_clean)
 
 
-def loads(s, resource=None):
+def loads(s, resource=None, full_clean=True):
     """
     Load from a JSON encoded string.
 
@@ -54,9 +55,10 @@ def loads(s, resource=None):
 
     :param s: String to load and parse.
     :param resource: A resource instance or a resource name to use as the base for creating a resource.
+    :param full_clean: Do a full clean of the object as part of the loading process.
     :returns: A resource object or object graph of resources parsed from supplied string.
     """
-    return resources.build_object_graph(json.loads(s), resource)
+    return resources.build_object_graph(json.loads(s), resource, full_clean)
 
 
 def dump(resource, fp, cls=OdinEncoder, **kwargs):

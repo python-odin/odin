@@ -344,7 +344,7 @@ def create_resource_from_dict(d, resource=None, full_clean=True):
     return new_resource
 
 
-def build_object_graph(d, resource=None):
+def build_object_graph(d, resource=None, full_clean=True):
     """
     Generate an object graph from a dict
 
@@ -352,9 +352,9 @@ def build_object_graph(d, resource=None):
     """
 
     if isinstance(d, dict):
-        return create_resource_from_dict(d, resource)
+        return create_resource_from_dict(d, resource, full_clean)
 
     if isinstance(d, list):
-        return [build_object_graph(o, resource) for o in d]
+        return [build_object_graph(o, resource, full_clean) for o in d]
 
     return d
