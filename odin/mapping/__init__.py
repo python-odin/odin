@@ -282,7 +282,10 @@ class MappingBase(object):
             raise MappingExecutionError('Rule expects %s fields (%s received) applying rule %s' % (
                 len(to_fields), len(to_values), mapping_rule))
 
-        return {f: to_values[i] for i, f in enumerate(to_fields)}
+        if skip_if_none:
+            return {f: to_values[i] for i, f in enumerate(to_fields) if to_values[i] is not None}
+        else:
+            return {f: to_values[i] for i, f in enumerate(to_fields)}
 
     def create_object(self, **field_values):
         """Create an instance of target object, this method can be customise to handle custom object initialisation.
