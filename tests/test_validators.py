@@ -60,6 +60,12 @@ class ValidatorTestCase(unittest.TestCase):
         self.assertRaises(ValidationError, target, -10)
         target(11)
 
+    def test_length_validator(self):
+        target = validators.LengthValidator(10)
+        target("1234567890")
+        self.assertRaises(ValidationError, target, "123456789")
+        self.assertRaises(ValidationError, target, "12345678901")
+
     def test_max_length_validator(self):
         target = validators.MaxLengthValidator(10)
 
@@ -75,3 +81,23 @@ class ValidatorTestCase(unittest.TestCase):
         self.assertRaises(ValidationError, target, "12345")
         self.assertRaises(ValidationError, target, "")
         target("12345678901")
+
+
+class SimpleValidatorTestCase(unittest.TestCase):
+    def test_method(self):
+        def reflect(v):
+            return v
+
+        validator = validators.simple_validator(reflect)
+
+        self.assertRaises(ValidationError, validator, False)
+        validator(True)
+
+    def test_decorator(self):
+
+        @validators.simple_validator()
+        def reflect_validator(v):
+            return v
+
+        self.assertRaises(ValidationError, reflect_validator, False)
+        reflect_validator(True)

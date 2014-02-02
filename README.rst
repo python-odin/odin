@@ -12,7 +12,7 @@ The library then expands on the basic features this with serialisation tools imp
     :alt: License
 
 .. image:: https://pypip.in/v/odin/badge.png
-        :target: https://pypi.python.org/pypi/odin/
+    :target: https://pypi.python.org/pypi/odin/
 
 .. image:: https://travis-ci.org/timsavage/odin.png?branch=master
     :target: https://travis-ci.org/timsavage/odin
@@ -23,8 +23,8 @@ The library then expands on the basic features this with serialisation tools imp
     :alt: Coveralls
 
 .. image:: https://requires.io/github/timsavage/odin/requirements.png?branch=master
-   :target: https://requires.io/github/timsavage/odin/requirements/?branch=master
-   :alt: Requirements Status
+    :target: https://requires.io/github/timsavage/odin/requirements/?branch=master
+    :alt: Requirements Status
 
 
 Highlights
@@ -36,6 +36,7 @@ Highlights
 * Resource to resource mapping
 * Easy extension to support custom fields
 * Python 2.7+, Python 3.2+ and PyPy :sup:`1` supported
+* Integration with Django (see `baldr <https://github.com/timsavage/baldr>`_)
 
 :sup:`1` certain contrib items are not supported. Pint is not installable with PyPy.
 

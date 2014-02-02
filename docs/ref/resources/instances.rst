@@ -5,14 +5,13 @@ Resources Instances
 A resource is the definition of the data structure that data is mapped into.
 
 The basics:
- * Each resource is a Python class that subclasses :py:class:`odin.Resource`.
- * Each field attribute of the resource is defined by a :py:class:`odin.Field` subclass.
+ * Each resource is a Python class that subclasses :class:`odin.Resource`.
+ * Each field attribute of the resource is defined by a :class:`odin.Field` subclass.
 
 Quick example
 =============
 
-This example model defines a ``Book``, which has a ``title``, ``genre`` and ``num_pages``:
-::
+This example model defines a ``Book``, which has a ``title``, ``genre`` and ``num_pages``::
 
     import odin
 
@@ -23,8 +22,7 @@ This example model defines a ``Book``, which has a ``title``, ``genre`` and ``nu
 
 ``title``, ``genre`` and ``num_pages`` are fields. Each field is specified as a class attribute.
 
-The above ``Book`` resource would create a JSON object like this:
-::
+The above ``Book`` resource would create a JSON object like this::
 
     {
         "$": "resources.Book",
@@ -45,8 +43,7 @@ The most important part of a resource – and the only required part of a resour
 Fields are specified by class attributes. Be careful not to choose field names that conflict with the resources API like
 ``clean``.
 
-Example:
-::
+Example::
 
     class Author(odin.Resource):
         name = odin.StringField()
@@ -85,8 +82,7 @@ reference, but here’s a quick summary of the most often-used ones:
 ``choices``
     An iterable (e.g., a list or tuple) of 2-tuples to use as choices for this field.
 
-    A choices list looks like this:
-    ::
+    A choices list looks like this::
 
         GENRE_CHOICES = (
             ('sci-fi', 'Science Fiction'),
@@ -106,39 +102,62 @@ Each field type, except for ``DictAs`` and ``ArrayOf``, takes an optional first 
 If the verbose name isn’t given, Odin will automatically create it using the field’s attribute name, converting
 underscores to spaces.
 
-In this example, the verbose name is "person's first name":
-::
+In this example, the verbose name is "person's first name"::
 
     first_name = odin.StringField("person's first name")
 
-In this example, the verbose name is "first name":
-::
+In this example, the verbose name is "first name"::
 
     first_name = odin.StringField()
 
 ``DictAs`` and ``ArrayOf`` require the first argument to be a resource class, so use the ``verbose_name`` keyword
-argument:
-::
+argument::
 
     publisher = odin.DictAs(Publisher, verbose_name="the publisher")
     authors = odin.ArrayOf(Author, verbose_name="list of authors")
+
+Resource level validation
+-------------------------
+
+Field validation can be customised at the resource level. This is useful as it allows validation of data using a value
+from another field for example ensuring a maximum value is greater than a minimum value, or checking that a password
+and a check password matches.
+
+This is achieved using by defining a method called ``clean_FIELDNAME`` which accepts a single value argument, Odin will
+then use this method during the cleaning process to validate the field. Odin will then use the value that is returned
+from the clean method, allowing you to apply any customised formatting. If an issue is found with a value then raise a
+:class:`odin.exceptions.ValidationError` and the error returned will be applied to validation results.
+
+Example::
+
+    class Timing(odin.Resource):
+        minimum_delay = odin.IntegerField(min_value=0)
+        maximum_delay = odin.IntegerField()
+
+        def clean_maximum_delay(self, value):
+            if value < self.minimum_delay:
+                raise ValidationError('Maximum delay must be greater than the minimum delay value')
+            return value
+
+.. important:: Ensure that a return value is provided, if no return value is specified the Python default is
+    :const:`None` and this is the value that Odin will use.
+
 
 Relationships
 -------------
 
 To really model more complex documents objects and lists need to be able to be combined, Odin offers ways to define
-these structures, :py:class:`DictAs` and :py:class:`ArrayOf` fields handle these structures.
+these structures, :class:`DictAs` and :class:`ArrayOf` fields handle these structures.
 
 DictAs relationships
 ````````````````````
 
-To define a object-as relationship, use :py:class:`odin.DictAs`. You use it just like any other Field type by including
+To define a object-as relationship, use :class:`odin.DictAs`. You use it just like any other Field type by including
 it as a class attribute of your resource.
 
-:py:class:`DictAs` requires a positional argument: the class to which the resource is related.
+:class:`DictAs` requires a positional argument: the class to which the resource is related.
 
-For example, if a ``Book`` resource has a ``Publisher`` – that is, a single ``Publisher`` publishes a book.
-::
+For example, if a ``Book`` resource has a ``Publisher`` – that is, a single ``Publisher`` publishes a book::
 
     class Publisher(odin.Resource):
         # ...
@@ -147,8 +166,7 @@ For example, if a ``Book`` resource has a ``Publisher`` – that is, a single ``
         publisher = odin.DictAs(Publisher)
         # ...
 
-This would produce a JSON document of:
-::
+This would produce a JSON document of::
 
     {
         "$": "resources.Book",
@@ -167,8 +185,7 @@ class attribute of your resource.
 
 ``ArrayOf`` requires a positional argument: the class to which the resource is related.
 
-For example, if a ``Book`` resource has a several ``Authors`` – that is, a multiple authors can publish a book.
-::
+For example, if a ``Book`` resource has a several ``Authors`` – that is, a multiple authors can publish a book::
 
     class Author(odin.Resource):
         # ...
@@ -177,8 +194,7 @@ For example, if a ``Book`` resource has a several ``Authors`` – that is, a mul
         authors = odin.ArrayOf(Author)
         # ...
 
-This would produce a JSON document of:
-::
+This would produce a JSON document of::
 
     {
         "$": "resources.Book",
@@ -194,8 +210,7 @@ This would produce a JSON document of:
 Meta options
 ============
 
-Give your resource metadata by using an inner ``class Meta``, like so:
-::
+Give your resource metadata by using an inner ``class Meta``, like so::
 
     class Book(odin.Resource):
         title = odin.StringField()
@@ -227,11 +242,11 @@ verbose_name_plural). None are required, and adding class Meta to a resource is 
 
 ``abstract``
     Marks the current resource as an **abstract** resource. See the section :ref:`resources-abstract` for more detail of
-    the abstract attribute. The default value for *abstract* is :py:const:`False`.
+    the abstract attribute. The default value for *abstract* is :const:`False`.
 
 ``doc_group``
     A grouping for documentation purposes. This is purely optional but is useful for grouping common elements together.
-    The default value for *doc_group* is :py:class:`None`.
+    The default value for *doc_group* is :class:`None`.
 
 
 Resource inheritance
@@ -251,8 +266,7 @@ write your base class and put abstract=True in the Meta class. This resource wil
 JSON document. Instead, when it is used as a base class for other resources, its fields will be added to those of the
 child class.
 
-An example:
-::
+An example::
 
     class CommonBook(odin.Resources):
         title = odin.StringField()

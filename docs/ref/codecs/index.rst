@@ -12,3 +12,4 @@ JSON data Odin provides the same ``load``, ``loads`` style interface.
 
    csv_codec
    json_codec
+   xml_codec

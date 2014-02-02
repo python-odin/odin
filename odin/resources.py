@@ -4,11 +4,13 @@ import six
 from odin import exceptions, registration
 from odin.exceptions import ValidationError
 from odin.fields import NOT_PROVIDED
-from odin.utils import cached_property
+from odin.utils import cached_property, field_iter_items
 
 
-RESOURCE_TYPE_FIELD = '$'
-META_OPTION_NAMES = ('name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group')
+DEFAULT_TYPE_FIELD = '$'
+META_OPTION_NAMES = (
+    'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group', 'type_field'
+)
 
 
 class ResourceOptions(object):
@@ -24,6 +26,7 @@ class ResourceOptions(object):
         self.verbose_name_plural = None
         self.abstract = False
         self.doc_group = None
+        self.type_field = DEFAULT_TYPE_FIELD
 
     def contribute_to_class(self, cls, name):
         cls._meta = self
@@ -79,6 +82,20 @@ class ResourceOptions(object):
         """
         return [p._meta.resource_name for p in self.parents]
 
+    @cached_property
+    def attribute_fields(self):
+        """
+        List of fields where is_attribute is True.
+        """
+        return [f for f in self.fields if f.is_attribute]
+
+    @cached_property
+    def element_fields(self):
+        """
+        List of fields where is_attribute is False.
+        """
+        return [f for f in self.fields if not f.is_attribute]
+
     def __repr__(self):
         return '<Options for %s>' % self.resource_name
 
@@ -132,6 +149,9 @@ class ResourceBase(type):
         for obj_name, obj in attrs.items():
             new_class.add_to_class(obj_name, obj)
 
+        # Sort the fields
+        new_class._meta.fields = sorted(new_class._meta.fields, key=hash)
+
         # All the fields of any type declared on this model
         field_attnames = set([f.attname for f in new_class._meta.fields])
 
@@ -175,16 +195,16 @@ class ResourceBase(type):
 
 
 class Resource(six.with_metaclass(ResourceBase)):
-    def __init__(self, **kwargs):
+    def __init__(self, **field_values):
         for field in iter(self._meta.fields):
             try:
-                val = kwargs.pop(field.attname)
+                val = field_values.pop(field.attname)
             except KeyError:
                 val = field.get_default()
             setattr(self, field.attname, val)
 
-        if kwargs:
-            raise TypeError("'%s' is an invalid keyword argument for this function" % list(kwargs)[0])
+        if field_values:
+            raise TypeError("'%s' is an invalid keyword argument for this function" % list(field_values)[0])
 
     def __repr__(self):
         return '<%s: %s>' % (self.__class__.__name__, self)
@@ -192,13 +212,19 @@ class Resource(six.with_metaclass(ResourceBase)):
     def __str__(self):
         return '%s resource' % self._meta.resource_name
 
+    def __iter__(self):
+        """
+        Iterate over a resource, returning field/value pairs.
+        """
+        return field_iter_items(self)
+
     def to_dict(self):
         """
         Convert this resource into a dict
         """
-        return {f.name: f.prepare(f.value_from_object(self)) for f in self._meta.fields}
+        return dict((f.name, v) for f, v in self)
 
-    def convert_to(self, to_resource, **field_values):
+    def convert_to(self, to_resource, context=None, **field_values):
         """
         Convert this resource into a specified to resource.
 
@@ -206,7 +232,7 @@ class Resource(six.with_metaclass(ResourceBase)):
         """
         self.full_clean()
         mapping = registration.get_mapping(self.__class__, to_resource)
-        return mapping(self).convert(**field_values)
+        return mapping(self, context).convert(**field_values)
 
     def extra_attrs(self, attrs):
         """
@@ -250,6 +276,7 @@ class Resource(six.with_metaclass(ResourceBase)):
 
             if f.null and raw_value is None:
                 continue
+
             try:
                 raw_value = f.clean(raw_value)
             except ValidationError as e:
@@ -269,17 +296,26 @@ class Resource(six.with_metaclass(ResourceBase)):
             raise ValidationError(errors)
 
 
-def create_resource_from_dict(d, resource_name=None, full_clean=True):
+def create_resource_from_dict(d, resource=None, full_clean=True):
     """
     Create a resource from a dict.
     """
     assert isinstance(d, dict)
 
     # Get the correct resource name
-    document_resource_name = d.pop(RESOURCE_TYPE_FIELD, resource_name)
+    if isinstance(resource, type) and issubclass(resource, Resource):
+        resource_name = resource._meta.resource_name
+        type_field = resource._meta.type_field
+    else:
+        resource_name = resource
+        type_field = DEFAULT_TYPE_FIELD
+
+    # Get the correct resource name
+    document_resource_name = d.pop(type_field, resource_name)
     if not (document_resource_name or resource_name):
         raise exceptions.ValidationError("Resource not defined.")
 
+    # Get an instance of a resource type
     resource_type = registration.get_resource(document_resource_name)
     if not resource_type:
         raise exceptions.ValidationError("Resource `%s` is not registered." % document_resource_name)
@@ -311,7 +347,7 @@ def create_resource_from_dict(d, resource_name=None, full_clean=True):
     return new_resource
 
 
-def build_object_graph(d, resource_name=None):
+def build_object_graph(d, resource=None, full_clean=True):
     """
     Generate an object graph from a dict
 
@@ -319,9 +355,9 @@ def build_object_graph(d, resource_name=None):
     """
 
     if isinstance(d, dict):
-        return create_resource_from_dict(d, resource_name)
+        return create_resource_from_dict(d, resource, full_clean)
 
     if isinstance(d, list):
-        return [build_object_graph(o, resource_name) for o in d]
+        return [build_object_graph(o, resource, full_clean) for o in d]
 
     return d

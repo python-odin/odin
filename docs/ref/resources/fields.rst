@@ -51,7 +51,7 @@ If ``True`` Odin will raise a validation error if a value is ``null``. Default i
 
 choices
 =======
-:py:attr:`Field.choices`
+:attr:`Field.choices`
 
 An iterable (e.g., a list or tuple) of 2-tuples to use as choices for this field. If this is given, the choices are used
 to validate entries.

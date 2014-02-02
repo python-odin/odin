@@ -27,7 +27,7 @@ class Book(LibraryBook):
     title = odin.StringField()
     num_pages = odin.IntegerField()
     rrp = odin.FloatField()
-    fiction = odin.BooleanField()
+    fiction = odin.BooleanField(is_attribute=True)
     genre = odin.StringField(choices=(
         ('sci-fi', 'Science Fiction'),
         ('fantasy', 'Fantasy'),

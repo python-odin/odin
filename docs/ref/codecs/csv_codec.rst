@@ -2,7 +2,7 @@
 CSV Codec
 #########
 
-Codec for iterating a CSV file and parsing into a JSON.
+Codec for iterating a CSV file and parsing into a Resource.
 
 Example
 =======

@@ -3,7 +3,7 @@ from odin.resources import create_resource_from_dict
 from odin.fields import Field
 from odin.validators import EMPTY_VALUES
 
-__all__ = ('DictAs', 'ObjectAs', 'ArrayOf',)
+__all__ = ('DictAs', 'ObjectAs', 'ListOf', 'ArrayOf',)
 
 
 class DictAs(Field):
@@ -36,12 +36,10 @@ class DictAs(Field):
         if value not in EMPTY_VALUES:
             value.full_clean()
 
-
-class ObjectAs(DictAs):
-    pass
+ObjectAs = DictAs
 
 
-class ArrayOf(DictAs):
+class ListOf(DictAs):
     default_error_messages = {
         'invalid': "Must be a list of ``%r`` objects.",
         'null': "List cannot contain null entries.",
@@ -49,7 +47,7 @@ class ArrayOf(DictAs):
 
     def __init__(self, resource, **options):
         options.setdefault('default', list)
-        super(ArrayOf, self).__init__(resource, **options)
+        super(ListOf, self).__init__(resource, **options)
 
     def _process_list(self, value_list, method):
         values = []
@@ -71,7 +69,7 @@ class ArrayOf(DictAs):
         if value is None:
             return None
         if isinstance(value, list):
-            super_to_python = super(ArrayOf, self).to_python
+            super_to_python = super(ListOf, self).to_python
 
             def process(val):
                 if val is None:
@@ -86,9 +84,11 @@ class ArrayOf(DictAs):
         # Skip The direct super method and apply it to each list item.
         super(DictAs, self).validate(value)
         if value not in EMPTY_VALUES:
-            super_validate = super(ArrayOf, self).validate
+            super_validate = super(ListOf, self).validate
             self._process_list(value, super_validate)
 
     def __iter__(self):
         # This does nothing but it does prevent inspections from complaining.
         return None
+
+ArrayOf = ListOf
