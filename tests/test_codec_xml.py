@@ -12,20 +12,30 @@ class XmlLoadTestCase(unittest.TestCase):
         with open(os.path.join(FIXTURE_PATH_ROOT, "book-valid.xml")) as f:
             xml_codec.load(f)
 
+    def test_dumps(self):
+        book = Book(
+            title='Consider Phlebas & Other stories',
+            num_pages=471,
+            rrp=19.50,
+            fiction=True,
+            genre="sci-fi",
+            authors=[Author(name="Iain M. Banks")],
+            publisher=Publisher(name="Macmillan"),
+        )
 
-if __name__ == '__main__':
-    # with open(os.path.join(FIXTURE_PATH_ROOT, "book-valid.xml")) as f:
-    #     xml_codec.load(f)
-
-    book = Book(
-        title='Consider Phlebas & Other stories',
-        num_pages=471,
-        rrp=19.50,
-        genre="sci-fi",
-        fiction=True,
-        publisher=Publisher(name="Macmillan"),
-        authors=[Author(name="Iain M. Banks")]
-    )
-    book.full_clean()
-
-    print(xml_codec.dumps(book, line_ending='\n'))
+        self.assertEqual(
+"""<Book fiction="True">
+<title>Consider Phlebas &amp; Other stories</title>
+<num_pages>471</num_pages>
+<rrp>19.5</rrp>
+<genre>sci-fi</genre>
+<authors>
+<Author>
+<name>Iain M. Banks</name>
+</Author>
+</authors>
+<Publisher>
+<name>Macmillan</name>
+</Publisher>
+</Book>
+""", xml_codec.dumps(book, line_ending='\n'))
