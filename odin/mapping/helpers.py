@@ -18,7 +18,7 @@ class CatFields(object):
 cat_fields = CatFields
 
 
-class SlitField(object):
+class SplitField(object):
     """
     Helper for splitting a field into multiple fields.
     """
@@ -34,7 +34,7 @@ class SlitField(object):
         else:
             return field_value.split(self.sep, self.max_split)
 
-split_field = SlitField
+split_field = SplitField
 
 
 class MapListOf(object):
