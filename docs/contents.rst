@@ -8,3 +8,4 @@ Contents
    index
    intro/index
    ref/index
+   integration/index

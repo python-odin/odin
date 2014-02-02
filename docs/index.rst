@@ -29,6 +29,11 @@ Extras
 * :doc:`ref/contrib/doc_gen/index`
 * :doc:`ref/contrib/pint/index`
 
+Integration
+***********
+
+* :doc:`integration/django/index`
+
 Project Links
 *************
 
