@@ -2,4 +2,4 @@
 source = odin
 
 [report]
-omit = */contrib/doc_gen/*
+omit = */contrib/doc_gen/*,*/contrib/sphinx/*
