@@ -19,6 +19,9 @@ class Field(object):
     """
     Base class for all fields.
     """
+    # These track each time a Field instance is created. Used to retain order.
+    creation_counter = 0
+
     default_validators = []
     default_error_messages = {
         'invalid_choice': 'Value %r is not a valid choice.',
@@ -54,6 +57,9 @@ class Field(object):
         self.validators = self.default_validators + validators
         self.is_attribute = is_attribute
 
+        self.creation_counter = Field.creation_counter
+        Field.creation_counter += 1
+
         messages = {}
         for c in reversed(self.__class__.__mro__):
             messages.update(getattr(c, 'default_error_messages', {}))
@@ -66,6 +72,9 @@ class Field(object):
         obj = copy.copy(self)
         memodict[id(self)] = obj
         return obj
+
+    def __hash__(self):
+        return self.creation_counter
 
     def __repr__(self):
         """

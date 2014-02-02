@@ -149,6 +149,9 @@ class ResourceBase(type):
         for obj_name, obj in attrs.items():
             new_class.add_to_class(obj_name, obj)
 
+        # Sort the fields
+        new_class._meta.fields = sorted(new_class._meta.fields, key=hash)
+
         # All the fields of any type declared on this model
         field_attnames = set([f.attname for f in new_class._meta.fields])
 

@@ -18,10 +18,6 @@ XML_TYPES = {
 if not six.PY3:
     XML_TYPES[unicode] = lambda v: v  # noqa
 
-XML_RESOURCE_LIST_FIELDS = [composite.ListOf]
-XML_RESOURCE_DICT_FIELDS = [composite.DictAs]
-XML_LIST_FIELDS = [fields.ArrayField, fields.TypedArrayField]
-
 
 class OdinContentHandler(sax.ContentHandler):
     def __init__(self, resource):
@@ -110,14 +106,18 @@ def dump(fp, resource, line_ending=''):
 
     # Write any element fields
     for field, value in element_field_iter_items(resource):
-        if field.__class__ in XML_RESOURCE_LIST_FIELDS:
+        if isinstance(field, composite.ListOf):
             fp.write("<%s>%s" % (field.name, line_ending))
             for v in value:
                 dump(fp, v, line_ending)
             fp.write("</%s>%s" % (field.name, line_ending))
 
-        elif field.__class__ in XML_RESOURCE_DICT_FIELDS:
+        elif isinstance(field, composite.DictAs):
             dump(fp, value, line_ending)
+
+        elif isinstance(field, fields.ArrayField):
+            for v in value:
+                fp.write("<%s>%s</%s>%s" % (field.name, _serialize_to_string(v), field.name, line_ending))
 
         else:
             fp.write("<%s>%s</%s>%s" %
