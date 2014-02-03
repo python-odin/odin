@@ -18,6 +18,7 @@ XML_TYPES = {
 if not six.PY3:
     XML_TYPES[unicode] = lambda v: v  # noqa
 
+CONTENT_TYPE = 'application/xml'
 
 # class OdinContentHandler(sax.ContentHandler):
 #     def __init__(self, resource):
