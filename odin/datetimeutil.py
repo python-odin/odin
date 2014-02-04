@@ -99,6 +99,20 @@ def get_tz_aware_dt(dt, assumed_tz=local):
         return dt.replace(tzinfo=assumed_tz)
 
 
+def now_utc():
+    """
+    Get now in UTC (with timezone set correctly).
+    """
+    return datetime.datetime.now(tz=utc)
+
+
+def now_local():
+    """
+    Get now in the current local timezone.
+    """
+    return datetime.datetime.now(tz=local)
+
+
 ISO8601_DATE_STRING_RE = re.compile(
     r"^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})$")
 ISO8601_TIME_STRING_RE = re.compile(
