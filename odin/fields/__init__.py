@@ -97,7 +97,7 @@ class Field(object):
 
     def contribute_to_class(self, cls, name):
         self.set_attributes_from_name(name)
-        self.model = cls
+        self.resource = cls
         cls._meta.add_field(self)
 
     def to_python(self, value):
@@ -177,7 +177,7 @@ class Field(object):
 
     def value_from_object(self, obj):
         """
-        Returns the value of this field in the given model instance.
+        Returns the value of this field in the given resource instance.
         """
         return getattr(obj, self.attname)
 
