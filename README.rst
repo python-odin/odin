@@ -2,9 +2,10 @@
 Odin - Object Data Mapping for Python
 #####################################
 
-Based off a previous library for mapping JSON to python objects Odin branches from just supporting JSON to supporting
-many other data representations, allowing them to be mapped into converted into a Python object graph, validated against
-a set of validators and mapped into other formats.
+Odin provides a declarative framework for defining resources (classes) and their relationships, validation of the fields 
+that make up the resources and mapping between different resources or an object graph of resources.
+
+The library then expands on the basic features this with serialisation tools importing and exporting data.
 
 .. image:: https://pypip.in/license/odin/badge.png
     :target: https://pypi.python.org/pypi/odin/
@@ -54,11 +55,15 @@ Upcoming features
 **In development**
 
 * Customisable generation of documentation of resources (for integration into `Sphinx <http://sphinx-doc.org/>`_)
-* Complete documentation (around 70-80% complete for current features)
-* Support for CSV
+* Complete documentation, this will pretty much always be here. The main sections are complete though!
+* Improved for CSV Codec (writing, reading multi resource CSV's)
+* Improved mapping, automapping of DictAs and ListOf fields
+* RESTful interface with support for Flask and Django
+* XML Codec (export completed)
 
 **Planning**
 
+* YAML codec
 * Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms)
 
 
