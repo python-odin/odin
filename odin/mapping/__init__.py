@@ -235,10 +235,17 @@ class MappingBase(object):
         :param source_resource: The source resource, this must be an instance of :py:attr:`Mapping.from_resource`.
         :param context: An optional context value, this can be any value you want to aid in mapping
         """
-        if isinstance(source_resource, (list, tuple)):
-            return (cls(s, context).convert() for s in source_resource)
-        else:
-            return cls(source_resource, context).convert()
+        context = context or {}
+        context.setdefault('_idx', []).append(0)
+        try:
+            if isinstance(source_resource, (list, tuple)):
+                for s in source_resource:
+                    yield cls(s, context).convert()
+                    context['_idx'][0] += 1
+            else:
+                return cls(source_resource, context).convert()
+        finally:
+            context['_idx'].pop()
 
     def __init__(self, source_resource, context=None):
         """
@@ -251,6 +258,10 @@ class MappingBase(object):
             raise TypeError('Source parameter must be an instance of %s' % self.from_resource)
         self.source = source_resource
         self.context = context or {}
+
+    @property
+    def loop_idx(self):
+        return self.context.setdefault('_idx', [0])[0]
 
     def _apply_rule(self, mapping_rule):
         # Unpack mapping definition and fetch from values
