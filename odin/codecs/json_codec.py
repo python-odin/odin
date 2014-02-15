@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 import datetime
 from odin import serializers
 from odin import resources
@@ -13,6 +13,7 @@ JSON_TYPES = {
     datetime.time: serializers.time_iso_format,
     datetime.datetime: serializers.datetime_iso_format,
 }
+CONTENT_TYPE = 'application/json'
 
 
 class OdinEncoder(json.JSONEncoder):

@@ -2,6 +2,7 @@
 import csv
 from odin.resources import create_resource_from_dict
 
+CONTENT_TYPE = 'text/csv'
 
 class ResourceReader(csv.DictReader):
     def __init__(self, f, resource, *args, **kwargs):
