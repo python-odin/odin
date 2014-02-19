@@ -72,14 +72,18 @@ CONTENT_TYPE = 'application/xml'
 #         print("setDocumentLocator", locator)
 #
 #
-# def load(fp, resource=None):
-#     handler = OdinContentHandler(resource)
-#     sax.parse(fp, handler)
-#
-#
-# def loads(s, resource=None):
-#     handler = OdinContentHandler(resource)
-#     sax.parseString(s, handler)
+
+
+def load(fp, resource=None):
+    # handler = OdinContentHandler(resource)
+    # sax.parse(fp, handler)
+    raise NotImplemented()
+
+
+def loads(s, resource=None):
+    # handler = OdinContentHandler(resource)
+    # sax.parseString(s, handler)
+    raise NotImplemented()
 
 
 def _serialize_to_string(value):
