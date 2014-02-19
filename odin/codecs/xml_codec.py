@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from xml import sax
+#from xml import sax
 import datetime
 from io import StringIO
 from xml.sax import saxutils
