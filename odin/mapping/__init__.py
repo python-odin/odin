@@ -237,15 +237,19 @@ class MappingBase(object):
         """
         context = context or {}
         context.setdefault('_idx', []).append(0)
-        try:
-            if isinstance(source_resource, (list, tuple)):
-                for s in source_resource:
+
+        if isinstance(source_resource, (list, tuple)):
+            def result_iter(sources, ctx):
+                for s in sources:
                     yield cls(s, context).convert()
-                    context['_idx'][0] += 1
-            else:
+                    ctx['_idx'][0] += 1
+                context['_idx'].pop()
+            return result_iter(source_resource, context)
+        else:
+            try:
                 return cls(source_resource, context).convert()
-        finally:
-            context['_idx'].pop()
+            finally:
+                context['_idx'].pop()
 
     def __init__(self, source_resource, context=None):
         """
