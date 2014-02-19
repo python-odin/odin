@@ -184,8 +184,10 @@ class MappingMeta(type):
         def remove_from_unmapped_fields(rule):
             # Remove any fields that are handled by a mapping rule from unmapped_fields list.
             map_from, _, map_to, _, _, _ = rule
-            if len(map_from) == 1 and map_from[0] in unmapped_fields:
-                unmapped_fields.remove(map_from[0])
+            # Removing this in the future as it doesn't really make sense, auto mapped fields are really
+            # about mapping to and item not mapping from.
+            # if len(map_from) == 1 and map_from[0] in unmapped_fields:
+            #     unmapped_fields.remove(map_from[0])
             if len(map_to) == 1 and map_to[0] in unmapped_fields:
                 unmapped_fields.remove(map_to[0])
 

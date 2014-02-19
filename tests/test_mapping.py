@@ -13,6 +13,7 @@ class SimpleFromResource(odin.Resource):
 
 class SimpleToResource(odin.Resource):
     title = odin.StringField()
+    title_count = odin.StringField()
 
 
 class FakeToResource(odin.Resource):
@@ -23,6 +24,10 @@ class FakeToResource(odin.Resource):
 class SimpleFromTo(odin.Mapping):
     from_resource = SimpleFromResource
     to_resource = SimpleToResource
+
+    @odin.map_field(from_field='title')
+    def title_count(self, value):
+        return "%s: %s" % (self.loop_idx, value)
 
 
 class MappingBaseTestCase(unittest.TestCase):
@@ -228,6 +233,13 @@ class MappingTestCase(unittest.TestCase):
         self.assertIsInstance(t, SimpleToResource)
         self.assertEqual("ABC", t.title)
 
+    def test_apply_single_resource_with_context(self):
+        f = SimpleFromResource(title="ABC")
+        t = SimpleFromTo.apply(f)
+
+        self.assertIsInstance(t, SimpleToResource)
+        self.assertEqual("0: ABC", t.title_count)
+
     def test_apply_multiple_resources(self):
         from_resources = [
             SimpleFromResource(title="Foo"),
@@ -238,3 +250,15 @@ class MappingTestCase(unittest.TestCase):
         to_resource_iter = SimpleFromTo.apply(from_resources)
         self.assertIsInstance(to_resource_iter, collections.Iterator)
         self.assertListEqual(['Foo', 'Bar', 'Eek'], [t.title for t in to_resource_iter])
+
+    def test_apply_multiple_resources_with_context(self):
+        from_resources = [
+            SimpleFromResource(title="Foo"),
+            SimpleFromResource(title="Bar"),
+            SimpleFromResource(title="Eek"),
+        ]
+
+        to_resource_iter = SimpleFromTo.apply(from_resources)
+        self.assertIsInstance(to_resource_iter, collections.Iterator)
+        self.assertListEqual(['0: Foo', '1: Bar', '2: Eek'], [t.title_count for t in to_resource_iter])
+
