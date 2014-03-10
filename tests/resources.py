@@ -66,7 +66,7 @@ class OldBookToBookMapping(odin.Mapping):
     from_resource = OldBook
     to_resource = Book
 
-    exclude_fields = ('')
+    exclude_fields = ('',)
 
     mappings = (
         ('name', None, 'title'),
