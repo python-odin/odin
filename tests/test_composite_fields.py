@@ -2,7 +2,7 @@
 import unittest
 import odin
 from odin.exceptions import ValidationError
-from odin.fields.composite import DictAs, ArrayOf
+from odin.fields.composite import DictAs, ArrayOf, DictOf
 
 
 class ExampleResource(odin.Resource):
@@ -28,13 +28,23 @@ class FieldsTests(unittest.TestCase):
 
     def assertResourceListEqual(self, first, second):
         if not isinstance(first, list):
-            raise AssertionError("First is None")
+            raise AssertionError("First is not a list")
         if not isinstance(second, list):
-            raise AssertionError("Second is None")
+            raise AssertionError("Second is not a list")
         if len(first) != len(second):
-            raise AssertionError("Arrays are different lengths")
+            raise AssertionError("Lists are different lengths")
         for idx in range(len(first)):
             self.assertResourceEqual(first[idx], second[idx])
+
+    def assertResourceDictEqual(self, first, second):
+        if not isinstance(first, dict):
+            raise AssertionError("First is not a dict")
+        if not isinstance(second, dict):
+            raise AssertionError("Second is dict")
+        if len(first) != len(second):
+            raise AssertionError("Dicts are different lengths")
+        for key in first.keys():
+            self.assertResourceEqual(first[key], second[key])
 
     # DictAs ##################################################################
 
@@ -89,3 +99,29 @@ class FieldsTests(unittest.TestCase):
         self.assertResourceListEqual([ExampleResource(name='foo')], f.clean([{'name': 'foo'}]))
         self.assertResourceListEqual([ExampleResource(name='foo')], f.clean([{
             '$': 'test_composite_fields.ExampleResource', 'name': 'foo'}]))
+
+    # DictOf #################################################################
+
+    def test_dictof_1(self):
+        f = DictOf(ExampleResource)
+        self.assertRaises(ValidationError, f.clean, None)
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertRaises(ValidationError, f.clean, [])
+        self.assertRaises(ValidationError, f.clean, {'$': 'test_composite_fields.ExampleResource'})
+        self.assertRaises(ValidationError, f.clean, {'abc': None})
+        self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {'name': 'foo'}}))
+        self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {
+            '$': 'test_composite_fields.ExampleResource', 'name': 'foo'}}))
+
+    def test_dictof_2(self):
+        f = DictOf(ExampleResource, null=True)
+        self.assertEqual(None, f.clean(None))
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertRaises(ValidationError, f.clean, [])
+        self.assertRaises(ValidationError, f.clean, {'$': 'test_composite_fields.ExampleResource'})
+        self.assertRaises(ValidationError, f.clean, {'abc': None})
+        self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {'name': 'foo'}}))
+        self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {
+            '$': 'test_composite_fields.ExampleResource', 'name': 'foo'}}))
