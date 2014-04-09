@@ -298,3 +298,14 @@ A child list. Requires a positional argument: the class that represents a list o
 
 .. note::
     A default `list` is automatically assigned.
+
+.. _field-dictof_field:
+
+DictOf field
+=============
+``class DictOf(of[, **options])``
+
+A child dict. Requires a positional argument: the class that represents a dict (or hash map) of resources.
+
+.. note::
+    A default `dict` is automatically assigned.
