@@ -73,10 +73,16 @@ class OldBookToBookMapping(odin.Mapping):
     )
 
 
+class ChildResource(odin.Resource):
+    name = odin.StringField()
+
+
 class FromResource(odin.Resource):
     # Auto matched
     title = odin.StringField()
     count = odin.StringField()
+    child = odin.ObjectAs(ChildResource)
+    children = odin.ArrayOf(ChildResource)
     # Excluded
     excluded1 = odin.FloatField()
     # Mappings
@@ -98,6 +104,8 @@ class ToResource(odin.Resource):
     # Auto matched
     title = odin.StringField()
     count = odin.IntegerField()
+    child = odin.ObjectAs(ChildResource)
+    children = odin.ArrayOf(ChildResource)
     # Excluded
     excluded1 = odin.FloatField()
     # Mappings
@@ -111,6 +119,7 @@ class ToResource(odin.Resource):
     to_field_c3 = odin.StringField()
     not_auto_c5 = odin.StringField()
     array_string = odin.TypedArrayField(odin.StringField())
+    assigned_field = odin.StringField()
 
 
 class FromToMapping(odin.Mapping):
@@ -141,3 +150,7 @@ class FromToMapping(odin.Mapping):
     @odin.map_list_field(to_field='array_string')
     def comma_separated_string(self, value):
         return value.split(',')
+
+    @odin.assign_field
+    def assigned_field(self):
+        return 'Foo'

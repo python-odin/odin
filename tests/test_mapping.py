@@ -4,6 +4,7 @@ import collections
 import unittest
 import odin
 from odin.exceptions import MappingSetupError, MappingExecutionError
+from odin.mapping.helpers import MapDictAs, MapListOf, NoOpMapper
 from resources import *
 
 
@@ -48,7 +49,10 @@ class MappingBaseTestCase(unittest.TestCase):
             (('from_field_c4',), 'one_to_multi', ('to_field_c2', 'to_field_c3'), False, False, False),
             (('not_auto_c5',), 'not_auto_c5', ('not_auto_c5',), False, False, False),
             (('comma_separated_string',), 'comma_separated_string', ('array_string',), True, False, False),
+            (None, 'assigned_field', ('assigned_field',), False, False, False),
             (('count',), None, ('count',), False, False, False),
+            (('child',), MapDictAs(NoOpMapper), ('child',), False, True, False),
+            (('children',), MapListOf(NoOpMapper), ('children',), True, True, False),
             (('title',), None, ('title',), False, False, False),
         ], FromToMapping._mapping_rules)
 
@@ -72,6 +76,8 @@ class MappingBaseTestCase(unittest.TestCase):
             from_field_c4="first-second-third",
             not_auto_c5="do something",
             comma_separated_string="foo,bar,eek",
+            child=ChildResource(name='foo'),
+            children=[ChildResource(name='foo'), ChildResource(name='bar')]
         )
 
         to_resource = from_resource.convert_to(ToResource)

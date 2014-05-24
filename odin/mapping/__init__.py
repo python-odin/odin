@@ -5,13 +5,14 @@ from odin import registration
 from odin.resources import Resource
 from odin.fields.composite import ListOf, DictAs
 from odin.exceptions import MappingSetupError, MappingExecutionError
-from odin.mapping.helpers import MapListOf, MapDictAs
+from odin.mapping.helpers import MapListOf, MapDictAs, NoOpMapper
 from odin.utils import cached_property
 
-__all__ = ('Mapping', 'map_field', 'map_list_field')
+__all__ = ('Mapping', 'map_field', 'map_list_field', 'assign_field')
 
 
 force_tuple = lambda x: x if isinstance(x, (list, tuple)) else (x,)
+EMPTY_LIST = tuple()
 
 
 def define(from_field, action, to_field, to_list=False, bind=False, skip_if_none=False):
@@ -23,10 +24,10 @@ def define(from_field, action, to_field, to_list=False, bind=False, skip_if_none
     :param to_list: Assume the result is a list (rather than a multi value tuple).
     :param bind: During the mapping operation the first parameter should be the mapping instance.
     :param skip_if_none: If the from field is :const:`None` do not include the field (this allows the destination
-        object to define it's own supply defaults etc)
+        object to define it's own defaults etc)
     :return: A mapping definition.
     """
-    return force_tuple(from_field), action, force_tuple(to_field), to_list, bind, skip_if_none
+    return from_field, action, to_field, to_list, bind, skip_if_none
 
 
 class FieldResolverBase(object):
@@ -77,6 +78,7 @@ def _generate_auto_mapping(name, from_fields, to_fields):
     """
     from_field = from_fields[name]
     to_field = to_fields[name]
+    name = force_tuple(name)
 
     # Handle ListOf fields
     if isinstance(from_field, ListOf) and isinstance(to_field, ListOf):
@@ -84,7 +86,10 @@ def _generate_auto_mapping(name, from_fields, to_fields):
             mapping = registration.get_mapping(from_field.of, to_field.of)
             return define(name, MapListOf(mapping), name, to_list=True, bind=True)
         except KeyError:
-            pass
+            # If both items are from and to fields refer to the same object automatically use a mapper that just
+            # produces a clone.
+            if from_field.of is to_field.of:
+                return define(name, MapListOf(NoOpMapper), name, to_list=True, bind=True)
 
     # Handle DictAs fields
     elif isinstance(from_field, DictAs) and isinstance(to_field, DictAs):
@@ -92,7 +97,10 @@ def _generate_auto_mapping(name, from_fields, to_fields):
             mapping = registration.get_mapping(from_field.of, to_field.of)
             return define(name, MapDictAs(mapping), name, bind=True)
         except KeyError:
-            pass
+            # If both items are from and to fields refer to the same object automatically use a mapper that just
+            # produces a clone.
+            if from_field.of is to_field.of:
+                return define(name, MapDictAs(NoOpMapper), name, bind=True)
 
     return define(name, None, name)
 
@@ -144,6 +152,7 @@ class MappingMeta(type):
             to_list = False
             bind = False
             skip_if_none = False
+            is_assignment = False
             try:
                 map_from, action, map_to, to_list, bind, skip_if_none = m
             except ValueError:
@@ -152,10 +161,14 @@ class MappingMeta(type):
                 except ValueError:
                     raise MappingSetupError('Bad mapping definition `%s` in %s `%s`.' % (m, def_type, ref))
 
-            map_from = force_tuple(map_from)
-            for f in map_from:
-                if not f in from_fields:
-                    raise MappingSetupError('Field `%s` of %s `%s` not found on from object. ' % (f, def_type, ref))
+            if map_from is None:
+                is_assignment = True
+
+            if not is_assignment:
+                map_from = force_tuple(map_from)
+                for f in map_from:
+                    if not f in from_fields:
+                        raise MappingSetupError('Field `%s` of %s `%s` not found on from object. ' % (f, def_type, ref))
 
             if isinstance(action, six.string_types):
                 if action not in attrs:
@@ -166,6 +179,8 @@ class MappingMeta(type):
                         action, def_type, ref))
             elif action is not None and not callable(action):
                 raise MappingSetupError('Action on %s `%s` is not callable.' % (def_type, ref))
+            elif action is None and is_assignment:
+                raise MappingSetupError('Not action supplied for `%s` in `%s`.' % (def_type, ref))
 
             map_to = force_tuple(map_to)
             if to_list and len(map_to) != 1:
@@ -273,7 +288,11 @@ class MappingBase(object):
         # Unpack mapping definition and fetch from values
         from_fields, action, to_fields, to_list, bind, skip_if_none = mapping_rule
 
-        from_values = tuple(getattr(self.source, f) for f in from_fields)
+        # This is an assignment rather than a mapping
+        if from_fields is None:
+            from_values = EMPTY_LIST
+        else:
+            from_values = tuple(getattr(self.source, f) for f in from_fields)
 
         if action is None:
             to_values = from_values
@@ -340,7 +359,7 @@ def map_field(func=None, from_field=None, to_field=None, to_list=False):
 
     :param from_field: Name of the field to map from; default is to use the function name.
     :param to_field: Name of the field to map to; default is to use the function name.
-    :param to_list: Assume the result is a list (rather than a multi value tuple).
+    :param to_list: The result is a list (rather than a multi value tuple).
     """
     def inner(func):
         func._mapping = define(
@@ -365,3 +384,25 @@ def map_list_field(*args, **kwargs):
     """
     kwargs['to_list'] = True
     return map_field(*args, **kwargs)
+
+
+def assign_field(func=None, to_field=None, to_list=False):
+    """
+    Field decorator for assigning a value to destination field without requiring a corresponding source field.
+
+    Allows for the mapping to calculate a value based on the context or other information. Useful when a destination
+    objects defaulting mechanism is not able to calculate a default that either applies or is suitable.
+
+    :param to_field: Name of the field to assign value to; default is to use the function name.
+    :param to_list: The result is a list (rather than a multi value tuple).
+    """
+    def inner(func):
+        func._mapping = define(
+            None,
+            func.__name__,
+            to_field or func.__name__,
+            to_list
+        )
+        return func
+
+    return inner(func) if func else inner
