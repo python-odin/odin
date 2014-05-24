@@ -123,10 +123,11 @@ class MappingMeta(type):
             # If this isn't a subclass of Mapping, don't do anything special.
             return super_new(cls, name, bases, attrs)
 
-        from_obj = attrs.get('from_obj', attrs.get('from_resource'))
+        # Backward compatibility from_resource -> from_obj
+        from_obj = attrs.setdefault('from_obj', attrs.get('from_resource'))
         if from_obj is None:
             raise MappingSetupError('`from_obj` is not defined.')
-        to_obj = attrs.get('to_obj', attrs.get('to_resource'))
+        to_obj = attrs.setdefault('to_obj', attrs.get('to_resource'))
         if to_obj is None:
             raise MappingSetupError('`to_obj` is not defined.')
 
@@ -279,9 +280,6 @@ class MappingBase(object):
         :param source_resource: The source resource, this must be an instance of :py:attr:`Mapping.from_resource`.
         :param context: An optional context value, this can be any value you want to aid in mapping
         """
-        if self.from_obj is None:
-            self.from_obj = self.from_resource
-
         if not isinstance(source_resource, self.from_obj):
             raise TypeError('Source parameter must be an instance of %s' % self.from_obj)
         self.source = source_resource
