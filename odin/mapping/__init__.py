@@ -167,7 +167,7 @@ class MappingMeta(type):
             if not is_assignment:
                 map_from = force_tuple(map_from)
                 for f in map_from:
-                    if not f in from_fields:
+                    if f not in from_fields:
                         raise MappingSetupError('Field `%s` of %s `%s` not found on from object. ' % (f, def_type, ref))
 
             if isinstance(action, six.string_types):
@@ -187,7 +187,7 @@ class MappingMeta(type):
                 raise MappingSetupError('The %s `%s` specifies a to_list mapping, these can only be applied to a '
                                         'single target field.' % (def_type, m))
             for f in map_to:
-                if not f in to_fields:
+                if f not in to_fields:
                     raise MappingSetupError('Field `%s` of %s `%s` not found on to object. ' % (f, def_type, ref))
 
             return map_from, action, map_to, to_list, bind, skip_if_none
