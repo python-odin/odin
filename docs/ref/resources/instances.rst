@@ -2,7 +2,7 @@
 Resources Instances
 ###################
 
-A resource is the definition of the data structure that data is mapped into.
+A resource is a collection of fields and associated meta data that is used to validate data within the fields.
 
 The basics:
  * Each resource is a Python class that subclasses :class:`odin.Resource`.
