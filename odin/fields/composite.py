@@ -90,7 +90,7 @@ class ListOf(DictAs):
 
     def __iter__(self):
         # This does nothing but it does prevent inspections from complaining.
-        return None
+        return None  # noqa
 
 ArrayOf = ListOf
 
@@ -143,4 +143,4 @@ class DictOf(DictAs):
 
     def __iter__(self):
         # This does nothing but it does prevent inspections from complaining.
-        return None
+        return None  # noqa
