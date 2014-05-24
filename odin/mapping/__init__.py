@@ -123,12 +123,12 @@ class MappingMeta(type):
             # If this isn't a subclass of Mapping, don't do anything special.
             return super_new(cls, name, bases, attrs)
 
-        from_obj = attrs.get('from_resource')
+        from_obj = attrs.get('from_obj', attrs.get('from_resource'))
         if from_obj is None:
-            raise MappingSetupError('`from_resource` is not defined.')
-        to_obj = attrs.get('to_resource')
+            raise MappingSetupError('`from_obj` is not defined.')
+        to_obj = attrs.get('to_obj', attrs.get('to_resource'))
         if to_obj is None:
-            raise MappingSetupError('`to_resource` is not defined.')
+            raise MappingSetupError('`to_obj` is not defined.')
 
         # Check if we have already created this mapping
         try:
@@ -239,6 +239,10 @@ class MappingMeta(type):
 
 
 class MappingBase(object):
+    from_obj = None
+    to_obj = None
+
+    # Pending deprecation, move to from_obj and to_obj terminology
     from_resource = None
     to_resource = None
 
@@ -275,8 +279,11 @@ class MappingBase(object):
         :param source_resource: The source resource, this must be an instance of :py:attr:`Mapping.from_resource`.
         :param context: An optional context value, this can be any value you want to aid in mapping
         """
-        if not isinstance(source_resource, self.from_resource):
-            raise TypeError('Source parameter must be an instance of %s' % self.from_resource)
+        if self.from_obj is None:
+            self.from_obj = self.from_resource
+
+        if not isinstance(source_resource, self.from_obj):
+            raise TypeError('Source parameter must be an instance of %s' % self.from_obj)
         self.source = source_resource
         self.context = context or {}
 
@@ -328,7 +335,7 @@ class MappingBase(object):
 
         :param field_values: Dictionary of values for creating the target object.
         """
-        return self.to_resource(**field_values)
+        return self.to_obj(**field_values)
 
     def convert(self, **field_values):
         """Convert the provided source into a target object.
