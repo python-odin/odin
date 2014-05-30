@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odin.utils import field_iter_items
+from odin.utils import cached_property, field_iter_items
 
 __all__ = ('ResourceAdapter',)
 
@@ -10,38 +10,25 @@ class ResourceOptionsAdapter(object):
     """
     def __init__(self, options, include, exclude):
         self._wrapped = options
-        self._include = include
-        self._exclude = exclude
+        self.parents = options.parents
 
-        self.parents = []
-        self.fields = []
+        # Filter available fields
+        include = include or [f.attname for f in options.fields]
+        exclude = exclude or []
+        self.fields = [f for f in options.fields if f.attname in include and f.attname not in exclude]
 
-        self.name = options.name
-        self.class_name = None
-        self.name_space = NOT_PROVIDED
-        self.verbose_name = None
-        self.verbose_name_plural = None
-        self.abstract = False
-        self.doc_group = None
-        self.type_field = DEFAULT_TYPE_FIELD
+        # Work around so cached properties still work.
+        self._cache = {}
 
-    @property
+    def __getattr__(self, item):
+        return getattr(self._wrapped, item)
+
+    def __repr__(self):
+        return '<Options Adapter for %s>' % self.resource_name
+
+    @cached_property
     def field_map(self):
-        return self._wrapped.field_map
-
-    @property
-    def resource_name(self):
-        """
-        Full name of resource including namespace (if specified)
-        """
-        return self._wrapped.resource_name
-
-    @property
-    def parent_resource_names(self):
-        """
-        List of parent resource names.
-        """
-        return self._wrapped.resource_name
+        return {f.attname: f for f in self.fields}
 
     @property
     def attribute_fields(self):
@@ -56,9 +43,6 @@ class ResourceOptionsAdapter(object):
         List of fields where is_attribute is False.
         """
         return [f for f in self.fields if not f.is_attribute]
-
-    def __repr__(self):
-        return '<Options Adapter for %s>' % self.resource_name
 
 
 class ResourceAdapter(object):
