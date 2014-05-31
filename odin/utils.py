@@ -91,7 +91,7 @@ def field_iter(resource):
     :returns: an iterator that returns fields.
 
     """
-    return iter(resource._meta.fields)
+    return iter(resource._meta.all_fields)
 
 
 def field_iter_items(resource, fields=None):
@@ -104,7 +104,7 @@ def field_iter_items(resource, fields=None):
 
     """
     if fields is None:
-        fields = resource._meta.fields
+        fields = resource._meta.all_fields
     for f in fields:
         yield f, f.prepare(f.value_from_object(resource))
 

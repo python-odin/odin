@@ -18,6 +18,7 @@ class ResourceOptions(object):
         self.meta = meta
         self.parents = []
         self.fields = []
+        self.virtual_fields = []
 
         self.name = None
         self.class_name = None
@@ -27,6 +28,8 @@ class ResourceOptions(object):
         self.abstract = False
         self.doc_group = None
         self.type_field = DEFAULT_TYPE_FIELD
+
+        self._all_fields = None
 
     def contribute_to_class(self, cls, name):
         cls._meta = self
@@ -58,12 +61,13 @@ class ResourceOptions(object):
         if not self.verbose_name_plural:
             self.verbose_name_plural = self.verbose_name + 's'
 
-    @cached_property
-    def field_map(self):
-        return {f.attname: f for f in self.fields}
-
     def add_field(self, field):
         self.fields.append(field)
+        self._all_fields = None
+
+    def add_virtual_field(self, field):
+        self.virtual_fields.append(field)
+        self._all_fields = None
 
     @property
     def resource_name(self):
@@ -74,6 +78,19 @@ class ResourceOptions(object):
             return "%s.%s" % (self.name_space, self.name)
         else:
             return self.name
+
+    @property
+    def all_fields(self):
+        """
+        All fields both standard and virtual.
+        """
+        if self._all_fields is None:
+            self._all_fields = self.fields + self.virtual_fields
+        return self._all_fields
+
+    @cached_property
+    def field_map(self):
+        return {f.attname: f for f in self.fields}
 
     @cached_property
     def parent_resource_names(self):
@@ -218,6 +235,13 @@ class Resource(six.with_metaclass(ResourceBase)):
         """
         return field_iter_items(self)
 
+    @classmethod
+    def create_from_dict(cls, d, full_clean=False):
+        """
+        Create a resource instance from a dictionary.
+        """
+        return create_resource_from_dict(d, cls, full_clean)
+
     def to_dict(self):
         """
         Convert this resource into a dict
@@ -299,6 +323,11 @@ class Resource(six.with_metaclass(ResourceBase)):
 def create_resource_from_dict(d, resource=None, full_clean=True):
     """
     Create a resource from a dict.
+
+    :param d: dictionary of data.
+    :param resource: A resource type of resource name that is expected in the dict; this could also be a parent
+        of any resource defined by the dict.
+    :param full_clean: Do a full clean as part of the creation.
     """
     assert isinstance(d, dict)
 

@@ -17,7 +17,7 @@ class NOT_PROVIDED:
 
 class Field(object):
     """
-    Base class for all fields.
+    Base class for fields.
     """
     # These track each time a Field instance is created. Used to retain order.
     creation_counter = 0
