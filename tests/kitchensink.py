@@ -51,7 +51,8 @@ class KitchenSinkTestCase(TestCase):
             "genre": "sci-fi",
             "rrp": 19.5
         }
-    ]
+    ],
+    "book_count": 1
 }
         """, actual)
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import odin
+from odin.fields.virtual import CalculatedField
 from odin.mapping.helpers import sum_fields
 
 
@@ -42,6 +43,7 @@ class Book(LibraryBook):
 class Library(odin.Resource):
     name = odin.StringField()
     books = odin.ArrayOf(LibraryBook)
+    book_count = CalculatedField(lambda o: len(o.books))
 
     class Meta:
         name_space = None
