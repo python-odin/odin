@@ -109,6 +109,17 @@ def field_iter_items(resource, fields=None):
         yield f, f.prepare(f.value_from_object(resource))
 
 
+def virtual_field_iter_items(resource):
+    """
+    Return an iterator that yields virtual fields and their values from a resource.
+
+    :param resource: Resource to iterate over.
+    :returns: an iterator that returns (field, value) tuples.
+
+    """
+    return field_iter_items(resource, resource._meta.virtual_fields)
+
+
 def attribute_field_iter_items(resource):
     """
     Return an iterator that yields fields and their values from a resource that have the attribute flag set.

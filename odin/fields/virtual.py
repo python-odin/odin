@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 
 
 class VirtualField(object):
     """
-    Base class for virtual fields.
+    Base class for virtual fields. A virtual fields is treated like any other field during encoding/decoding (provided
+    it can be written to).
     """
     # These track each time a VirtualField instance is created. Used to retain order.
     creation_counter = 0
@@ -30,7 +32,7 @@ class VirtualField(object):
         raise NotImplementedError
 
     def __set__(self, instance, value):
-        raise AttributeError("Read only property")
+        raise AttributeError("Read only")
 
     def __repr__(self):
         """
@@ -56,9 +58,12 @@ class VirtualField(object):
         self.resource = cls
         cls._meta.add_virtual_field(self)
 
+        setattr(cls, name, self)
+
     def prepare(self, value):
         """
         Prepare a value for serialisation.
+
         :param value:
         :return:
         """
@@ -72,6 +77,11 @@ class VirtualField(object):
 
 
 class CalculatedField(VirtualField):
+    """
+    A field whose that is calculated by an expression.
+
+    The expression should accept a single "self" parameter that is a Resource instance.
+    """
     def __init__(self, expr, *args, **kwargs):
         assert callable(expr)
         super(CalculatedField, self).__init__(*args, **kwargs)

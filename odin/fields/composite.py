@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import six
 from odin import exceptions
 from odin.resources import create_resource_from_dict
