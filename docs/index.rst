@@ -12,7 +12,6 @@ Quick overview to get up to speed with Odin.
 * :doc:`intro/creating-resources`
 * :doc:`intro/loading-and-saving-data`
 * :doc:`intro/mapping-between-resources`
-* Advanced: :doc:`intro/polymorphism-and-abstract-resources`
 
 Working with resources
 **********************

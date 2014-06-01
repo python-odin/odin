@@ -168,7 +168,7 @@ The two list option is what the ``map_list_field`` decorator uses to indicate th
 ~~~~~~~~
 
 For use with action methods defined outside the mapping class, if bind is set to ``True`` the mapping instance is
-passed to the action method as the first paramter.
+passed to the action method as the first parameter.
 
 ``skip_if_none``
 ~~~~~~~~~~~~~~~~

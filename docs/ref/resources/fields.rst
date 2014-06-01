@@ -309,3 +309,25 @@ A child dict. Requires a positional argument: the class that represents a dict (
 
 .. note::
     A default `dict` is automatically assigned.
+
+
+Virtual fields
+**************
+
+Virtual fields are special fields that can be used to calculate a value or provide a value lookup. Unlike using a
+property a virtual field is also a treating like field in that it can be mapped or exported.
+
+.. note::
+    You can use the
+
+Virtual fields share many of the options of regular fields:
+ - :ref:`field-option-verbose_name`
+ - :ref:`field-option-verbose_name_plural`
+ - :ref:`field-option-name`
+ - :ref:`field-option-doc_text`
+
+.. _field-calculated_field:
+
+Calculated field
+================
+``class CalculatedField(expr[, **options])``
