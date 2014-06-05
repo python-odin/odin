@@ -141,11 +141,11 @@ class MappingMeta(type):
         try:
             from_fields = registration.get_field_resolver(from_obj)
         except KeyError:
-            raise MappingSetupError('`from_resource` %r does not have a attribute resolver defined.' % from_obj)
+            raise MappingSetupError('`from_obj` %r does not have a attribute resolver defined.' % from_obj)
         try:
             to_fields = registration.get_field_resolver(to_obj)
         except KeyError:
-            raise MappingSetupError('`to_resource` %r does not have a attribute resolver defined.' % to_obj)
+            raise MappingSetupError('`to_obj` %r does not have a attribute resolver defined.' % to_obj)
 
         def attr_mapping_to_mapping_rule(m, def_type, ref):
             """ Parse, validate and normalise defined mapping rules so rules can be executed without having to perform
@@ -199,11 +199,7 @@ class MappingMeta(type):
 
         def remove_from_unmapped_fields(rule):
             # Remove any fields that are handled by a mapping rule from unmapped_fields list.
-            map_from, _, map_to, _, _, _ = rule
-            # Removing this in the future as it doesn't really make sense, auto mapped fields are really
-            # about mapping to and item not mapping from.
-            # if len(map_from) == 1 and map_from[0] in unmapped_fields:
-            #     unmapped_fields.remove(map_from[0])
+            map_to = rule[2]
             if len(map_to) == 1 and map_to[0] in unmapped_fields:
                 unmapped_fields.remove(map_to[0])
 
