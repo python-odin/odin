@@ -43,7 +43,7 @@ class ResourceCache(object):
 
         :param mapping: Mapping object to register.
         """
-        mapping_name = generate_mapping_cache_name(mapping.from_resource, mapping.to_resource)
+        mapping_name = generate_mapping_cache_name(mapping.from_obj, mapping.to_obj)
         self.mappings[mapping_name] = mapping
 
     def get_mapping(self, from_obj, to_obj):
