@@ -23,8 +23,8 @@ class FakeToResource(odin.Resource):
 
 
 class SimpleFromTo(odin.Mapping):
-    from_resource = SimpleFromResource
-    to_resource = SimpleToResource
+    from_obj = SimpleFromResource
+    to_obj = SimpleToResource
 
     @odin.map_field(from_field='title')
     def title_count(self, value):
@@ -98,18 +98,18 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_missing_from_resource(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                to_resource = FakeToResource
+                to_obj = FakeToResource
 
     def test_missing_to_resource(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = SimpleFromResource
+                from_obj = SimpleFromResource
 
     def test_unknown_from_field_mappings(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = SimpleFromResource
-                to_resource = FakeToResource
+                from_obj = SimpleFromResource
+                to_obj = FakeToResource
 
                 mappings = (
                     ('unknown_field', None, 'title'),
@@ -118,8 +118,8 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_unknown_from_field_mappings_multiple(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = SimpleFromResource
-                to_resource = FakeToResource
+                from_obj = SimpleFromResource
+                to_obj = FakeToResource
 
                 mappings = (
                     (('title', 'unknown_field'), None, 'title'),
@@ -128,8 +128,8 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_unknown_from_field_custom(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = SimpleFromResource
-                to_resource = FakeToResource
+                from_obj = SimpleFromResource
+                to_obj = FakeToResource
 
                 @odin.map_field(from_field='unknown_field', to_field='title')
                 def multi_to_one(self, *fields):
@@ -138,8 +138,8 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_bad_action_not_callable(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = SimpleFromResource
-                to_resource = FakeToResource
+                from_obj = SimpleFromResource
+                to_obj = FakeToResource
 
                 mappings = (
                     ('title', 123, 'title'),
@@ -148,8 +148,8 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_bad_action_not_defined(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = SimpleFromResource
-                to_resource = FakeToResource
+                from_obj = SimpleFromResource
+                to_obj = FakeToResource
 
                 mappings = (
                     ('title', 'do_transform', 'title'),
@@ -158,8 +158,8 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_bad_action_defined_not_callable(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = SimpleFromResource
-                to_resource = FakeToResource
+                from_obj = SimpleFromResource
+                to_obj = FakeToResource
 
                 do_transform = 123
 
@@ -170,8 +170,8 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_unknown_to_field_mappings(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = SimpleFromResource
-                to_resource = FakeToResource
+                from_obj = SimpleFromResource
+                to_obj = FakeToResource
 
                 mappings = (
                     ('title', None, 'unknown_field'),
@@ -180,8 +180,8 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_unknown_to_field_mappings_multiple(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = SimpleFromResource
-                to_resource = FakeToResource
+                from_obj = SimpleFromResource
+                to_obj = FakeToResource
 
                 mappings = (
                     ('title', None, ('title', 'unknown_field')),
@@ -190,8 +190,8 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_unknown_to_field_custom(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = SimpleFromResource
-                to_resource = FakeToResource
+                from_obj = SimpleFromResource
+                to_obj = FakeToResource
 
                 @odin.map_field(from_field='title', to_field='unknown_field')
                 def multi_to_one(self, *fields):
@@ -200,8 +200,8 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_bad_mapping(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = SimpleFromResource
-                to_resource = FakeToResource
+                from_obj = SimpleFromResource
+                to_obj = FakeToResource
 
                 mappings = (
                     'i_forgot', None, 'tuples'
@@ -210,8 +210,8 @@ class MappingBaseTestCase(unittest.TestCase):
     def test_invalid_list_to_multiple_mapping(self):
         with self.assertRaises(MappingSetupError):
             class _(odin.Mapping):
-                from_resource = SimpleFromResource
-                to_resource = FakeToResource
+                from_obj = SimpleFromResource
+                to_obj = FakeToResource
 
                 mappings = (
                     ('title', None, ('title', 'name'), True, False),
@@ -268,3 +268,92 @@ class MappingTestCase(unittest.TestCase):
         self.assertIsInstance(to_resource_iter, collections.Iterator)
         self.assertListEqual(['0: Foo', '1: Bar', '2: Eek'], [t.title_count for t in to_resource_iter])
 
+
+class ResourceA(odin.Resource):
+    class Meta:
+        abstract = True
+
+    foo = odin.StringField()
+
+
+class ResourceB(ResourceA):
+    bar = odin.StringField()
+
+
+class ResourceC(ResourceA):
+    eek = odin.StringField()
+
+
+class ResourceX(odin.Resource):
+    class Meta:
+        abstract = True
+
+    foo = odin.StringField()
+
+
+class ResourceY(ResourceX):
+    bar = odin.StringField()
+
+
+class ResourceZ(ResourceX):
+    alt = odin.StringField()
+
+
+class ResourceAToResourceX(odin.Mapping):
+    from_obj = ResourceA
+    to_obj = ResourceX
+
+
+class ResourceBToResourceY(ResourceAToResourceX):
+    from_obj = ResourceB
+    to_obj = ResourceY
+
+
+class ResourceCToResourceZ(ResourceAToResourceX):
+    from_obj = ResourceC
+    to_obj = ResourceZ
+
+    @odin.map_field(from_field='eek')
+    def alt(self, value):
+        return value
+
+
+class AbstractMappingTestCase(MappingBaseTestCase):
+    """
+    Test the concept of an abstract mapping ie
+
+                Resource A        -->           Mapping A-X         -->           Resource X
+                    |                                |                                |
+               _____|_____                      _____|_____                      _____|_____
+              /           \                    /           \                    /           \
+             /             \                  /             \                  /             \
+        Resource B     Resource C        Mapping B-Y    Mapping C-Z       Resource Y     Resource Z
+
+    Define a mapping that can handle a list of *Resource A* and *Resource B* objects being mapped by an abstract mapping
+    *Mapping A-X* to the corresponding *Resource Y* and *Resource Z* objects.
+
+    """
+    def test_abstract_resource_definitions(self):
+        self.assertListEqual(['bar', 'foo'], [f.name for f in ResourceB._meta.fields])
+        self.assertListEqual(['eek', 'foo'], [f.name for f in ResourceC._meta.fields])
+        self.assertListEqual(['bar', 'foo'], [f.name for f in ResourceY._meta.fields])
+        self.assertListEqual(['alt', 'foo'], [f.name for f in ResourceZ._meta.fields])
+
+    def test_abstract_mapping_definitions(self):
+        self.assertMappingEquivalent([
+            (('foo',), None, ('foo',), False, False, False),
+            (('bar',), None, ('bar',), False, False, False),
+        ], ResourceBToResourceY._mapping_rules)
+
+        self.assertMappingEquivalent([
+            (('eek',), 'alt', ('alt',), False, False, False),
+            (('foo',), None, ('foo',), False, False, False),
+        ], ResourceCToResourceZ._mapping_rules)
+
+    def test_abstract_mapping(self):
+        source = [ResourceB(foo="1", bar="2"), ResourceC(foo="3", eek="4"), ResourceB(foo="5", bar="6")]
+        result = list(ResourceAToResourceX.apply(source))
+
+        self.assertIsInstance(result[0], ResourceY)
+        self.assertIsInstance(result[1], ResourceZ)
+        self.assertIsInstance(result[2], ResourceY)
