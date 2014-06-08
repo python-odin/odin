@@ -29,7 +29,7 @@ class ResourceOptions(object):
         self.doc_group = None
         self.type_field = DEFAULT_TYPE_FIELD
 
-        self._all_fields = None
+        self._cache = {}
 
     def contribute_to_class(self, cls, name):
         cls._meta = self
@@ -63,11 +63,11 @@ class ResourceOptions(object):
 
     def add_field(self, field):
         self.fields.append(field)
-        self._all_fields = None
+        cached_property.clear_caches(self)
 
     def add_virtual_field(self, field):
         self.virtual_fields.append(field)
-        self._all_fields = None
+        cached_property.clear_caches(self)
 
     @property
     def resource_name(self):
@@ -79,14 +79,12 @@ class ResourceOptions(object):
         else:
             return self.name
 
-    @property
+    @cached_property
     def all_fields(self):
         """
         All fields both standard and virtual.
         """
-        if self._all_fields is None:
-            self._all_fields = self.fields + self.virtual_fields
-        return self._all_fields
+        return self.fields + self.virtual_fields
 
     @cached_property
     def field_map(self):
