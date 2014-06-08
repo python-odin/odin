@@ -3,7 +3,7 @@ Odin - Object Data Mapping for Python
 #####################################
 
 Odin provides a declarative framework for defining resources (classes) and their relationships, validation of the fields
-that make up the resources and mapping between resources or an entire object graph.
+that make up the resources and mapping between objects (either a resource, or other python structures).
 
 Odin also comes with built in serialisation tools for importing and exporting data from resources.
 
@@ -37,6 +37,7 @@ Highlights
 * Easy extension to support custom fields
 * Python 2.7+, Python 3.2+ and PyPy :sup:`1` supported
 * Integration with Django (see `baldr <https://github.com/timsavage/baldr>`_)
+* Minimal dependencies (base functionality only requires *six*)
 
 :sup:`1` certain contrib items are not supported. Pint is not installable with PyPy.
 
@@ -54,12 +55,14 @@ Upcoming features
 
 **In development**
 
+* Adaptors for provide and alternate view on a resource (similar to Django's model proxies)
+* Mapping of inherited resources.
 * Customisable generation of documentation of resources (for integration into `Sphinx <http://sphinx-doc.org/>`_)
-* Complete documentation, this will pretty much always be here. The main sections are complete though!
-* Improved for CSV Codec (writing, reading multi resource CSV's)
-* RESTful interface with support for Flask and Django
 * XML Codec (export completed)
-* Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms)
+* Complete documentation, this will pretty much always be here.
+* Improvements for CSV Codec (writing, reading multi resource CSV's)
+* RESTful interface with support for Flask and Django see (see `baldr <https://github.com/timsavage/baldr>`_)
+* Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms) (see `baldr <https://github.com/timsavage/baldr>`_)
 
 **Planning**
 
