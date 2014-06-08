@@ -35,22 +35,44 @@ class FieldResolverBase(object):
     def __init__(self, obj):
         self.obj = obj
 
-    def __iter__(self):
-        return iter(self.field_dict)
+    @cached_property
+    def from_field_dict(self):
+        """Property accessor for the attribute dict"""
+        return self.get_from_field_dict()
 
-    def __contains__(self, item):
-        return item in self.field_dict
+    def get_from_field_dict(self):
+        """ Return a field map of source fields consisting of an attribute and a Field object (if one is used).
 
-    def __getitem__(self, item):
-        return self.field_dict[item]
+        For resource objects the field object would be an Odin resource field, for Django models a model field etc. If
+        you are building a generic object mapper the field object can be :const:`None`.
+
+        The field object is used to determine certain automatic mapping operations (ie Lists of Odin resources to other
+        Odin resources).
+
+        :return: Dictionary
+        """
+        return self.get_field_dict()
 
     @cached_property
-    def field_dict(self):
+    def to_field_dict(self):
         """Property accessor for the attribute dict"""
+        return self.get_to_field_dict()
+
+    def get_to_field_dict(self):
+        """ Return a field map consisting of an attribute and a Field object (if one is used).
+
+        For resource objects the field object would be an Odin resource field, for Django models a model field etc. If
+        you are building a generic object mapper the field object can be :const:`None`.
+
+        The field object is used to determine certain automatic mapping operations (ie Lists of Odin resources to other
+        Odin resources).
+
+        :return: Dictionary
+        """
         return self.get_field_dict()
 
     def get_field_dict(self):
-        """ Return an field map consisting of an attribute and a Field object (if one is used).
+        """ Return a field map consisting of an attribute and a Field object (if one is used).
 
         For resource objects the field object would be an Odin resource field, for Django models a model field etc. If
         you are building a generic object mapper the field object can be :const:`None`.
@@ -139,11 +161,11 @@ class MappingMeta(type):
 
         # Get field resolver objects
         try:
-            from_fields = registration.get_field_resolver(from_obj)
+            from_fields = registration.get_field_resolver(from_obj).from_field_dict
         except KeyError:
             raise MappingSetupError('`from_obj` %r does not have a attribute resolver defined.' % from_obj)
         try:
-            to_fields = registration.get_field_resolver(to_obj)
+            to_fields = registration.get_field_resolver(to_obj).to_field_dict
         except KeyError:
             raise MappingSetupError('`to_obj` %r does not have a attribute resolver defined.' % to_obj)
 
