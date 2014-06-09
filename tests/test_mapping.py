@@ -322,7 +322,7 @@ class AbstractMappingTestCase(MappingBaseTestCase):
     """
     Test the concept of an abstract mapping ie
 
-                Resource A        -->           Mapping A-X         -->           Resource X
+                Resource A          -->         Mapping A-X         -->           Resource X
                     |                                |                                |
                _____|_____                      _____|_____                      _____|_____
               /           \                    /           \                    /           \
