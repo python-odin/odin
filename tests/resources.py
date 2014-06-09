@@ -65,8 +65,8 @@ class OldBook(LibraryBook):
 
 
 class OldBookToBookMapping(odin.Mapping):
-    from_resource = OldBook
-    to_resource = Book
+    from_obj = OldBook
+    to_obj = Book
 
     exclude_fields = ('',)
 
@@ -125,8 +125,8 @@ class ToResource(odin.Resource):
 
 
 class FromToMapping(odin.Mapping):
-    from_resource = FromResource
-    to_resource = ToResource
+    from_obj = FromResource
+    to_obj = ToResource
 
     exclude_fields = ('excluded1',)
 
