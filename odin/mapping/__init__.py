@@ -298,7 +298,7 @@ class MappingBase(object):
         :param source_resource: The source resource, this must be an instance of :py:attr:`Mapping.from_resource`.
         :param context: An optional context value, this can be any value you want to aid in mapping
         """
-        if not isinstance(source_resource, self.from_obj):
+        if not source_resource.__class__ is self.from_obj:
             raise TypeError('Source parameter must be an instance of %s' % self.from_obj)
         self.source = source_resource
         self.context = context or {}
