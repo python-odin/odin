@@ -28,7 +28,10 @@ class SimpleFromTo(odin.Mapping):
 
     @odin.map_field(from_field='title')
     def title_count(self, value):
-        return "%s: %s" % (self.loop_idx, value)
+        if self.in_loop:
+            return "%s: %s" % (self.loop_idx, value)
+        else:
+            return value
 
 
 class MappingBaseTestCase(unittest.TestCase):
@@ -244,7 +247,7 @@ class MappingTestCase(unittest.TestCase):
         t = SimpleFromTo.apply(f)
 
         self.assertIsInstance(t, SimpleToResource)
-        self.assertEqual("0: ABC", t.title_count)
+        self.assertEqual("ABC", t.title_count)
 
     def test_apply_multiple_resources(self):
         from_resources = [
@@ -357,3 +360,16 @@ class AbstractMappingTestCase(MappingBaseTestCase):
         self.assertIsInstance(result[0], ResourceY)
         self.assertIsInstance(result[1], ResourceZ)
         self.assertIsInstance(result[2], ResourceY)
+
+    def test_subs(self):
+        self.assertEqual({
+            'test_mapping.ResourceB > test_mapping.ResourceY': ResourceBToResourceY,
+            'test_mapping.ResourceC > test_mapping.ResourceZ': ResourceCToResourceZ,
+        }, ResourceAToResourceX._subs)
+
+    def test_invalid_abstract_mapping(self):
+        # All sub_class.from_obj should be an sub_class of base_class.from_obj
+        with self.assertRaises(MappingSetupError) as cm:
+            class _(ResourceAToResourceX):
+                from_obj = ResourceY
+                to_obj = ResourceZ
