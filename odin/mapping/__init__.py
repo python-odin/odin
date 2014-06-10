@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import collections
+from odin.registration import generate_mapping_cache_name
 import six
 from odin import registration
 from odin.resources import Resource
@@ -153,6 +154,13 @@ class MappingMeta(type):
         if to_obj is None:
             raise MappingSetupError('`to_obj` is not defined.')
 
+        # Check that from_obj is a sub_class (or same class) as any `parent.from_obj`. This is important for mapping
+        # sub class lists and resolving mappings.
+        base_parents = [p for p in parents if hasattr(p, '_subs')]
+        for p in base_parents:
+            if not issubclass(from_obj, p.from_obj):
+                raise MappingSetupError('`from_obj` must be a subclass of `parent.from_obj`')
+
         # Check if we have already created this mapping
         try:
             return registration.get_mapping(from_obj, to_obj)
@@ -250,11 +258,19 @@ class MappingMeta(type):
             if field in to_fields:
                 mapping_rules.append(_generate_auto_mapping(field, from_fields, to_fields))
 
-        # Update mappings
+        # Update attributes
         attrs['_mapping_rules'] = mapping_rules
+        attrs['_subs'] = {}
 
         registration.register_mapping(super_new(cls, name, bases, attrs))
-        return registration.get_mapping(from_obj, to_obj)
+        mapper = registration.get_mapping(from_obj, to_obj)
+
+        # Register mapping with parents mapping objects as a sub class.
+        for parent in base_parents:
+            key = generate_mapping_cache_name(mapper.from_obj, mapper.to_obj)
+            parent._subs[key] = mapper
+
+        return mapper
 
 
 class MappingBase(object):
