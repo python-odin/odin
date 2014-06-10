@@ -292,20 +292,18 @@ class MappingBase(object):
         :param context: An optional context value, this can be any value you want to aid in mapping
         """
         context = context or {}
-        context.setdefault('_idx', []).append(0)
+        context.setdefault('_loop_idx', [])
 
         if isinstance(source_resource, (list, tuple)):
-            def result_iter(sources, ctx):
+            def result_iter(sources):
+                context['_loop_idx'].append(0)
                 for s in sources:
-                    yield cls(s, context).convert()
-                    ctx['_idx'][0] += 1
-                context['_idx'].pop()
-            return result_iter(source_resource, context)
+                    yield cls.apply(s, context)
+                    context['_loop_idx'][0] += 1
+                context['_loop_idx'].pop()
+            return result_iter(source_resource)
         else:
-            try:
-                return cls(source_resource, context).convert()
-            finally:
-                context['_idx'].pop()
+            return cls(source_resource, context).convert()
 
     def __init__(self, source_resource, context=None):
         """
@@ -321,7 +319,26 @@ class MappingBase(object):
 
     @property
     def loop_idx(self):
-        return self.context.setdefault('_idx', [0])[0]
+        """
+        Index within a loop of this mapping (note loop might be for a parent object)
+        :returns: Index within the loop; or `None` if we are not currently in a loop.
+        """
+        loops = self.context.setdefault('_loop_idx', [])
+        return loops[0] if loops else None
+
+    @property
+    def loop_level(self):
+        """
+        How many layers of loops are we in?
+        """
+        return len(self.context.setdefault('_loop_idx', []))
+
+    @property
+    def in_loop(self):
+        """
+        Is this mapping currently in a loop?
+        """
+        return bool(self.context.setdefault('_loop_idx', []))
 
     def _apply_rule(self, mapping_rule):
         # Unpack mapping definition and fetch from values
