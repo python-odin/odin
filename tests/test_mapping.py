@@ -321,9 +321,9 @@ class ResourceCToResourceZ(ResourceAToResourceX):
         return value
 
 
-class AbstractMappingTestCase(MappingBaseTestCase):
+class SubClassMappingTestCase(MappingBaseTestCase):
     """
-    Test the concept of an abstract mapping ie
+    Test the concept of a sub class mapping ie
 
                 Resource A          -->         Mapping A-X         -->           Resource X
                     |                                |                                |
@@ -363,8 +363,8 @@ class AbstractMappingTestCase(MappingBaseTestCase):
 
     def test_subs(self):
         self.assertEqual({
-            'test_mapping.ResourceB > test_mapping.ResourceY': ResourceBToResourceY,
-            'test_mapping.ResourceC > test_mapping.ResourceZ': ResourceCToResourceZ,
+            ResourceB: ResourceBToResourceY,
+            ResourceC: ResourceCToResourceZ,
         }, ResourceAToResourceX._subs)
 
     def test_invalid_abstract_mapping(self):
