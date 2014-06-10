@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import collections
-from odin.registration import generate_mapping_cache_name
 import six
 from odin import registration
 from odin.resources import Resource
@@ -160,6 +159,8 @@ class MappingMeta(type):
         for p in base_parents:
             if not issubclass(from_obj, p.from_obj):
                 raise MappingSetupError('`from_obj` must be a subclass of `parent.from_obj`')
+            if not issubclass(to_obj, p.to_obj):
+                raise MappingSetupError('`to_obj` must be a subclass of `parent.to_obj`')
 
         # Check if we have already created this mapping
         try:
@@ -267,8 +268,7 @@ class MappingMeta(type):
 
         # Register mapping with parents mapping objects as a sub class.
         for parent in base_parents:
-            key = generate_mapping_cache_name(mapper.from_obj, mapper.to_obj)
-            parent._subs[key] = mapper
+            parent._subs[from_obj] = mapper
 
         return mapper
 
@@ -302,8 +302,15 @@ class MappingBase(object):
                     context['_loop_idx'][0] += 1
                 context['_loop_idx'].pop()
             return result_iter(source_resource)
-        else:
+        elif source_resource.__class__ is cls.from_obj:
             return cls(source_resource, context).convert()
+        else:
+            # Sub class lookup required
+            sub_mapping = cls._subs.get(source_resource.__class__)
+            if not sub_mapping:
+                raise TypeError('`source_resource` parameter must be an instance (or subclass instance) of %s' %
+                                cls.from_obj)
+            return sub_mapping(source_resource, context).convert()
 
     def __init__(self, source_resource, context=None):
         """
@@ -313,7 +320,7 @@ class MappingBase(object):
         :param context: An optional context value, this can be any value you want to aid in mapping
         """
         if not source_resource.__class__ is self.from_obj:
-            raise TypeError('Source parameter must be an instance of %s' % self.from_obj)
+            raise TypeError('`source_resource` parameter must be an instance of %s' % self.from_obj)
         self.source = source_resource
         self.context = context or {}
 
