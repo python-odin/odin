@@ -88,10 +88,3 @@ class ResourceAdapter(object):
         Convert this resource into a dict
         """
         return dict((f.name, v) for f, v in self)
-
-    def full_clean(self):
-        """
-        Calls full_clean on wrapped resource and raises ``ValidationError``
-        for any errors that occurred.
-        """
-        self._source.full_clean()
