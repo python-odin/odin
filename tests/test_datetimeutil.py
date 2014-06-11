@@ -22,6 +22,16 @@ class TimezonesTestCase(unittest.TestCase):
         self.assertEqual('+10:30', str(target))
         self.assertEqual("<timezone '+10:30' datetime.timedelta(0, 37800)>", repr(target))
 
+    def test_fixed_timezone_pickling(self):
+        import pickle
+
+        target = datetimeutil.FixedTimezone(10, 30, '+10:30')
+
+        data = pickle.dumps(target)
+        result = pickle.loads(data)
+
+        self.assertEqual(result, target)
+
 
 class ParseIsoDateStringTestCase(unittest.TestCase):
     def test_valid_values(self):
