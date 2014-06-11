@@ -34,13 +34,15 @@ class SimpleFromTo(odin.Mapping):
             return value
 
 
-class MappingBaseTestCase(unittest.TestCase):
-    maxDiff = None
-
+class MappingTestCase(unittest.TestCase):
     def assertMappingEquivalent(self, a, b):
         flat_a = sorted(str(i) for i in a)
         flat_b = sorted(str(i) for i in b)
         self.assertListEqual(flat_a, flat_b)
+
+
+class MappingBaseTestCase(MappingTestCase):
+    maxDiff = None
 
     def test_full_mapping(self):
         self.assertMappingEquivalent([
@@ -211,17 +213,43 @@ class MappingBaseTestCase(unittest.TestCase):
                 )
 
     def test_invalid_list_to_multiple_mapping(self):
-        with self.assertRaises(MappingSetupError):
+        with self.assertRaises(MappingSetupError) as cm:
             class _(odin.Mapping):
                 from_obj = SimpleFromResource
                 to_obj = FakeToResource
 
                 mappings = (
-                    ('title', None, ('title', 'name'), True, False),
+                    ('title', None, ('title', 'name'), True, False, False),
                 )
+        self.assertIn("specifies a to_list mapping, these can only be applied to a", str(cm.exception))
+
+    def test_assignment_with_no_action(self):
+        with self.assertRaises(MappingSetupError) as cm:
+            class _(odin.Mapping):
+                from_obj = SimpleFromResource
+                to_obj = FakeToResource
+
+                mappings = (
+                    (None, None, ('title', 'name'), False, False, False),
+                )
+        self.assertIn("No action supplied for ", str(cm.exception))
+
+    def test_from_field_no_field_resolver(self):
+        with self.assertRaises(MappingSetupError) as cm:
+            class _(odin.Mapping):
+                from_obj = object
+                to_obj = FakeToResource
+        self.assertEqual("`from_obj` <class 'object'> does not have a attribute resolver defined.", str(cm.exception))
+
+    def test_to_field_no_field_resolver(self):
+        with self.assertRaises(MappingSetupError) as cm:
+            class _(odin.Mapping):
+                from_obj = FakeToResource
+                to_obj = object
+        self.assertIn("`to_obj` <class 'object'> does not have a attribute resolver defined.", str(cm.exception))
 
 
-class MappingTestCase(unittest.TestCase):
+class ExecuteMappingTestCase(MappingTestCase):
     def test_not_valid_from_resource(self):
         self.assertRaises(TypeError, FromToMapping, SimpleFromResource())
 
@@ -325,7 +353,7 @@ class ResourceCToResourceZ(ResourceAToResourceX):
         return value
 
 
-class SubClassMappingTestCase(MappingBaseTestCase):
+class SubClassMappingTestCase(MappingTestCase):
     """
     Test the concept of a sub class mapping ie
 
@@ -371,9 +399,28 @@ class SubClassMappingTestCase(MappingBaseTestCase):
             ResourceC: ResourceCToResourceZ,
         }, ResourceAToResourceX._subs)
 
-    def test_invalid_abstract_mapping(self):
+    def test_invalid_abstract_mapping_from_obj(self):
         # All sub_class.from_obj should be an sub_class of base_class.from_obj
-        with self.assertRaises(MappingSetupError):
+        with self.assertRaises(MappingSetupError) as cm:
             class _(ResourceAToResourceX):
                 from_obj = ResourceY
                 to_obj = ResourceZ
+
+        self.assertEqual('`from_obj` must be a subclass of `parent.from_obj`', str(cm.exception))
+
+    def test_invalid_abstract_mapping_to_obj(self):
+        # All sub_class.from_obj should be an sub_class of base_class.to_obj
+        with self.assertRaises(MappingSetupError) as cm:
+            class _(ResourceAToResourceX):
+                from_obj = ResourceC
+                to_obj = ResourceB
+
+        self.assertIn('`to_obj` must be a subclass of `parent.to_obj`', str(cm.exception))
+
+    def test_invalid_inherited_type(self):
+        with self.assertRaises(TypeError) as cm:
+            class ResourceD(ResourceA):
+                pass
+            ResourceAToResourceX.apply(ResourceD())
+
+        self.assertIn("`source_resource` parameter must be an instance (or subclass instance) of", str(cm.exception))

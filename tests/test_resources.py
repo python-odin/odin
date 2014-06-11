@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import unittest
+from odin.resources import ResourceOptions
 import odin
 from odin.exceptions import ValidationError
 
@@ -111,3 +112,17 @@ class ResourceTestCase(unittest.TestCase):
         self.assertListEqual([ResourceA], ResourceB._meta.parents)
         self.assertListEqual([ResourceA, ResourceB], ResourceC._meta.parents)
         self.assertListEqual([ResourceA, ResourceB, ResourceC], ResourceD._meta.parents)
+
+
+class MetaOptionsTestCase(unittest.TestCase):
+    def test_invalid_options(self):
+        class Meta:
+            random_val = 10
+
+        class NewResource(object):
+            pass
+
+        target = ResourceOptions(Meta)
+
+        with self.assertRaises(TypeError):
+            target.contribute_to_class(NewResource, 'etc')

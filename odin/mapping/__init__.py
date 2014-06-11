@@ -203,7 +203,7 @@ class MappingMeta(type):
             elif action is not None and not callable(action):
                 raise MappingSetupError('Action on %s `%s` is not callable.' % (def_type, ref))
             elif action is None and is_assignment:
-                raise MappingSetupError('Not action supplied for `%s` in `%s`.' % (def_type, ref))
+                raise MappingSetupError('No action supplied for `%s` in `%s`.' % (def_type, ref))
 
             map_to = force_tuple(map_to)
             if to_list and len(map_to) != 1:
