@@ -119,9 +119,9 @@ ISO8601_TIME_STRING_RE = re.compile(
     r"^(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})(\.(?P<microseconds>\d+))?"
     r"(?P<timezone>Z|((?P<tz_sign>[-+])(?P<tz_hour>\d{2})(:(?P<tz_minute>\d{2}))?))?$")
 ISO8601_DATETIME_STRING_RE = re.compile(
-    r"^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})T"
-    r"(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})(\.(?P<microseconds>\d+))?"
-    r"(?P<timezone>Z|((?P<tz_sign>[-+])(?P<tz_hour>\d{2})(:(?P<tz_minute>\d{2}))?))?$")
+    r"^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})[tT\s]"
+    r"(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})(\.(?P<microseconds>\d+))? ?"
+    r"(?P<timezone>Z|GMT|UTC|((?P<tz_sign>[-+])(?P<tz_hour>\d{2})(:(?P<tz_minute>\d{2}))?))?$")
 
 
 def parse_iso_date_string(date_string):
@@ -144,10 +144,11 @@ def parse_iso_date_string(date_string):
 
 
 def _parse_timezone(groups, default_timezone=utc):
-    if groups['timezone'] is None:
+    tz = groups['timezone']
+    if tz is None:
         return default_timezone
 
-    if groups['timezone'] == 'Z':
+    if tz in ('Z', 'GMT', 'UTC'):
         return utc
 
     sign = groups['tz_sign']

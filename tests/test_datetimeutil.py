@@ -111,6 +111,16 @@ class ParseIsoDateTimeStringTestCase(unittest.TestCase):
             datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33.432-10:30')
         )
 
+        # Non-Standard but close formats that are common
+        self.assertEqual(
+            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc),
+            datetimeutil.parse_iso_datetime_string('2014-01-13 00:28:33Z')
+        )
+        self.assertEqual(
+            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc),
+            datetimeutil.parse_iso_datetime_string('2014-01-13 00:28:33 GMT')
+        )
+
     def test_invalid_values(self):
         with self.assertRaises(ValueError):
             datetimeutil.parse_iso_datetime_string(123)
@@ -118,8 +128,6 @@ class ParseIsoDateTimeStringTestCase(unittest.TestCase):
             datetimeutil.parse_iso_datetime_string('2014-1-13T00:28:33Z')
         with self.assertRaises(ValueError):
             datetimeutil.parse_iso_datetime_string('2014/1/13T00:28:33Z')
-        with self.assertRaises(ValueError):
-            datetimeutil.parse_iso_datetime_string('2014-01-13 00:28:33Z')
         with self.assertRaises(ValueError):
             datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33EST')
 
