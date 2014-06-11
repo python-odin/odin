@@ -242,8 +242,7 @@ HttpDateTimeField
 =================
 ``class HttpDateTimeField([**options])``
 
-A :py:class:`datetime` field or date encoded in
-`ISO-1123 or HTTP datetime string format.
+A :py:class:`datetime` field or date encoded in ISO-1123 or HTTP datetime string format.
 
 .. _field-array_field:
 
