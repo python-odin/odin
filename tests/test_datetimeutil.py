@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 import datetime
+import six
 from odin import datetimeutil
 
 
@@ -170,13 +171,4 @@ class ParseHttpDateStringTestCase(unittest.TestCase):
         self.assertRaises(ValueError, datetimeutil.parse_http_datetime_string, '2014/1/13T00:28:33Z')
         self.assertRaises(ValueError, datetimeutil.parse_http_datetime_string, '2014-01-13T00:28:33EST')
 
-class ToHttpDateTimeStringTestCase(unittest.TestCase):
-    def test_naive_datetime(self):
-        dt = datetime.datetime(2012, 8, 29, 17, 12, 58)
-        actual = datetimeutil.to_http_datetime_string(dt, datetimeutil.utc)
-        self.assertEqual("Wed, 29 Aug 2012 17:12:58 +0000", actual)
 
-    def test_aware_datetime(self):
-        dt = datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=datetimeutil.FixedTimezone(-9, -30, ''))
-        actual = datetimeutil.to_http_datetime_string(dt, datetimeutil.utc)
-        self.assertEqual("Wed, 29 Aug 2012 17:12:58 -0930", actual)
