@@ -163,11 +163,11 @@ class MappingMeta(type):
         try:
             from_fields = registration.get_field_resolver(from_obj).from_field_dict
         except KeyError:
-            raise MappingSetupError('`from_obj` %r does not have a attribute resolver defined.' % from_obj)
+            raise MappingSetupError('`from_obj` %r does not have an attribute resolver defined.' % from_obj)
         try:
             to_fields = registration.get_field_resolver(to_obj).to_field_dict
         except KeyError:
-            raise MappingSetupError('`to_obj` %r does not have a attribute resolver defined.' % to_obj)
+            raise MappingSetupError('`to_obj` %r does not have an attribute resolver defined.' % to_obj)
 
         def attr_mapping_to_mapping_rule(m, def_type, ref):
             """ Parse, validate and normalise defined mapping rules so rules can be executed without having to perform

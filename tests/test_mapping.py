@@ -239,14 +239,17 @@ class MappingBaseTestCase(MappingTestCase):
             class _(odin.Mapping):
                 from_obj = object
                 to_obj = FakeToResource
-        self.assertEqual("`from_obj` <class 'object'> does not have a attribute resolver defined.", str(cm.exception))
+        self.assertIn(r"`from_obj`", str(cm.exception))
+        self.assertIn(r"does not have an attribute resolver defined.", str(cm.exception))
 
     def test_to_field_no_field_resolver(self):
         with self.assertRaises(MappingSetupError) as cm:
             class _(odin.Mapping):
                 from_obj = FakeToResource
                 to_obj = object
-        self.assertIn("`to_obj` <class 'object'> does not have a attribute resolver defined.", str(cm.exception))
+
+        self.assertIn(r"`to_obj`", str(cm.exception))
+        self.assertIn(r"does not have an attribute resolver defined.", str(cm.exception))
 
 
 class ExecuteMappingTestCase(MappingTestCase):
