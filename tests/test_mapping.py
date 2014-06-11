@@ -306,6 +306,10 @@ class ResourceAToResourceX(odin.Mapping):
     from_obj = ResourceA
     to_obj = ResourceX
 
+    @odin.map_field
+    def foo(self, value):
+        return "foo: %s" % value
+
 
 class ResourceBToResourceY(ResourceAToResourceX):
     from_obj = ResourceB
@@ -344,13 +348,13 @@ class SubClassMappingTestCase(MappingBaseTestCase):
 
     def test_abstract_mapping_definitions(self):
         self.assertMappingEquivalent([
-            (('foo',), None, ('foo',), False, False, False),
+            (('foo',), 'foo', ('foo',), False, False, False),
             (('bar',), None, ('bar',), False, False, False),
         ], ResourceBToResourceY._mapping_rules)
 
         self.assertMappingEquivalent([
             (('eek',), 'alt', ('alt',), False, False, False),
-            (('foo',), None, ('foo',), False, False, False),
+            (('foo',), 'foo', ('foo',), False, False, False),
         ], ResourceCToResourceZ._mapping_rules)
 
     def test_abstract_mapping(self):
@@ -369,7 +373,7 @@ class SubClassMappingTestCase(MappingBaseTestCase):
 
     def test_invalid_abstract_mapping(self):
         # All sub_class.from_obj should be an sub_class of base_class.from_obj
-        with self.assertRaises(MappingSetupError) as cm:
+        with self.assertRaises(MappingSetupError):
             class _(ResourceAToResourceX):
                 from_obj = ResourceY
                 to_obj = ResourceZ
