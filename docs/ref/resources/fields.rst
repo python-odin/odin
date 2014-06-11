@@ -236,6 +236,15 @@ DateTimeField has an extra argument:
     are assumed to be in the current system timezone. Similarly on decoding a date time string the output
     :py:class:`datetime` will be converted to the current system timezone.
 
+.. _field-http_date_time_field:
+
+HttpDateTimeField
+=================
+``class HttpDateTimeField([**options])``
+
+A :py:class:`datetime` field or date encoded in
+`ISO-1123 or HTTP datetime string format.
+
 .. _field-array_field:
 
 ArrayField

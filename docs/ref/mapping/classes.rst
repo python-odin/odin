@@ -156,6 +156,9 @@ A list of mapping rules::
             ('dob', None, 'date_of_birth'),
         )
 
+
+.. tip:: Use the :py:meth:`define` method to simplify the definition of mappings. It provides many sensible defaults.
+
 While the basic mapping only includes and source, action and destination definitions the mappings structure actually
 supports three additional boolean parameters. These are **to_list**, **bind** and **skip_if_none**.
 
@@ -199,3 +202,14 @@ Method that starts the mapping process and returns a populated ``to_obj``.
 ------------
 
 A convenience property gives access to the current loop index when converting a list of objects.
+
+``loop_depth``
+--------------
+
+A convenience property that provides the nested loop depth of the current mapping operation.
+
+``in_loop``
+-----------
+
+A convenience property that indicates if the current mapping operation is in a loop.
+
