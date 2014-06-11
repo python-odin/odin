@@ -7,7 +7,7 @@ from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator,
 
 __all__ = (
     'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField', 'TimeField', 'DateTimeField',
-    'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField',
+    'HttpDateTimeField', 'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField',
 )
 
 
@@ -350,6 +350,34 @@ class DateTimeField(Field):
         try:
             default_timezone = datetimeutil.local if self.assume_local else datetimeutil.utc
             return datetimeutil.parse_iso_datetime_string(value, default_timezone)
+        except ValueError:
+            pass
+        msg = self.error_messages['invalid']
+        raise exceptions.ValidationError(msg)
+
+
+class HttpDateTimeField(Field):
+    """
+    Field that handles datetime values encoded as a string.
+
+    The format of the string is that defined by ISO-1123.
+
+    """
+    default_error_messages = {
+        'invalid': "Not a valid HTTP datetime string.",
+    }
+
+    def __init__(self, **options):
+        super(HttpDateTimeField, self).__init__(**options)
+
+    def to_python(self, value):
+        if value in EMPTY_VALUES:
+            return
+        if isinstance(value, datetime.datetime):
+            return value
+        try:
+            import email.utils as eut
+            return datetime.datetime(*eut.parsedate(value)[:6])
         except ValueError:
             pass
         msg = self.error_messages['invalid']
