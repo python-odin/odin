@@ -122,14 +122,10 @@ class ParseIsoDateTimeStringTestCase(unittest.TestCase):
         )
 
     def test_invalid_values(self):
-        with self.assertRaises(ValueError):
-            datetimeutil.parse_iso_datetime_string(123)
-        with self.assertRaises(ValueError):
-            datetimeutil.parse_iso_datetime_string('2014-1-13T00:28:33Z')
-        with self.assertRaises(ValueError):
-            datetimeutil.parse_iso_datetime_string('2014/1/13T00:28:33Z')
-        with self.assertRaises(ValueError):
-            datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33EST')
+        self.assertRaises(ValueError, datetimeutil.parse_iso_datetime_string, 123)
+        self.assertRaises(ValueError, datetimeutil.parse_iso_datetime_string, '2014-1-13T00:28:33Z')
+        self.assertRaises(ValueError, datetimeutil.parse_iso_datetime_string, '2014/1/13T00:28:33Z')
+        self.assertRaises(ValueError, datetimeutil.parse_iso_datetime_string, '2014-01-13T00:28:33EST')
 
 
 class ToDateStringTestCase(unittest.TestCase):
@@ -142,3 +138,45 @@ class ToDateStringTestCase(unittest.TestCase):
         dt = datetime.datetime(2013, 7, 13, 16, 54, 46, 123000, datetimeutil.utc)
         actual = datetimeutil.to_ecma_datetime_string(dt, datetimeutil.utc)
         self.assertEqual("2013-07-13T16:54:46.123Z", actual)
+
+
+class ParseHttpDateStringTestCase(unittest.TestCase):
+    def test_valid_values(self):
+        self.assertEqual(
+            datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=datetimeutil.FixedTimezone(10, 30, '')),
+            datetimeutil.parse_http_datetime_string('Wed Aug 29 17:12:58 +1030 2012')
+        )
+        self.assertEqual(
+            datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=datetimeutil.FixedTimezone(8, 00, '')),
+            datetimeutil.parse_http_datetime_string('Wed Aug 29 17:12:58 +0800 2012')
+        )
+        self.assertEqual(
+            datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=datetimeutil.FixedTimezone(-9, 0, '')),
+            datetimeutil.parse_http_datetime_string('Wed Aug 29 17:12:58 -0900 2012')
+        )
+        self.assertEqual(
+            datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=datetimeutil.FixedTimezone(-9, -30, '')),
+            datetimeutil.parse_http_datetime_string('Wed Aug 29 17:12:58 -0930 2012')
+        )
+        # Alternate position for the year
+        self.assertEqual(
+            datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=datetimeutil.FixedTimezone(-9, -30, '')),
+            datetimeutil.parse_http_datetime_string('Wed, Aug 29 2012 17:12:58 -0930')
+        )
+
+    def test_invalid_values(self):
+        self.assertRaises(ValueError, datetimeutil.parse_http_datetime_string, 123)
+        self.assertRaises(ValueError, datetimeutil.parse_http_datetime_string, '2014-1-13T00:28:33Z')
+        self.assertRaises(ValueError, datetimeutil.parse_http_datetime_string, '2014/1/13T00:28:33Z')
+        self.assertRaises(ValueError, datetimeutil.parse_http_datetime_string, '2014-01-13T00:28:33EST')
+
+class ToHttpDateTimeStringTestCase(unittest.TestCase):
+    def test_naive_datetime(self):
+        dt = datetime.datetime(2012, 8, 29, 17, 12, 58)
+        actual = datetimeutil.to_http_datetime_string(dt, datetimeutil.utc)
+        self.assertEqual("Wed, 29 Aug 2012 17:12:58 +0000", actual)
+
+    def test_aware_datetime(self):
+        dt = datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=datetimeutil.FixedTimezone(-9, -30, ''))
+        actual = datetimeutil.to_http_datetime_string(dt, datetimeutil.utc)
+        self.assertEqual("Wed, 29 Aug 2012 17:12:58 -0930", actual)

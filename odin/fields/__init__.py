@@ -347,8 +347,8 @@ class DateTimeField(Field):
             return
         if isinstance(value, datetime.datetime):
             return value
+        default_timezone = datetimeutil.local if self.assume_local else datetimeutil.utc
         try:
-            default_timezone = datetimeutil.local if self.assume_local else datetimeutil.utc
             return datetimeutil.parse_iso_datetime_string(value, default_timezone)
         except ValueError:
             pass
@@ -367,17 +367,13 @@ class HttpDateTimeField(Field):
         'invalid': "Not a valid HTTP datetime string.",
     }
 
-    def __init__(self, **options):
-        super(HttpDateTimeField, self).__init__(**options)
-
     def to_python(self, value):
         if value in EMPTY_VALUES:
             return
         if isinstance(value, datetime.datetime):
             return value
         try:
-            import email.utils as eut
-            return datetime.datetime(*eut.parsedate(value)[:6])
+            return datetimeutil.parse_http_datetime_string(value)
         except ValueError:
             pass
         msg = self.error_messages['invalid']

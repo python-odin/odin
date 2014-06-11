@@ -3,6 +3,7 @@ import datetime
 import re
 import time
 import six
+from email.utils import parsedate_tz as parse_http_datetime, format_datetime as format_http_datetime
 
 ZERO = datetime.timedelta(0)
 LOCAL_STD_OFFSET = datetime.timedelta(seconds=-time.timezone)
@@ -59,6 +60,20 @@ class FixedTimezone(datetime.tzinfo):
     """
     A fixed timezone for when a timezone is specified by a numerical offset and no dst information is available.
     """
+    @classmethod
+    def from_seconds(cls, seconds):
+        sign = '-' if seconds < 0 else ''
+        minutes = abs(seconds // 60)
+        hours = minutes // 60
+        minutes %= 60
+        name = "%s%02d:%02d" % (sign, hours, minutes)
+
+        if sign == '-':
+            hours *= -1
+            minutes *= -1
+
+        return cls(hours, minutes, name)
+
     def __init__(self, offset_hours, offset_minutes, name):
         super(FixedTimezone, self).__init__()
         self.offset = datetime.timedelta(hours=offset_hours, minutes=offset_minutes)
@@ -224,3 +239,27 @@ def to_ecma_datetime_string(dt, default_timezone=local):
     dt = get_tz_aware_dt(dt, default_timezone).astimezone(utc)
     return "%4i-%02i-%02iT%02i:%02i:%02i.%03iZ" % (
         dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond/1000)
+
+
+def parse_http_datetime_string(datetime_string):
+    """
+    Parse a datetime in the string format defined in ISO-1123 (or HTTP date time).
+    """
+    elements = None
+    if isinstance(datetime_string, six.string_types):
+        elements = parse_http_datetime(datetime_string)
+
+    if not elements:
+        raise ValueError("Expected ISO-1123 formatted datetime string.")
+
+    return datetime.datetime(*elements[:6], tzinfo=FixedTimezone.from_seconds(elements[-1]))
+
+
+def to_http_datetime_string(dt, default_timezone=local):
+    """
+    Convert a python datetime into the string format defined in ISO-1123 (or HTTP date time).
+    """
+    assert isinstance(dt, datetime.datetime)
+
+    dt = get_tz_aware_dt(dt, default_timezone)
+    return format_http_datetime(dt)
