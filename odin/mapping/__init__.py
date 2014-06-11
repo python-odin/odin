@@ -15,19 +15,19 @@ force_tuple = lambda x: x if isinstance(x, (list, tuple)) else (x,)
 EMPTY_LIST = tuple()
 
 
-def define(from_field, action, to_field, to_list=False, bind=False, skip_if_none=False):
+def define(from_field, action=None, to_field=None, to_list=False, bind=False, skip_if_none=False):
     """Helper method for defining a mapping.
 
     :param from_field: Source field to map from.
     :param action: Action to perform during mapping.
-    :param to_field: Destination field to map to.
+    :param to_field: Destination field to map to; if not specified the from_field
     :param to_list: Assume the result is a list (rather than a multi value tuple).
     :param bind: During the mapping operation the first parameter should be the mapping instance.
     :param skip_if_none: If the from field is :const:`None` do not include the field (this allows the destination
         object to define it's own defaults etc)
     :return: A mapping definition.
     """
-    return from_field, action, to_field, to_list, bind, skip_if_none
+    return from_field, action, to_field or from_field, to_list, bind, skip_if_none
 
 
 class FieldResolverBase(object):
