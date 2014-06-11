@@ -35,6 +35,6 @@ class ValidationException(unittest.TestCase):
             "Test Key 2": ["Test Message 2"],
         }], target.messages)
 
-        expected = str({'Test Key 2': ['Test Message 2'], 'Test Key 1': ['Test Message 1']})
-        self.assertEqual(expected, str(target))
+        expected = {'Test Key 2': ['Test Message 2'], 'Test Key 1': ['Test Message 1']}
+        self.assertEqual(expected, target.message_dict)
         self.assertEqual("ValidationError(%s)" % expected, repr(target))
