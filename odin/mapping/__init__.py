@@ -153,15 +153,6 @@ class MappingMeta(type):
         if to_obj is None:
             raise MappingSetupError('`to_obj` is not defined.')
 
-        # Check that from_obj is a sub_class (or same class) as any `parent.from_obj`. This is important for mapping
-        # sub class lists and resolving mappings.
-        base_parents = [p for p in parents if hasattr(p, '_subs')]
-        for p in base_parents:
-            if not issubclass(from_obj, p.from_obj):
-                raise MappingSetupError('`from_obj` must be a subclass of `parent.from_obj`')
-            if not issubclass(to_obj, p.to_obj):
-                raise MappingSetupError('`to_obj` must be a subclass of `parent.to_obj`')
-
         # Check if we have already created this mapping
         try:
             return registration.get_mapping(from_obj, to_obj)
@@ -237,6 +228,20 @@ class MappingMeta(type):
         # Generate mapping rules.
         mapping_rules = []
 
+        # Check that from_obj is a sub_class (or same class) as any `parent.from_obj`. This is important for mapping
+        # sub class lists and resolving mappings.
+        base_parents = [p for p in parents if hasattr(p, '_subs')]
+        for p in base_parents:
+            if not issubclass(from_obj, p.from_obj):
+                raise MappingSetupError('`from_obj` must be a subclass of `parent.from_obj`')
+            if not issubclass(to_obj, p.to_obj):
+                raise MappingSetupError('`to_obj` must be a subclass of `parent.to_obj`')
+
+            # Copy mapping rules
+            for mapping_rule in p._mapping_rules:
+                mapping_rules.append(mapping_rule)
+                remove_from_unmapped_fields(mapping_rule)
+
         # Add basic mappings
         for idx, mapping in enumerate(attrs.pop('mappings', [])):
             mapping_rule = attr_mapping_to_mapping_rule(mapping, 'basic mapping', idx)
@@ -288,7 +293,7 @@ class MappingBase(object):
 
         If a list of resources is supplied an iterable is returned.
 
-        :param source_resource: The source resource, this must be an instance of :py:attr:`Mapping.from_resource`.
+        :param source_resource: The source resource, this must be an instance of :py:attr:`Mapping.from_obj`.
         :param context: An optional context value, this can be any value you want to aid in mapping
         """
         context = context or {}
@@ -316,7 +321,7 @@ class MappingBase(object):
         """
         Initialise instance of mapping.
 
-        :param source_resource: The source resource, this must be an instance of :py:attr:`Mapping.from_resource`.
+        :param source_resource: The source resource, this must be an instance of :py:attr:`Mapping.from_obj`.
         :param context: An optional context value, this can be any value you want to aid in mapping
         """
         if source_resource.__class__ is not self.from_obj:
