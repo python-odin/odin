@@ -31,6 +31,8 @@ class UTC(datetime.tzinfo):
     def __repr__(self):
         return "<timezone: %s>" % self
 
+utc = UTC()
+
 
 class LocalTimezone(datetime.tzinfo):
     """
@@ -56,11 +58,15 @@ class LocalTimezone(datetime.tzinfo):
     def __repr__(self):
         return "<timezone: %s>" % self
 
+local = LocalTimezone()
+
 
 class FixedTimezone(datetime.tzinfo):
     """
     A fixed timezone for when a timezone is specified by a numerical offset and no dst information is available.
     """
+    __slots__ = ('offset', 'name',)
+
     @classmethod
     def from_seconds(cls, seconds):
         sign = '-' if seconds < 0 else ''
@@ -73,12 +79,45 @@ class FixedTimezone(datetime.tzinfo):
             hours *= -1
             minutes *= -1
 
-        return cls(hours, minutes, name)
+        return cls(datetime.timedelta(hours=hours, minutes=minutes), name)
 
-    def __init__(self, offset_hours, offset_minutes, name):
+    @classmethod
+    def from_hours_minutes(cls, hours, minutes):
+        sign = '-' if hours < 0 else ''
+        hours = abs(hours)
+        minutes = abs(minutes)
+        name = "%s%02d:%02d" % (sign, hours, minutes)
+
+        if sign == '-':
+            hours *= -1
+            minutes *= -1
+
+        return cls(datetime.timedelta(hours=hours, minutes=minutes), name)
+
+    @classmethod
+    def from_groups(cls, groups, default_timezone=utc):
+        tz = groups['timezone']
+        if tz is None:
+            return default_timezone
+
+        if tz in ('Z', 'GMT', 'UTC'):
+            return utc
+
+        sign = groups['tz_sign']
+        hours = int(groups['tz_hour'])
+        minutes = int(groups['tz_minute'] or 0)
+        name = "%s%02d:%02d" % (sign, hours, minutes)
+
+        if sign == '-':
+            hours = -hours
+            minutes = -minutes
+
+        return cls(datetime.timedelta(hours=hours, minutes=minutes), name)
+
+    def __init__(self, offset=None, name=None):
         super(FixedTimezone, self).__init__()
-        self.offset = datetime.timedelta(hours=offset_hours, minutes=offset_minutes)
-        self.name = name
+        self.offset = offset or datetime.timedelta(0)
+        self.name = name or ''
 
     def utcoffset(self, dt):
         return self.offset
@@ -95,9 +134,20 @@ class FixedTimezone(datetime.tzinfo):
     def __repr__(self):
         return "<timezone %r %r>" % (self.name, self.offset)
 
+    def __eq__(self, other):
+        return self.offset == other.offset
 
-utc = UTC()
-local = LocalTimezone()
+    # Pickle support
+
+    def __getstate__(self):
+        return {
+            'offset': self.offset,
+            'name': self.name,
+        }
+
+    def __setstate__(self, state):
+        self.offset = state.get('offset')
+        self.name = state.get('name')
 
 
 def get_tz_aware_dt(dt, assumed_tz=local):
@@ -159,26 +209,6 @@ def parse_iso_date_string(date_string):
     )
 
 
-def _parse_timezone(groups, default_timezone=utc):
-    tz = groups['timezone']
-    if tz is None:
-        return default_timezone
-
-    if tz in ('Z', 'GMT', 'UTC'):
-        return utc
-
-    sign = groups['tz_sign']
-    hours = int(groups['tz_hour'])
-    minutes = int(groups['tz_minute'] or 0)
-    name = "%s%02d:%02d" % (sign, hours, minutes)
-
-    if sign == '-':
-        hours = -hours
-        minutes = -minutes
-
-    return FixedTimezone(hours, minutes, name)
-
-
 def parse_iso_time_string(time_string, default_timezone=utc):
     """
     Parse a time in the string format defined in ISO 8601.
@@ -191,7 +221,7 @@ def parse_iso_time_string(time_string, default_timezone=utc):
         raise ValueError("Expected ISO 8601 formatted time string.")
 
     groups = matches.groupdict()
-    tz = _parse_timezone(groups, default_timezone)
+    tz = FixedTimezone.from_groups(groups, default_timezone)
     return datetime.time(
         int(groups['hour']),
         int(groups['minute']),
@@ -213,7 +243,7 @@ def parse_iso_datetime_string(datetime_string, default_timezone=utc):
         raise ValueError("Expected ISO 8601 formatted datetime string.")
 
     groups = matches.groupdict()
-    tz = _parse_timezone(groups, default_timezone)
+    tz = FixedTimezone.from_groups(groups, default_timezone)
     return datetime.datetime(
         int(groups['year']),
         int(groups['month']),
