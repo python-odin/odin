@@ -3,6 +3,8 @@ import datetime
 import re
 import time
 import six
+from email.utils import parsedate_tz as parse_http_datetime
+
 
 ZERO = datetime.timedelta(0)
 LOCAL_STD_OFFSET = datetime.timedelta(seconds=-time.timezone)
@@ -29,6 +31,8 @@ class UTC(datetime.tzinfo):
     def __repr__(self):
         return "<timezone: %s>" % self
 
+utc = UTC()
+
 
 class LocalTimezone(datetime.tzinfo):
     """
@@ -54,15 +58,66 @@ class LocalTimezone(datetime.tzinfo):
     def __repr__(self):
         return "<timezone: %s>" % self
 
+local = LocalTimezone()
+
 
 class FixedTimezone(datetime.tzinfo):
     """
     A fixed timezone for when a timezone is specified by a numerical offset and no dst information is available.
     """
-    def __init__(self, offset_hours, offset_minutes, name):
+    __slots__ = ('offset', 'name',)
+
+    @classmethod
+    def from_seconds(cls, seconds):
+        sign = '-' if seconds < 0 else ''
+        minutes = abs(seconds // 60)
+        hours = minutes // 60
+        minutes %= 60
+        name = "%s%02d:%02d" % (sign, hours, minutes)
+
+        if sign == '-':
+            hours *= -1
+            minutes *= -1
+
+        return cls(datetime.timedelta(hours=hours, minutes=minutes), name)
+
+    @classmethod
+    def from_hours_minutes(cls, hours, minutes):
+        sign = '-' if hours < 0 else ''
+        hours = abs(hours)
+        minutes = abs(minutes)
+        name = "%s%02d:%02d" % (sign, hours, minutes)
+
+        if sign == '-':
+            hours *= -1
+            minutes *= -1
+
+        return cls(datetime.timedelta(hours=hours, minutes=minutes), name)
+
+    @classmethod
+    def from_groups(cls, groups, default_timezone=utc):
+        tz = groups['timezone']
+        if tz is None:
+            return default_timezone
+
+        if tz in ('Z', 'GMT', 'UTC'):
+            return utc
+
+        sign = groups['tz_sign']
+        hours = int(groups['tz_hour'])
+        minutes = int(groups['tz_minute'] or 0)
+        name = "%s%02d:%02d" % (sign, hours, minutes)
+
+        if sign == '-':
+            hours = -hours
+            minutes = -minutes
+
+        return cls(datetime.timedelta(hours=hours, minutes=minutes), name)
+
+    def __init__(self, offset=None, name=None):
         super(FixedTimezone, self).__init__()
-        self.offset = datetime.timedelta(hours=offset_hours, minutes=offset_minutes)
-        self.name = name
+        self.offset = offset or datetime.timedelta(0)
+        self.name = name or ''
 
     def utcoffset(self, dt):
         return self.offset
@@ -79,9 +134,20 @@ class FixedTimezone(datetime.tzinfo):
     def __repr__(self):
         return "<timezone %r %r>" % (self.name, self.offset)
 
+    def __eq__(self, other):
+        return self.offset == other.offset
 
-utc = UTC()
-local = LocalTimezone()
+    # Pickle support
+
+    def __getstate__(self):
+        return {
+            'offset': self.offset,
+            'name': self.name,
+        }
+
+    def __setstate__(self, state):
+        self.offset = state.get('offset')
+        self.name = state.get('name')
 
 
 def get_tz_aware_dt(dt, assumed_tz=local):
@@ -119,9 +185,9 @@ ISO8601_TIME_STRING_RE = re.compile(
     r"^(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})(\.(?P<microseconds>\d+))?"
     r"(?P<timezone>Z|((?P<tz_sign>[-+])(?P<tz_hour>\d{2})(:(?P<tz_minute>\d{2}))?))?$")
 ISO8601_DATETIME_STRING_RE = re.compile(
-    r"^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})T"
-    r"(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})(\.(?P<microseconds>\d+))?"
-    r"(?P<timezone>Z|((?P<tz_sign>[-+])(?P<tz_hour>\d{2})(:(?P<tz_minute>\d{2}))?))?$")
+    r"^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})[tT\s]"
+    r"(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})(\.(?P<microseconds>\d+))? ?"
+    r"(?P<timezone>Z|GMT|UTC|((?P<tz_sign>[-+])(?P<tz_hour>\d{2})(:(?P<tz_minute>\d{2}))?))?$")
 
 
 def parse_iso_date_string(date_string):
@@ -143,25 +209,6 @@ def parse_iso_date_string(date_string):
     )
 
 
-def _parse_timezone(groups, default_timezone=utc):
-    if groups['timezone'] is None:
-        return default_timezone
-
-    if groups['timezone'] == 'Z':
-        return utc
-
-    sign = groups['tz_sign']
-    hours = int(groups['tz_hour'])
-    minutes = int(groups['tz_minute'] or 0)
-    name = "%s%02d:%02d" % (sign, hours, minutes)
-
-    if sign == '-':
-        hours = -hours
-        minutes = -minutes
-
-    return FixedTimezone(hours, minutes, name)
-
-
 def parse_iso_time_string(time_string, default_timezone=utc):
     """
     Parse a time in the string format defined in ISO 8601.
@@ -174,7 +221,7 @@ def parse_iso_time_string(time_string, default_timezone=utc):
         raise ValueError("Expected ISO 8601 formatted time string.")
 
     groups = matches.groupdict()
-    tz = _parse_timezone(groups, default_timezone)
+    tz = FixedTimezone.from_groups(groups, default_timezone)
     return datetime.time(
         int(groups['hour']),
         int(groups['minute']),
@@ -196,7 +243,7 @@ def parse_iso_datetime_string(datetime_string, default_timezone=utc):
         raise ValueError("Expected ISO 8601 formatted datetime string.")
 
     groups = matches.groupdict()
-    tz = _parse_timezone(groups, default_timezone)
+    tz = FixedTimezone.from_groups(groups, default_timezone)
     return datetime.datetime(
         int(groups['year']),
         int(groups['month']),
@@ -223,3 +270,17 @@ def to_ecma_datetime_string(dt, default_timezone=local):
     dt = get_tz_aware_dt(dt, default_timezone).astimezone(utc)
     return "%4i-%02i-%02iT%02i:%02i:%02i.%03iZ" % (
         dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond/1000)
+
+
+def parse_http_datetime_string(datetime_string):
+    """
+    Parse a datetime in the string format defined in ISO-1123 (or HTTP date time).
+    """
+    elements = None
+    if isinstance(datetime_string, six.string_types):
+        elements = parse_http_datetime(datetime_string)
+
+    if not elements:
+        raise ValueError("Expected ISO-1123 formatted datetime string.")
+
+    return datetime.datetime(*elements[:6], tzinfo=FixedTimezone.from_seconds(elements[-1]))

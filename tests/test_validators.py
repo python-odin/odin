@@ -33,6 +33,7 @@ class ValidatorTestCase(unittest.TestCase):
         validators.validate_url('https://example.com/')
         validators.validate_url('ftp://example.com/')
         validators.validate_url('ftps://example.com/')
+        validators.validate_url('http://savage.company/')
     
         self.assertRaises(ValidationError, validators.validate_url, 'foo')
         self.assertRaises(ValidationError, validators.validate_url, 'http://')

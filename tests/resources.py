@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import odin
+from odin.fields.virtual import CalculatedField
 from odin.mapping.helpers import sum_fields
 
 
@@ -42,6 +43,7 @@ class Book(LibraryBook):
 class Library(odin.Resource):
     name = odin.StringField()
     books = odin.ArrayOf(LibraryBook)
+    book_count = CalculatedField(lambda o: len(o.books))
 
     class Meta:
         name_space = None
@@ -63,20 +65,26 @@ class OldBook(LibraryBook):
 
 
 class OldBookToBookMapping(odin.Mapping):
-    from_resource = OldBook
-    to_resource = Book
+    from_obj = OldBook
+    to_obj = Book
 
-    exclude_fields = ('')
+    exclude_fields = ('',)
 
     mappings = (
         ('name', None, 'title'),
     )
 
 
+class ChildResource(odin.Resource):
+    name = odin.StringField()
+
+
 class FromResource(odin.Resource):
     # Auto matched
     title = odin.StringField()
     count = odin.StringField()
+    child = odin.ObjectAs(ChildResource)
+    children = odin.ArrayOf(ChildResource)
     # Excluded
     excluded1 = odin.FloatField()
     # Mappings
@@ -98,6 +106,8 @@ class ToResource(odin.Resource):
     # Auto matched
     title = odin.StringField()
     count = odin.IntegerField()
+    child = odin.ObjectAs(ChildResource)
+    children = odin.ArrayOf(ChildResource)
     # Excluded
     excluded1 = odin.FloatField()
     # Mappings
@@ -111,11 +121,12 @@ class ToResource(odin.Resource):
     to_field_c3 = odin.StringField()
     not_auto_c5 = odin.StringField()
     array_string = odin.TypedArrayField(odin.StringField())
+    assigned_field = odin.StringField()
 
 
 class FromToMapping(odin.Mapping):
-    from_resource = FromResource
-    to_resource = ToResource
+    from_obj = FromResource
+    to_obj = ToResource
 
     exclude_fields = ('excluded1',)
 
@@ -141,3 +152,7 @@ class FromToMapping(odin.Mapping):
     @odin.map_list_field(to_field='array_string')
     def comma_separated_string(self, value):
         return value.split(',')
+
+    @odin.assign_field
+    def assigned_field(self):
+        return 'Foo'

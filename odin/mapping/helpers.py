@@ -37,24 +37,6 @@ class SplitField(object):
 split_field = SplitField
 
 
-class MapListOf(object):
-    """
-    Helper for mapping a ListOf field.
-
-    This helper should be used along with the bind flag so the context object can be maintained.
-    """
-    __slots__ = ('mapping',)
-
-    def __init__(self, mapping):
-        self.mapping = mapping
-
-    def __call__(self, bound_self, field_value):
-        if field_value is None:
-            return
-        for f in field_value:
-            yield self.mapping(f, context=bound_self.context).convert()
-
-
 class MapDictAs(object):
     """
     Helper for mapping a DictAs field.
@@ -70,3 +52,34 @@ class MapDictAs(object):
         if field_value is None:
             return
         return self.mapping(field_value, context=bound_self.context).convert()
+
+    def __repr__(self):
+        return "<%s: %s.%s>" % (self.__class__.__name__, self.mapping.__module__, self.mapping.__name__)
+
+
+class MapListOf(MapDictAs):
+    """
+    Helper for mapping a ListOf field.
+
+    This helper should be used along with the bind flag so the context object can be maintained.
+    """
+    __slots__ = ('mapping',)
+
+    def __call__(self, bound_self, field_value):
+        if field_value is None:
+            return
+        for f in field_value:
+            yield self.mapping(f, context=bound_self.context).convert()
+
+
+class NoOpMapper(object):
+    """
+    Helper that provides the mapper interface performs no operation on the object.
+
+    This is used with the MapListOf and MapDictAs fields when both contain the same Resource type.
+    """
+    def __init__(self, source_resource, context=None):
+        self.source_resource = source_resource
+
+    def convert(self):
+        return self.source_resource

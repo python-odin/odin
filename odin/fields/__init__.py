@@ -7,7 +7,7 @@ from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator,
 
 __all__ = (
     'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField', 'TimeField', 'DateTimeField',
-    'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField',
+    'HttpDateTimeField', 'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField',
 )
 
 
@@ -17,7 +17,7 @@ class NOT_PROVIDED:
 
 class Field(object):
     """
-    Base class for all fields.
+    Base class for fields.
     """
     # These track each time a Field instance is created. Used to retain order.
     creation_counter = 0
@@ -347,9 +347,33 @@ class DateTimeField(Field):
             return
         if isinstance(value, datetime.datetime):
             return value
+        default_timezone = datetimeutil.local if self.assume_local else datetimeutil.utc
         try:
-            default_timezone = datetimeutil.local if self.assume_local else datetimeutil.utc
             return datetimeutil.parse_iso_datetime_string(value, default_timezone)
+        except ValueError:
+            pass
+        msg = self.error_messages['invalid']
+        raise exceptions.ValidationError(msg)
+
+
+class HttpDateTimeField(Field):
+    """
+    Field that handles datetime values encoded as a string.
+
+    The format of the string is that defined by ISO-1123.
+
+    """
+    default_error_messages = {
+        'invalid': "Not a valid HTTP datetime string.",
+    }
+
+    def to_python(self, value):
+        if value in EMPTY_VALUES:
+            return
+        if isinstance(value, datetime.datetime):
+            return value
+        try:
+            return datetimeutil.parse_http_datetime_string(value)
         except ValueError:
             pass
         msg = self.error_messages['invalid']

@@ -236,6 +236,14 @@ DateTimeField has an extra argument:
     are assumed to be in the current system timezone. Similarly on decoding a date time string the output
     :py:class:`datetime` will be converted to the current system timezone.
 
+.. _field-http_date_time_field:
+
+HttpDateTimeField
+=================
+``class HttpDateTimeField([**options])``
+
+A :py:class:`datetime` field or date encoded in ISO-1123 or HTTP datetime string format.
+
 .. _field-array_field:
 
 ArrayField
@@ -298,3 +306,36 @@ A child list. Requires a positional argument: the class that represents a list o
 
 .. note::
     A default `list` is automatically assigned.
+
+.. _field-dictof_field:
+
+DictOf field
+=============
+``class DictOf(of[, **options])``
+
+A child dict. Requires a positional argument: the class that represents a dict (or hash map) of resources.
+
+.. note::
+    A default `dict` is automatically assigned.
+
+
+Virtual fields
+**************
+
+Virtual fields are special fields that can be used to calculate a value or provide a value lookup. Unlike using a
+property a virtual field is also a treating like field in that it can be mapped or exported.
+
+.. note::
+    You can use the
+
+Virtual fields share many of the options of regular fields:
+ - :ref:`field-option-verbose_name`
+ - :ref:`field-option-verbose_name_plural`
+ - :ref:`field-option-name`
+ - :ref:`field-option-doc_text`
+
+.. _field-calculated_field:
+
+Calculated field
+================
+``class CalculatedField(expr[, **options])``

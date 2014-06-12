@@ -64,6 +64,10 @@ class cached_property(object):
     """
     Acts like a standard class `property` except return values cached.
     """
+    @staticmethod
+    def clear_caches(instance):
+        instance._cache = {}
+
     def __init__(self, func):
         self.func = func
         self.__doc__ = func.__doc__
@@ -84,17 +88,19 @@ class cached_property(object):
 
 
 def field_iter(resource):
-    """Return an iterator that yields fields from a resource.
+    """
+    Return an iterator that yields fields from a resource.
 
     :param resource: Resource to iterate over.
     :returns: an iterator that returns fields.
 
     """
-    return iter(resource._meta.fields)
+    return iter(resource._meta.all_fields)
 
 
 def field_iter_items(resource, fields=None):
-    """Return an iterator that yields fields and their values from a resource.
+    """
+    Return an iterator that yields fields and their values from a resource.
 
     :param resource: Resource to iterate over.
     :param fields: Fields to use; if :const:`None` defaults to all of the resources fields.
@@ -102,13 +108,25 @@ def field_iter_items(resource, fields=None):
 
     """
     if fields is None:
-        fields = resource._meta.fields
+        fields = resource._meta.all_fields
     for f in fields:
         yield f, f.prepare(f.value_from_object(resource))
 
 
+def virtual_field_iter_items(resource):
+    """
+    Return an iterator that yields virtual fields and their values from a resource.
+
+    :param resource: Resource to iterate over.
+    :returns: an iterator that returns (field, value) tuples.
+
+    """
+    return field_iter_items(resource, resource._meta.virtual_fields)
+
+
 def attribute_field_iter_items(resource):
-    """Return an iterator that yields fields and their values from a resource that have the attribute flag set.
+    """
+    Return an iterator that yields fields and their values from a resource that have the attribute flag set.
 
     :param resource: Resource to iterate over.
     :returns: an iterator that returns (field, value) tuples.
@@ -121,7 +139,8 @@ def attribute_field_iter_items(resource):
 
 
 def element_field_iter_items(resource):
-    """Return an iterator that yields fields and their values from a resource that do not have the attribute flag set.
+    """
+    Return an iterator that yields fields and their values from a resource that do not have the attribute flag set.
 
     :param resource: Resource to iterate over.
     :returns: an iterator that returns (field, value) tuples.
@@ -131,3 +150,17 @@ def element_field_iter_items(resource):
 
     """
     return field_iter_items(resource, resource._meta.element_fields)
+
+
+def extract_fields_from_dict(d, resource):
+    """
+    Extract values from a dict that are defined on a resource.
+
+    Fields that are not found will not be included in the output dict.
+
+    :param d: the source dictionary.
+    :param resource: the resource that provides the fields.
+    :returns: a dictionary of the resource fields that where found in the dict.
+
+    """
+    return {f.name: d[f.name] for f in field_iter(resource) if f.name in d}

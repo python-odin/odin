@@ -4,7 +4,8 @@ import unittest
 import datetime
 from odin.fields import *
 from odin.fields import Field
-from odin.datetimeutil import utc
+from odin.datetimeutil import utc, FixedTimezone
+from odin.fields.virtual import VirtualField
 from odin.validators import MinValueValidator, MaxValueValidator, MaxLengthValidator, RegexValidator
 from odin.exceptions import ValidationError
 
@@ -148,6 +149,40 @@ class FieldTestCase(unittest.TestCase):
     def test_default_to_python_raises_not_implemented(self):
         target = Field()
         self.assertRaises(NotImplementedError, target.to_python, "Anything...")
+
+
+class TestVirtualField(VirtualField):
+    pass
+
+
+class VirtualFieldTestCase(unittest.TestCase):
+    def test_creation_counter(self):
+        current_count = VirtualField.creation_counter
+        next_count = current_count + 1
+        target = VirtualField()
+
+        assert VirtualField.creation_counter == next_count
+        assert target.creation_counter == current_count
+        assert hash(target) == current_count
+
+    def test_repr(self):
+        target = TestVirtualField()
+        self.assertEqual("<test_fields.TestVirtualField>", repr(target))
+        target.set_attributes_from_name("eek")
+        self.assertEqual("<test_fields.TestVirtualField: eek>", repr(target))
+
+    def test_default_descriptor_behaviour(self):
+        class TestObj(object):
+            test_field = VirtualField()
+        target = TestObj()
+
+        with self.assertRaises(NotImplementedError):
+            eek = target.test_field
+
+        with self.assertRaises(AttributeError) as cm:
+            target.test_field = 123
+
+        self.assertEqual("Read only", str(cm.exception))
 
 
 class FieldsTests(unittest.TestCase):
@@ -365,6 +400,7 @@ class FieldsTests(unittest.TestCase):
         self.assertRaises(ValidationError, f.clean, 'abc')
         self.assertRaises(ValidationError, f.clean, 123)
         self.assertEqual(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), f.clean('2013-11-24T18:43:00.000Z'))
+        self.assertEqual(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), f.clean('2013-11-24 18:43:00.000Z'))
         self.assertEqual(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
                          f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)))
 
@@ -374,6 +410,29 @@ class FieldsTests(unittest.TestCase):
         self.assertRaises(ValidationError, f.clean, 'abc')
         self.assertRaises(ValidationError, f.clean, 123)
         self.assertEqual(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), f.clean('2013-11-24T18:43:00.000Z'))
+        self.assertEqual(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), f.clean('2013-11-24 18:43:00.000Z'))
+        self.assertEqual(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+                         f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)))
+
+    # HttpDateTimeField #######################################################
+
+    def test_httpdatetimefield_1(self):
+        f = HttpDateTimeField()
+        self.assertRaises(ValidationError, f.clean, None)
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertEqual(datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=utc),
+                         f.clean('Wed Aug 29 17:12:58 +0000 2012'))
+        self.assertEqual(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+                         f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)))
+
+    def test_httpdatetimefield_2(self):
+        f = HttpDateTimeField(null=True)
+        self.assertEqual(None, f.clean(None))
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertEqual(datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=utc),
+                         f.clean('Wed Aug 29 17:12:58 +0000 2012'))
         self.assertEqual(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
                          f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)))
 

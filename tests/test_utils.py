@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 from odin import utils
+from resources import Book
 
 
 class CamelAndDashFormatsTestCase(unittest.TestCase):
@@ -18,3 +19,23 @@ class CamelAndDashFormatsTestCase(unittest.TestCase):
         self.assertEqual("thisIsAnExample", utils.lower_dash_to_camel('this-is-an-example'))
         self.assertEqual("thisIsAnExample", utils.lower_dash_to_camel('this-is-an-example'))
         self.assertEqual("thisIsATest", utils.lower_dash_to_camel('this-Is-A-test'))
+
+
+class IteratorTestCases(unittest.TestCase):
+    def test_extract_fields_from_dict(self):
+        source_dict = {
+            'title': "My Title",
+            'num_pages': 1,
+            'rrp': 1.2,
+            'fiction': True,
+            'published': ['no_validation_for_type'],
+            'another_field': 'that is not on the resource'
+        }
+
+        self.assertDictEqual({
+            'title': "My Title",
+            'num_pages': 1,
+            'rrp': 1.2,
+            'fiction': True,
+            'published': ['no_validation_for_type'],
+        }, utils.extract_fields_from_dict(source_dict, Book))

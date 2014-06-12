@@ -18,7 +18,7 @@ class PintField(Field):
             raise ValueError("Units cannot be None")
         if isinstance(units, six.string_types):
             units = registry[units]
-        #if not units_ in units.registry:
+        # if not units_ in units.registry:
         #    raise ValueError("Units object is not a member of `odin.units.registry`. Any custom units must be "
         #                     "registered with Odin's unit registry.")
         self.units = units
