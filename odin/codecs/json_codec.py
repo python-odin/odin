@@ -27,8 +27,7 @@ class OdinEncoder(json.JSONEncoder):
             return obj
         elif o.__class__ in JSON_TYPES:
             return JSON_TYPES[o.__class__](o)
-        else:
-            return super(OdinEncoder, self)
+        return super(OdinEncoder, self)
 
 
 def load(fp, resource=None, full_clean=True):

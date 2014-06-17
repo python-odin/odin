@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import datetime
 import os
+from odin.datetimeutil import utc
 from six import BytesIO
 import unittest
 from odin.codecs import msgpack_codec
@@ -41,6 +43,7 @@ class MsgPackCodecTestCase(unittest.TestCase):
             genre="sci-fi",
             authors=[Author(name="Iain M. Banks")],
             publisher=Publisher(name="Macmillan"),
+            published=[datetime.datetime(1987, 1, 1, tzinfo=utc)]
         )
 
         fp = BytesIO()
@@ -56,3 +59,4 @@ class MsgPackCodecTestCase(unittest.TestCase):
         self.assertEqual(out_resource.genre, in_resource.genre)
         self.assertEqual(out_resource.authors[0].name, in_resource.authors[0].name)
         self.assertEqual(out_resource.publisher.name, in_resource.publisher.name)
+        self.assertEqual(out_resource.published[0], in_resource.published[0])

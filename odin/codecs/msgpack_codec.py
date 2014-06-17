@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 try:
     import msgpack
-except ImportError:
+except ImportError:  # noqa
     raise ImportError("odin.codecs.msgpack_codec requires the 'msgpack-python' package.")
 
 import datetime
