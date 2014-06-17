@@ -12,8 +12,7 @@ branches:
     - development
 
 install:
-  - pip install -r requirements.txt --use-mirrors
-  - pip install "jinja2>=2.7" --use-mirrors
+  - pip install -r requirements.txt "jinja2>=2.7" msgpack-python --use-mirrors
   - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then pip install pint coveralls --use-mirrors; fi
 
 script:
