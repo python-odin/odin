@@ -35,7 +35,7 @@ Highlights
 * Field and Resource level validation
 * Mapping between resources or extended to other object types (eg Django Models)
 * Easy extension to support custom fields
-* Python 2.7+, Python 3.2+ and PyPy :sup:`1` supported
+* Python 2.7+, Python 3.3+ and PyPy :sup:`1` supported
 * Integration with Django (see `baldr <https://github.com/timsavage/baldr>`_)
 * Minimal dependencies (base functionality only requires *six*)
 
@@ -55,8 +55,6 @@ Upcoming features
 
 **In development**
 
-* Adaptors for provide and alternate view on a resource (similar to Django's model proxies)
-* Mapping of inherited resources.
 * Customisable generation of documentation of resources (for integration into `Sphinx <http://sphinx-doc.org/>`_)
 * XML Codec (export completed)
 * Complete documentation, this will pretty much always be here.
