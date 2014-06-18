@@ -26,7 +26,8 @@ class ValidationError(Exception):
         # AttributeError: ValidationError instance has no attribute 'args'
         # See http://www.python.org/doc/current/tut/node10.html#handling
         if hasattr(self, 'message_dict'):
-            return repr(self.message_dict)
+            message_dict = self.message_dict
+            return "{%s}" % ', '.join("'%s': %r" % (key, message_dict[key]) for key in sorted(message_dict))
         return repr(self.messages)
 
     def __repr__(self):
