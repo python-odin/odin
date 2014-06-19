@@ -2,8 +2,8 @@
 MessagePack Codec
 #################
 
-Codec for serialising and de-serialising data in `MessagePack <http://www.msgpack.org>`_ format. Supports both array
-and objects for mapping into resources or collections of resources.
+Codec for serialising and de-serialising data in `MessagePack <http://msgpack.org>`_ format. Supports both array and
+objects for mapping into resources or collections of resources.
 
 The MessagePack codec uses the :py:mod:`msgpack-python` module.
 
