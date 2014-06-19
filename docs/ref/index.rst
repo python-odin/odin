@@ -10,4 +10,5 @@ API Reference
    exceptions
    mapping/index
    resources/index
+   adapters
    validators
