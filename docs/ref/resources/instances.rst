@@ -11,7 +11,7 @@ The basics:
 Quick example
 =============
 
-This example model defines a ``Book``, which has a ``title``, ``genre`` and ``num_pages``::
+This example resource defines a ``Book``, which has a ``title``, ``genre`` and ``num_pages``::
 
     import odin
 
