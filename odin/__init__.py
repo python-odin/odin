@@ -7,3 +7,4 @@ from odin.fields import *  # noqa
 from odin.fields.composite import *  # noqa
 from odin.mapping import *  # noqa
 from odin.resources import Resource  # noqa
+from odin.adapters import ResourceAdapter  # noqa
