@@ -8,6 +8,7 @@
 # Project artifacts
 dist
 *.egg-info
+build
 _build
 .tox
 
