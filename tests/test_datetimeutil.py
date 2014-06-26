@@ -122,6 +122,10 @@ class ParseIsoDateTimeStringTestCase(unittest.TestCase):
             datetime.datetime(2014, 1, 13, 0, 28, 33, 432, datetimeutil.FixedTimezone.from_hours_minutes(-10, -30)),
             datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33.432-10:30')
         )
+        self.assertEqual(
+            datetime.datetime(2014, 1, 13, 0, 28, 33, 432, datetimeutil.FixedTimezone.from_hours_minutes(10, 30)),
+            datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33.432+1030')
+        )
 
         # Non-Standard but close formats that are common
         self.assertEqual(
