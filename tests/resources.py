@@ -104,7 +104,7 @@ class FromResource(odin.Resource):
     constant_field = odin.ConstantField(value=10)
 
 
-class InheritedResource(odin.Resource):
+class InheritedResource(FromResource):
     # Additional fields
     name = odin.StringField()
     # Additional virtual fields

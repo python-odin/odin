@@ -176,15 +176,16 @@ class ResourceBase(type):
                 # uninteresting parents.
                 continue
 
-            parent_fields = base._meta.fields
             # Check for clashes between locally declared fields and those
             # on the base classes (we cannot handle shadowed fields at the
             # moment).
-            for field in parent_fields:
+            for field in base._meta.all_fields:
                 if field.attname in field_attnames:
                     raise Exception('Local field %r in class %r clashes with field of similar name from '
                                     'base class %r' % (field.attname, name, base.__name__))
-            for field in parent_fields:
+            for field in base._meta.fields:
+                new_class.add_to_class(field.attname, copy.deepcopy(field))
+            for field in base._meta.virtual_fields:
                 new_class.add_to_class(field.attname, copy.deepcopy(field))
 
             new_class._meta.parents += base._meta.parents
