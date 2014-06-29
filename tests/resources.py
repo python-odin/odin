@@ -100,6 +100,15 @@ class FromResource(odin.Resource):
     from_field_c4 = odin.StringField()
     not_auto_c5 = odin.StringField()
     comma_separated_string = odin.StringField()
+    # Virtual fields
+    constant_field = odin.ConstantField(value=10)
+
+
+class InheritedResource(odin.Resource):
+    # Additional fields
+    name = odin.StringField()
+    # Additional virtual fields
+    calculated_field = odin.CalculatedField(lambda obj: 11)
 
 
 class ToResource(odin.Resource):
