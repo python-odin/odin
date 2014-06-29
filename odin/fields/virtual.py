@@ -76,6 +76,18 @@ class VirtualField(object):
         return getattr(obj, self.attname)
 
 
+class ConstantField(VirtualField):
+    """
+    A field that provides a constant value.
+    """
+    def __init__(self, value, *args, **kwargs):
+        super(ConstantField, self).__init__(*args, **kwargs)
+        self.value = value
+
+    def __get__(self, instance, owner):
+        return self.value
+
+
 class CalculatedField(VirtualField):
     """
     A field whose that is calculated by an expression.
