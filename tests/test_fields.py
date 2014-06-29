@@ -4,7 +4,7 @@ import unittest
 import datetime
 from odin.fields import *
 from odin.fields import Field
-from odin.datetimeutil import utc, FixedTimezone
+from odin.datetimeutil import utc
 from odin.fields.virtual import VirtualField
 from odin.validators import MinValueValidator, MaxValueValidator, MaxLengthValidator, RegexValidator
 from odin.exceptions import ValidationError
@@ -177,7 +177,7 @@ class VirtualFieldTestCase(unittest.TestCase):
         target = TestObj()
 
         with self.assertRaises(NotImplementedError):
-            eek = target.test_field
+            _ = target.test_field
 
         with self.assertRaises(AttributeError) as cm:
             target.test_field = 123
@@ -207,7 +207,6 @@ class FieldsTests(unittest.TestCase):
             if isinstance(v, validatorClass):
                 raise AssertionError("Validator %r was found in list of validators." % validatorClass)
 
-
     # BooleanField ############################################################
 
     def test_booleanfield_1(self):
@@ -227,7 +226,6 @@ class FieldsTests(unittest.TestCase):
         self.assertEqual(False, f.clean('false'))
         self.assertEqual(False, f.clean('F'))
         self.assertEqual(False, f.clean('0'))
-
 
     # StringField #############################################################
 
@@ -268,7 +266,6 @@ class FieldsTests(unittest.TestCase):
         self.assertRaises(ValidationError, f.clean, None)
         self.assertEqual(f.max_length, None)
         self.assertValidatorIn(RegexValidator, f.validators)
-
 
     # IntegerField ############################################################
 
@@ -435,7 +432,6 @@ class FieldsTests(unittest.TestCase):
                          f.clean('Wed Aug 29 17:12:58 +0000 2012'))
         self.assertEqual(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
                          f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)))
-
 
     # DictField ###############################################################
 
