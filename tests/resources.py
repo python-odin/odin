@@ -111,6 +111,10 @@ class InheritedResource(FromResource):
     calculated_field = odin.CalculatedField(lambda obj: 11)
 
 
+class MultiInheritedResource(InheritedResource, FromResource):
+    pass
+
+
 class ToResource(odin.Resource):
     # Auto matched
     title = odin.StringField()
