@@ -168,7 +168,8 @@ class ResourceBase(type):
         new_class._meta.fields = sorted(new_class._meta.fields, key=hash)
 
         # All the fields of any type declared on this model
-        field_attnames = set([f.attname for f in new_class._meta.fields])
+        local_field_attnames = set([f.attname for f in new_class._meta.fields])
+        field_attnames = set(local_field_attnames)
 
         for base in parents:
             if not hasattr(base, '_meta'):
@@ -180,11 +181,13 @@ class ResourceBase(type):
             # on the base classes (we cannot handle shadowed fields at the
             # moment).
             for field in base._meta.all_fields:
-                if field.attname in field_attnames:
+                if field.attname in local_field_attnames:
                     raise Exception('Local field %r in class %r clashes with field of similar name from '
                                     'base class %r' % (field.attname, name, base.__name__))
             for field in base._meta.fields:
-                new_class.add_to_class(field.attname, copy.deepcopy(field))
+                if field.attname not in field_attnames:
+                    field_attnames.add(field.attname)
+                    new_class.add_to_class(field.attname, copy.deepcopy(field))
             for field in base._meta.virtual_fields:
                 new_class.add_to_class(field.attname, copy.deepcopy(field))
 
