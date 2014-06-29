@@ -53,8 +53,8 @@ class ResourceTestCase(unittest.TestCase):
 
     def test_simple_methods(self):
         r = Author()
-        self.assertEqual("<Author: test_resources.Author resource>", repr(r))
-        self.assertEqual("test_resources.Author resource", str(r))
+        self.assertEqual("<Author: tests.test_resources.Author resource>", repr(r))
+        self.assertEqual("tests.test_resources.Author resource", str(r))
 
     def test_clean_fields_1(self):
         r = Author(name="Foo")

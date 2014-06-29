@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import unittest
 from odin import adapters
-from resources import *
+from .resources import *
 
 
 class ResourceOptionsAdapterTestCase(unittest.TestCase):

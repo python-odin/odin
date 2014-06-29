@@ -2,10 +2,9 @@
 from __future__ import absolute_import
 import collections
 import unittest
-import odin
 from odin.exceptions import MappingSetupError, MappingExecutionError
 from odin.mapping.helpers import MapDictAs, MapListOf, NoOpMapper
-from resources import *
+from .resources import *
 
 
 class SimpleFromResource(odin.Resource):

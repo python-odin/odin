@@ -167,9 +167,9 @@ class VirtualFieldTestCase(unittest.TestCase):
 
     def test_repr(self):
         target = TestVirtualField()
-        self.assertEqual("<test_fields.TestVirtualField>", repr(target))
+        self.assertEqual("<tests.test_fields.TestVirtualField>", repr(target))
         target.set_attributes_from_name("eek")
-        self.assertEqual("<test_fields.TestVirtualField: eek>", repr(target))
+        self.assertEqual("<tests.test_fields.TestVirtualField: eek>", repr(target))
 
     def test_default_descriptor_behaviour(self):
         class TestObj(object):

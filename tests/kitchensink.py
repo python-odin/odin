@@ -3,15 +3,14 @@
 Do load/dump tests on known valid and invalid documents.
 """
 import os
-import sys
 import datetime
 
 from odin.codecs import json_codec
 from odin import exceptions
 from odin.datetimeutil import utc
 
-from _test_case import TestCase
-from resources import *
+from ._test_case import TestCase
+from .resources import *
 
 
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")

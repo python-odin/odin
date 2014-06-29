@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 from odin import utils
-from resources import Book
+from .resources import Book
 
 
 class CamelAndDashFormatsTestCase(unittest.TestCase):
