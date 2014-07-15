@@ -2,7 +2,7 @@
 try:
     import msgpack
 except ImportError:
-    raise Exception("odin.codecs.msgpack_codec requires the 'msgpack-python' package.")  # noqa
+    raise ImportError("odin.codecs.msgpack_codec requires the 'msgpack-python' package.")  # noqa
 
 import datetime
 from odin import serializers
