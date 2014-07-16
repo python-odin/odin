@@ -43,13 +43,33 @@ class ResourceD(ResourceC):
 
 
 class ResourceTestCase(unittest.TestCase):
-    def test_constructor_1(self):
+    def test_constructor_kwargs_only(self):
         r = Author(name="Foo")
         self.assertEqual("Foo", r.name)
 
-    def test_constructor_2(self):
+    def test_constructor_kwargs_only_with_unknown_field(self):
         with self.assertRaises(TypeError):
             Author(name="Foo", age=42)
+
+    def test_constructor_args_only(self):
+        r = Author("Foo")
+        self.assertEqual("Foo", r.name)
+        self.assertEqual(None, r.country)
+
+    def test_constructor_args_excess(self):
+        with self.assertRaises(TypeError) as ex:
+            Author("Foo", "Australia", 42)
+        self.assertEqual("This resource takes 2 positional arguments but 3 where given.", str(ex.exception))
+
+    def test_constructor_args_and_kwargs(self):
+        r = Author("Foo", country="Australia")
+        self.assertEqual("Foo", r.name)
+        self.assertEqual("Australia", r.country)
+
+    def test_constructor_args_and_kwargs_overrides(self):
+        r = Author("Foo", name="Bar", country="Australia")
+        self.assertEqual("Foo", r.name)
+        self.assertEqual("Australia", r.country)
 
     def test_simple_methods(self):
         r = Author()
