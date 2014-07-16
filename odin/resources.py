@@ -380,18 +380,10 @@ def create_resource_from_dict(d, resource=None, full_clean=True):
             "Expected resource `%s` does not match resource defined in document `%s`." % (
                 resource_name, document_resource_name))
 
-    errors = {}
-    attrs = {}
-    for f in resource_type._meta.fields:
-        value = d.pop(f.name, NOT_PROVIDED)
-        try:
-            attrs[f.attname] = f.clean(value)
-        except exceptions.ValidationError as ve:
-            errors[f.name] = ve.error_messages
-
-    if errors:
-        raise exceptions.ValidationError(errors)
-
+    attrs = {
+        f.attname: d.pop(f.name, NOT_PROVIDED)
+        for f in resource_type._meta.fields
+    }
     new_resource = resource_type(**attrs)
     if d:
         new_resource.extra_attrs(d)
