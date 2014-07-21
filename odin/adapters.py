@@ -67,13 +67,8 @@ class ResourceAdapter(object):
         """
         self._source = source
 
-        include_fields = getattr(self, 'include_fields', [])
-        if include:
-            include_fields.append(include)
-
-        exclude_fields = getattr(self, 'exclude_fields', [])
-        if exclude:
-            exclude_fields.append(exclude)
+        include_fields = include if include else getattr(self, 'include_fields', None)
+        exclude_fields = exclude if exclude else getattr(self, 'exclude_fields', None)
 
         self._meta = ResourceOptionsAdapter(source._meta, include_fields, exclude_fields)
 
