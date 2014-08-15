@@ -66,7 +66,11 @@ class ResourceAdapter(object):
         :param exclude: Fields to explicitly exclude on the adapter.
         """
         self._source = source
-        self._meta = ResourceOptionsAdapter(source._meta, include, exclude)
+
+        include_fields = include if include else getattr(self, 'include_fields', None)
+        exclude_fields = exclude if exclude else getattr(self, 'exclude_fields', None)
+
+        self._meta = ResourceOptionsAdapter(source._meta, include_fields, exclude_fields)
 
     def __getattr__(self, item):
         return getattr(self._source, item)

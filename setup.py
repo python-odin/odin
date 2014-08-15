@@ -7,7 +7,7 @@ except IOError:
 
 setup(
     name='odin',
-    version='0.5.1',
+    version='0.5.2',
     url='https://github.com/timsavage/odin',
     license='LICENSE',
     author='Tim Savage',
@@ -33,6 +33,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Topic :: Software Development :: Libraries :: Application Frameworks',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
