@@ -474,3 +474,41 @@ def assign_field(func=None, to_field=None, to_list=False):
         return func
 
     return inner(func) if func else inner
+
+
+def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=True):
+    """
+    Factory method for generating simple mappings between objects.
+
+    A common use-case for this method is in generating mappings in baldr's ``model_resource_factory`` method that
+    auto-generates resources from Django models.
+
+    :param from_obj: Object to map from.
+    :param to_obj: Object to map to.
+    :param base_mapping: Base mapping class; default is ``odin.Mapping``.
+    :param generate_reverse: Generate the reverse of the mapping ie swap from_obj and to_obj.
+    :return: if generate_reverse is True a tuple(forward_mapping, reverse_mapping); else just the forward_mapping.
+
+    """
+    forward_mapping = type(
+        "%sTo%s" % (from_obj.__class__.__name__, to_obj.__class__.__name__),
+        (base_mapping, ),
+        dict(
+            from_obj=from_obj,
+            to_obj=to_obj
+        )
+    )
+
+    if generate_reverse:
+        reverse_mapping = type(
+            "%sTo%s" % (to_obj.__class__.__name__, from_obj.__class__.__name__),
+            (base_mapping, ),
+            dict(
+                from_obj=to_obj,
+                to_obj=from_obj
+            )
+        )
+
+        return forward_mapping, reverse_mapping
+
+    return forward_mapping
