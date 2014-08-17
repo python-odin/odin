@@ -213,7 +213,8 @@ class ResourceBase(type):
             setattr(cls, name, value)
 
 
-class Resource(six.with_metaclass(ResourceBase)):
+@six.add_metaclass(ResourceBase)
+class Resource(object):
     def __init__(self, *args, **kwargs):
         args_len = len(args)
         if args_len > len(self._meta.fields):
