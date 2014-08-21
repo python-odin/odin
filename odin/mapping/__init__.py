@@ -287,46 +287,46 @@ class MappingBase(object):
     to_resource = None
 
     @classmethod
-    def apply(cls, source_resource, context=None):
+    def apply(cls, source_obj, context=None):
         """
         Apply conversion either a single resource or a list of resources using the mapping defined by this class.
 
         If a list of resources is supplied an iterable is returned.
 
-        :param source_resource: The source resource, this must be an instance of :py:attr:`Mapping.from_obj`.
+        :param source_obj: The source resource, this must be an instance of :py:attr:`Mapping.from_obj`.
         :param context: An optional context value, this can be any value you want to aid in mapping
         """
         context = context or {}
         context.setdefault('_loop_idx', [])
 
-        if isinstance(source_resource, (list, tuple)):
+        if isinstance(source_obj, (list, tuple)):
             def result_iter(sources):
                 context['_loop_idx'].append(0)
                 for s in sources:
                     yield cls.apply(s, context)
                     context['_loop_idx'][0] += 1
                 context['_loop_idx'].pop()
-            return result_iter(source_resource)
-        elif source_resource.__class__ is cls.from_obj:
-            return cls(source_resource, context).convert()
+            return result_iter(source_obj)
+        elif source_obj.__class__ is cls.from_obj:
+            return cls(source_obj, context).convert()
         else:
             # Sub class lookup required
-            sub_mapping = cls._subs.get(source_resource.__class__)
+            sub_mapping = cls._subs.get(source_obj.__class__)
             if not sub_mapping:
                 raise TypeError('`source_resource` parameter must be an instance (or subclass instance) of %s' %
                                 cls.from_obj)
-            return sub_mapping(source_resource, context).convert()
+            return sub_mapping(source_obj, context).convert()
 
-    def __init__(self, source_resource, context=None):
+    def __init__(self, source_obj, context=None):
         """
         Initialise instance of mapping.
 
-        :param source_resource: The source resource, this must be an instance of :py:attr:`Mapping.from_obj`.
+        :param source_obj: The source resource, this must be an instance of :py:attr:`Mapping.from_obj`.
         :param context: An optional context value, this can be any value you want to aid in mapping
         """
-        if source_resource.__class__ is not self.from_obj:
+        if source_obj.__class__ is not self.from_obj:
             raise TypeError('`source_resource` parameter must be an instance of %s' % self.from_obj)
-        self.source = source_resource
+        self.source = source_obj
         self.context = context or {}
 
     @property
@@ -392,16 +392,20 @@ class MappingBase(object):
             return {f: to_values[i] for i, f in enumerate(to_fields)}
 
     def create_object(self, **field_values):
-        """Create an instance of target object, this method can be customise to handle custom object initialisation.
+        """
+        Create an instance of target object, this method can be customise to handle custom object initialisation.
 
         :param field_values: Dictionary of values for creating the target object.
+
         """
         return self.to_obj(**field_values)
 
     def convert(self, **field_values):
-        """Convert the provided source into a target object.
+        """
+        Convert the provided source into a dest object.
 
         :param field_values: Initial field values (or fields not provided by source object);
+
         """
         assert hasattr(self, '_mapping_rules')
 
@@ -411,6 +415,21 @@ class MappingBase(object):
             values.update(self._apply_rule(mapping_rule))
 
         return self.create_object(**values)
+
+    def update(self, dest_obj):
+        """
+        Update an existing object with fields from the provided source object.
+
+        :param dest_obj: The existing destination object.
+
+        """
+        assert hasattr(self, '_mapping_rules')
+
+        for mapping_rule in self._mapping_rules:
+            for name, value in self._apply_rule(mapping_rule).items():
+                setattr(dest_obj, name, value)
+
+        return dest_obj
 
 
 class Mapping(six.with_metaclass(MappingMeta, MappingBase)):
