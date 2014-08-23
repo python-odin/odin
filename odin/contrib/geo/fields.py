@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 from odin import exceptions
 from odin.fields import Field, ScalarField
@@ -20,7 +21,7 @@ class LatitudeField(ScalarField):
             return
         try:
             return latitude(value)
-        except ValueError:
+        except (ValueError, TypeError):
             msg = self.error_messages['invalid'] % value
             raise exceptions.ValidationError(msg)
 
@@ -38,7 +39,7 @@ class LongitudeField(ScalarField):
             return
         try:
             return longitude(value)
-        except ValueError:
+        except (ValueError, TypeError):
             msg = self.error_messages['invalid'] % value
             raise exceptions.ValidationError(msg)
 
@@ -56,7 +57,7 @@ class LatLngField(Field):
             return
         try:
             return latlng(value)
-        except ValueError:
+        except (ValueError, TypeError):
             msg = self.error_messages['invalid'] % value
             raise exceptions.ValidationError(msg)
 
@@ -74,6 +75,6 @@ class PointField(Field):
             return
         try:
             return point(value)
-        except ValueError:
+        except (ValueError, TypeError):
             msg = self.error_messages['invalid'] % value
             raise exceptions.ValidationError(msg)

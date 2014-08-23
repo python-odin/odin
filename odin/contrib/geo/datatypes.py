@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import math
 
 __all__ = ('latitude', 'longitude', 'latlng', 'point')
@@ -10,6 +11,7 @@ def to_dms(value, absolute=False):
     :param value: Float value to split
     :param absolute: Obtain the absolute value
     :return: tuple containing DMS values
+
     """
     invert = not absolute and value < 0
     value = abs(value)
@@ -20,18 +22,34 @@ def to_dms(value, absolute=False):
     return (-degree if invert else degree), minute, second
 
 
+def to_dm(value, absolute=False):
+    """
+    Split a float value into DM (degree, minute) parts
+
+    :param value: Float value to split
+    :param absolute: Obtain the absolute value
+    :return: tuple containing DM values
+
+    """
+    invert = not absolute and value < 0
+    value = abs(value)
+    degree = int(math.floor(value))
+    minute = (value - degree) * 60
+    return (-degree if invert else degree), minute
+
+
 class latitude(float):  # NoQA
     """
     A latitude value. A latitude is a value between -90.0 and 90.0.
     """
     def __new__(cls, x):
         lat = float.__new__(cls, x)
-        if lat >= 90.0 or lat <= -90.0:
+        if lat > 90.0 or lat < -90.0:
             raise ValueError("not in range -90.0 -> 90.0: '%s'" % x)
         return lat
 
     def __repr__(self):
-        return "latitude<%02.3f>" % self
+        return "latitude<%02.4f>" % self
 
     def __str__(self):
         result = u"%02i°%02i'%02f\"" % to_dms(self, True)
@@ -44,12 +62,12 @@ class longitude(float):  # NoQA
     """
     def __new__(cls, x):
         lng = float.__new__(cls, x)
-        if lng >= 90.0 or lng <= -90.0:
+        if lng > 180.0 or lng < -180.0:
             raise ValueError("not in range -180.0 -> 180.0: '%s'" % x)
         return lng
 
     def __repr__(self):
-        return "longitude<%03.3f>" % self
+        return "longitude<%03.4f>" % self
 
     def __str__(self):
         result = "%03i°%02i\'%02f\"" % to_dms(self, True)
@@ -79,7 +97,7 @@ class latlng(tuple):
         return self[1]
 
     def __repr__(self):
-        return "latlng<%02.3f, %03.3f>" % self
+        return "latlng<%02.4f, %03.4f>" % self
 
     def __str__(self):
         return "(%s, %s)" % self
@@ -97,20 +115,6 @@ class point(tuple):
         else:
             raise TypeError('point() takes 2-3 arguments (%s given)' % len(args))
 
-    @classmethod
-    def origin(cls):
-        """
-        Return an origin point.
-        """
-        return cls(0, 0)
-
-    @classmethod
-    def origin3d(cls):
-        """
-        Return an origin point in 3D space.
-        """
-        return cls(0, 0, 0)
-
     @property
     def x(self):
         return self[0]
@@ -124,7 +128,7 @@ class point(tuple):
         try:
             return self[2]
         except IndexError:
-            raise IndexError('2D points do not include a z axis.')
+            raise AttributeError('2D points do not include a z axis.')
 
     @property
     def is_3d(self):
