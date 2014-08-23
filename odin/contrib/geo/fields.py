@@ -1,13 +1,13 @@
 from __future__ import absolute_import, print_function
-import odin
 from odin import exceptions
+from odin.fields import Field, ScalarField
 from odin.validators import EMPTY_VALUES
 from .datatypes import latitude, longitude, latlng, point
 
 __all__ = ('LatitudeField', 'LongitudeField', 'LatLngField')
 
 
-class LatitudeField(odin.ScalarField):
+class LatitudeField(ScalarField):
     """
     Field that contains a latitude value.
     """
@@ -25,7 +25,7 @@ class LatitudeField(odin.ScalarField):
             raise exceptions.ValidationError(msg)
 
 
-class LongitudeField(odin.ScalarField):
+class LongitudeField(ScalarField):
     """
     Field that contains a longitude value.
     """
@@ -43,7 +43,7 @@ class LongitudeField(odin.ScalarField):
             raise exceptions.ValidationError(msg)
 
 
-class LatLngField(odin.Field):
+class LatLngField(Field):
     """
     Field that contains a lat/long pair.
     """
@@ -61,7 +61,7 @@ class LatLngField(odin.Field):
             raise exceptions.ValidationError(msg)
 
 
-class PointField(odin.Field):
+class PointField(Field):
     """
     Field that contains a point in cartesian space. This can be either 2D (on a plain) or 3D (includes a z-axis).
     """
