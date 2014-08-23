@@ -4,7 +4,7 @@ from odin.fields import Field, ScalarField
 from odin.validators import EMPTY_VALUES
 from .datatypes import latitude, longitude, latlng, point
 
-__all__ = ('LatitudeField', 'LongitudeField', 'LatLngField')
+__all__ = ('LatitudeField', 'LongitudeField', 'LatLngField', 'PointField')
 
 
 class LatitudeField(ScalarField):
