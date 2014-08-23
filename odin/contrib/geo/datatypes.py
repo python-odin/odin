@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import math
+import six
 
 __all__ = ('latitude', 'longitude', 'latlng', 'point')
 
@@ -51,9 +52,11 @@ class latitude(float):  # NoQA
     def __repr__(self):
         return "latitude<%02.4f>" % self
 
-    def __str__(self):
+    def __unicode__(self):
         result = u"%02i°%02i'%02f\"" % to_dms(self, True)
-        return result + ('S' if self < 0 else 'N')
+        return result + (u'S' if self < 0 else u'N')
+
+    __str__ = __unicode__ if six.PY3 else float.__str__
 
 
 class longitude(float):  # NoQA
@@ -69,9 +72,11 @@ class longitude(float):  # NoQA
     def __repr__(self):
         return "longitude<%03.4f>" % self
 
-    def __str__(self):
-        result = "%03i°%02i\'%02f\"" % to_dms(self, True)
-        return result + ('W' if self < 0 else 'E')
+    def __unicode__(self):
+        result = u"%03i°%02i\'%02f\"" % to_dms(self, True)
+        return result + (u'W' if self < 0 else u'E')
+
+    __str__ = __unicode__ if six.PY3 else float.__str__
 
 
 class latlng(tuple):
@@ -99,8 +104,10 @@ class latlng(tuple):
     def __repr__(self):
         return "latlng<%02.4f, %03.4f>" % self
 
-    def __str__(self):
-        return "(%s, %s)" % self
+    def __unicode__(self):
+        return u"(%s, %s)" % self
+
+    __str__ = __unicode__ if six.PY3 else tuple.__str__
 
 
 class point(tuple):

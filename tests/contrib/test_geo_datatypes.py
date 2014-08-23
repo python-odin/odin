@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 import unittest
+import six
 from odin.contrib.geo import datatypes
 
 
@@ -49,11 +51,11 @@ class DataTypesTestCase(unittest.TestCase):
     def test_latitude_str(self):
         lat = datatypes.latitude(27.3375)
         self.assertEqual("latitude<27.3375>", repr(lat))
-        self.assertEqual("27°20'15.000000\"N", str(lat))
+        self.assertEqual(u"27°20'15.000000\"N", six.text_type(lat))
 
         lat = datatypes.latitude(-27.3375)
         self.assertEqual("latitude<-27.3375>", repr(lat))
-        self.assertEqual("27°20'15.000000\"S", str(lat))
+        self.assertEqual(u"27°20'15.000000\"S", six.text_type(lat))
 
     def test_longitude_valid(self):
         self.assertEqual(30, datatypes.longitude(30))
@@ -77,11 +79,11 @@ class DataTypesTestCase(unittest.TestCase):
     def test_longitude_str(self):
         lat = datatypes.longitude(27.3375)
         self.assertEqual("longitude<27.3375>", repr(lat))
-        self.assertEqual("027°20'15.000000\"E", str(lat))
+        self.assertEqual(u"027°20'15.000000\"E", six.text_type(lat))
 
         lat = datatypes.longitude(-27.3375)
         self.assertEqual("longitude<-27.3375>", repr(lat))
-        self.assertEqual("027°20'15.000000\"W", str(lat))
+        self.assertEqual(u"027°20'15.000000\"W", six.text_type(lat))
 
     def test_latlng_valid(self):
         self.assertEqual((10.0, 20.0), datatypes.latlng(10, 20))
@@ -102,7 +104,7 @@ class DataTypesTestCase(unittest.TestCase):
     def test_latlng_str(self):
         ll = datatypes.latlng(27.3375, -27.3375)
         self.assertEqual("latlng<27.3375, -27.3375>", repr(ll))
-        self.assertEqual("(27°20'15.000000\"N, 027°20'15.000000\"W)", str(ll))
+        self.assertEqual(u"(27°20'15.000000\"N, 027°20'15.000000\"W)", six.text_type(ll))
 
     def test_latlng_properties(self):
         ll = datatypes.latlng(27.3375, -27.3375)
