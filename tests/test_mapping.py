@@ -425,4 +425,4 @@ class SubClassMappingTestCase(MappingTestCase):
                 pass
             ResourceAToResourceX.apply(ResourceD())
 
-        self.assertIn("`source_resource` parameter must be an instance (or subclass instance) of", str(cm.exception))
+        self.assertIn("`source_resource` parameter must be an instance of", str(cm.exception))
