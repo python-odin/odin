@@ -75,6 +75,7 @@ Requires
 **Optional**
 
 * simplejson - Odin will use simplejson if it is available or fallback to the builtin json library
+* msgpack-python - To enable use of the msgpack codec
 
 **Contrib**
 

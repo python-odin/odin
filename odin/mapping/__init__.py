@@ -8,7 +8,7 @@ from odin.exceptions import MappingSetupError, MappingExecutionError
 from odin.mapping.helpers import MapListOf, MapDictAs, NoOpMapper
 from odin.utils import cached_property
 
-__all__ = ('Mapping', 'map_field', 'map_list_field', 'assign_field')
+__all__ = ('Mapping', 'map_field', 'map_list_field', 'assign_field', 'define')
 
 
 force_tuple = lambda x: x if isinstance(x, (list, tuple)) else (x,)
@@ -287,7 +287,7 @@ class MappingBase(object):
     to_resource = None
 
     @classmethod
-    def apply(cls, source_obj, context=None):
+    def apply(cls, source_obj, context=None, allow_subclass=False):
         """
         Apply conversion either a single resource or a list of resources using the mapping defined by this class.
 
@@ -312,20 +312,30 @@ class MappingBase(object):
         else:
             # Sub class lookup required
             sub_mapping = cls._subs.get(source_obj.__class__)
-            if not sub_mapping:
+            if sub_mapping:
+                return sub_mapping(source_obj, context).convert()
+            if allow_subclass:
+                if allow_subclass and isinstance(source_obj, cls.from_obj):
+                    return cls(source_obj, context, True).convert()
+
                 raise TypeError('`source_resource` parameter must be an instance (or subclass instance) of %s' %
                                 cls.from_obj)
-            return sub_mapping(source_obj, context).convert()
 
-    def __init__(self, source_obj, context=None):
+            raise TypeError('`source_resource` parameter must be an instance of %s' % cls.from_obj)
+
+    def __init__(self, source_obj, context=None, allow_subclass=False):
         """
         Initialise instance of mapping.
 
         :param source_obj: The source resource, this must be an instance of :py:attr:`Mapping.from_obj`.
         :param context: An optional context value, this can be any value you want to aid in mapping
         """
-        if source_obj.__class__ is not self.from_obj:
-            raise TypeError('`source_resource` parameter must be an instance of %s' % self.from_obj)
+        if allow_subclass:
+            if not isinstance(source_obj, self.from_obj):
+                raise TypeError('`source_resource` parameter must be an instance of subclass of %s' % self.from_obj)
+        else:
+            if source_obj.__class__ is not self.from_obj:
+                raise TypeError('`source_resource` parameter must be an instance of %s' % self.from_obj)
         self.source = source_obj
         self.context = context or {}
 
