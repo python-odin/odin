@@ -135,7 +135,7 @@ class Amount(tuple):
     __radd__ = __add__
     __rsub__ = __sub__
     __rmul__ = __mul__
-    __rtruediv__ = __truediv__
+    __div__ = __rtruediv__ = __truediv__
 
     # Comparison operators
 
