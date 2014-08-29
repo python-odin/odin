@@ -89,12 +89,12 @@ class Amount(tuple):
 
     def __str__(self):
         if self.currency == NO_CURRENCY:
-            return "%s" % round(self)
+            return self.format("{value}")
         else:
-            return "%s %s" % (round(self), self.currency.code)
+            return self.format("{value} {currency.code}")
 
     def __repr__(self):
-        return "<Amount: %s, %r>" % (round(self), self.currency)
+        return self.format("<Amount: {value}, {currency!r}>")
 
     # Math operations
 
@@ -102,7 +102,7 @@ class Amount(tuple):
         """
         Round the value to the specified.
         """
-        return round(self.value, n or self.currency.precision)
+        return self.value.__round__(n or self.currency.precision)
 
     def __pos__(self):
         return Amount(self.value, self.currency)
@@ -204,12 +204,13 @@ class Amount(tuple):
 
         Internally this uses the python builtin string format method. The following fields are available for formatting:
 
-        - *value*; value of the amount rounded to the precision defined by the currency
+        - *value*; value of the amount formatted to the precision defined by the currency
         - *value_raw*; the raw value used internally (a Decimal)
-        - *symbol*; the symbol defined by the currency
-        - *code*; the code defined by the currency
-        - *number*; the number defined by the currency (currencies are assigned a number along with a code)
-        - *name*; the name defined by the currency
+        - *currency*; the currency
+          - *currency.symbol*; the symbol defined by the currency
+          - *currency.code*; the code defined by the currency
+          - *currency.number*; the number defined by the currency (currencies are assigned a number along with a code)
+          - *currency.name*; the name defined by the currency
 
         Usage::
 
@@ -222,12 +223,9 @@ class Amount(tuple):
         """
         assert isinstance(format_string, six.string_types)
         return format_string.format(
-            value=round(self),
+            value=('{:0.%if}' % self.currency.precision).format(self.value),
             value_raw=self.value,
-            symbol=self.currency.symbol,
-            code=self.currency.code,
-            number=self.currency.number,
-            name=self.currency.name
+            currency=self.currency,
         )
 
     def assign_currency(self, currency):

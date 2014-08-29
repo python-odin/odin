@@ -88,8 +88,8 @@ class DataTypesTestCase(unittest.TestCase):
         self.assertRaises(ValueError, lambda: d >= c)
 
     def test_amount_format(self):
-        self.assertEqual("11.00", a.format("{value:0.2f}"))
-        self.assertEqual("$22.00 AUD", b.format("{symbol}{value} {code}"))
+        self.assertEqual("11.00", a.format("{value_raw:0.2f}"))
+        self.assertEqual("$22.00 AUD", b.format("{currency.symbol}{value} {currency.code}"))
 
     def test_assign_currency(self):
         target = a.assign_currency("NZD")
