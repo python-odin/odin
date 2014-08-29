@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
 import decimal
+import six
 
 __all__ = ('Currency', 'set_default_currency', 'Amount')
 
@@ -36,7 +38,7 @@ class Currency(object):
 
 CURRENCY = {}
 # XXX is the currency code for no currency in ISO 4217
-CURRENCY['XXX'] = DEFAULT_CURRENCY = NO_CURRENCY = Currency('XXX', 999, 'No Currency')
+CURRENCY['XXX'] = DEFAULT_CURRENCY = NO_CURRENCY = Currency('XXX', 999, 'No Currency', '', 0)
 
 
 def set_default_currency(code='XXX'):
@@ -63,14 +65,17 @@ class Amount(tuple):
                 raise ValueError("expected tuple with a length of 1 or 2 got: %s" % len(value))
 
         if not isinstance(value, decimal.Decimal):
-            value = decimal.Decimal(value)
+            try:
+                value = decimal.Decimal(value)
+            except decimal.InvalidOperation:
+                raise ValueError("value is not a valid numerical amount: %s" % value)
 
         if currency is None:
             currency = DEFAULT_CURRENCY
         elif isinstance(currency, str):
             currency = CURRENCY[currency.upper()]
         elif not isinstance(currency, Currency):
-            raise TypeError("Unable to convert value into a valid currency: %s" % currency)
+            raise TypeError("unable to convert value into a valid currency: %s" % currency)
 
         return tuple.__new__(cls, (value, currency))
 
@@ -89,7 +94,7 @@ class Amount(tuple):
             return "%s %s" % (round(self), self.currency.code)
 
     def __repr__(self):
-        return "<Amount: %s %r>" % self
+        return "<Amount: %s, %r>" % (round(self), self.currency)
 
     # Math operations
 
@@ -119,14 +124,18 @@ class Amount(tuple):
         else:
             return Amount(self.value * decimal.Decimal(other), self.currency)
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         other_value, currency = self._pre_calculate(other)
-        return Amount(self.value / other_value, currency)
+        # If the other instance is a currency we return just a value.
+        if isinstance(other, Amount):
+            return self.value / other_value
+        else:
+            return Amount(self.value / other_value, currency)
 
     __radd__ = __add__
     __rsub__ = __sub__
     __rmul__ = __mul__
-    __rdiv__ = __div__
+    __rtruediv__ = __truediv__
 
     # Comparison operators
 
@@ -158,17 +167,19 @@ class Amount(tuple):
         """
         if isinstance(other, Amount):
             other_value = other.value
+            other_currency = other.currency
         else:
             other_value = decimal.Decimal(other)
+            other_currency = NO_CURRENCY
 
-        if not self.currency.no_currency:
+        if self.currency == NO_CURRENCY:
+            currency = other_currency
+        elif other_currency == NO_CURRENCY:
             currency = self.currency
-        elif not other.currency.no_currency:
-            currency = other.currency
         elif self.currency != other.currency:
             raise ValueError("Cannot perform calculation on amounts of different currencies.")
         else:
-            currency = NO_CURRENCY
+            currency = self.currency
 
         return other_value, currency
 
@@ -198,6 +209,7 @@ class Amount(tuple):
         - *symbol*; the symbol defined by the currency
         - *code*; the code defined by the currency
         - *number*; the number defined by the currency (currencies are assigned a number along with a code)
+        - *name*; the name defined by the currency
 
         Usage::
 
@@ -208,14 +220,15 @@ class Amount(tuple):
         :return: formatted string
 
         """
-        assert isinstance(format_string, str)
-        return format_string.format({
-            'value': round(self),
-            'value_raw': self.value,
-            'symbol': self.currency.symbol,
-            'code': self.currency.code,
-            'number': self.currency.number
-        })
+        assert isinstance(format_string, six.string_types)
+        return format_string.format(
+            value=round(self),
+            value_raw=self.value,
+            symbol=self.currency.symbol,
+            code=self.currency.code,
+            number=self.currency.number,
+            name=self.currency.name
+        )
 
     def assign_currency(self, currency):
         """
