@@ -244,6 +244,7 @@ class Amount(tuple):
 
 
 # Currencies based off the latest ISO 4217 list of currencies
+# Updated: 2014-08-29
 CURRENCY['AED'] = Currency('AED', 784, 'UAE Dirham', u'', 2)
 CURRENCY['AFN'] = Currency('AFN', 971, 'Afghani', u'؋', 2)
 CURRENCY['ALL'] = Currency('ALL', 8, 'Lek', u'', 2)
