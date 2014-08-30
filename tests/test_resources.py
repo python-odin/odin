@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import unittest
-from odin.resources import ResourceOptions
+from odin.resources import ResourceOptions, build_object_graph
 import odin
 from odin.exceptions import ValidationError
-
+from .resources import Book
 
 class Author(odin.Resource):
     name = odin.StringField()
@@ -146,3 +147,59 @@ class MetaOptionsTestCase(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             target.contribute_to_class(NewResource, 'etc')
+
+
+class ConstructionMethodsTestCase(unittest.TestCase):
+    def test_build_object_graph_empty_dict_no_clean(self):
+        book = build_object_graph({}, Book, full_clean=False)
+
+        self.assertEqual(dict(
+            title=None,
+            num_pages=None,
+            rrp=20.4,
+            fiction=None,
+            genre=None,
+            published=None,
+            authors=None,
+            publisher=None
+        ), book.to_dict())
+
+    def test_build_object_graph_empty_dict(self):
+        with self.assertRaises(ValidationError) as ctx:
+            build_object_graph({}, Book)
+
+        self.assertEqual(dict(
+            title=['This field cannot be null.'],
+            num_pages=['This field cannot be null.'],
+            fiction=['This field cannot be null.'],
+            genre=['This field cannot be null.'],
+            published=['This field cannot be null.'],
+            authors=['List cannot contain null entries.'],
+        ), ctx.exception.error_messages)
+
+    def test_build_object_graph_from_list(self):
+        books = build_object_graph([dict(
+            title="Book1"
+        ), dict(
+            title="Book2"
+        )], Book, full_clean=False)
+
+        self.assertEqual([dict(
+            title="Book1",
+            num_pages=None,
+            rrp=20.4,
+            fiction=None,
+            genre=None,
+            published=None,
+            authors=None,
+            publisher=None
+        ), dict(
+            title="Book2",
+            num_pages=None,
+            rrp=20.4,
+            fiction=None,
+            genre=None,
+            published=None,
+            authors=None,
+            publisher=None
+        )], [book.to_dict() for book in books])

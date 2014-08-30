@@ -27,7 +27,7 @@ class LibraryBook(odin.Resource):
 class Book(LibraryBook):
     title = odin.StringField()
     num_pages = odin.IntegerField()
-    rrp = odin.FloatField()
+    rrp = odin.FloatField(default=20.4, use_default_if_not_provided=True)
     fiction = odin.BooleanField(is_attribute=True)
     genre = odin.StringField(choices=(
         ('sci-fi', 'Science Fiction'),
@@ -37,7 +37,7 @@ class Book(LibraryBook):
     ))
     published = odin.TypedArrayField(odin.DateTimeField())
     authors = odin.ArrayOf(Author)
-    publisher = odin.DictAs(Publisher)
+    publisher = odin.DictAs(Publisher, null=True)
 
 
 class Library(odin.Resource):

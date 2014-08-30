@@ -237,7 +237,6 @@ class Resource(object):
 
         # Now we're left with the unprocessed fields that *must* come from
         # keywords, or default.
-
         for field in fields_iter:
             try:
                 val = kwargs.pop(field.attname)
@@ -381,11 +380,13 @@ def create_resource_from_dict(d, resource=None, full_clean=True):
             "Expected resource `%s` does not match resource defined in document `%s`." % (
                 resource_name, document_resource_name))
 
-    attrs = {
-        f.attname: d.pop(f.name, NOT_PROVIDED)
-        for f in resource_type._meta.fields
-    }
-    new_resource = resource_type(**attrs)
+    attrs = []
+    for f in resource_type._meta.fields:
+        value = d.pop(f.name, NOT_PROVIDED)
+        if value is NOT_PROVIDED:
+            value = f.get_default() if f.use_default_if_not_provided else None
+        attrs.append(value)
+    new_resource = resource_type(*attrs)
     if d:
         new_resource.extra_attrs(d)
     if full_clean:
