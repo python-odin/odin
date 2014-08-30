@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 import odin
-import jinja2
+# import jinja2
 
 
 if __name__ == '__main__':
