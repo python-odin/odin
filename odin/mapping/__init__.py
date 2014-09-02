@@ -6,7 +6,7 @@ from odin.resources import Resource
 from odin.fields.composite import ListOf, DictAs
 from odin.exceptions import MappingSetupError, MappingExecutionError
 from odin.mapping.helpers import MapListOf, MapDictAs, NoOpMapper
-from odin.utils import cached_property
+from odin.utils import cached_property, ResourceIter
 
 __all__ = ('Mapping', 'map_field', 'map_list_field', 'assign_field', 'define')
 
@@ -299,7 +299,7 @@ class MappingBase(object):
         context = context or {}
         context.setdefault('_loop_idx', [])
 
-        if isinstance(source_obj, (list, tuple)):
+        if isinstance(source_obj, (list, tuple, ResourceIter)):
             def result_iter(sources):
                 context['_loop_idx'].append(0)
                 for s in sources:
