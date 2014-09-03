@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 import unittest
 from odin import adapters
+from odin.utils import field_iter_items
 from .resources import *
 
 
@@ -55,13 +56,13 @@ class ResourceAdapterTestCase(unittest.TestCase):
     def test_repr(self):
         target = adapters.ResourceAdapter(Book(title="Foo"))
 
-        self.assertEqual('<ResourceAdapter: library.Book resource>', repr(target))
+        self.assertEqual('<ResourceAdapter: library.Book resource adapter>', repr(target))
 
     def test_iter(self):
         book = Book(title="Foo", rrp=123.45, num_pages=10, fiction=True)
         target = adapters.ResourceAdapter(book)
 
-        actual = list((f.name, str(v)) for f, v in target)
+        actual = list((f.name, str(v)) for f, v in field_iter_items(target))
         self.assertListEqual([
             ('title', 'Foo'),
             ('num_pages', '10'),

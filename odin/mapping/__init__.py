@@ -6,7 +6,7 @@ from odin.resources import Resource
 from odin.fields.composite import ListOf, DictAs
 from odin.exceptions import MappingSetupError, MappingExecutionError
 from odin.mapping.helpers import MapListOf, MapDictAs, NoOpMapper
-from odin.utils import cached_property, ResourceIter
+from odin.utils import cached_property
 
 __all__ = ('Mapping', 'map_field', 'map_list_field', 'assign_field', 'define')
 

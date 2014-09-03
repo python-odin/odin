@@ -164,15 +164,3 @@ def extract_fields_from_dict(d, resource):
 
     """
     return {f.name: d[f.name] for f in field_iter(resource) if f.name in d}
-
-
-class ResourceIter(object):
-    """
-    An iterator for resources, these can be identified allow iterators to be used as inputs for mappings.
-    """
-    def __init__(self, iterable):
-        self.iterable = iterable
-
-    def __iter__(self):
-        for item in self.iterable:
-            yield item
