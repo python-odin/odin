@@ -253,12 +253,6 @@ class Resource(object):
     def __str__(self):
         return '%s resource' % self._meta.resource_name
 
-    def __iter__(self):
-        """
-        Iterate over a resource, returning field/value pairs.
-        """
-        return field_iter_items(self)
-
     @classmethod
     def create_from_dict(cls, d, full_clean=False):
         """
@@ -270,7 +264,7 @@ class Resource(object):
         """
         Convert this resource into a dict
         """
-        return dict((f.name, v) for f, v in self)
+        return dict((f.name, v) for f, v in field_iter_items(self))
 
     def convert_to(self, to_resource, context=None, **field_values):
         """
