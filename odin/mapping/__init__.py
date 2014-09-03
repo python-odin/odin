@@ -412,7 +412,7 @@ class MappingBase(object):
 
     def convert(self, **field_values):
         """
-        Convert the provided source into a dest object.
+        Convert the provided source into a destination object.
 
         :param field_values: Initial field values (or fields not provided by source object);
 
@@ -426,20 +426,39 @@ class MappingBase(object):
 
         return self.create_object(**values)
 
-    def update(self, dest_obj):
+    def update(self, destination_obj):
         """
         Update an existing object with fields from the provided source object.
 
-        :param dest_obj: The existing destination object.
+        :param destination_obj: The existing destination object.
 
         """
         assert hasattr(self, '_mapping_rules')
 
         for mapping_rule in self._mapping_rules:
             for name, value in self._apply_rule(mapping_rule).items():
-                setattr(dest_obj, name, value)
+                setattr(destination_obj, name, value)
 
-        return dest_obj
+        return destination_obj
+
+    def diff(self, destination_obj):
+        """
+        Return all fields that are different.
+
+        :note: a full mapping operation is performed during the diffing process.
+
+        :param destination_obj: The existing destination object.
+        :return: set of fields that vary.
+
+        """
+        assert hasattr(self, '_mapping_rules')
+
+        diff_fields = set()
+        for mapping_rule in self._mapping_rules:
+            for name, value in self._apply_rule(mapping_rule).items():
+                if value != getattr(destination_obj, name):
+                    diff_fields.add(name)
+        return diff_fields
 
 
 class Mapping(six.with_metaclass(MappingMeta, MappingBase)):
