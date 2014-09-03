@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import collections
 import unittest
 from odin.exceptions import MappingSetupError, MappingExecutionError
+from odin.mapping import MappingResult
 from odin.mapping.helpers import MapDictAs, MapListOf, NoOpMapper
 from .resources import *
 
@@ -287,7 +287,7 @@ class ExecuteMappingTestCase(MappingTestCase):
         ]
 
         to_resource_iter = SimpleFromTo.apply(from_resources)
-        self.assertIsInstance(to_resource_iter, collections.Iterator)
+        self.assertIsInstance(to_resource_iter, MappingResult)
         self.assertListEqual(['Foo', 'Bar', 'Eek'], [t.title for t in to_resource_iter])
 
     def test_apply_multiple_resources_with_context(self):
@@ -298,7 +298,7 @@ class ExecuteMappingTestCase(MappingTestCase):
         ]
 
         to_resource_iter = SimpleFromTo.apply(from_resources)
-        self.assertIsInstance(to_resource_iter, collections.Iterator)
+        self.assertIsInstance(to_resource_iter, MappingResult)
         self.assertListEqual(['0: Foo', '1: Bar', '2: Eek'], [t.title_count for t in to_resource_iter])
 
 

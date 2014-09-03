@@ -75,20 +75,17 @@ class ResourceAdapter(object):
     def __getattr__(self, item):
         return getattr(self._source, item)
 
+    def __setattr__(self, name, value):
+        setattr(self._source, name, value)
+
     def __repr__(self):
         return '<%s: %s>' % (self.__class__.__name__, self)
 
     def __str__(self):
-        return '%s resource' % self._meta.resource_name
-
-    def __iter__(self):
-        """
-        Iterate over a resource, returning field/value pairs.
-        """
-        return field_iter_items(self)
+        return '%s resource adapter' % self._meta.resource_name
 
     def to_dict(self):
         """
         Convert this resource into a dict
         """
-        return dict((f.name, v) for f, v in self)
+        return dict((f.name, v) for f, v in field_iter_items(self))

@@ -278,6 +278,25 @@ class MappingMeta(type):
         return mapper
 
 
+class MappingResult(object):
+    """
+    Iterator used to return a sequence from a mapping operation (used by ``Mapping.apply``).
+    """
+    def __init__(self, sequence, mapping, context=None, *mapping_options):
+        self.sequence = sequence
+        self.mapping = mapping
+        self.context = context or {}
+        self.context.setdefault('_loop_idx', [])
+        self.mapping_options = mapping_options
+
+    def __iter__(self):
+        self.context['_loop_idx'].append(0)
+        for item in self.sequence:
+            yield self.mapping.apply(item, self.context, *self.mapping_options)
+            self.context['_loop_idx'][0] += 1
+        self.context['_loop_idx'].pop()
+
+
 class MappingBase(object):
     from_obj = None
     to_obj = None
@@ -299,14 +318,8 @@ class MappingBase(object):
         context = context or {}
         context.setdefault('_loop_idx', [])
 
-        if isinstance(source_obj, (list, tuple, ResourceIter)):
-            def result_iter(sources):
-                context['_loop_idx'].append(0)
-                for s in sources:
-                    yield cls.apply(s, context)
-                    context['_loop_idx'][0] += 1
-                context['_loop_idx'].pop()
-            return result_iter(source_obj)
+        if isinstance(source_obj, (list, tuple)) or hasattr(source_obj, '__iter__'):
+            return MappingResult(source_obj, cls, context, allow_subclass)
         elif source_obj.__class__ is cls.from_obj:
             return cls(source_obj, context).convert()
         else:
