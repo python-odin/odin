@@ -65,7 +65,7 @@ class ResourceAdapter(object):
         :param include: Fields that should be explicitly included on the adapter.
         :param exclude: Fields to explicitly exclude on the adapter.
         """
-        self._source = source
+        self.__dict__['_source'] = source
 
         include_fields = include if include else getattr(self, 'include_fields', None)
         exclude_fields = exclude if exclude else getattr(self, 'exclude_fields', None)
