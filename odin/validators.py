@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 # This file is largely verbatim from the Django project, the wheel works well, no need to re-invent it.
+#
+# A note: to use validators from the Django project install the baldr package. Baldr is an integration between Odin and
+# the Django framework, the integration includes support for handling the Django version of the ValidationError
+# exception within Odin.
 import re
 import six
 from odin import exceptions

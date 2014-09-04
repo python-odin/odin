@@ -2,7 +2,7 @@
 import copy
 import datetime
 import six
-from odin import exceptions, datetimeutil
+from odin import exceptions, datetimeutil, registration
 from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url
 
 __all__ = (
@@ -116,14 +116,9 @@ class Field(object):
         for v in self.validators:
             try:
                 v(value)
-            except exceptions.ValidationError as e:
-                if hasattr(e, 'code') and e.code in self.error_messages:
-                    message = self.error_messages[e.code]
-                    if e.params:
-                        message = message % e.params
-                    errors.append(message)
-                else:
-                    errors.extend(e.messages)
+            except registration.get_validation_error_list() as e:
+                handler = registration.get_validation_error_handler(e)
+                handler(e, self, errors)
         if errors:
             raise exceptions.ValidationError(errors)
 
