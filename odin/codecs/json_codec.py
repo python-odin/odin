@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
-from odin import serializers
-from odin import resources
+from odin import serializers, resources, mapping
 
 try:
     import simplejson as json
@@ -25,6 +24,8 @@ class OdinEncoder(json.JSONEncoder):
             obj = o.to_dict()
             obj[o._meta.type_field] = o._meta.resource_name
             return obj
+        elif isinstance(o, mapping.MappingResult):
+            return list(o)
         elif o.__class__ in JSON_TYPES:
             return JSON_TYPES[o.__class__](o)
         return super(OdinEncoder, self)
