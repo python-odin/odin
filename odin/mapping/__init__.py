@@ -406,7 +406,7 @@ class MappingBase(object):
             to_values = force_tuple(to_values)
 
         if len(to_fields) != len(to_values):
-            raise MappingExecutionError('Rule expects %s fields (%s received) applying rule %s' % (
+            raise MappingExecutionError('Rule expects %s fields (%s returned) applying rule %s' % (
                 len(to_fields), len(to_values), mapping_rule))
 
         if skip_if_none:
