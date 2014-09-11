@@ -348,6 +348,8 @@ def create_resource_from_dict(d, resource=None, full_clean=True):
     :param full_clean: Do a full clean as part of the creation.
     """
     assert isinstance(d, dict)
+    
+    d = d.copy()
 
     # Get the correct resource name
     if isinstance(resource, type) and issubclass(resource, Resource):
