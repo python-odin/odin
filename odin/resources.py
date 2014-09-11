@@ -349,6 +349,8 @@ def create_resource_from_dict(d, resource=None, full_clean=True):
     """
     assert isinstance(d, dict)
 
+    d = d.copy()
+
     # Get the correct resource name
     if isinstance(resource, type) and issubclass(resource, Resource):
         resource_name = resource._meta.resource_name
@@ -379,6 +381,11 @@ def create_resource_from_dict(d, resource=None, full_clean=True):
         value = d.pop(f.name, NOT_PROVIDED)
         if value is NOT_PROVIDED:
             value = f.get_default() if f.use_default_if_not_provided else None
+        elif hasattr(f, 'of'):
+            if f.of._meta.abstract:
+                value = build_object_graph(value, full_clean=full_clean)
+            else:
+                value = build_object_graph(value, resource=f.of, full_clean=full_clean)
         attrs.append(value)
     new_resource = resource_type(*attrs)
     if d:
