@@ -8,11 +8,10 @@ from odin.validators import EMPTY_VALUES
 __all__ = ('DictAs', 'ObjectAs', 'ListOf', 'ArrayOf', 'DictOf')
 
 
-class DictAs(Field):
-    default_error_messages = {
-        'invalid': "Must be a object of type ``%r``.",
-    }
-
+class CompositeField(Field):
+    """
+    The base class for composite (or fields that contain other resources) eg DictAs/ListOf fields.
+    """
     def __init__(self, resource, **options):
         try:
             resource._meta
@@ -21,7 +20,7 @@ class DictAs(Field):
         self.of = resource
 
         options.setdefault('default', lambda: resource())
-        super(DictAs, self).__init__(**options)
+        super(CompositeField, self).__init__(**options)
 
     def to_python(self, value):
         if value is None:
@@ -34,14 +33,21 @@ class DictAs(Field):
         raise exceptions.ValidationError(msg)
 
     def validate(self, value):
-        super(DictAs, self).validate(value)
+        super(CompositeField, self).validate(value)
         if value not in EMPTY_VALUES:
             value.full_clean()
+
+
+class DictAs(CompositeField):
+    default_error_messages = {
+        'invalid': "Must be a dict of type ``%r``.",
+    }
+
 
 ObjectAs = DictAs
 
 
-class ListOf(DictAs):
+class ListOf(CompositeField):
     default_error_messages = {
         'invalid': "Must be a list of ``%r`` objects.",
         'null': "List cannot contain null entries.",
@@ -84,7 +90,7 @@ class ListOf(DictAs):
 
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
-        super(DictAs, self).validate(value)
+        super(CompositeField, self).validate(value)
         if value not in EMPTY_VALUES:
             super_validate = super(ListOf, self).validate
             self._process_list(value, super_validate)
@@ -96,7 +102,7 @@ class ListOf(DictAs):
 ArrayOf = ListOf
 
 
-class DictOf(DictAs):
+class DictOf(CompositeField):
     default_error_messages = {
         'invalid': "Must be a dict of ``%r`` objects.",
         'null': "Dict cannot contain null entries.",
@@ -137,7 +143,7 @@ class DictOf(DictAs):
 
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
-        super(DictAs, self).validate(value)
+        super(CompositeField, self).validate(value)
         if value not in EMPTY_VALUES:
             super_validate = super(DictOf, self).validate
             self._process_dict(value, super_validate)
