@@ -222,10 +222,10 @@ class ConstructionMethodsTestCase(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_build_nested_objects_with_polymorphism(self):
-        books = [{'title': "Book1", 'num_pages': None, 'rrp': 20.4, 'fiction': None, 'genre': None, 'published': None,
-                  'authors': None, 'publisher': None, '$': 'tests.resources.Book'},
-                 {'title': "Book2", 'num_pages': None, 'rrp': 20.4, 'fiction': None, 'genre': None, 'published': None,
-                  'authors': None, 'publisher': None, '$': 'tests.resources.Book'}]
+        books = [{'title': "Book1", 'num_pages': 1, 'rrp': 20.4, 'fiction': True, 'genre': 'sci-fi', 'published': [],
+                  'authors': [], 'publisher': None, '$': 'tests.resources.Book'},
+                 {'title': "Book2", 'num_pages': 1, 'rrp': 20.4, 'fiction': True, 'genre': 'sci-fi', 'published': [],
+                  'authors': [], 'publisher': None, '$': 'tests.resources.Book'}]
 
         library = {
             'name': 'John Smith Library',

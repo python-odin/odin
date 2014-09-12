@@ -59,7 +59,7 @@ def loads(s, resource=None, full_clean=True):
     :param full_clean: Do a full clean of the object as part of the loading process.
     :returns: A resource object or object graph of resources parsed from supplied string.
     """
-    return resources.build_object_graph(json.loads(s), resource, full_clean)
+    return resources.build_object_graph(json.loads(s), resource, full_clean, copy_dict=False)
 
 
 def dump(resource, fp, cls=OdinEncoder, **kwargs):
