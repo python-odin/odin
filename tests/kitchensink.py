@@ -51,10 +51,10 @@ class KitchenSinkTestCase(TestCase):
             "rrp": 19.5
         }
     ],
+    "subscribers": [],
     "book_count": 1
 }
         """, actual)
-
 
     def test_full_clean_invalid_data(self):
         book = Book(title="Consider Phlebas", num_pages=471, rrp=19.50, genre="space opera", fiction=True)

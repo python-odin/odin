@@ -12,8 +12,8 @@ class ResourceReader(csv.DictReader):
 
     # Python 2
     def next(self):
-        return create_resource_from_dict(csv.DictReader.next(self), self.resource)
+        return create_resource_from_dict(csv.DictReader.next(self), self.resource, copy_dict=False)
 
     # Python 3
     def __next__(self):
-        return create_resource_from_dict(csv.DictReader.__next__(self), self.resource)
+        return create_resource_from_dict(csv.DictReader.__next__(self), self.resource, copy_dict=False)

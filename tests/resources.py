@@ -39,10 +39,28 @@ class Book(LibraryBook):
     authors = odin.ArrayOf(Author)
     publisher = odin.DictAs(Publisher, null=True)
 
+    def __eq__(self, other):
+        if other:
+            return vars(self) == vars(other)
+
+        return False
+
+
+class Subscriber(odin.Resource):
+    name = odin.StringField()
+    address = odin.StringField()
+
+    def __eq__(self, other):
+        if other:
+            return self.name == other.name and self.address == other.address
+
+        return None
+
 
 class Library(odin.Resource):
     name = odin.StringField()
     books = odin.ArrayOf(LibraryBook)
+    subscribers = odin.ArrayOf(Subscriber, null=True)
     book_count = CalculatedField(lambda o: len(o.books))
 
     class Meta:
