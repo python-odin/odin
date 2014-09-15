@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 sum_fields = lambda *field_values: sum(field_values)
 
 
@@ -70,6 +69,24 @@ class MapListOf(MapDictAs):
             return
         for f in field_value:
             yield self.mapping(f, context=bound_self.context).convert()
+
+
+class ApplyMapping(object):
+    """
+    Helper for applying a mapper.
+
+    This helper should be used along with the bind flag so the context object can be maintained.
+    """
+    def __init__(self, mapping, allow_subclass=False):
+        self.mapping = mapping
+        self.allow_subclass = allow_subclass
+
+    def __call__(self, bound_self, field_value):
+        mapping = self.mapping() if callable(self.mapping) else self.mapping
+        try:
+            mapping.apply(field_value, context=bound_self.context, allow_subclass=self.allow_subclass)
+        except Exception as ex:
+            raise
 
 
 class NoOpMapper(object):
