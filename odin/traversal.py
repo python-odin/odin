@@ -55,6 +55,7 @@ class ResourceTraversalIterator(object):
         self._field_iters = []
         # The "path" to the current resource.
         self._path = [(None, None)]
+        self._resource_stack = [None]
 
     def __next__(self):
         if self._resource_iters:
@@ -67,6 +68,7 @@ class ResourceTraversalIterator(object):
                     self._resource_iters.append(field.item_iter_from_object(self.current_resource))
                     # Update the path
                     self._path.append((field.name, None))
+                    self._resource_stack.append(None)
                     # Remove the field from the list (and remove this field entry if it has been emptied)
                     self._field_iters[-1].pop()
                     if not self._field_iters[-1]:
@@ -75,17 +77,25 @@ class ResourceTraversalIterator(object):
                     self._field_iters.pop()
 
             try:
-                current_resource, key = next(self._resource_iters[-1])
+                next_resource, key = next(self._resource_iters[-1])
             except StopIteration:
                 # End of the current list of resources pop this list off and get the next list.
                 self._path.pop()
                 self._resource_iters.pop()
+                self._resource_stack.pop()
+
+                if self.current_resource:
+                    if hasattr(self, 'on_exit_resource'):
+                        self.on_exit_resource()
+
                 return next(self)
             else:
+                if self.current_resource:
+                    if hasattr(self, 'on_exit_resource'):
+                        self.on_exit_resource()
+
                 if hasattr(self, 'on_pre_enter_resource'):
                     self.on_pre_enter_resource()
-
-                self.current_resource = current_resource
 
                 # If we have a key (ie DictOf, ListOf composite fields) update the path key field.
                 if key is not None:
@@ -93,11 +103,14 @@ class ResourceTraversalIterator(object):
                     self._path[-1] = (field, key)
 
                 # Get list of any composite fields for this resource (this is a cached field).
-                self._field_iters.append(current_resource._meta.composite_fields.copy())
+                self._field_iters.append(next_resource._meta.composite_fields.copy())
+
+                # self.current_resource = next_resource
+                self._resource_stack[-1] = next_resource
 
                 if hasattr(self, 'on_enter_resource'):
                     self.on_enter_resource()
-                return current_resource
+                return next_resource
         else:
             raise StopIteration()
 
@@ -123,3 +136,8 @@ class ResourceTraversalIterator(object):
         Depth of the current resource in the tree structure.
         """
         return len(self._path) - 1
+
+    @property
+    def current_resource(self):
+        if self._resource_stack:
+            return self._resource_stack[-1]
