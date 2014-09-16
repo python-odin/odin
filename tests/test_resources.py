@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import unittest
+
 from odin.resources import ResourceOptions, build_object_graph
 import odin
 from odin.exceptions import ValidationError
-from .resources import Book
+from .resources import Book, Library, Subscriber
+
 
 class Author(odin.Resource):
     name = odin.StringField()
@@ -203,3 +205,34 @@ class ConstructionMethodsTestCase(unittest.TestCase):
             authors=None,
             publisher=None
         )], [book.to_dict() for book in books])
+
+    def test_build_nested_objects(self):
+        subscribers = [
+            {'name': 'John Smith', 'address': 'Oak Lane 1234'},
+            {'name': 'Johnny Smith', 'address': 'Oak Lane 1235'}]
+
+        library = {
+            'name': 'John Smith Library',
+            'subscribers': subscribers
+        }
+
+        expected = sorted(build_object_graph(subscribers, resource=Subscriber, full_clean=False), key=lambda s: s.name)
+        actual = sorted(build_object_graph(library, resource=Library, full_clean=False).subscribers, key=lambda s: s.name)
+
+        self.assertEqual(actual, expected)
+
+    def test_build_nested_objects_with_polymorphism(self):
+        books = [{'title': "Book1", 'num_pages': 1, 'rrp': 20.4, 'fiction': True, 'genre': 'sci-fi', 'published': [],
+                  'authors': [], 'publisher': None, '$': 'tests.resources.Book'},
+                 {'title': "Book2", 'num_pages': 1, 'rrp': 20.4, 'fiction': True, 'genre': 'sci-fi', 'published': [],
+                  'authors': [], 'publisher': None, '$': 'tests.resources.Book'}]
+
+        library = {
+            'name': 'John Smith Library',
+            'books': books
+        }
+
+        expected = sorted(build_object_graph(books, full_clean=False), key=lambda s: s.title)
+        actual = sorted(build_object_graph(library, resource=Library, full_clean=False).books, key=lambda s: s.title)
+
+        self.assertEqual(actual, expected)

@@ -87,6 +87,14 @@ class ResourceOptions(object):
         return self.fields + self.virtual_fields
 
     @cached_property
+    def composite_fields(self):
+        """
+        All composite fields.
+        """
+        # Not the nicest solution but is a fairly safe way of detecting a composite field.
+        return [f for f in self.fields if (hasattr(f, 'of') and issubclass(f.of, Resource))]
+
+    @cached_property
     def field_map(self):
         return {f.attname: f for f in self.fields}
 
@@ -260,11 +268,15 @@ class Resource(object):
         """
         return create_resource_from_dict(d, cls, full_clean)
 
-    def to_dict(self):
+    def to_dict(self, include_virtual=True):
         """
-        Convert this resource into a dict
+        Convert this resource into a dict.
+
+        :param include_virtual: Include virtual fields when generating dict.
+
         """
-        return dict((f.name, v) for f, v in field_iter_items(self))
+        fields = self._meta.all_fields if include_virtual else self._meta.fields
+        return dict((f.name, v) for f, v in field_iter_items(self, fields))
 
     def convert_to(self, to_resource, context=None, **field_values):
         """
@@ -338,7 +350,7 @@ class Resource(object):
             raise ValidationError(errors)
 
 
-def create_resource_from_dict(d, resource=None, full_clean=True):
+def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True):
     """
     Create a resource from a dict.
 
@@ -346,8 +358,13 @@ def create_resource_from_dict(d, resource=None, full_clean=True):
     :param resource: A resource type of resource name that is expected in the dict; this could also be a parent
         of any resource defined by the dict.
     :param full_clean: Do a full clean as part of the creation.
+    :param copy_dict: Use a copy of the input dictionary rather than destructively processing the input dict.
+
     """
     assert isinstance(d, dict)
+
+    if copy_dict:
+        d = d.copy()
 
     # Get the correct resource name
     if isinstance(resource, type) and issubclass(resource, Resource):
@@ -375,11 +392,21 @@ def create_resource_from_dict(d, resource=None, full_clean=True):
                 resource_name, document_resource_name))
 
     attrs = []
+    errors = {}
     for f in resource_type._meta.fields:
         value = d.pop(f.name, NOT_PROVIDED)
         if value is NOT_PROVIDED:
             value = f.get_default() if f.use_default_if_not_provided else None
+        else:
+            try:
+                value = f.to_python(value)
+            except ValidationError as ve:
+                errors[f.name] = ve.error_messages
         attrs.append(value)
+
+    if errors:
+        raise ValidationError(errors)
+
     new_resource = resource_type(*attrs)
     if d:
         new_resource.extra_attrs(d)
@@ -388,7 +415,7 @@ def create_resource_from_dict(d, resource=None, full_clean=True):
     return new_resource
 
 
-def build_object_graph(d, resource=None, full_clean=True):
+def build_object_graph(d, resource=None, full_clean=True, copy_dict=True):
     """
     Generate an object graph from a dict
 
@@ -396,9 +423,9 @@ def build_object_graph(d, resource=None, full_clean=True):
     """
 
     if isinstance(d, dict):
-        return create_resource_from_dict(d, resource, full_clean)
+        return create_resource_from_dict(d, resource, full_clean, copy_dict)
 
     if isinstance(d, list):
-        return [build_object_graph(o, resource, full_clean) for o in d]
+        return [build_object_graph(o, resource, full_clean, copy_dict) for o in d]
 
     return d

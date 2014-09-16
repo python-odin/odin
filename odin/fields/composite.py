@@ -5,14 +5,13 @@ from odin.resources import create_resource_from_dict
 from odin.fields import Field
 from odin.validators import EMPTY_VALUES
 
-__all__ = ('DictAs', 'ObjectAs', 'ListOf', 'ArrayOf', 'DictOf')
+__all__ = ('CompositeField', 'DictAs', 'ObjectAs', 'ListOf', 'ArrayOf', 'DictOf')
 
 
-class DictAs(Field):
-    default_error_messages = {
-        'invalid': "Must be a object of type ``%r``.",
-    }
-
+class CompositeField(Field):
+    """
+    The base class for composite (or fields that contain other resources) eg DictAs/ListOf fields.
+    """
     def __init__(self, resource, **options):
         try:
             resource._meta
@@ -21,7 +20,7 @@ class DictAs(Field):
         self.of = resource
 
         options.setdefault('default', lambda: resource())
-        super(DictAs, self).__init__(**options)
+        super(CompositeField, self).__init__(**options)
 
     def to_python(self, value):
         if value is None:
@@ -34,14 +33,36 @@ class DictAs(Field):
         raise exceptions.ValidationError(msg)
 
     def validate(self, value):
-        super(DictAs, self).validate(value)
+        super(CompositeField, self).validate(value)
         if value not in EMPTY_VALUES:
             value.full_clean()
+
+    def item_iter_from_object(self, obj):
+        """
+        Return an iterator of items (resource, idx) from composite field.
+
+        For single items (eg ``DictAs`` will return a list a single item (resource, None))
+
+        :param obj:
+        :return:
+        """
+        raise NotImplementedError
+
+
+class DictAs(CompositeField):
+    default_error_messages = {
+        'invalid': "Must be a dict of type ``%r``.",
+    }
+
+    def item_iter_from_object(self, obj):
+        resource = self.value_from_object(obj)
+        if resource:
+            yield resource, None
 
 ObjectAs = DictAs
 
 
-class ListOf(DictAs):
+class ListOf(CompositeField):
     default_error_messages = {
         'invalid': "Must be a list of ``%r`` objects.",
         'null': "List cannot contain null entries.",
@@ -51,7 +72,8 @@ class ListOf(DictAs):
         options.setdefault('default', list)
         super(ListOf, self).__init__(resource, **options)
 
-    def _process_list(self, value_list, method):
+    @staticmethod
+    def _process_list(value_list, method):
         values = []
         errors = {}
         for idx, value in enumerate(value_list):
@@ -84,19 +106,25 @@ class ListOf(DictAs):
 
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
-        super(DictAs, self).validate(value)
+        super(CompositeField, self).validate(value)
         if value not in EMPTY_VALUES:
             super_validate = super(ListOf, self).validate
             self._process_list(value, super_validate)
 
     def __iter__(self):
         # This does nothing but it does prevent inspections from complaining.
-        return None  # noqa
+        return None  # NoQA
+
+    def item_iter_from_object(self, obj):
+        resources = self.value_from_object(obj)
+        if resources:
+            for idx, resource in enumerate(resources):
+                yield resource, idx
 
 ArrayOf = ListOf
 
 
-class DictOf(DictAs):
+class DictOf(CompositeField):
     default_error_messages = {
         'invalid': "Must be a dict of ``%r`` objects.",
         'null': "Dict cannot contain null entries.",
@@ -106,7 +134,8 @@ class DictOf(DictAs):
         options.setdefault('default', dict)
         super(DictOf, self).__init__(resource, **options)
 
-    def _process_dict(self, value_dict, method):
+    @staticmethod
+    def _process_dict(value_dict, method):
         values = {}
         errors = {}
         for key, value in six.iteritems(value_dict):
@@ -137,11 +166,17 @@ class DictOf(DictAs):
 
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
-        super(DictAs, self).validate(value)
+        super(CompositeField, self).validate(value)
         if value not in EMPTY_VALUES:
             super_validate = super(DictOf, self).validate
             self._process_dict(value, super_validate)
 
     def __iter__(self):
         # This does nothing but it does prevent inspections from complaining.
-        return None  # noqa
+        return None  # NoQA
+
+    def item_iter_from_object(self, obj):
+        resources = self.value_from_object(obj)
+        if resources:
+            for key, resource in resources.items():
+                yield resource, key

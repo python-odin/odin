@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
-from odin import serializers
-from odin import resources
+from odin import serializers, resources, mapping
 
 try:
     import simplejson as json
@@ -20,11 +19,17 @@ class OdinEncoder(json.JSONEncoder):
     """
     Encoder for Odin resources.
     """
+    def __init__(self, include_virtual_fields=True, *args, **kwargs):
+        super(OdinEncoder, self).__init__(*args, **kwargs)
+        self.include_virtual_fields = include_virtual_fields
+
     def default(self, o):
         if isinstance(o, resources.Resource):
-            obj = o.to_dict()
+            obj = o.to_dict(self.include_virtual_fields)
             obj[o._meta.type_field] = o._meta.resource_name
             return obj
+        elif isinstance(o, mapping.MappingResult):
+            return list(o)
         elif o.__class__ in JSON_TYPES:
             return JSON_TYPES[o.__class__](o)
         return super(OdinEncoder, self)
@@ -58,10 +63,10 @@ def loads(s, resource=None, full_clean=True):
     :param full_clean: Do a full clean of the object as part of the loading process.
     :returns: A resource object or object graph of resources parsed from supplied string.
     """
-    return resources.build_object_graph(json.loads(s), resource, full_clean)
+    return resources.build_object_graph(json.loads(s), resource, full_clean, copy_dict=False)
 
 
-def dump(resource, fp, cls=OdinEncoder, **kwargs):
+def dump(resource, fp, cls=OdinEncoder, include_virtual_fields=True, **kwargs):
     """
     Dump to a JSON encoded file.
 
@@ -69,10 +74,10 @@ def dump(resource, fp, cls=OdinEncoder, **kwargs):
     :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :param fp: The file pointer that represents the output file.
     """
-    json.dump(resource, fp, cls=cls, **kwargs)
+    json.dump(resource, fp, cls=cls, include_virtual_fields=include_virtual_fields, **kwargs)
 
 
-def dumps(resource, cls=OdinEncoder, **kwargs):
+def dumps(resource, cls=OdinEncoder, include_virtual_fields=True, **kwargs):
     """
     Dump to a JSON encoded string.
 
@@ -80,4 +85,4 @@ def dumps(resource, cls=OdinEncoder, **kwargs):
     :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :returns: JSON encoded string.
     """
-    return json.dumps(resource, cls=cls, **kwargs)
+    return json.dumps(resource, cls=cls, include_virtual_fields=include_virtual_fields, **kwargs)

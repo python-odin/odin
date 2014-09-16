@@ -406,7 +406,7 @@ class MappingBase(object):
             to_values = force_tuple(to_values)
 
         if len(to_fields) != len(to_values):
-            raise MappingExecutionError('Rule expects %s fields (%s received) applying rule %s' % (
+            raise MappingExecutionError('Rule expects %s fields (%s returned) applying rule %s' % (
                 len(to_fields), len(to_values), mapping_rule))
 
         if skip_if_none:
@@ -439,18 +439,22 @@ class MappingBase(object):
 
         return self.create_object(**values)
 
-    def update(self, destination_obj):
+    def update(self, destination_obj, ignore_fields=None):
         """
         Update an existing object with fields from the provided source object.
 
         :param destination_obj: The existing destination object.
+        :param ignore_fields: A list of fields that should be ignored eg ID fields
 
         """
         assert hasattr(self, '_mapping_rules')
 
+        ignore_fields = ignore_fields or []
+
         for mapping_rule in self._mapping_rules:
             for name, value in self._apply_rule(mapping_rule).items():
-                setattr(destination_obj, name, value)
+                if name not in ignore_fields:
+                    setattr(destination_obj, name, value)
 
         return destination_obj
 
