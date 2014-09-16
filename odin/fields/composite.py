@@ -37,12 +37,27 @@ class CompositeField(Field):
         if value not in EMPTY_VALUES:
             value.full_clean()
 
+    def item_iter_from_object(self, obj):
+        """
+        Return an iterator of items (resource, idx) from composite field.
+
+        For single items (eg ``DictAs`` will return a list a single item (resource, None))
+
+        :param obj:
+        :return:
+        """
+        raise NotImplementedError
+
 
 class DictAs(CompositeField):
     default_error_messages = {
         'invalid': "Must be a dict of type ``%r``.",
     }
 
+    def item_iter_from_object(self, obj):
+        resource = self.value_from_object(obj)
+        if resource:
+            yield resource, None
 
 ObjectAs = DictAs
 
@@ -57,7 +72,8 @@ class ListOf(CompositeField):
         options.setdefault('default', list)
         super(ListOf, self).__init__(resource, **options)
 
-    def _process_list(self, value_list, method):
+    @staticmethod
+    def _process_list(value_list, method):
         values = []
         errors = {}
         for idx, value in enumerate(value_list):
@@ -97,7 +113,13 @@ class ListOf(CompositeField):
 
     def __iter__(self):
         # This does nothing but it does prevent inspections from complaining.
-        return None  # noqa
+        return None  # NoQA
+
+    def item_iter_from_object(self, obj):
+        resources = self.value_from_object(obj)
+        if resources:
+            for idx, resource in enumerate(resources):
+                yield resource, idx
 
 ArrayOf = ListOf
 
@@ -112,7 +134,8 @@ class DictOf(CompositeField):
         options.setdefault('default', dict)
         super(DictOf, self).__init__(resource, **options)
 
-    def _process_dict(self, value_dict, method):
+    @staticmethod
+    def _process_dict(value_dict, method):
         values = {}
         errors = {}
         for key, value in six.iteritems(value_dict):
@@ -150,4 +173,10 @@ class DictOf(CompositeField):
 
     def __iter__(self):
         # This does nothing but it does prevent inspections from complaining.
-        return None  # noqa
+        return None  # NoQA
+
+    def item_iter_from_object(self, obj):
+        resources = self.value_from_object(obj)
+        if resources:
+            for key, resource in resources.items():
+                yield resource, key
