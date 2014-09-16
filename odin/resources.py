@@ -92,7 +92,7 @@ class ResourceOptions(object):
         All composite fields.
         """
         # Not the nicest solution but is a fairly safe way of detecting a composite field.
-        return [f for f in self.fields if hasattr(f, 'of') and isinstance(f.of, Resource)]
+        return [f for f in self.fields if (hasattr(f, 'of') and issubclass(f.of, Resource))]
 
     @cached_property
     def field_map(self):
