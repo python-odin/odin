@@ -83,10 +83,7 @@ class ApplyMapping(object):
 
     def __call__(self, bound_self, field_value):
         mapping = self.mapping() if callable(self.mapping) else self.mapping
-        try:
-            mapping.apply(field_value, context=bound_self.context, allow_subclass=self.allow_subclass)
-        except Exception as ex:
-            raise
+        return mapping.apply(field_value, context=bound_self.context, allow_subclass=self.allow_subclass)
 
 
 class NoOpMapper(object):
