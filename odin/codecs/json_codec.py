@@ -19,9 +19,13 @@ class OdinEncoder(json.JSONEncoder):
     """
     Encoder for Odin resources.
     """
+    def __init__(self, include_virtual_fields=True, *args, **kwargs):
+        super(OdinEncoder, self).__init__(*args, **kwargs)
+        self.include_virtual_fields = include_virtual_fields
+
     def default(self, o):
         if isinstance(o, resources.Resource):
-            obj = o.to_dict()
+            obj = o.to_dict(self.include_virtual_fields)
             obj[o._meta.type_field] = o._meta.resource_name
             return obj
         elif isinstance(o, mapping.MappingResult):
@@ -62,7 +66,7 @@ def loads(s, resource=None, full_clean=True):
     return resources.build_object_graph(json.loads(s), resource, full_clean, copy_dict=False)
 
 
-def dump(resource, fp, cls=OdinEncoder, **kwargs):
+def dump(resource, fp, cls=OdinEncoder, include_virtual_fields=True, **kwargs):
     """
     Dump to a JSON encoded file.
 
@@ -70,10 +74,10 @@ def dump(resource, fp, cls=OdinEncoder, **kwargs):
     :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :param fp: The file pointer that represents the output file.
     """
-    json.dump(resource, fp, cls=cls, **kwargs)
+    json.dump(resource, fp, cls=cls, include_virtual_fields=include_virtual_fields, **kwargs)
 
 
-def dumps(resource, cls=OdinEncoder, **kwargs):
+def dumps(resource, cls=OdinEncoder, include_virtual_fields=True, **kwargs):
     """
     Dump to a JSON encoded string.
 
@@ -81,4 +85,4 @@ def dumps(resource, cls=OdinEncoder, **kwargs):
     :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :returns: JSON encoded string.
     """
-    return json.dumps(resource, cls=cls, **kwargs)
+    return json.dumps(resource, cls=cls, include_virtual_fields=include_virtual_fields, **kwargs)

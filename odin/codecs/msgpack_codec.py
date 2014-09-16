@@ -20,14 +20,14 @@ class OdinPacker(msgpack.Packer):
     """
     Encoder for Odin resources.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, include_virtual_fields=True, *args, **kwargs):
         kwargs.setdefault('default', self.default)
         super(OdinPacker, self).__init__(*args, **kwargs)
+        self.include_virtual_fields = include_virtual_fields
 
-    @staticmethod
-    def default(o):
+    def default(self, o):
         if isinstance(o, resources.Resource):
-            obj = o.to_dict()
+            obj = o.to_dict(self.include_virtual_fields)
             obj[o._meta.type_field] = o._meta.resource_name
             return obj
         elif isinstance(o, mapping.MappingResult):
@@ -67,7 +67,7 @@ def loads(s, resource=None, encoding='UTF8', full_clean=True):
     return resources.build_object_graph(msgpack.loads(s, encoding=encoding), resource, full_clean, copy_dict=False)
 
 
-def dump(resource, fp, cls=OdinPacker, **kwargs):
+def dump(resource, fp, cls=OdinPacker, include_virtual_fields=True, **kwargs):
     """
     Dump to a MessagePack encoded file.
 
@@ -75,10 +75,10 @@ def dump(resource, fp, cls=OdinPacker, **kwargs):
     :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :param fp: The file pointer that represents the output file.
     """
-    fp.write(cls(**kwargs).pack(resource))
+    fp.write(cls(include_virtual_fields, **kwargs).pack(resource))
 
 
-def dumps(resource, cls=OdinPacker, **kwargs):
+def dumps(resource, cls=OdinPacker, include_virtual_fields=True, **kwargs):
     """
     Dump to a MessagePack encoded string.
 
@@ -86,4 +86,4 @@ def dumps(resource, cls=OdinPacker, **kwargs):
     :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :returns: MessagePack encoded string.
     """
-    return cls(**kwargs).pack(resource)
+    return cls(include_virtual_fields, **kwargs).pack(resource)

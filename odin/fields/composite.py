@@ -5,7 +5,7 @@ from odin.resources import create_resource_from_dict
 from odin.fields import Field
 from odin.validators import EMPTY_VALUES
 
-__all__ = ('DictAs', 'ObjectAs', 'ListOf', 'ArrayOf', 'DictOf')
+__all__ = ('CompositeField', 'DictAs', 'ObjectAs', 'ListOf', 'ArrayOf', 'DictOf')
 
 
 class CompositeField(Field):

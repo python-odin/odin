@@ -87,6 +87,14 @@ class ResourceOptions(object):
         return self.fields + self.virtual_fields
 
     @cached_property
+    def composite_fields(self):
+        """
+        All composite fields.
+        """
+        # Not the nicest solution but is a fairly safe way of detecting a composite field.
+        return [f for f in self.fields if hasattr(f, 'of') and isinstance(f.of, Resource)]
+
+    @cached_property
     def field_map(self):
         return {f.attname: f for f in self.fields}
 
@@ -260,11 +268,15 @@ class Resource(object):
         """
         return create_resource_from_dict(d, cls, full_clean)
 
-    def to_dict(self):
+    def to_dict(self, include_virtual=True):
         """
-        Convert this resource into a dict
+        Convert this resource into a dict.
+
+        :param include_virtual: Include virtual fields when generating dict.
+
         """
-        return dict((f.name, v) for f, v in field_iter_items(self))
+        fields = self._meta.all_fields if include_virtual else self._meta.fields
+        return dict((f.name, v) for f, v in field_iter_items(self, fields))
 
     def convert_to(self, to_resource, context=None, **field_values):
         """
