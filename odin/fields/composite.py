@@ -57,7 +57,7 @@ class DictAs(CompositeField):
     def item_iter_from_object(self, obj):
         resource = self.value_from_object(obj)
         if resource:
-            yield resource, None
+            yield (None, resource)
 
 ObjectAs = DictAs
 
@@ -118,8 +118,8 @@ class ListOf(CompositeField):
     def item_iter_from_object(self, obj):
         resources = self.value_from_object(obj)
         if resources:
-            for idx, resource in enumerate(resources):
-                yield resource, idx
+            for i in enumerate(resources):
+                yield i
 
 ArrayOf = ListOf
 
@@ -178,5 +178,5 @@ class DictOf(CompositeField):
     def item_iter_from_object(self, obj):
         resources = self.value_from_object(obj)
         if resources:
-            for key, resource in resources.items():
-                yield resource, key
+            for i in resources.items():
+                yield i

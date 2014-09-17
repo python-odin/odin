@@ -40,22 +40,22 @@ class ResourceTraversalIterator(object):
 
     This class has hooks that can be used by subclasses to customise the behaviour of the class:
 
-     - *on_pre_enter_resource* - Called prior to making a new resource active.
-     - *on_enter_resource* - Called after making a new resource active.
-     - *on_pre_exit_resource* - Called prior to exiting a resource (this is not called when switching between
-         resources in list/dict, use `on_pre_enter_resource` for this).
-     - *on_exit_resource* - Called after exiting a resource (this is not called when switching between
-         resources in list/dict, use `on_pre_enter_resource` for this).
+     - *on_pre_enter_resource* - Called prior to entering a new resource.
+     - *on_enter_resource* - Called after entering a new resource.
+     - *on_exit_resource* - Called after exiting a resource.
 
     """
     def __init__(self, resource):
         # Stack of resource iterators (starts initially with single entry of the root resource)
-        self._resource_iters = [iter([(resource, None)])]
+        self._resource_iters = [iter([(None, resource)])]
         # Stack of composite fields, found on each resource, each composite field is interrogated for resources.
         self._field_iters = []
         # The "path" to the current resource.
         self._path = [(None, None)]
         self._resource_stack = [None]
+
+    def __iter__(self):
+        return self
 
     def __next__(self):
         if self._resource_iters:
@@ -76,24 +76,20 @@ class ResourceTraversalIterator(object):
                 else:
                     self._field_iters.pop()
 
+            if self.current_resource:
+                if hasattr(self, 'on_exit_resource'):
+                    self.on_exit_resource()
+
             try:
-                next_resource, key = next(self._resource_iters[-1])
+                key, next_resource = next(self._resource_iters[-1])
             except StopIteration:
                 # End of the current list of resources pop this list off and get the next list.
                 self._path.pop()
                 self._resource_iters.pop()
                 self._resource_stack.pop()
 
-                if self.current_resource:
-                    if hasattr(self, 'on_exit_resource'):
-                        self.on_exit_resource()
-
                 return next(self)
             else:
-                if self.current_resource:
-                    if hasattr(self, 'on_exit_resource'):
-                        self.on_exit_resource()
-
                 if hasattr(self, 'on_pre_enter_resource'):
                     self.on_pre_enter_resource()
 
@@ -116,9 +112,6 @@ class ResourceTraversalIterator(object):
 
     # Python 2.x compatibility
     next = __next__
-
-    def __iter__(self):
-        return self
 
     @property
     def path(self):
