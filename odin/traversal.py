@@ -9,7 +9,7 @@ class TraversalPath(object):
         self._path = path
 
     def __str__(self):
-        return '.'.join("%s" % f if k is None else "%s[%s]" % (f, k) for f, k in self._path)
+        return '.'.join("%s" % f if k is None else "%s[%s]" % (f, k) for k, f in self._path)
 
     def __iter__(self):
         return iter(self._path)
@@ -28,6 +28,7 @@ class TraversalPath(object):
         """
         Get a value from a resource structure.
         """
+
 
 
 class ResourceTraversalIterator(object):
@@ -63,7 +64,7 @@ class ResourceTraversalIterator(object):
                     # Request a list of resources along with keys from the composite field.
                     self._resource_iters.append(field.item_iter_from_object(self.current_resource))
                     # Update the path
-                    self._path.append((field.name, None))
+                    self._path.append((None, field.name))
                     self._resource_stack.append(None)
                     # Remove the field from the list (and remove this field entry if it has been emptied)
                     self._field_iters[-1].pop(0)
@@ -86,8 +87,8 @@ class ResourceTraversalIterator(object):
             else:
                 # If we have a key (ie DictOf, ListOf composite fields) update the path key field.
                 if key is not None:
-                    field, _ = self._path[-1]
-                    self._path[-1] = (field, key)
+                    _, field = self._path[-1]
+                    self._path[-1] = (key, field)
 
                 # Get list of any composite fields for this resource (this is a cached field).
                 self._field_iters.append(list(next_resource._meta.composite_fields))
