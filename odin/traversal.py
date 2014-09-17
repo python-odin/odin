@@ -40,9 +40,9 @@ class ResourceTraversalIterator(object):
 
     This class has hooks that can be used by subclasses to customise the behaviour of the class:
 
-     - *on_pre_enter_resource* - Called prior to entering a new resource.
-     - *on_enter_resource* - Called after entering a new resource.
-     - *on_exit_resource* - Called after exiting a resource.
+     - *on_pre_enter* - Called prior to entering a new resource.
+     - *on_enter* - Called after entering a new resource.
+     - *on_exit* - Called after exiting a resource.
 
     """
     def __init__(self, resource):
@@ -77,8 +77,8 @@ class ResourceTraversalIterator(object):
                     self._field_iters.pop()
 
             if self.current_resource:
-                if hasattr(self, 'on_exit_resource'):
-                    self.on_exit_resource()
+                if hasattr(self, 'on_exit'):
+                    self.on_exit()
 
             try:
                 key, next_resource = next(self._resource_iters[-1])
@@ -90,8 +90,8 @@ class ResourceTraversalIterator(object):
 
                 return next(self)
             else:
-                if hasattr(self, 'on_pre_enter_resource'):
-                    self.on_pre_enter_resource()
+                if hasattr(self, 'on_pre_enter'):
+                    self.on_pre_enter()
 
                 # If we have a key (ie DictOf, ListOf composite fields) update the path key field.
                 if key is not None:
@@ -99,13 +99,13 @@ class ResourceTraversalIterator(object):
                     self._path[-1] = (field, key)
 
                 # Get list of any composite fields for this resource (this is a cached field).
-                self._field_iters.append(next_resource._meta.composite_fields.copy())
+                self._field_iters.append(list(next_resource._meta.composite_fields))
 
                 # self.current_resource = next_resource
                 self._resource_stack[-1] = next_resource
 
-                if hasattr(self, 'on_enter_resource'):
-                    self.on_enter_resource()
+                if hasattr(self, 'on_enter'):
+                    self.on_enter()
                 return next_resource
         else:
             raise StopIteration()
