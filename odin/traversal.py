@@ -5,7 +5,7 @@ class TraversalPath(object):
     """
     A path through a resource structure.
     """
-    def __init__(self, path):
+    def __init__(self, *path):
         self._path = path
 
     def __str__(self):
@@ -14,21 +14,16 @@ class TraversalPath(object):
     def __iter__(self):
         return iter(self._path)
 
-    def is_resource(self, root_resource):
-        """
-        This path refers to a resource.
-        """
-
-    def is_valid(self, root_resource):
-        """
-        This path refers to a valid item (resource or otherwise)
-        """
-
     def get_value(self, root_resource):
         """
         Get a value from a resource structure.
         """
-
+        value = root_resource
+        for key, field in self:
+            value = value._meta.field_map[field].value_from_object(value)
+            if key is not None:
+                value = value[key]
+        return value
 
 
 class ResourceTraversalIterator(object):
@@ -113,7 +108,7 @@ class ResourceTraversalIterator(object):
         This path can be used to later traverse the tree structure to find get to the specified resource.
         """
         # The path is offset by one as the path includes the root to simplify next method.
-        return TraversalPath(self._path[1:])
+        return TraversalPath(*self._path[1:])
 
     @property
     def depth(self):

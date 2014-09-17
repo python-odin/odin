@@ -89,3 +89,19 @@ class TraversalTestCase(unittest.TestCase):
             'odin.traversal.Level2 resource g 1',
             'odin.traversal.Level3 resource h 2',
         ], resources)
+
+
+class TraversalPathTestCase(unittest.TestCase):
+    def test_valid_path(self):
+        self.assertEqual('a', traversal.TraversalPath((None, 'name')).get_value(TEST_STRUCTURE))
+
+        r = traversal.TraversalPath(('b', 'level2s'), (1, 'level3s')).get_value(TEST_STRUCTURE)
+        self.assertIsInstance(r, Level3)
+        self.assertEqual('f', r.name)
+
+    def test_invalid_path(self):
+        path = traversal.TraversalPath(('b', 'level2s'), (4, 'level3s'))
+        self.assertRaises(KeyError, path.get_value, TEST_STRUCTURE)
+
+        path = traversal.TraversalPath(('b', 'level2s'), (1, 'level3s_sd'))
+        self.assertRaises(KeyError, path.get_value, TEST_STRUCTURE)
