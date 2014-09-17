@@ -101,7 +101,7 @@ class TraversalPathTestCase(unittest.TestCase):
 
     def test_invalid_path(self):
         path = traversal.TraversalPath(('b', 'level2s'), (4, 'level3s'))
-        self.assertRaises(KeyError, path.get_value, TEST_STRUCTURE)
+        self.assertRaises(IndexError, path.get_value, TEST_STRUCTURE)
 
         path = traversal.TraversalPath(('b', 'level2s'), (1, 'level3s_sd'))
         self.assertRaises(KeyError, path.get_value, TEST_STRUCTURE)
