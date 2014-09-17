@@ -18,19 +18,16 @@ class TraversalPath(object):
         """
         This path refers to a resource.
         """
-        pass
 
     def is_valid(self, root_resource):
         """
         This path refers to a valid item (resource or otherwise)
         """
-        pass
 
     def get_value(self, root_resource):
         """
         Get a value from a resource structure.
         """
-        pass
 
 
 class ResourceTraversalIterator(object):
@@ -40,7 +37,6 @@ class ResourceTraversalIterator(object):
 
     This class has hooks that can be used by subclasses to customise the behaviour of the class:
 
-     - *on_pre_enter* - Called prior to entering a new resource.
      - *on_enter* - Called after entering a new resource.
      - *on_exit* - Called after exiting a resource.
 
@@ -63,16 +59,14 @@ class ResourceTraversalIterator(object):
                 # Check if the last entry in the field stack has any unprocessed fields.
                 if self._field_iters[-1]:
                     # Select the very last field in the field stack.
-                    field = self._field_iters[-1][-1]
+                    field = self._field_iters[-1][0]
                     # Request a list of resources along with keys from the composite field.
                     self._resource_iters.append(field.item_iter_from_object(self.current_resource))
                     # Update the path
                     self._path.append((field.name, None))
                     self._resource_stack.append(None)
                     # Remove the field from the list (and remove this field entry if it has been emptied)
-                    self._field_iters[-1].pop()
-                    if not self._field_iters[-1]:
-                        self._field_iters.pop()
+                    self._field_iters[-1].pop(0)
                 else:
                     self._field_iters.pop()
 
@@ -90,9 +84,6 @@ class ResourceTraversalIterator(object):
 
                 return next(self)
             else:
-                if hasattr(self, 'on_pre_enter'):
-                    self.on_pre_enter()
-
                 # If we have a key (ie DictOf, ListOf composite fields) update the path key field.
                 if key is not None:
                     field, _ = self._path[-1]

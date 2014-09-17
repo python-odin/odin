@@ -178,5 +178,5 @@ class DictOf(CompositeField):
     def item_iter_from_object(self, obj):
         resources = self.value_from_object(obj)
         if resources:
-            for i in resources.items():
-                yield i
+            for key in sorted(resources):
+                yield key, resources[key]
