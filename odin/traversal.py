@@ -19,9 +19,11 @@ class TraversalPath(object):
         Get a value from a resource structure.
         """
         value = root_resource
-        for key, field in self:
-            value = value._meta.field_map[field].value_from_object(value)
+        for key, attr in self:
+            field = value._meta.field_map[attr]
+            value = field.value_from_object(value)
             if key is not None:
+                key = field.key_to_python(key)
                 value = value[key]
         return value
 

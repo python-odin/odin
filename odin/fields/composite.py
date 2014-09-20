@@ -48,6 +48,14 @@ class CompositeField(Field):
         """
         raise NotImplementedError
 
+    def key_to_python(self, key):
+        """
+        A to python method for the key value.
+        :param key:
+        :return:
+        """
+        raise NotImplementedError()
+
 
 class DictAs(CompositeField):
     default_error_messages = {
@@ -121,6 +129,14 @@ class ListOf(CompositeField):
             for i in enumerate(resources):
                 yield i
 
+    def key_to_python(self, key):
+        """
+        A to python method for the key value.
+        :param key:
+        :return:
+        """
+        return int(key)
+
 ArrayOf = ListOf
 
 
@@ -180,3 +196,11 @@ class DictOf(CompositeField):
         if resources:
             for key in sorted(resources):
                 yield key, resources[key]
+
+    def key_to_python(self, key):
+        """
+        A to python method for the key value.
+        :param key:
+        :return:
+        """
+        return key
