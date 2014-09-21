@@ -80,3 +80,21 @@ class MappingExecutionError(MappingError):
     """
     Exception raised during the execution of mapping rules.
     """
+
+
+class CodecError(Exception):
+    """
+    Exception raised by a codec during an operation.
+    """
+
+
+class CodecDecodeError(Exception):
+    """
+    Exception raised by a codec during a decoding operation.
+    """
+
+
+class CodecEncodeError(Exception):
+    """
+    Exception raised by a codec during an encoding operation.
+    """

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 from odin import serializers, resources, mapping
+from odin.exceptions import CodecDecodeError, CodecEncodeError
 
 try:
     import simplejson as json
@@ -63,7 +64,10 @@ def loads(s, resource=None, full_clean=True):
     :param full_clean: Do a full clean of the object as part of the loading process.
     :returns: A resource object or object graph of resources parsed from supplied string.
     """
-    return resources.build_object_graph(json.loads(s), resource, full_clean, copy_dict=False)
+    try:
+        return resources.build_object_graph(json.loads(s), resource, full_clean, copy_dict=False)
+    except (ValueError, TypeError) as ex:
+        raise CodecDecodeError(str(ex))
 
 
 def dump(resource, fp, cls=OdinEncoder, include_virtual_fields=True, **kwargs):
@@ -74,7 +78,10 @@ def dump(resource, fp, cls=OdinEncoder, include_virtual_fields=True, **kwargs):
     :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :param fp: The file pointer that represents the output file.
     """
-    json.dump(resource, fp, cls=cls, include_virtual_fields=include_virtual_fields, **kwargs)
+    try:
+        json.dump(resource, fp, cls=cls, include_virtual_fields=include_virtual_fields, **kwargs)
+    except ValueError as ex:
+        raise CodecEncodeError(str(ex))
 
 
 def dumps(resource, cls=OdinEncoder, include_virtual_fields=True, **kwargs):
@@ -85,4 +92,7 @@ def dumps(resource, cls=OdinEncoder, include_virtual_fields=True, **kwargs):
     :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :returns: JSON encoded string.
     """
-    return json.dumps(resource, cls=cls, include_virtual_fields=include_virtual_fields, **kwargs)
+    try:
+        return json.dumps(resource, cls=cls, include_virtual_fields=include_virtual_fields, **kwargs)
+    except ValueError as ex:
+        raise CodecEncodeError(str(ex))
