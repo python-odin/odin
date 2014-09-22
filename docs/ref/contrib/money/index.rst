@@ -12,7 +12,7 @@ Datatypes
 Amount
 ======
 
-Combines an value and a :py:`Currency` to represent a monetary amount.
+Combines an value and a Currency to represent a monetary amount.
 
 
 Currency
