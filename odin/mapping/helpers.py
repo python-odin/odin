@@ -36,41 +36,6 @@ class SplitField(object):
 split_field = SplitField
 
 
-class MapDictAs(object):
-    """
-    Helper for mapping a DictAs field.
-
-    This helper should be used along with the bind flag so the context object can be maintained.
-    """
-    __slots__ = ('mapping',)
-
-    def __init__(self, mapping):
-        self.mapping = mapping
-
-    def __call__(self, bound_self, field_value):
-        if field_value is None:
-            return
-        return self.mapping(field_value, context=bound_self.context).convert()
-
-    def __repr__(self):
-        return "<%s: %s.%s>" % (self.__class__.__name__, self.mapping.__module__, self.mapping.__name__)
-
-
-class MapListOf(MapDictAs):
-    """
-    Helper for mapping a ListOf field.
-
-    This helper should be used along with the bind flag so the context object can be maintained.
-    """
-    __slots__ = ('mapping',)
-
-    def __call__(self, bound_self, field_value):
-        if field_value is None:
-            return
-        for f in field_value:
-            yield self.mapping(f, context=bound_self.context).convert()
-
-
 class ApplyMapping(object):
     """
     Helper for applying a mapper.
@@ -82,8 +47,9 @@ class ApplyMapping(object):
         self.allow_subclass = allow_subclass
 
     def __call__(self, bound_self, field_value):
-        mapping = self.mapping() if callable(self.mapping) else self.mapping
-        return mapping.apply(field_value, context=bound_self.context, allow_subclass=self.allow_subclass)
+        return self.mapping.apply(field_value, context=bound_self.context, allow_subclass=self.allow_subclass)
+
+MapDictAs = MapListOf = ApplyMapping
 
 
 class NoOpMapper(object):
