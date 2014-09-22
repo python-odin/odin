@@ -26,7 +26,8 @@ Resources are the basic building block of Odin.
 Extras
 ******
 
-* :doc:`ref/contrib/doc_gen/index`
+* :doc:`ref/contrib/money/index`
+* :doc:`ref/contrib/geo/index`
 * :doc:`ref/contrib/pint/index`
 
 Integration
