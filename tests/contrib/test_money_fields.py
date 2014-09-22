@@ -19,3 +19,8 @@ class AmountFieldsTestCase(unittest.TestCase):
         self.assertRaises(ValidationError, f.clean, 'a')
         self.assertEqual(a, f.clean(11))
         self.assertEqual(b, f.clean((22, 'AUD')))
+
+    def test_money_field_1(self):
+        f = AmountField(allowed_currencies=('NZD', 'AUD'))
+        self.assertEqual(d, f.clean((44, 'NZD')))
+        self.assertRaises(ValidationError, f.clean, (22, 'USD'))

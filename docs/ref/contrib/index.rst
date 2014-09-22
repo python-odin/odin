@@ -12,4 +12,6 @@ This code lives in ``odin/contrib`` in the Odin distribution.
    :maxdepth: 1
 
    doc_gen/index
+   geo/index
+   money/index
    pint/index

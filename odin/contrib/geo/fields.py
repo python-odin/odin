@@ -67,7 +67,7 @@ class PointField(Field):
     Field that contains a point in cartesian space. This can be either 2D (on a plain) or 3D (includes a z-axis).
     """
     default_error_messages = {
-        'invalid': "'%s' value must be a (latitude, longitude).",
+        'invalid': "'%s' value must be a point in 2D or 3D cartesian space.",
     }
 
     def to_python(self, value):
