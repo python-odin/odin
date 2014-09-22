@@ -24,6 +24,9 @@ class AmountField(ScalarField):
     def to_python(self, value):
         if value in EMPTY_VALUES:
             return
+        if isinstance(value, Amount):
+            return value
+
         try:
             return Amount(value)
         except (ValueError, TypeError):
