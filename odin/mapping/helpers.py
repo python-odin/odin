@@ -49,6 +49,9 @@ class ApplyMapping(object):
     def __call__(self, bound_self, field_value):
         return self.mapping.apply(field_value, context=bound_self.context, allow_subclass=self.allow_subclass)
 
+    def __repr__(self):
+        return "<%s: %s.%s>" % (self.__class__.__name__, self.mapping.__module__, self.mapping.__name__)
+
 MapDictAs = MapListOf = ApplyMapping
 
 
@@ -58,8 +61,6 @@ class NoOpMapper(object):
 
     This is used with the MapListOf and MapDictAs fields when both contain the same Resource type.
     """
-    def __init__(self, source_resource, context=None):
-        self.source_resource = source_resource
-
-    def convert(self):
-        return self.source_resource
+    @staticmethod
+    def apply(source_obj, **_):
+        return source_obj
