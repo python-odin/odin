@@ -30,7 +30,7 @@ class TraversalPath(object):
 
     def __eq__(self, other):
         if isinstance(other, TraversalPath):
-            return self._path == other._path
+            return hash(self) == hash(other)
         return False
 
     def __add__(self, other):
