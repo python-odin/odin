@@ -20,7 +20,7 @@ class TraversalPath(object):
         self._path = path
 
     def __repr__(self):
-        return "<TranversalPath: %s>" % self
+        return "<TraversalPath: %s>" % self
 
     def __str__(self):
         return '.'.join("%s" % f if k is None else "%s[%s]" % (f, k) for k, f in self._path)
