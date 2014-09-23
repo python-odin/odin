@@ -10,8 +10,8 @@ d = datatypes.Amount(44, "NZD")
 
 class DataTypesTestCase(unittest.TestCase):
     def test_amount_init(self):
-        self.assertEqual("10", str(datatypes.Amount(10)))
-        self.assertEqual("10", str(datatypes.Amount("10")))
+        self.assertEqual("10.0000", str(datatypes.Amount(10)))
+        self.assertEqual("10.0000", str(datatypes.Amount("10")))
         self.assertEqual("10.00 AUD", str(datatypes.Amount("10", "AUD")))
         self.assertEqual("-12.30 AUD", str(datatypes.Amount("-12.3", "AUD")))
         self.assertEqual("12.35 USD", str(datatypes.Amount(12.345, "USD")))
@@ -21,7 +21,7 @@ class DataTypesTestCase(unittest.TestCase):
         # Unknown currency
         self.assertRaises(KeyError, datatypes.Amount, 12, 'ZZZ')
         # From tuple
-        self.assertEqual("10", str(datatypes.Amount(("10",))))
+        self.assertEqual("10.0000", str(datatypes.Amount(("10",))))
         self.assertEqual("10.00 NZD", str(datatypes.Amount(("10", "NZD"))))
         self.assertRaises(ValueError, datatypes.Amount, ("10", "NZD", "hmmm"))
 
@@ -33,9 +33,9 @@ class DataTypesTestCase(unittest.TestCase):
         self.assertEqual("<Amount: 12.34, <Currency: NZD>>", repr(datatypes.Amount(12.34, 'NZD')))
 
     def test_amount_neg_pos(self):
-        self.assertEqual("-11", str(-a))
+        self.assertEqual("-11.0000", str(-a))
         self.assertEqual("-22.00 AUD", str(-b))
-        self.assertEqual("11", str(+a))
+        self.assertEqual("11.0000", str(+a))
         self.assertEqual("22.00 AUD", str(+b))
 
     def test_amount_add(self):
@@ -51,7 +51,7 @@ class DataTypesTestCase(unittest.TestCase):
         self.assertRaises(ValueError, lambda: c - d)
 
     def test_amount_mul(self):
-        self.assertEqual("22", str(a * 2))
+        self.assertEqual("22.0000", str(a * 2))
         self.assertEqual("44.00 AUD", str(b * 2))
         self.assertRaises(TypeError, lambda: d * a)
 
