@@ -25,6 +25,9 @@ class TraversalPath(object):
     def __str__(self):
         return '.'.join("%s" % f if k is None else "%s[%s]" % (f, k) for k, f in self._path)
 
+    def __hash__(self):
+        return hash(self._path)
+
     def __eq__(self, other):
         if isinstance(other, TraversalPath):
             return self._path == other._path
