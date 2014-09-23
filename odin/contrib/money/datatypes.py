@@ -72,7 +72,7 @@ class Amount(tuple):
 
         if currency is None:
             currency = DEFAULT_CURRENCY
-        elif isinstance(currency, str):
+        elif isinstance(currency, six.string_types):
             currency = CURRENCY[currency.upper()]
         elif not isinstance(currency, Currency):
             raise TypeError("unable to convert value into a valid currency: %s" % currency)

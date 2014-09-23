@@ -50,11 +50,11 @@ class DataTypesTestCase(unittest.TestCase):
 
     def test_latitude_str(self):
         lat = datatypes.latitude(27.3375)
-        self.assertEqual("latitude<27.3375>", repr(lat))
+        self.assertEqual("27.3375", repr(lat))
         self.assertEqual(u"27°20'15.000000\"N", six.text_type(lat))
 
         lat = datatypes.latitude(-27.3375)
-        self.assertEqual("latitude<-27.3375>", repr(lat))
+        self.assertEqual("-27.3375", repr(lat))
         self.assertEqual(u"27°20'15.000000\"S", six.text_type(lat))
 
     def test_longitude_valid(self):
@@ -78,11 +78,11 @@ class DataTypesTestCase(unittest.TestCase):
 
     def test_longitude_str(self):
         lat = datatypes.longitude(27.3375)
-        self.assertEqual("longitude<27.3375>", repr(lat))
+        self.assertEqual("27.3375", repr(lat))
         self.assertEqual(u"027°20'15.000000\"E", six.text_type(lat))
 
         lat = datatypes.longitude(-27.3375)
-        self.assertEqual("longitude<-27.3375>", repr(lat))
+        self.assertEqual("-27.3375", repr(lat))
         self.assertEqual(u"027°20'15.000000\"W", six.text_type(lat))
 
     def test_latlng_valid(self):

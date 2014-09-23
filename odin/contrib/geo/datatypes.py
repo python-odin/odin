@@ -49,9 +49,6 @@ class latitude(float):  # NoQA
             raise ValueError("not in range -90.0 -> 90.0: '%s'" % x)
         return lat
 
-    def __repr__(self):
-        return "latitude<%02.4f>" % self
-
     def __unicode__(self):
         result = u"%02i°%02i'%02f\"" % to_dms(self, True)
         return result + (u'S' if self < 0 else u'N')
@@ -68,9 +65,6 @@ class longitude(float):  # NoQA
         if lng > 180.0 or lng < -180.0:
             raise ValueError("not in range -180.0 -> 180.0: '%s'" % x)
         return lng
-
-    def __repr__(self):
-        return "longitude<%03.4f>" % self
 
     def __unicode__(self):
         result = u"%03i°%02i\'%02f\"" % to_dms(self, True)
