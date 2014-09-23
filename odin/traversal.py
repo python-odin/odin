@@ -1,15 +1,44 @@
 # -*- coding: utf-8 -*-
+import six
+
+
+def _split_atom(atom):
+    field, _, key = atom.rstrip(']').partition('[')
+    return key or None, field
 
 
 class TraversalPath(object):
     """
     A path through a resource structure.
     """
+    @classmethod
+    def parse(cls, path):
+        if isinstance(path, six.string_types):
+            return cls(*[_split_atom(a) for a in path.split('.')])
+
     def __init__(self, *path):
         self._path = path
 
+    def __repr__(self):
+        return "<TranversalPath: %s>" % self
+
     def __str__(self):
         return '.'.join("%s" % f if k is None else "%s[%s]" % (f, k) for k, f in self._path)
+
+    def __eq__(self, other):
+        if isinstance(other, TraversalPath):
+            return self._path == other._path
+        return False
+
+    def __add__(self, other):
+        if isinstance(other, TraversalPath):
+            return TraversalPath(*(self._path + other._path))
+
+        # Assume appending a field
+        if isinstance(other, six.string_types):
+            return TraversalPath(*(self._path + tuple([(None, other)])))
+
+        raise TypeError("Cannot add '%s' to a path." % other)
 
     def __iter__(self):
         return iter(self._path)

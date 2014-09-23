@@ -92,16 +92,34 @@ class TraversalTestCase(unittest.TestCase):
 
 
 class TraversalPathTestCase(unittest.TestCase):
-    def test_valid_path(self):
-        self.assertEqual('a', traversal.TraversalPath((None, 'name')).get_value(TEST_STRUCTURE))
+    def test_parse(self):
+        actual = traversal.TraversalPath.parse('level2')
+        self.assertEqual(traversal.TraversalPath((None, 'level2'),), actual)
 
-        r = traversal.TraversalPath(('b', 'level2s'), (1, 'level3s')).get_value(TEST_STRUCTURE)
+        actual = traversal.TraversalPath.parse('level2.name')
+        self.assertEqual(traversal.TraversalPath((None, 'level2'), (None, 'name')), actual)
+
+        actual = traversal.TraversalPath.parse('level2s[b].level3s[1].name')
+        self.assertEqual(traversal.TraversalPath(('b', 'level2s'), ('1', 'level3s'), (None, 'name')), actual)
+
+    def test_add(self):
+        actual = traversal.TraversalPath.parse('level2') + 'name'
+        self.assertEqual(traversal.TraversalPath.parse('level2.name'), actual)
+
+        actual = traversal.TraversalPath.parse('level2s[b]') + traversal.TraversalPath.parse('level3s[1].name')
+        self.assertEqual(traversal.TraversalPath.parse('level2s[b].level3s[1].name'), actual)
+
+    def test_valid_path(self):
+        self.assertEqual('a', traversal.TraversalPath.parse('name').get_value(TEST_STRUCTURE))
+        self.assertEqual('b', traversal.TraversalPath.parse('level2.name').get_value(TEST_STRUCTURE))
+
+        r = traversal.TraversalPath.parse('level2s[b].level3s[1]').get_value(TEST_STRUCTURE)
         self.assertIsInstance(r, Level3)
         self.assertEqual('f', r.name)
 
     def test_invalid_path(self):
-        path = traversal.TraversalPath(('b', 'level2s'), (4, 'level3s'))
+        path = traversal.TraversalPath.parse('level2s[b].level3s[4]')
         self.assertRaises(IndexError, path.get_value, TEST_STRUCTURE)
 
-        path = traversal.TraversalPath(('b', 'level2s'), (1, 'level3s_sd'))
+        path = traversal.TraversalPath.parse('level2s[b].level3s_sd[1]')
         self.assertRaises(KeyError, path.get_value, TEST_STRUCTURE)
