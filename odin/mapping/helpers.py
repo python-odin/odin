@@ -47,7 +47,8 @@ class ApplyMapping(object):
         self.allow_subclass = allow_subclass
 
     def __call__(self, bound_self, field_value):
-        return self.mapping.apply(field_value, context=bound_self.context, allow_subclass=self.allow_subclass)
+        # Note this returns a tuple, this is expected
+        return self.mapping.apply(field_value, context=bound_self.context, allow_subclass=self.allow_subclass),
 
     def __repr__(self):
         return "<%s: %s.%s>" % (self.__class__.__name__, self.mapping.__module__, self.mapping.__name__)
