@@ -39,3 +39,8 @@ class AmountField(ScalarField):
             if value.currency not in self.allowed_currencies:
                 msg = self.error_messages['invalid_currency'] % value.currency
                 raise exceptions.ValidationError(msg)
+
+    def prepare(self, value):
+        if value in EMPTY_VALUES:
+            return
+        return float(value), value.currency.code
