@@ -38,7 +38,7 @@ class Currency(object):
 
 CURRENCY = {}
 # XXX is the currency code for no currency in ISO 4217
-CURRENCY['XXX'] = DEFAULT_CURRENCY = NO_CURRENCY = Currency('XXX', 999, 'No Currency', '', 0)
+CURRENCY['XXX'] = DEFAULT_CURRENCY = NO_CURRENCY = Currency('XXX', 999, 'No Currency', '', 4)
 
 
 def set_default_currency(code='XXX'):
@@ -56,7 +56,7 @@ class Amount(tuple):
     A monetary amount and the associated currency.
     """
     def __new__(cls, value=None, currency=None):
-        if isinstance(value, tuple):
+        if isinstance(value, (tuple, list)):
             if len(value) == 1:
                 value = value[0]
             elif len(value) == 2:
