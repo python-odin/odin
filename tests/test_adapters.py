@@ -71,7 +71,7 @@ class ResourceAdapterTestCase(unittest.TestCase):
             ('genre', 'None'),
             ('published', '[]'),
             ('authors', '[]'),
-            ('publisher', 'Publisher resource')], actual)
+            ('publisher', 'None')], actual)
 
     def test_to_dict(self):
         publisher = Publisher()
