@@ -49,6 +49,7 @@ class FloatField(PintField):
     default_error_messages = {
         'invalid': "'%s' value must be a float.",
     }
+    data_type_name = "Float"
 
     def to_magnitude(self, value):
         try:

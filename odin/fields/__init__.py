@@ -28,7 +28,7 @@ class Field(object):
         'null': 'This field cannot be null.',
         'required': 'This field is required.',
     }
-    data_type_name = "String"
+    data_type_name = None
 
     def __init__(self, verbose_name=None, verbose_name_plural=None, name=None, null=False, choices=None,
                  use_default_if_not_provided=False, default=NOT_PROVIDED, help_text='', validators=[],
@@ -204,6 +204,8 @@ class BooleanField(Field):
 
 
 class StringField(Field):
+    data_type_name = "String"
+
     def __init__(self, max_length=None, **options):
         super(StringField, self).__init__(**options)
         self.max_length = max_length

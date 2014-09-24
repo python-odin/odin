@@ -8,19 +8,22 @@ class VirtualField(object):
     """
     # These track each time a VirtualField instance is created. Used to retain order.
     creation_counter = 0
+    data_type_name = None
 
-    def __init__(self, verbose_name=None, verbose_name_plural=None, name=None, doc_text=''):
+    def __init__(self, verbose_name=None, verbose_name_plural=None, name=None, data_type_name=None, doc_text=''):
         """
         Initialisation of virtual field
 
         :param verbose_name: Display name of field.
         :param verbose_name_plural: Plural display name of field.
         :param name: Name of the serialised field.
+        :param data_type_name: A name for the data type this field returns (used for generating documentation)
         :param doc_text: Documentation for the field, replaces help text
         """
         self.verbose_name, self.verbose_name_plural = verbose_name, verbose_name_plural
         self.name = name
         self.doc_text = doc_text
+        self.data_type_name = data_type_name
 
         self.creation_counter = VirtualField.creation_counter
         VirtualField.creation_counter += 1

@@ -16,6 +16,7 @@ class AmountField(ScalarField):
         'invalid': "'%s' value must be a (amount, currency).",
         'invalid_currency': "'%s' currency is not supported.",
     }
+    data_type_name = "Amount"
 
     def __init__(self, allowed_currencies=None, **kwargs):
         super(AmountField, self).__init__(**kwargs)

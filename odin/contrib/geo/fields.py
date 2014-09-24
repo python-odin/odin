@@ -15,6 +15,7 @@ class LatitudeField(ScalarField):
     default_error_messages = {
         'invalid': "'%s' value must be a latitude.",
     }
+    data_type_name = "Latitude"
 
     def to_python(self, value):
         if value in EMPTY_VALUES:
@@ -33,6 +34,7 @@ class LongitudeField(ScalarField):
     default_error_messages = {
         'invalid': "'%s' value must be a longitude.",
     }
+    data_type_name = "Longitude"
 
     def to_python(self, value):
         if value in EMPTY_VALUES:
@@ -51,6 +53,7 @@ class LatLngField(Field):
     default_error_messages = {
         'invalid': "'%s' value must be a (latitude, longitude).",
     }
+    data_type_name = "LatLng"
 
     def to_python(self, value):
         if value in EMPTY_VALUES:
@@ -69,6 +72,7 @@ class PointField(Field):
     default_error_messages = {
         'invalid': "'%s' value must be a point in 2D or 3D cartesian space.",
     }
+    data_type_name = "Point"
 
     def to_python(self, value):
         if value in EMPTY_VALUES:
