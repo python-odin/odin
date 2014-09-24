@@ -19,7 +19,9 @@ class CompositeField(Field):
             raise TypeError("``%r`` is not a valid type for a related field." % resource)
         self.of = resource
 
-        options.setdefault('default', lambda: resource())
+        if not options.get('null', False):
+            options.setdefault('default', lambda: resource())
+
         super(CompositeField, self).__init__(**options)
 
     def to_python(self, value):
@@ -61,6 +63,7 @@ class DictAs(CompositeField):
     default_error_messages = {
         'invalid': "Must be a dict of type ``%r``.",
     }
+    data_type_name = "Dict as"
 
     def item_iter_from_object(self, obj):
         resource = self.value_from_object(obj)
@@ -75,6 +78,7 @@ class ListOf(CompositeField):
         'invalid': "Must be a list of ``%r`` objects.",
         'null': "List cannot contain null entries.",
     }
+    data_type_name = "List of"
 
     def __init__(self, resource, **options):
         options.setdefault('default', list)
@@ -145,6 +149,7 @@ class DictOf(CompositeField):
         'invalid': "Must be a dict of ``%r`` objects.",
         'null': "Dict cannot contain null entries.",
     }
+    data_type_name = "Dict of"
 
     def __init__(self, resource, **options):
         options.setdefault('default', dict)

@@ -28,6 +28,7 @@ class Field(object):
         'null': 'This field cannot be null.',
         'required': 'This field is required.',
     }
+    data_type_name = "String"
 
     def __init__(self, verbose_name=None, verbose_name_plural=None, name=None, null=False, choices=None,
                  use_default_if_not_provided=False, default=NOT_PROVIDED, help_text='', validators=[],
@@ -183,6 +184,7 @@ class BooleanField(Field):
     }
     true_strings = ('t', 'true', 'yes', 'on', '1')
     false_strings = ('f', 'false', 'no', 'off', '0')
+    data_type_name = "Boolean"
 
     def to_python(self, value):
         if value is None:
@@ -215,6 +217,8 @@ class StringField(Field):
 
 
 class UrlField(StringField):
+    data_type_name = "URL"
+
     def __init__(self, **options):
         options.setdefault('validators', []).append(validate_url)
         super(UrlField, self).__init__(**options)
@@ -235,6 +239,7 @@ class IntegerField(ScalarField):
     default_error_messages = {
         'invalid': "'%s' value must be a integer.",
     }
+    data_type_name = "Integer"
 
     def to_python(self, value):
         if value in EMPTY_VALUES:
@@ -250,6 +255,7 @@ class FloatField(ScalarField):
     default_error_messages = {
         'invalid': "'%s' value must be a float.",
     }
+    data_type_name = "Float"
 
     def to_python(self, value):
         if value in EMPTY_VALUES:
@@ -271,6 +277,7 @@ class DateField(Field):
     default_error_messages = {
         'invalid': "Not a valid date string.",
     }
+    data_type_name = "ISO-8601 Date"
 
     def to_python(self, value):
         if value in EMPTY_VALUES:
@@ -300,6 +307,7 @@ class TimeField(Field):
     default_error_messages = {
         'invalid': "Not a valid time string.",
     }
+    data_type_name = "ISO-8601 Time"
 
     def __init__(self, assume_local=False, **options):
         super(TimeField, self).__init__(**options)
@@ -332,6 +340,7 @@ class DateTimeField(Field):
     default_error_messages = {
         'invalid': "Not a valid datetime string.",
     }
+    data_type_name = "ISO-8601 DateTime"
 
     def __init__(self, assume_local=False, **options):
         super(DateTimeField, self).__init__(**options)
@@ -361,6 +370,7 @@ class HttpDateTimeField(Field):
     default_error_messages = {
         'invalid': "Not a valid HTTP datetime string.",
     }
+    data_type_name = "ISO-1123 DateTime"
 
     def to_python(self, value):
         if value in EMPTY_VALUES:
@@ -379,6 +389,7 @@ class DictField(Field):
     default_error_messages = {
         'invalid': "Must be a dict.",
     }
+    data_type_name = "Dict"
 
     def __init__(self, **options):
         options.setdefault("default", dict)
@@ -397,14 +408,15 @@ class DictField(Field):
 ObjectField = DictField
 
 
-class ArrayField(Field):
+class ListField(Field):
     default_error_messages = {
         'invalid': "Must be an array.",
     }
+    data_type_name = "List"
 
     def __init__(self, **options):
         options.setdefault("default", list)
-        super(ArrayField, self).__init__(**options)
+        super(ListField, self).__init__(**options)
 
     def to_python(self, value):
         if value is None:
@@ -414,14 +426,23 @@ class ArrayField(Field):
         msg = self.error_messages['invalid']
         raise exceptions.ValidationError(msg)
 
+ArrayField = ListField
 
-class TypedArrayField(ArrayField):
+
+class TypedListField(ListField):
+    @staticmethod
+    def data_type_name(instance):
+        type_name = instance.field.data_type_name
+        if callable(type_name):
+            type_name = type_name(instance.field)
+        return "List of %s" % type_name
+
     def __init__(self, field, **options):
         self.field = field
-        super(TypedArrayField, self).__init__(**options)
+        super(TypedListField, self).__init__(**options)
 
     def to_python(self, value):
-        value = super(TypedArrayField, self).to_python(value)
+        value = super(TypedListField, self).to_python(value)
         if not value:
             return value
 
@@ -437,3 +458,5 @@ class TypedArrayField(ArrayField):
             raise exceptions.ValidationError(errors)
 
         return value_list
+
+TypedArrayField = TypedListField
