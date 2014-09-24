@@ -87,15 +87,19 @@ class cached_property(object):
         return value
 
 
-def field_iter(resource):
+def field_iter(resource, include_virtual=True):
     """
     Return an iterator that yields fields from a resource.
 
     :param resource: Resource to iterate over.
+    :param include_virtual: Include virtual fields.
     :returns: an iterator that returns fields.
 
     """
-    return iter(resource._meta.all_fields)
+    if include_virtual:
+        return iter(resource._meta.all_fields)
+    else:
+        return iter(resource._meta.fields)
 
 
 def field_iter_items(resource, fields=None):
