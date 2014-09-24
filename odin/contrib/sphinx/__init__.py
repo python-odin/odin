@@ -72,7 +72,7 @@ class ResourceDocumenter(ModuleLevelDocumenter):
 
             data_table.append((
                 "*%s*" % field.name if field.null else field.name,  # Name
-                ("[%s]" if field.null else "%s") % reference_to(type_name),  # Data-type
+                reference_to(type_name),  # Data-type
                 '\n'.join(details).split('\n')  # Details
             ))
 
