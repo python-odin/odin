@@ -104,3 +104,12 @@ class CalculatedField(VirtualField):
 
     def __get__(self, instance, owner):
         return self.expr(instance)
+
+
+def calculated_field(method=None, **kwargs):
+    """
+    Converts an instance method into a calculated field.
+    """
+    def inner(expr):
+        return CalculatedField(expr, **kwargs)
+    return inner if method is None else inner(method)
