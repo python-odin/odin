@@ -56,7 +56,7 @@ class MappingBaseTestCase(MappingTestCase):
             (None, 'assigned_field', ('assigned_field',), False, False, False),
             (('count',), None, ('count',), False, False, False),
             (('child',), MapDictAs(NoOpMapper), ('child',), False, True, False),
-            (('children',), MapListOf(NoOpMapper), ('children',), True, True, False),
+            (('children',), MapListOf(NoOpMapper), ('children',), False, True, False),
             (('title',), None, ('title',), False, False, False),
         ], FromToMapping._mapping_rules)
 

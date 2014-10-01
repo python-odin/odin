@@ -115,7 +115,7 @@ def _generate_auto_mapping(name, from_fields, to_fields):
             # If both items are from and to fields refer to the same object automatically use a mapper that just
             # produces a clone.
             if from_field.of is to_field.of:
-                return define(name, MapListOf(NoOpMapper), name, to_list=True, bind=True)
+                return define(name, MapListOf(NoOpMapper), name, to_list=False, bind=True)
 
     # Handle DictAs fields
     elif isinstance(from_field, DictAs) and isinstance(to_field, DictAs):
