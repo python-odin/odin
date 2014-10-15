@@ -1,7 +1,7 @@
 __authors__ = "Tim Savage"
-__author_email__ = "tim.savage@poweredbypenguins.org"
-__copyright__ = "Copyright (C) 2013 Tim Savage"
-__version__ = "0.5.4"
+__author_email__ = "tim@savage.company"
+__copyright__ = "Copyright (C) 2014 Tim Savage"
+__version__ = "0.5.5"
 
 from odin.fields import *  # noqa
 from odin.fields.composite import *  # noqa

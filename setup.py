@@ -7,11 +7,11 @@ except IOError:
 
 setup(
     name='odin',
-    version='0.5.4',
+    version='0.5.5',
     url='https://github.com/timsavage/odin',
     license='LICENSE',
     author='Tim Savage',
-    author_email='tim.savage@poweredbypenguins.org',
+    author_email='tim@savage.company',
     description='Object Data Mapping for Python',
     long_description=long_description,
     packages=find_packages(),
