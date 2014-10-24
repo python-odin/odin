@@ -20,7 +20,7 @@ def define(from_field=None, action=None, to_field=None, to_list=False, bind=Fals
     Helper method for defining a mapping.
 
     :param from_field: Source field to map from.
-    :param action: Action to perform during mapping.
+    :param action: Action callable to perform during mapping, accepted fields differ based on options.
     :param to_field: Destination field to map to; if not specified the from_field
     :param to_list: Assume the result is a list (rather than a multi value tuple).
     :param bind: During the mapping operation the first parameter should be the mapping instance.
@@ -545,7 +545,8 @@ def assign_field(func=None, to_field=None, to_list=False):
     return inner(func) if func else inner
 
 
-def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=True):
+def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=True,
+                    mappings=None, reverse_mappings=None):
     """
     Factory method for generating simple mappings between objects.
 
@@ -556,6 +557,9 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=Tru
     :param to_obj: Object to map to.
     :param base_mapping: Base mapping class; default is ``odin.Mapping``.
     :param generate_reverse: Generate the reverse of the mapping ie swap from_obj and to_obj.
+    :param mappings: User provided mappings (this is equivalent ot ``odin.Mapping.mappings``)
+    :param reverse_mappings: User provided reverse mappings (this is equivalent ot ``odin.Mapping.mappings``). Only
+        used if ``generate_reverse`` is True.
     :return: if generate_reverse is True a tuple(forward_mapping, reverse_mapping); else just the forward_mapping.
 
     """
@@ -564,7 +568,8 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=Tru
         (base_mapping, ),
         dict(
             from_obj=from_obj,
-            to_obj=to_obj
+            to_obj=to_obj,
+            mappings=mappings or dict()
         )
     )
 
@@ -574,7 +579,8 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=Tru
             (base_mapping, ),
             dict(
                 from_obj=to_obj,
-                to_obj=from_obj
+                to_obj=from_obj,
+                mappings=reverse_mappings or dict()
             )
         )
 
