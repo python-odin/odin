@@ -72,8 +72,12 @@ class ResourceTraversalIterator(object):
 
     """
     def __init__(self, resource):
-        # Stack of resource iterators (starts initially with single entry of the root resource)
-        self._resource_iters = [iter([(None, resource)])]
+        if isinstance(resource, (list, tuple)):
+            # Stack of resource iterators (starts initially with entries from the list)
+            self._resource_iters = [iter([(i, r) for i, r in enumerate(resource)])]
+        else:
+            # Stack of resource iterators (starts initially with single entry of the root resource)
+            self._resource_iters = [iter([(None, resource)])]
         # Stack of composite fields, found on each resource, each composite field is interrogated for resources.
         self._field_iters = []
         # The "path" to the current resource.
