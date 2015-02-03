@@ -26,6 +26,9 @@ Odin also comes with built in serialisation tools for importing and exporting da
     :target: https://requires.io/github/timsavage/odin/requirements/?branch=master
     :alt: Requirements Status
 
+.. image:: https://img.shields.io/badge/gitterim-timsavage.odin-brightgreen.svg?style=flat
+    :target: https://gitter.im/timsavage/odin
+    :alt: Gitter.im
 
 Highlights
 **********
