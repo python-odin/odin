@@ -82,7 +82,7 @@ class FixedTimezone(datetime.tzinfo):
         return cls(datetime.timedelta(hours=hours, minutes=minutes), name)
 
     @classmethod
-    def from_hours_minutes(cls, hours, minutes):
+    def from_hours_minutes(cls, hours, minutes=0):
         sign = '-' if hours < 0 else ''
         hours = abs(hours)
         minutes = abs(minutes)
@@ -116,7 +116,7 @@ class FixedTimezone(datetime.tzinfo):
 
     def __init__(self, offset=None, name=None):
         super(FixedTimezone, self).__init__()
-        self.offset = offset or datetime.timedelta(0)
+        self.offset = offset or ZERO
         self.name = name or ''
 
     def utcoffset(self, dt):
@@ -177,6 +177,14 @@ def now_local():
     Get now in the current local timezone.
     """
     return datetime.datetime.now(tz=local)
+
+
+UNIX_EPOCH = datetime.datetime(1970, 1, 1, tzinfo=utc)
+if six.PY3:
+    to_timestamp = datetime.datetime.timestamp
+else:
+    def to_timestamp(dt):
+        return (dt - UNIX_EPOCH).total_seconds()
 
 
 ISO8601_DATE_STRING_RE = re.compile(

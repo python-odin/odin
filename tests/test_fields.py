@@ -3,8 +3,8 @@ from copy import deepcopy
 import unittest
 import datetime
 from odin.fields import *
-from odin.fields import Field
-from odin.datetimeutil import utc
+from odin.fields import Field, TimeStampField
+from odin.datetimeutil import utc, FixedTimezone
 from odin.fields.virtual import VirtualField
 from odin.validators import MinValueValidator, MaxValueValidator, MaxLengthValidator, RegexValidator
 from odin.exceptions import ValidationError
@@ -432,6 +432,33 @@ class FieldsTests(unittest.TestCase):
                          f.clean('Wed Aug 29 17:12:58 +0000 2012'))
         self.assertEqual(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
                          f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)))
+
+    # TimeStampField ##########################################################
+
+    def test_timestampfield_1(self):
+        f = TimeStampField()
+        self.assertRaises(ValidationError, f.clean, None)
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 'Wed Aug 29 17:12:58 +0000 2012')
+        self.assertEqual(datetime.datetime(1970, 1, 1, 0, 2, 3, tzinfo=utc), f.clean(123))
+        self.assertEqual(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+                         f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)))
+
+    def test_timestampfield_2(self):
+        f = TimeStampField(null=True)
+        self.assertEqual(None, f.clean(None))
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 'Wed Aug 29 17:12:58 +0000 2012')
+        self.assertEqual(datetime.datetime(1970, 1, 1, 0, 2, 3, tzinfo=utc), f.clean(123))
+        self.assertEqual(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+                         f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)))
+
+    def test_timestampfield_3(self):
+        f = TimeStampField()
+        self.assertEqual(None, f.prepare(None))
+        self.assertEqual(123, f.prepare(datetime.datetime(1970, 1, 1, 0, 2, 3, tzinfo=utc)))
+        self.assertEqual(123, f.prepare(
+            datetime.datetime(1970, 1, 1, 10, 2, 3, tzinfo=FixedTimezone.from_hours_minutes(10))))
 
     # DictField ###############################################################
 

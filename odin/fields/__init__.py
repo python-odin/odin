@@ -11,6 +11,10 @@ __all__ = (
 )
 
 
+if six.PY3:
+    long = int
+
+
 class NOT_PROVIDED:
     pass
 
@@ -385,6 +389,39 @@ class HttpDateTimeField(Field):
             pass
         msg = self.error_messages['invalid']
         raise exceptions.ValidationError(msg)
+
+
+class TimeStampField(Field):
+    """
+    Field that handles datetime values encoding as the number of seconds since the UNIX epoch.
+
+    A UNIX timestamp should always be calculated relative to UTC.
+
+    """
+    default_error_messages = {
+        'invalid': "Not a valid UNIX timestamp.",
+    }
+    data_type_name = "Integer"
+
+    def to_python(self, value):
+        if value in EMPTY_VALUES:
+            return
+        if isinstance(value, datetime.datetime):
+            return value
+        try:
+            return datetime.datetime.fromtimestamp(long(value), tz=datetimeutil.utc)
+        except ValueError:
+            pass
+        msg = self.error_messages['invalid']
+        raise exceptions.ValidationError(msg)
+
+    def prepare(self, value):
+        if value in EMPTY_VALUES:
+            return
+        if isinstance(value, six.integer_types):
+            return long(value)
+        if isinstance(value, datetime.datetime):
+            return datetimeutil.to_timestamp(value)
 
 
 class DictField(Field):
