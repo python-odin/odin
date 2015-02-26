@@ -198,6 +198,16 @@ When using the ``apply`` class method to map a list of objects the context is us
 
 Method that starts the mapping process and returns a populated ``to_obj``.
 
+``update``
+----------
+
+Update an existing object with fields from the provided by the ``source_obj``.
+
+``diff``
+--------
+
+Compare the field values from the ``source_obj`` with a supplied destination and return all the fields that differ.
+
 ``loop_idx``
 ------------
 
