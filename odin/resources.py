@@ -280,13 +280,26 @@ class Resource(object):
 
     def convert_to(self, to_resource, context=None, **field_values):
         """
-        Convert this resource into a specified to resource.
+        Convert this resource into a specified resource.
 
         A mapping must be defined for conversion between this resource and to_resource or an exception will be raised.
+
         """
         self.full_clean()
         mapping = registration.get_mapping(self.__class__, to_resource)
         return mapping(self, context).convert(**field_values)
+
+    def update_existing(self, dest_obj, context=None, ignore_fields=None):
+        """
+        Update the fields on an existing destination object.
+
+        A mapping must be defined for conversion between this resource and ``dest_obj`` type or an exception will be
+        raised.
+
+        """
+        self.full_clean()
+        mapping = registration.get_mapping(self.__class__, dest_obj.__class__)
+        return mapping(self, context).update(dest_obj, ignore_fields)
 
     def extra_attrs(self, attrs):
         """

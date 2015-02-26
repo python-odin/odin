@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import unittest
+import datetime
 from odin.exceptions import MappingSetupError, MappingExecutionError
 from odin.mapping import MappingResult
 from odin.mapping.helpers import MapDictAs, MapListOf, NoOpMapper
@@ -302,6 +303,62 @@ class ExecuteMappingTestCase(MappingTestCase):
         self.assertListEqual(['0: Foo', '1: Bar', '2: Eek'], [t.title_count for t in to_resource_iter])
 
 
+class ResourceMappingHelpersTestCase(unittest.TestCase):
+    def test_update_existing(self):
+        resource = OldBook(
+            name="Bar",  # odin.StringField()
+            num_pages=42,  # odin.IntegerField()
+            price=12.50,  # odin.FloatField()
+            genre="fantasy",  # odin.StringField()
+            published=datetime.datetime(2015, 2, 26, 22, 7),  # odin.DateTimeField()
+            author=Author(name='123'),  # odin.ObjectAs()
+            publisher=Publisher(name="Eek"),  # odin.ObjectAs()
+        )
+        existing_resource = Book(
+            title="Foo",  # odin.StringField()
+            num_pages=12,  # odin.IntegerField()
+            rrp=12.50,  # odin.FloatField()
+            fiction=False,  # odin.BooleanField()
+            genre="others",  # odin.StringField()
+            published=[datetime.datetime.now()],  # odin.TypedArrayField()
+        )
+
+        resource.update_existing(existing_resource)
+
+        self.assertEqual("Bar", existing_resource.title)
+        self.assertEqual(42, existing_resource.num_pages)
+        self.assertEqual(12.50, existing_resource.rrp)
+        self.assertEqual(False, existing_resource.fiction)
+        self.assertEqual("fantasy", existing_resource.genre)
+
+    def test_update_filtered_existing(self):
+        resource = OldBook(
+            name="Bar",  # odin.StringField()
+            num_pages=42,  # odin.IntegerField()
+            price=12.50,  # odin.FloatField()
+            genre="fantasy",  # odin.StringField()
+            published=datetime.datetime(2015, 2, 26, 22, 7),  # odin.DateTimeField()
+            author=Author(name='123'),  # odin.ObjectAs()
+            publisher=Publisher(name="Eek"),  # odin.ObjectAs()
+        )
+        existing_resource = Book(
+            title="Foo",  # odin.StringField()
+            num_pages=12,  # odin.IntegerField()
+            rrp=12.50,  # odin.FloatField()
+            fiction=False,  # odin.BooleanField()
+            genre="others",  # odin.StringField()
+            published=[datetime.datetime.now()],  # odin.TypedArrayField()
+        )
+
+        resource.update_existing(existing_resource, ignore_fields=['num_pages'])
+
+        self.assertEqual("Bar", existing_resource.title)
+        self.assertEqual(12, existing_resource.num_pages)
+        self.assertEqual(12.50, existing_resource.rrp)
+        self.assertEqual(False, existing_resource.fiction)
+        self.assertEqual("fantasy", existing_resource.genre)
+
+
 class ResourceA(odin.Resource):
     class Meta:
         abstract = True
@@ -426,3 +483,4 @@ class SubClassMappingTestCase(MappingTestCase):
             ResourceAToResourceX.apply(ResourceD())
 
         self.assertIn("`source_resource` parameter must be an instance of", str(cm.exception))
+
