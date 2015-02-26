@@ -52,7 +52,7 @@ Converting between resources
 ============================
 
 Once a mapping has been defined the :py:meth:`Resource.convert_to` or :py:meth:`Mapping.apply` are used to convert
-between resources::
+between object, in addition :py:meth:`Mapping.update` can be used to update a existing object::
 
     # Create and instance of a CalendarEvent
     >>> event = CalendarEvent(
@@ -73,3 +73,15 @@ between resources::
     # Or use the mapping definition CalendarEventToEventFrom
     >>> event_from = CalendarEventToEventFrom.apply(event)
 
+    # Or update an an existing resource
+    event.name = 'Grand Launch Party'
+    event.update_existing(event_from)
+
+    >>> event.to_dict()
+    {'event_date': datetime.datetime(2014, 01, 11, 22, 30),
+     'event_hour': 22,
+     'event_minute': 30,
+     'name': 'Grand Launch Party'}
+
+    # Similarly the mapping definition can also be used
+    >>> CalendarEventToEventFrom(event).update(event_from)
