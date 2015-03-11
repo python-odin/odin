@@ -20,14 +20,16 @@ class OdinEncoder(json.JSONEncoder):
     """
     Encoder for Odin resources.
     """
-    def __init__(self, include_virtual_fields=True, *args, **kwargs):
+    def __init__(self, include_virtual_fields=True, include_type_field=True, *args, **kwargs):
         super(OdinEncoder, self).__init__(*args, **kwargs)
         self.include_virtual_fields = include_virtual_fields
+        self.include_type_field = include_type_field
 
     def default(self, o):
         if isinstance(o, resources.Resource):
             obj = o.to_dict(self.include_virtual_fields)
-            obj[o._meta.type_field] = o._meta.resource_name
+            if self.include_type_field:
+                obj[o._meta.type_field] = o._meta.resource_name
             return obj
         elif isinstance(o, mapping.MappingResult):
             return list(o)
@@ -46,6 +48,7 @@ def load(fp, resource=None, full_clean=True):
     :param resource: A resource instance or a resource name to use as the base for creating a resource.
     :param full_clean: Do a full clean of the object as part of the loading process.
     :returns: A resource object or object graph of resources loaded from file.
+
     """
     return loads(fp.read(), resource, full_clean)
 
@@ -63,6 +66,7 @@ def loads(s, resource=None, full_clean=True):
     :param resource: A resource instance or a resource name to use as the base for creating a resource.
     :param full_clean: Do a full clean of the object as part of the loading process.
     :returns: A resource object or object graph of resources parsed from supplied string.
+
     """
     try:
         return resources.build_object_graph(json.loads(s), resource, full_clean, copy_dict=False)
@@ -70,29 +74,31 @@ def loads(s, resource=None, full_clean=True):
         raise CodecDecodeError(str(ex))
 
 
-def dump(resource, fp, cls=OdinEncoder, include_virtual_fields=True, **kwargs):
+def dump(resource, fp, cls=OdinEncoder, **kwargs):
     """
     Dump to a JSON encoded file.
 
     :param resource: The root resource to dump to a JSON encoded file.
     :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :param fp: The file pointer that represents the output file.
+
     """
     try:
-        json.dump(resource, fp, cls=cls, include_virtual_fields=include_virtual_fields, **kwargs)
+        json.dump(resource, fp, cls=cls, **kwargs)
     except ValueError as ex:
         raise CodecEncodeError(str(ex))
 
 
-def dumps(resource, cls=OdinEncoder, include_virtual_fields=True, **kwargs):
+def dumps(resource, cls=OdinEncoder, **kwargs):
     """
     Dump to a JSON encoded string.
 
     :param resource: The root resource to dump to a JSON encoded file.
     :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :returns: JSON encoded string.
+
     """
     try:
-        return json.dumps(resource, cls=cls, include_virtual_fields=include_virtual_fields, **kwargs)
+        return json.dumps(resource, cls=cls, **kwargs)
     except ValueError as ex:
         raise CodecEncodeError(str(ex))
