@@ -181,6 +181,9 @@ class Field(object):
         """
         return getattr(obj, self.attname)
 
+    def value_to_object(self, obj, data):
+        setattr(obj, self.attname, data)
+
 
 class BooleanField(Field):
     default_error_messages = {
