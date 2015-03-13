@@ -12,3 +12,4 @@ API Reference
    resources/index
    adapters
    validators
+   traversal

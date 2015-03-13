@@ -7,13 +7,14 @@ Odin provides a Sphinx extension for documenting resources. It behaves similarly
 Setup
 =====
 
-Add the Odin extension into your Sphinx `conf.py`.
+Add the Odin extension into your Sphinx `conf.py`::
 
     extensions = [
         ...
         'odin.contrib.sphinx',
         ...
     ]
+
 
 Usage
 =====
