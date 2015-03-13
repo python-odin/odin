@@ -7,7 +7,7 @@ from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator,
 
 __all__ = (
     'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField', 'TimeField', 'DateTimeField',
-    'HttpDateTimeField', 'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField',
+    'HttpDateTimeField', 'TimeStampField', 'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField',
 )
 
 
