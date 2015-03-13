@@ -68,7 +68,7 @@ class ResourceDocumenter(ModuleLevelDocumenter):
 
         # if field.validators:
         #     details.append("\n\nValidation rules:\n")
-        #     for value, label in field.choices:
+        #     for validator in field.validators:
         #         details.append("* %s - %s" % (value, label))
 
         # Generate the name of the type this field represents

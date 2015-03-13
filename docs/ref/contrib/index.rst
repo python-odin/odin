@@ -15,3 +15,4 @@ This code lives in ``odin/contrib`` in the Odin distribution.
    geo/index
    money/index
    pint/index
+   sphinx/index
