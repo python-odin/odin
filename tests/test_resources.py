@@ -126,6 +126,14 @@ class ResourceTestCase(unittest.TestCase):
         else:
             raise AssertionError("ValidationError not raised.")
 
+    def test_full_clean_exclude(self):
+        r = Author(name="Bruce", country="England")
+
+        r.full_clean(exclude=('country',))
+
+        self.assertEqual("Bruce", r.name)
+        self.assertEqual("England", r.country)
+
     # Fix for #11
     def test_multiple_abstract_namespaces(self):
         self.assertEqual('example.ResourceC', ResourceC._meta.resource_name)

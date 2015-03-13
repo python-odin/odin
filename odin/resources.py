@@ -315,7 +315,7 @@ class Resource(object):
         """
         pass
 
-    def full_clean(self):
+    def full_clean(self, exclude=None):
         """
         Calls clean_fields, clean on the resource and raises ``ValidationError``
         for any errors that occurred.
@@ -323,7 +323,7 @@ class Resource(object):
         errors = {}
 
         try:
-            self.clean_fields()
+            self.clean_fields(exclude)
         except ValidationError as e:
             errors = e.update_error_dict(errors)
 
@@ -335,10 +335,13 @@ class Resource(object):
         if errors:
             raise ValidationError(errors)
 
-    def clean_fields(self):
+    def clean_fields(self, exclude=None):
         errors = {}
 
         for f in self._meta.fields:
+            if exclude and f.name in exclude:
+                continue
+
             raw_value = f.value_from_object(self)
 
             if f.null and raw_value is None:
