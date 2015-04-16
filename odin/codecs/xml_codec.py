@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-# from xml import sax
 import datetime
+import six
 from io import StringIO
 from xml.sax import saxutils
-import six
+from xml import sax
 from odin import serializers
 from odin import fields
 from odin.fields import composite
@@ -20,70 +20,67 @@ if not six.PY3:
 
 CONTENT_TYPE = 'application/xml'
 
-# class OdinContentHandler(sax.ContentHandler):
-#     def __init__(self, resource):
-#         self.elements = []
-#         self.resources = []
-#         self.resource = resource
-#
-#     def startDocument(self):
-#         print("startDocument")
-#         self.elements = []
-#         self.resources = []
-#
-#     def endDocument(self):
-#         print("endDocument")
-#
-#     def startElement(self, name, attrs):
-#         print("startElement", name, attrs['name'] if 'name' in attrs else '')
-#
-#         self.elements.append(name)
-#
-#     def endElement(self, name):
-#         print("endElement", name)
-#
-#         self.elements.pop()
-#
-#     def startElementNS(self, name, qname, attrs):
-#         print("startElementNS", name, qname, attrs)
-#
-#     def endElementNS(self, name, qname):
-#         print("endElementNS", name, qname)
-#
-#     def characters(self, content):
-#         print("characters", content)
-#
-#     def processingInstruction(self, target, data):
-#         print("processingInstruction", target, data)
-#
-#     def ignorableWhitespace(self, whitespace):
-#         print("ignorableWhitespace", whitespace)
-#
-#     def skippedEntity(self, name):
-#         print("skippedEntity", name)
-#
-#     def startPrefixMapping(self, prefix, uri):
-#         print("startPrefixMapping", prefix, uri)
-#
-#     def endPrefixMapping(self, prefix):
-#         print("endPrefixMapping", prefix)
-#
-#     def setDocumentLocator(self, locator):
-#         print("setDocumentLocator", locator)
-#
-#
+
+class OdinContentHandler(sax.ContentHandler):
+    def __init__(self, resource):
+        self.elements = []
+        self.resources = []
+        self.resource = resource
+
+    def startDocument(self):
+        print("startDocument")
+        self.elements = []
+        self.resources = []
+
+    def endDocument(self):
+        print("endDocument")
+
+    def startElement(self, name, attrs):
+        print("startElement", name, attrs['name'] if 'name' in attrs else '')
+
+        self.elements.append(name)
+
+    def endElement(self, name):
+        print("endElement", name)
+
+        self.elements.pop()
+
+    def startElementNS(self, name, qname, attrs):
+        print("startElementNS", name, qname, attrs)
+
+    def endElementNS(self, name, qname):
+        print("endElementNS", name, qname)
+
+    def characters(self, content):
+        print("characters", content)
+
+    def processingInstruction(self, target, data):
+        print("processingInstruction", target, data)
+
+    def ignorableWhitespace(self, whitespace):
+        print("ignorableWhitespace", whitespace)
+
+    def skippedEntity(self, name):
+        print("skippedEntity", name)
+
+    def startPrefixMapping(self, prefix, uri):
+        print("startPrefixMapping", prefix, uri)
+
+    def endPrefixMapping(self, prefix):
+        print("endPrefixMapping", prefix)
+
+    def setDocumentLocator(self, locator):
+        print("setDocumentLocator", locator)
 
 
 def load(fp, resource=None):
-    # handler = OdinContentHandler(resource)
-    # sax.parse(fp, handler)
-    raise NotImplemented()
+    handler = OdinContentHandler(resource)
+    sax.parse(fp, handler)
 
 
 def loads(s, resource=None):
-    # handler = OdinContentHandler(resource)
-    # sax.parseString(s, handler)
-    raise NotImplemented()
+    handler = OdinContentHandler(resource)
+    sax.parseString(s, handler)
 
 
 def _serialize_to_string(value):
