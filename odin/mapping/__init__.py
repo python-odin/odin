@@ -564,7 +564,10 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=Tru
 
     """
     forward_mapping = type(
-        "%sTo%s" % (from_obj.__class__.__name__, to_obj.__class__.__name__),
+        "%s%sTo%s%s" % (
+            from_obj.__class__.__name__, from_obj.__name__,
+            to_obj.__class__.__name__, to_obj.__name__
+        ),
         (base_mapping, ),
         dict(
             from_obj=from_obj,
@@ -575,7 +578,10 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=Tru
 
     if generate_reverse:
         reverse_mapping = type(
-            "%sTo%s" % (to_obj.__class__.__name__, from_obj.__class__.__name__),
+            "%s%sTo%s%s" % (
+                to_obj.__class__.__name__, to_obj.__name__,
+                from_obj.__class__.__name__, from_obj.__name__,
+            ),
             (base_mapping, ),
             dict(
                 from_obj=to_obj,
