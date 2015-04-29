@@ -73,6 +73,9 @@ class ResourceDocumenter(ModuleLevelDocumenter):
 
         # Generate the name of the type this field represents
         type_name = field.data_type_name
+        max_length = getattr(field, 'max_length', None)
+        if max_length:
+            type_name = "%s [%s]" % (type_name, max_length)
         if callable(type_name):
             type_name = type_name(field)
         if isinstance(field, odin.CompositeField):
