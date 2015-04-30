@@ -32,6 +32,7 @@ class ResourceDocumenter(ModuleLevelDocumenter):
 
     option_spec = dict(
         include_virtual=bool_option,
+        include_validators=bool_option,
         hide_choices=bool_option,
         **Documenter.option_spec
     )
@@ -66,10 +67,10 @@ class ResourceDocumenter(ModuleLevelDocumenter):
             for value, label in field.choices:
                 details.append("* %s - %s" % (value, label))
 
-        # if field.validators:
-        #     details.append("\n\nValidation rules:\n")
-        #     for validator in field.validators:
-        #         details.append("* %s - %s" % (value, label))
+        if self.options.include_validators and field.validators:
+            details.append("\n\nValidation rules:\n")
+            for validator in field.validators:
+                details.append("* %s" % validator)
 
         # Generate the name of the type this field represents
         type_name = field.data_type_name

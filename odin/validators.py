@@ -12,7 +12,7 @@ EMPTY_VALUES = (None, '', [], (), {})
 
 
 class RegexValidator(object):
-    regex = ''
+    regex = r''
     message = 'Enter a valid value.'
     code = 'invalid'
 
@@ -55,6 +55,7 @@ class BaseValidator(object):
     clean = lambda self, x: x
     message = 'Ensure this value is %(limit_value)s (it is %(show_value)s).'
     code = 'limit_value'
+    description = 'Ensure that a value is %(limit_value)s.'
 
     def __init__(self, limit_value):
         self.limit_value = limit_value
@@ -65,36 +66,44 @@ class BaseValidator(object):
         if self.compare(cleaned, self.limit_value):
             raise exceptions.ValidationError(self.message % params, code=self.code, params=params)
 
+    def __str__(self):
+        return self.description % {'limit_value': self.limit_value}
+
 
 class MaxValueValidator(BaseValidator):
     compare = lambda self, a, b: a > b
     message = 'Ensure this value is less than or equal to %(limit_value)s.'
     code = 'max_value'
+    description = 'Ensure value is less than or equal to %(limit_value)s.'
 
 
 class MinValueValidator(BaseValidator):
     compare = lambda self, a, b: a < b
     message = 'Ensure this value is greater than or equal to %(limit_value)s.'
     code = 'min_value'
+    description = 'Ensure value is greater than or equal to %(limit_value)s.'
 
 
 class LengthValidator(BaseValidator):
     compare = lambda self, a, b: a != b
     clean = lambda self, x: len(x)
-    message = 'Ensure this value has at exactly %(limit_value)d characters (it has %(show_value)d).'
+    message = 'Ensure this value has exactly %(limit_value)d characters (it has %(show_value)d).'
     code = 'length'
+    description = 'Ensure value has exactly %(limit_value)d characters.'
 
 
 class MaxLengthValidator(LengthValidator):
     compare = lambda self, a, b: a > b
     message = 'Ensure this value has at most %(limit_value)d characters (it has %(show_value)d).'
     code = 'max_length'
+    description = 'Ensure value has at most %(limit_value)d characters.'
 
 
 class MinLengthValidator(LengthValidator):
     compare = lambda self, a, b: a < b
     message = 'Ensure this value has at least %(limit_value)d characters (it has %(show_value)d).'
     code = 'min_length'
+    description = 'Ensure value has at least %(limit_value)d characters.'
 
 
 def simple_validator(assertion=None, message='The supplied value is invalid', code='invalid'):
