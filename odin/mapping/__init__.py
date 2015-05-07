@@ -443,7 +443,7 @@ class MappingBase(object):
 
         return self.create_object(**values)
 
-    def update(self, destination_obj, ignore_fields=None):
+    def update(self, destination_obj, ignore_fields=None, fields=None):
         """
         Update an existing object with fields from the provided source object.
 
@@ -457,8 +457,9 @@ class MappingBase(object):
 
         for mapping_rule in self._mapping_rules:
             for name, value in self._apply_rule(mapping_rule).items():
-                if name not in ignore_fields:
-                    setattr(destination_obj, name, value)
+                if name in ignore_fields or (fields and name not in fields):
+                    continue
+                setattr(destination_obj, name, value)
 
         return destination_obj
 
