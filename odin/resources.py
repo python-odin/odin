@@ -278,15 +278,17 @@ class Resource(object):
         fields = self._meta.all_fields if include_virtual else self._meta.fields
         return dict((f.name, v) for f, v in field_iter_items(self, fields))
 
-    def convert_to(self, to_resource, context=None, **field_values):
+    def convert_to(self, to_resource, context=None, ignore_fields=None, **field_values):
         """
         Convert this resource into a specified resource.
 
         A mapping must be defined for conversion between this resource and to_resource or an exception will be raised.
 
         """
-        self.full_clean()
         mapping = registration.get_mapping(self.__class__, to_resource)
+        ignore_fields = ignore_fields or []
+        ignore_fields.extend(mapping.exclude_fields)
+        self.full_clean(ignore_fields)
         return mapping(self, context).convert(**field_values)
 
     def update_existing(self, dest_obj, context=None, ignore_fields=None):
@@ -297,7 +299,7 @@ class Resource(object):
         raised.
 
         """
-        self.full_clean()
+        self.full_clean(ignore_fields)
         mapping = registration.get_mapping(self.__class__, dest_obj.__class__)
         return mapping(self, context).update(dest_obj, ignore_fields)
 
