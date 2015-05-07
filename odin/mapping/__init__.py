@@ -546,7 +546,8 @@ def assign_field(func=None, to_field=None, to_list=False):
 
 
 def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=True,
-                    mappings=None, reverse_mappings=None):
+                    mappings=None, reverse_mappings=None,
+                    exclude_fields=None, reverse_exclude_fields=None):
     """
     Factory method for generating simple mappings between objects.
 
@@ -560,6 +561,8 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=Tru
     :param mappings: User provided mappings (this is equivalent ot ``odin.Mapping.mappings``)
     :param reverse_mappings: User provided reverse mappings (this is equivalent ot ``odin.Mapping.mappings``). Only
         used if ``generate_reverse`` is True.
+    :param exclude_fields: Fields to exclude from auto-generated mappings
+    :param reverse_exclude_fields: Fields to exclude from auto-generated reverse mappings.
     :return: if generate_reverse is True a tuple(forward_mapping, reverse_mapping); else just the forward_mapping.
 
     """
@@ -572,6 +575,7 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=Tru
         dict(
             from_obj=from_obj,
             to_obj=to_obj,
+            exclude_fields=exclude_fields or list(),
             mappings=mappings or dict()
         )
     )
@@ -586,6 +590,7 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=Tru
             dict(
                 from_obj=to_obj,
                 to_obj=from_obj,
+                exclude_fields=reverse_exclude_fields or list(),
                 mappings=reverse_mappings or dict()
             )
         )
