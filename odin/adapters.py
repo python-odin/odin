@@ -64,6 +64,20 @@ class ResourceAdapter(object):
     The *ResourceAdapter* can be passed to Odin codecs just like a *Resource*.
 
     """
+    @classmethod
+    def apply_to(cls, sources, include=None, exclude=None):
+        """
+        Convenience method that applies include/exclude lists to all items in
+        an iterable collection of resources.
+
+        :param sources: Source resources being wrapped.
+        :param include: Fields that should be explicitly included on the adapter.
+        :param exclude: Fields to explicitly exclude on the adapter.
+
+        """
+        for resource in sources:
+            yield cls(resource, include, exclude)
+
     def __init__(self, source, include=None, exclude=None):
         """
         Initialise the adapter.
@@ -71,6 +85,7 @@ class ResourceAdapter(object):
         :param source: Source resource being wrapped.
         :param include: Fields that should be explicitly included on the adapter.
         :param exclude: Fields to explicitly exclude on the adapter.
+
         """
         self.__dict__['_source'] = source
 
