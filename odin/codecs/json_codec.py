@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
-from odin import serializers, resources, mapping
+from odin import serializers, resources, mapping, ResourceAdapter
 from odin.exceptions import CodecDecodeError, CodecEncodeError
 
 try:
@@ -26,7 +26,7 @@ class OdinEncoder(json.JSONEncoder):
         self.include_type_field = include_type_field
 
     def default(self, o):
-        if isinstance(o, resources.Resource):
+        if isinstance(o, (resources.Resource, ResourceAdapter)):
             obj = o.to_dict(self.include_virtual_fields)
             if self.include_type_field:
                 obj[o._meta.type_field] = o._meta.resource_name

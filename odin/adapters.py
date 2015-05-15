@@ -27,6 +27,13 @@ class ResourceOptionsAdapter(object):
         return '<Options Adapter for %s>' % self.resource_name
 
     @cached_property
+    def all_fields(self):
+        """
+        All fields both standard and virtual.
+        """
+        return self.fields + self.virtual_fields
+
+    @cached_property
     def field_map(self):
         return {f.attname: f for f in self.fields}
 
@@ -84,8 +91,9 @@ class ResourceAdapter(object):
     def __str__(self):
         return '%s resource adapter' % self._meta.resource_name
 
-    def to_dict(self):
+    def to_dict(self, include_virtual=True):
         """
         Convert this resource into a dict
         """
-        return dict((f.name, v) for f, v in field_iter_items(self))
+        fields = self._meta.all_fields if include_virtual else self._meta.fields
+        return dict((f.name, v) for f, v in field_iter_items(self, fields))
