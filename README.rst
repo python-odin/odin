@@ -117,7 +117,7 @@ Example
         )
     >>> b.authors.append(Author(name="Iain M. Banks"))
     >>> from odin.codecs import json_codec
-    >>> json_codec.dumps(b, pretty_print=True)
+    >>> json_codec.dumps(b, indent=4)
     {
         "$": "Book",
         "authors": [
