@@ -109,13 +109,16 @@ def dump(fp, resource, line_ending=''):
     # Write any element fields
     for field, value in element_field_iter_items(resource):
         if isinstance(field, composite.ListOf):
-            fp.write("<%s>%s" % (field.name, line_ending))
+            if field.use_container:
+                fp.write("<%s>%s" % (field.name, line_ending))
             for v in value:
                 dump(fp, v, line_ending)
-            fp.write("</%s>%s" % (field.name, line_ending))
+            if field.use_container:
+                fp.write("</%s>%s" % (field.name, line_ending))
 
         elif isinstance(field, composite.DictAs):
-            dump(fp, value, line_ending)
+            if value is not None:
+                dump(fp, value, line_ending)
 
         elif isinstance(field, fields.ArrayField):
             for v in value:

@@ -12,12 +12,13 @@ class CompositeField(Field):
     """
     The base class for composite (or fields that contain other resources) eg DictAs/ListOf fields.
     """
-    def __init__(self, resource, **options):
+    def __init__(self, resource, use_container=True, **options):
         try:
             resource._meta
         except AttributeError:
             raise TypeError("``%r`` is not a valid type for a related field." % resource)
         self.of = resource
+        self.use_container = use_container
 
         if not options.get('null', False):
             options.setdefault('default', lambda: resource())

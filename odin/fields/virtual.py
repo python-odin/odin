@@ -10,7 +10,8 @@ class VirtualField(object):
     creation_counter = 0
     data_type_name = None
 
-    def __init__(self, verbose_name=None, verbose_name_plural=None, name=None, data_type_name=None, doc_text=''):
+    def __init__(self, verbose_name=None, verbose_name_plural=None, name=None, data_type_name=None, doc_text='',
+                 is_attribute=False):
         """
         Initialisation of virtual field
 
@@ -19,11 +20,13 @@ class VirtualField(object):
         :param name: Name of the serialised field.
         :param data_type_name: A name for the data type this field returns (used for generating documentation)
         :param doc_text: Documentation for the field, replaces help text
+        :param is_attribute: Special flag for codecs that support attributes on nodes (ie XML)
         """
         self.verbose_name, self.verbose_name_plural = verbose_name, verbose_name_plural
         self.name = name
         self.doc_text = doc_text
         self.data_type_name = data_type_name
+        self.is_attribute = is_attribute
 
         self.creation_counter = VirtualField.creation_counter
         VirtualField.creation_counter += 1
