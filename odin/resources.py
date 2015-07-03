@@ -368,13 +368,21 @@ class Resource(object):
             raise ValidationError(errors)
 
 
+def resolve_resource_type(resource):
+    if isinstance(resource, type) and issubclass(resource, Resource):
+        return resource._meta.resource_name, resource._meta.type_field
+    else:
+        return resource, DEFAULT_TYPE_FIELD
+
+
 def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True):
     """
     Create a resource from a dict.
 
     :param d: dictionary of data.
-    :param resource: A resource type of resource name that is expected in the dict; this could also be a parent
-        of any resource defined by the dict.
+    :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
+        resource. If a list is supplied the first item will be used if a resource type is not supplied; this could also
+        be a parent(s) of any resource defined by the dict.
     :param full_clean: Do a full clean as part of the creation.
     :param copy_dict: Use a copy of the input dictionary rather than destructively processing the input dict.
 
@@ -384,30 +392,47 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True)
     if copy_dict:
         d = d.copy()
 
-    # Get the correct resource name
-    if isinstance(resource, type) and issubclass(resource, Resource):
-        resource_name = resource._meta.resource_name
-        type_field = resource._meta.type_field
+    if resource:
+        resource_type = None
+
+        # Convert to single resource then resolve document type
+        if isinstance(resource, (tuple, list)):
+            resources = (resolve_resource_type(r) for r in resource)
+        else:
+            resources = [resolve_resource_type(resource)]
+
+        for resource_name, type_field in resources:
+            # See if the input includes a type field  and check it's registered
+            document_resource_name = d.get(type_field, None)
+            if document_resource_name:
+                resource_type = registration.get_resource(document_resource_name)
+            else:
+                resource_type = registration.get_resource(resource_name)
+
+            if not resource_type:
+                raise exceptions.ResourceException("Resource `%s` is not registered." % document_resource_name)
+
+            if document_resource_name:
+                # Check resource types match or are inherited types
+                if (resource_name == document_resource_name or
+                        resource_name in resource_type._meta.parent_resource_names):
+                    break  # We are done
+            else:
+                break
+
+        if not resource_type:
+            raise exceptions.ResourceException(
+                "Incoming resource does not match [%s]" % ', '.join(r for r, t in resources))
     else:
-        resource_name = resource
-        type_field = DEFAULT_TYPE_FIELD
+        # No resource specified, relay on type field
+        document_resource_name = d.pop(DEFAULT_TYPE_FIELD, None)
+        if not document_resource_name:
+            raise exceptions.ResourceException("Resource not defined.")
 
-    # Get the correct resource name
-    document_resource_name = d.pop(type_field, resource_name)
-    if not (document_resource_name or resource_name):
-        raise exceptions.ValidationError("Resource not defined.")
-
-    # Get an instance of a resource type
-    resource_type = registration.get_resource(document_resource_name)
-    if not resource_type:
-        raise exceptions.ValidationError("Resource `%s` is not registered." % document_resource_name)
-
-    # Check if we have an inherited type.
-    if resource_name and not (resource_name == document_resource_name or
-                              resource_name in resource_type._meta.parent_resource_names):
-        raise exceptions.ValidationError(
-            "Expected resource `%s` does not match resource defined in document `%s`." % (
-                resource_name, document_resource_name))
+        # Get an instance of a resource type
+        resource_type = registration.get_resource(document_resource_name)
+        if not resource_type:
+            raise exceptions.ResourceException("Resource `%s` is not registered." % document_resource_name)
 
     attrs = []
     errors = {}
@@ -437,6 +462,8 @@ def build_object_graph(d, resource=None, full_clean=True, copy_dict=True):
     """
     Generate an object graph from a dict
 
+    :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
+        resource. If a list is supplied the first item will be used if a resource type is not supplied.
     :raises ValidationError: During building of the object graph and issues discovered are raised as a ValidationError.
     """
 

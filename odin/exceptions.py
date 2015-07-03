@@ -64,6 +64,15 @@ def validation_error_handler(exception, field, errors):
 registration.register_validation_error_handler(ValidationError, validation_error_handler)
 
 
+class ResourceException(ValidationError):
+    """
+    Errors raised when generating resource from files.
+
+    Exception inherits from ValidationError for backwards compatibility.
+
+    """
+
+
 class MappingError(Exception):
     """
     Exceptions related to mapping, will typically be a more specific `MappingSetupError` or `MappingExecutionError`.
