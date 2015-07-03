@@ -110,7 +110,7 @@ def _generate_auto_mapping(name, from_fields, to_fields):
     if isinstance(from_field, ListOf) and isinstance(to_field, ListOf):
         try:
             mapping = registration.get_mapping(from_field.of, to_field.of)
-            return define(name, MapListOf(mapping), name, to_list=True, bind=True)
+            return define(name, MapListOf(mapping), name, to_list=False, bind=True)
         except KeyError:
             # If both items are from and to fields refer to the same object automatically use a mapper that just
             # produces a clone.
