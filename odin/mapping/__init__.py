@@ -599,3 +599,18 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=Tru
         return forward_mapping, reverse_mapping
 
     return forward_mapping
+
+
+def forward_mapping_factory(from_obj, to_obj, base_mapping=Mapping, mappings=None, exclude_fields=None):
+    """
+    Factory method for generating simple forward mappings between objects.
+
+    :param from_obj: Object to map from.
+    :param to_obj: Object to map to.
+    :param base_mapping: Base mapping class; default is ``odin.Mapping``.
+    :param mappings: User provided mappings (this is equivalent ot ``odin.Mapping.mappings``)
+    :param exclude_fields: Fields to exclude from auto-generated mappings
+    :return: Forward_mapping object.
+
+    """
+    return mapping_factory(from_obj, to_obj, base_mapping, False, mappings, None, exclude_fields, None)
