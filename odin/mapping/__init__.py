@@ -8,7 +8,7 @@ from odin.exceptions import MappingSetupError, MappingExecutionError
 from odin.mapping.helpers import MapListOf, MapDictAs, NoOpMapper
 from odin.utils import cached_property
 
-__all__ = ('Mapping', 'map_field', 'map_list_field', 'assign_field', 'define')
+__all__ = ('Mapping', 'map_field', 'map_list_field', 'assign_field', 'define', 'assign')
 
 
 force_tuple = lambda x: x if isinstance(x, (list, tuple)) else (x,)
@@ -32,6 +32,24 @@ def define(from_field=None, action=None, to_field=None, to_list=False, bind=Fals
     if from_field is None and to_field is None:
         raise MappingSetupError("Either `from_field` or `to_field` must be defined.")
     return from_field, action, to_field or from_field, to_list, bind, skip_if_none
+
+
+def assign(to_field, action, to_list=False, bind=True, skip_if_none=False):
+    """
+    Helper method for defining an assignment mapping.
+
+    :param to_field: Destination field to map to; if not specified the from_field
+    :param action: Action callable to perform during mapping, accepted fields differ based on options.
+    :param to_list: Assume the result is a list (rather than a multi value tuple).
+    :param bind: During the mapping operation the first parameter should be the mapping instance; defaults to True
+    :param skip_if_none: If the from field is :const:`None` do not include the field (this allows the destination
+        object to define it's own defaults etc)
+    :return: A mapping definition.
+
+    """
+    if to_field is None:
+        raise MappingSetupError("`to_field` must be defined.")
+    return None, action, to_field, to_list, bind, skip_if_none
 
 
 class FieldResolverBase(object):
