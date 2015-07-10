@@ -2,7 +2,7 @@
 import collections
 import six
 from odin import registration
-from odin.resources import Resource
+from odin.resources import Resource, ResourceIterable
 from odin.fields.composite import ListOf, DictAs
 from odin.exceptions import MappingSetupError, MappingExecutionError
 from odin.mapping.helpers import MapListOf, MapDictAs, NoOpMapper
@@ -300,7 +300,7 @@ class MappingMeta(type):
         return mapper
 
 
-class MappingResult(object):
+class MappingResult(ResourceIterable):
     """
     Iterator used to return a sequence from a mapping operation (used by ``Mapping.apply``).
     """

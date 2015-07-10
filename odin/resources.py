@@ -474,3 +474,15 @@ def build_object_graph(d, resource=None, full_clean=True, copy_dict=True):
         return [build_object_graph(o, resource, full_clean, copy_dict) for o in d]
 
     return d
+
+
+class ResourceIterable(object):
+    """
+    Iterable that yields resources.
+    """
+    def __init__(self, sequence):
+        self.sequence = sequence
+
+    def __iter__(self):
+        for item in self.sequence:
+            yield item
