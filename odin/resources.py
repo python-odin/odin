@@ -119,6 +119,10 @@ class ResourceOptions(object):
         """
         return [f for f in self.fields if not f.is_attribute]
 
+    @cached_property
+    def element_field_map(self):
+        return {f.attname: f for f in self.element_fields}
+
     def __repr__(self):
         return '<Options for %s>' % self.resource_name
 
