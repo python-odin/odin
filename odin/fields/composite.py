@@ -12,7 +12,16 @@ class CompositeField(Field):
     """
     The base class for composite (or fields that contain other resources) eg DictAs/ListOf fields.
     """
-    def __init__(self, resource, use_container=True, **options):
+    def __init__(self, resource, use_container=False, **options):
+        """
+        Initialisation of a CompositeField.
+
+        :param resource:
+        :param use_container: Special flag for codecs that support containers or just multiple instances of a
+            sub element (ie XML).
+        :param options: Additional options passed to :py:class:`odin.fields.Field` super class.
+
+        """
         try:
             resource._meta
         except AttributeError:
@@ -49,7 +58,7 @@ class CompositeField(Field):
         :param obj:
         :return:
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def key_to_python(self, key):
         """
@@ -61,6 +70,9 @@ class CompositeField(Field):
 
 
 class DictAs(CompositeField):
+    """
+    Treat a dictionary as a Resource.
+    """
     default_error_messages = {
         'invalid': "Must be a dict of type ``%r``.",
     }
@@ -71,10 +83,16 @@ class DictAs(CompositeField):
         if resource:
             yield (None, resource)
 
+    def key_to_python(self, key):
+        pass  # Not required as keys are not used.
+
 ObjectAs = DictAs
 
 
 class ListOf(CompositeField):
+    """
+    List of resources.
+    """
     default_error_messages = {
         'invalid': "Must be a list of ``%r`` objects.",
         'null': "List cannot contain null entries.",
@@ -146,6 +164,9 @@ ArrayOf = ListOf
 
 
 class DictOf(CompositeField):
+    """
+    Dictionary of resources.
+    """
     default_error_messages = {
         'invalid': "Must be a dict of ``%r`` objects.",
         'null': "Dict cannot contain null entries.",
