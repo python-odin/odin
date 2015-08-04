@@ -95,6 +95,16 @@ class ResourceOptions(object):
         return [f for f in self.fields if (hasattr(f, 'of') and issubclass(f.of, Resource))]
 
     @cached_property
+    def container_fields(self):
+        """
+        All composite fields with the container flag.
+
+        Used by XML like codecs.
+
+        """
+        return [f for f in self.composite_fields if getattr(f, 'use_container', False)]
+
+    @cached_property
     def field_map(self):
         return {f.attname: f for f in self.fields}
 
