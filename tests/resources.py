@@ -36,7 +36,7 @@ class Book(LibraryBook):
         ('others', 'Others'),
     ))
     published = odin.TypedArrayField(odin.DateTimeField())
-    authors = odin.ArrayOf(Author)
+    authors = odin.ArrayOf(Author, use_container=True)
     publisher = odin.DictAs(Publisher, null=True)
 
     def __eq__(self, other):
