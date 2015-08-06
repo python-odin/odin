@@ -128,7 +128,7 @@ to map list of objects.
 assign_field
 ~~~~~~~~~~~~
 
-This is a special field that allows you to generate a value that is assigned to the resulting field.
+This is a special decorator that allows you to generate a value that is assigned to the resulting field.
 
 ``to_field``
     The string name or tuple of names of the field(s) to map to. The function that is being decorated must return a
@@ -157,7 +157,8 @@ A list of mapping rules::
         )
 
 
-.. tip:: Use the :py:meth:`define` method to simplify the definition of mappings. It provides many sensible defaults.
+.. tip:: Use the :py:meth:`define` and :py:meth:`assign` methods to simplify the definition of mappings. They provides
+    many sensible defaults.
 
 While the basic mapping only includes and source, action and destination definitions the mappings structure actually
 supports three additional boolean parameters. These are **to_list**, **bind** and **skip_if_none**.
@@ -223,3 +224,17 @@ A convenience property that provides the nested loop depth of the current mappin
 
 A convenience property that indicates if the current mapping operation is in a loop.
 
+
+Mapping Factories
+=================
+
+.. automodule:: odin.mapping
+
+When mapping between two objects that are similar eg between a Django model and a resource, or between versions of
+resources.
+
+    .. autofunction:: mapping_factory
+
+There is also the simpler method when only a forward mapping is desired.
+
+    .. autofunction:: forward_mapping_factory

@@ -7,37 +7,24 @@ Built in validators
 
 These validators are provided with *odin*.
 
-RegexValidator
---------------
+.. automodule:: odin.validators
 
-``class RegexValidator(regex=None, message=None, code=None)``
+    .. autoclass:: RegexValidator
 
+    .. autoclass:: URLValidator
 
-URLValidator
-------------
+    .. autoclass:: MaxValueValidator
 
-Validator for
+    .. autoclass:: MinValueValidator
 
+    .. autoclass:: LengthValidator
 
-MaxValueValidator
------------------
+    .. autoclass:: MaxLengthValidator
 
-
-MinValueValidator
------------------
+    .. autoclass:: MinLengthValidator
 
 
-LengthValidator
----------------
+    Odin also includes a helper method for generating simple validators.
 
+    .. autofunction:: simple_validator
 
-MaxLengthValidator
-------------------
-
-
-MinLengthValidator
-------------------
-
-
-simple_validator
-----------------

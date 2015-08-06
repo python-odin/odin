@@ -2,7 +2,7 @@
 Traversal
 #########
 
-Traversal package provides tools for iterating over a resource tree and navigating into a tree.
+Traversal package provides tools for iterating and navigating a resource tree.
 
 .. automodule:: odin.traversal
 

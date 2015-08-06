@@ -10,10 +10,6 @@ collections of resources.
 Methods
 =======
 
-    .. autofunction:: load
-
-    .. autofunction:: loads
-
     .. autofunction:: dump
 
     .. autofunction:: dumps
