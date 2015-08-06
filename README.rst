@@ -1,6 +1,6 @@
-#####################################
-Odin - Object Data Mapping for Python
-#####################################
+####
+Odin
+####
 
 Odin provides a declarative framework for defining resources (classes) and their relationships, validation of the fields
 that make up the resources and mapping between objects (either a resource, or other python structures).
