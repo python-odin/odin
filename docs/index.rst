@@ -24,6 +24,8 @@ Resources are the basic building block of Odin.
 * Adapters: :doc:`ref/adapters`
 * Documenting: :doc:`ref/contrib/sphinx/index`
 
+See the :doc:`examples/index` section for examples on how to use features of Odin.
+
 Extras
 ******
 
