@@ -56,6 +56,10 @@ encapsulated::
             ...
 
 
-Each of these adapters can exist in their own file, also as they both include the same *render* interface they can be
-passed to code that understands that adapter and finally because they are both classes they could both inherit off a
-common base class that provides common code that is related to each rendering operation.
+The benefits of this approach:
+
++ All features required for each render adapter are encapsulated
++ Each of these adapters can exist in their own file
++ Both adapters include the same *render* interface they can be passed to code that understands that interface
++ Both classes can both inherit off a common base class that provides common code that is related to each rendering
+    operation.
