@@ -305,7 +305,7 @@ class MappingResult(ResourceIterable):
     Iterator used to return a sequence from a mapping operation (used by ``Mapping.apply``).
     """
     def __init__(self, sequence, mapping, context=None, *mapping_options):
-        super().__init__(sequence)
+        super(MappingResult, self).__init__(sequence)
         self.mapping = mapping
         self.context = context or {}
         self.context.setdefault('_loop_idx', [])
