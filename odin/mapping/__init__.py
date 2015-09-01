@@ -305,7 +305,7 @@ class MappingResult(ResourceIterable):
     Iterator used to return a sequence from a mapping operation (used by ``Mapping.apply``).
     """
     def __init__(self, sequence, mapping, context=None, *mapping_options):
-        self.sequence = sequence
+        super().__init__(sequence)
         self.mapping = mapping
         self.context = context or {}
         self.context.setdefault('_loop_idx', [])
@@ -315,7 +315,7 @@ class MappingResult(ResourceIterable):
         self.context['_loop_idx'].append(0)
         for item in self.sequence:
             yield self.mapping.apply(item, self.context, *self.mapping_options)
-            self.context['_loop_idx'][0] += 1
+            self.context['_loop_idx'][-1] += 1
         self.context['_loop_idx'].pop()
 
 
@@ -381,7 +381,7 @@ class MappingBase(object):
         :returns: Index within the loop; or `None` if we are not currently in a loop.
         """
         loops = self.context.setdefault('_loop_idx', [])
-        return loops[0] if loops else None
+        return loops[-1] if loops else None
 
     @property
     def loop_level(self):
