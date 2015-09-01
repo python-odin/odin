@@ -7,22 +7,22 @@ that make up the resources and mapping between objects (either a resource, or ot
 
 Odin also comes with built in serialisation tools for importing and exporting data from resources.
 
-.. image:: https://pypip.in/license/odin/badge.png
+.. image:: https://img.shields.io/pypi/l/odin.svg?style=flat
     :target: https://pypi.python.org/pypi/odin/
     :alt: License
 
-.. image:: https://pypip.in/v/odin/badge.png
+.. image:: https://img.shields.io/pypi/v/odin.svg?style=flat
     :target: https://pypi.python.org/pypi/odin/
 
-.. image:: https://travis-ci.org/timsavage/odin.png?branch=master
+.. image:: https://img.shields.io/travis/timsavage/odin.svg?style=flat
     :target: https://travis-ci.org/timsavage/odin
     :alt: Travis CI Status
 
-.. image:: https://coveralls.io/repos/timsavage/odin/badge.png?branch=master
+.. image:: https://img.shields.io/coveralls/timsavage/odin.svg?style=flat
     :target: https://coveralls.io/r/timsavage/odin?branch=master
     :alt: Coveralls
 
-.. image:: https://requires.io/github/timsavage/odin/requirements.png?branch=master
+.. image:: https://img.shields.io/requires/github/timsavage/odin.svg?style=flat
     :target: https://requires.io/github/timsavage/odin/requirements/?branch=master
     :alt: Requirements Status
 
