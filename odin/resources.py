@@ -284,9 +284,14 @@ class Resource(object):
 
     def to_dict(self, include_virtual=True):
         """
-        Convert this resource into a dict.
+        Convert this resource into a `dict` of field_name/value pairs.
 
-        :param include_virtual: Include virtual fields when generating dict.
+        .. note::
+            This method is not recursive, it only operates on this single resource, any sub resources are returned as
+            is. The use case that prompted the creation of this method is within codecs when a resource must be
+            converted into a type that can be serialised, these codecs then operate recursively on the returned `dict`.
+
+        :param include_virtual: Include virtual fields when generating `dict`.
 
         """
         fields = self._meta.all_fields if include_virtual else self._meta.fields
