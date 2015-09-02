@@ -12,7 +12,7 @@ setup(
     license='LICENSE',
     author='Tim Savage',
     author_email='tim@savage.company',
-    description='Object Data Mapping for Python',
+    description='Data-structure definition/validation/traversal, mapping and serialisation toolkit for Python',
     long_description=long_description,
     packages=find_packages(),
     install_requires=['six'],
