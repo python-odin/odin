@@ -4,7 +4,6 @@ import datetime
 import six
 from io import StringIO
 from xml.sax import saxutils
-from xml import sax
 from odin import serializers
 from odin import fields
 from odin.fields import composite
