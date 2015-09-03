@@ -19,6 +19,7 @@ class CompositeField(Field):
         :param resource:
         :param use_container: Special flag for codecs that support containers or just multiple instances of a
             sub element (ie XML).
+        :param empty: This collection can be empty
         :param options: Additional options passed to :py:class:`odin.fields.Field` super class.
 
         """
@@ -96,12 +97,14 @@ class ListOf(CompositeField):
     default_error_messages = {
         'invalid': "Must be a list of ``%r`` objects.",
         'null': "List cannot contain null entries.",
+        'empty': "List cannot be empty",
     }
     data_type_name = "List of"
 
-    def __init__(self, resource, **options):
+    def __init__(self, resource, empty=True, **options):
         options.setdefault('default', list)
         super(ListOf, self).__init__(resource, **options)
+        self.empty = empty
 
     @staticmethod
     def _process_list(value_list, method):
@@ -138,9 +141,12 @@ class ListOf(CompositeField):
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
         super(CompositeField, self).validate(value)
-        if value not in EMPTY_VALUES:
+        if value is not None:
             super_validate = super(ListOf, self).validate
             self._process_list(value, super_validate)
+
+        if (value is not None) and (not value) and (not self.empty):
+            raise exceptions.ValidationError(self.error_messages['empty'])
 
     def __iter__(self):
         # This does nothing but it does prevent inspections from complaining.
@@ -170,12 +176,14 @@ class DictOf(CompositeField):
     default_error_messages = {
         'invalid': "Must be a dict of ``%r`` objects.",
         'null': "Dict cannot contain null entries.",
+        'empty': "List cannot be empty",
     }
     data_type_name = "Dict of"
 
-    def __init__(self, resource, **options):
+    def __init__(self, resource, empty=True, **options):
         options.setdefault('default', dict)
         super(DictOf, self).__init__(resource, **options)
+        self.empty = empty
 
     @staticmethod
     def _process_dict(value_dict, method):
@@ -210,9 +218,12 @@ class DictOf(CompositeField):
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
         super(CompositeField, self).validate(value)
-        if value not in EMPTY_VALUES:
+        if value is not None:
             super_validate = super(DictOf, self).validate
             self._process_dict(value, super_validate)
+
+        if (value is not None) and (not value) and (not self.empty):
+            raise exceptions.ValidationError(self.error_messages['empty'])
 
     def __iter__(self):
         # This does nothing but it does prevent inspections from complaining.
