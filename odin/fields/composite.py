@@ -3,6 +3,7 @@ import six
 from odin import exceptions
 from odin.resources import create_resource_from_dict, ResourceIterable
 from odin.fields import Field
+from odin.utils import value_in_choices
 from odin.validators import EMPTY_VALUES
 
 __all__ = ('CompositeField', 'DictAs', 'ObjectAs', 'ListOf', 'ArrayOf', 'DictOf')
@@ -177,19 +178,25 @@ class DictOf(CompositeField):
         'invalid': "Must be a dict of ``%r`` objects.",
         'null': "Dict cannot contain null entries.",
         'empty': "List cannot be empty",
+        'invalid_choice': 'Key %r is not a valid choice.',
     }
     data_type_name = "Dict of"
 
-    def __init__(self, resource, empty=True, **options):
+    def __init__(self, resource, empty=True, key_choices=None, **options):
         options.setdefault('default', dict)
         super(DictOf, self).__init__(resource, **options)
         self.empty = empty
+        self.key_choices = key_choices
 
-    @staticmethod
-    def _process_dict(value_dict, method):
+    def _process_dict(self, value_dict, method):
         values = {}
         errors = {}
+        key_choices = self.key_choices
         for key, value in six.iteritems(value_dict):
+            if key_choices and not value_in_choices(key, key_choices):
+                msg = self.error_messages['invalid_key'] % value
+                raise exceptions.ValidationError(msg)
+
             try:
                 values[key] = method(value)
             except exceptions.ValidationError as ve:

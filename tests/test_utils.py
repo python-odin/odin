@@ -39,3 +39,24 @@ class IteratorTestCases(unittest.TestCase):
             'fiction': True,
             'published': ['no_validation_for_type'],
         }, utils.extract_fields_from_dict(source_dict, Book))
+
+
+class ValueInChoiceTestCase(unittest.TestCase):
+    CHOICES = (
+        ('foo', 'Foo'),
+        ('bar', 'Foo'),
+        (123, 'Number'),
+        (True, 'Boolean'),
+        (None, 'None'),
+        ('eek', 'With Help', 'Help string'),
+    )
+
+    def test_value_in_choices(self):
+        self.assertTrue(utils.value_in_choices('foo', self.CHOICES))
+        self.assertTrue(utils.value_in_choices(123, self.CHOICES))
+        self.assertTrue(utils.value_in_choices(True, self.CHOICES))
+        self.assertTrue(utils.value_in_choices(None, self.CHOICES))
+        self.assertTrue(utils.value_in_choices('eek', self.CHOICES))
+        self.assertFalse(utils.value_in_choices('xyz', self.CHOICES))
+        self.assertFalse(utils.value_in_choices(False, self.CHOICES))
+        self.assertFalse(utils.value_in_choices(321, self.CHOICES))

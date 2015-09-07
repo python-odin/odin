@@ -3,6 +3,7 @@ import copy
 import datetime
 import six
 from odin import exceptions, datetimeutil, registration
+from odin.utils import value_in_choices
 from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url
 
 __all__ = (
@@ -128,10 +129,7 @@ class Field(object):
             raise exceptions.ValidationError(errors)
 
     def validate(self, value):
-        if self.choices and value not in EMPTY_VALUES:
-            for choice in self.choices:
-                if value == choice[0]:
-                    return
+        if self.choices and value not in EMPTY_VALUES and not value_in_choices(value, self.choices):
             msg = self.error_messages['invalid_choice'] % value
             raise exceptions.ValidationError(msg)
 

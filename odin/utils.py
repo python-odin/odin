@@ -168,3 +168,18 @@ def extract_fields_from_dict(d, resource):
 
     """
     return {f.name: d[f.name] for f in field_iter(resource) if f.name in d}
+
+
+def value_in_choices(value, choices):
+    """
+    Check if the value appears in the choices list (a iterable of tuples, the first value of which is the choice value)
+
+    :param value:
+    :param choices:
+    :return: True if value is in the choices iterable.
+
+    """
+    for choice in choices:
+        if value == choice[0]:
+            return True
+    return False

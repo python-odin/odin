@@ -125,3 +125,11 @@ class FieldsTests(unittest.TestCase):
         self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {'name': 'foo'}}))
         self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {
             '$': 'tests.test_composite_fields.ExampleResource', 'name': 'foo'}}))
+
+    def test_dictof_key_choices(self):
+        f = DictOf(ExampleResource, null=True, key_choices=(
+            ('foo', 'Foo'),
+            (None, 'None'),
+        ))
+        self.assertRaises(ValidationError, f.clean, {'eek', ExampleResource(name='foo')})
+        self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {'name': 'foo'}}))
