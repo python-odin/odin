@@ -131,5 +131,5 @@ class FieldsTests(unittest.TestCase):
             ('foo', 'Foo'),
             (None, 'None'),
         ))
-        self.assertRaises(ValidationError, f.clean, {'eek', ExampleResource(name='foo')})
+        self.assertRaises(ValidationError, f.clean, {'eek': ExampleResource(name='foo')})
         self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {'name': 'foo'}}))
