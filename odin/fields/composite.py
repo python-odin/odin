@@ -178,7 +178,7 @@ class DictOf(CompositeField):
         'invalid': "Must be a dict of ``%r`` objects.",
         'null': "Dict cannot contain null entries.",
         'empty': "List cannot be empty",
-        'invalid_choice': 'Key %r is not a valid choice.',
+        'invalid_key': 'Key %r is not a valid choice.',
     }
     data_type_name = "Dict of"
 
