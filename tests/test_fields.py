@@ -559,6 +559,16 @@ class FieldsTests(unittest.TestCase):
         self.assertEqual({'foo': ['bar', 'eek']}, f.clean({'foo': ['bar', 'eek']}))
 
     def test_typeddictfield_validate(self):
-        f = TypedDictField(StringField(), StringField(choices=['foo']))
-        self.assertEqual("Dict<String, String>", f.data_type_name(f))
-        self.assertRaises(ValidationError, f.clean, {'bar': 'bar'})
+        f = TypedDictField(
+            IntegerField(min_value=5),
+            StringField(max_length=5, choices=[
+                ('foo', 'Foo'),
+                ('bad_value', 'Bad Value'),
+            ])
+        )
+        self.assertEqual("Dict<String, Integer>", f.data_type_name(f))
+        self.assertRaises(ValidationError, f.clean, {None: 6})
+        self.assertRaises(ValidationError, f.clean, {'bad_value': 6})
+        self.assertRaises(ValidationError, f.clean, {'bar': 6})
+        self.assertRaises(ValidationError, f.clean, {'foo': None})
+        self.assertRaises(ValidationError, f.clean, {'foo': 2})
