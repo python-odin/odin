@@ -504,6 +504,7 @@ class FieldsTests(unittest.TestCase):
 
     def test_typedarrayfield_1(self):
         f = TypedArrayField(IntegerField())
+        self.assertEqual("List<Integer>", f.data_type_name(f))
         self.assertRaises(ValidationError, f.clean, None)
         self.assertRaises(ValidationError, f.clean, 'abc')
         self.assertRaises(ValidationError, f.clean, 123)
@@ -514,6 +515,7 @@ class FieldsTests(unittest.TestCase):
 
     def test_typedarrayfield_2(self):
         f = TypedArrayField(IntegerField(), null=True)
+        self.assertEqual("List<Integer>", f.data_type_name(f))
         self.assertEqual(None, f.clean(None))
         self.assertRaises(ValidationError, f.clean, 'abc')
         self.assertRaises(ValidationError, f.clean, 123)
@@ -525,6 +527,7 @@ class FieldsTests(unittest.TestCase):
 
     def test_typeddictfield_1(self):
         f = TypedDictField(IntegerField())
+        self.assertEqual("Dict<String, Integer>", f.data_type_name(f))
         self.assertRaises(ValidationError, f.clean, None)
         self.assertRaises(ValidationError, f.clean, 'abc')
         self.assertRaises(ValidationError, f.clean, 123)
@@ -534,6 +537,7 @@ class FieldsTests(unittest.TestCase):
 
     def test_typeddictfield_2(self):
         f = TypedDictField(IntegerField(), null=True)
+        self.assertEqual("Dict<String, Integer>", f.data_type_name(f))
         self.assertEqual(None, f.clean(None))
         self.assertRaises(ValidationError, f.clean, 'abc')
         self.assertRaises(ValidationError, f.clean, 123)
@@ -543,15 +547,18 @@ class FieldsTests(unittest.TestCase):
 
     def test_typeddictfield_3(self):
         f = TypedDictField(StringField(), IntegerField(), null=True)
+        self.assertEqual("Dict<Integer, String>", f.data_type_name(f))
         self.assertRaises(ValidationError, f.clean, {'foo': 'bar'})
         self.assertEqual({1: 'foo'}, f.clean({1: 'foo'}))
 
     def test_typeddictfield_nested_typed_array(self):
         f = TypedDictField(TypedArrayField(StringField()))
+        self.assertEqual("Dict<String, List<String>>", f.data_type_name(f))
         self.assertEqual({}, f.clean({}))
         self.assertRaises(ValidationError, f.clean, {'foo': 'bar'})
         self.assertEqual({'foo': ['bar', 'eek']}, f.clean({'foo': ['bar', 'eek']}))
 
     def test_typeddictfield_validate(self):
         f = TypedDictField(StringField(), StringField(choices=['foo']))
+        self.assertEqual("Dict<String, String>", f.data_type_name(f))
         self.assertRaises(ValidationError, f.clean, {'bar': 'bar'})
