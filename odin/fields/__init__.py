@@ -36,7 +36,7 @@ class Field(object):
     data_type_name = None
 
     def __init__(self, verbose_name=None, verbose_name_plural=None, name=None, null=False, choices=None,
-                 use_default_if_not_provided=False, default=NOT_PROVIDED, help_text='', validators=[],
+                 use_default_if_not_provided=False, default=NOT_PROVIDED, help_text='', validators=None,
                  error_messages=None, is_attribute=False, doc_text=''):
         """
         Initialisation of a Field.
@@ -60,7 +60,7 @@ class Field(object):
         self.null, self.choices = null, choices
         self.default, self.use_default_if_not_provided = default, use_default_if_not_provided
         self.doc_text = doc_text or help_text
-        self.validators = self.default_validators + validators
+        self.validators = self.default_validators + (validators or [])
         self.is_attribute = is_attribute
 
         self.creation_counter = Field.creation_counter
@@ -71,6 +71,9 @@ class Field(object):
             messages.update(getattr(c, 'default_error_messages', {}))
         messages.update(error_messages or {})
         self.error_messages = messages
+
+        self.resource = None
+        self.attname = None
 
     def __deepcopy__(self, memodict):
         # We don't have to deepcopy very much here, since most things are not
@@ -232,6 +235,8 @@ class UrlField(StringField):
 
 
 class ScalarField(Field):
+    scalar_type = int
+
     def __init__(self, min_value=None, max_value=None, **options):
         super(ScalarField, self).__init__(**options)
         self.min_value = min_value
@@ -241,6 +246,15 @@ class ScalarField(Field):
         if max_value is not None:
             self.validators.append(MaxValueValidator(max_value))
 
+    def to_python(self, value):
+        if value in EMPTY_VALUES:
+            return
+        try:
+            return self.scalar_type(value)
+        except (TypeError, ValueError):
+            msg = self.error_messages['invalid'] % value
+            raise exceptions.ValidationError(msg)
+
 
 class IntegerField(ScalarField):
     default_error_messages = {
@@ -248,30 +262,13 @@ class IntegerField(ScalarField):
     }
     data_type_name = "Integer"
 
-    def to_python(self, value):
-        if value in EMPTY_VALUES:
-            return
-        try:
-            return int(value)
-        except (TypeError, ValueError):
-            msg = self.error_messages['invalid'] % value
-            raise exceptions.ValidationError(msg)
-
 
 class FloatField(ScalarField):
     default_error_messages = {
         'invalid': "'%s' value must be a float.",
     }
     data_type_name = "Float"
-
-    def to_python(self, value):
-        if value in EMPTY_VALUES:
-            return
-        try:
-            return float(value)
-        except ValueError:
-            msg = self.error_messages['invalid'] % value
-            raise exceptions.ValidationError(msg)
+    scalar_type = float
 
 
 class DateField(Field):
