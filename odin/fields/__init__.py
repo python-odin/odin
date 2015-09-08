@@ -537,7 +537,7 @@ class TypedDictField(DictField):
             try:
                 key = self.key_field.to_python(key)
             except exceptions.ValidationError as ve:
-                key_errors.append(ve.error_messages)
+                key_errors += ve.error_messages
 
             # If we have key errors no point checking values any more.
             if key_errors:
@@ -554,5 +554,33 @@ class TypedDictField(DictField):
             raise exceptions.ValidationError(value_errors)
 
         return value_dict
+
+    def validate(self, value):
+        super(TypedDictField, self).validate(value)
+
+        if value in EMPTY_VALUES:
+            return
+
+        key_errors = []
+        value_errors = {}
+        for key, value in value.items():
+            try:
+                key = self.key_field.validate(key)
+            except exceptions.ValidationError as ve:
+                key_errors += ve.error_messages
+
+            # If we have key errors no point checking values any more.
+            if key_errors:
+                continue
+
+            try:
+                self.value_field.validate(value)
+            except exceptions.ValidationError as ve:
+                value_errors[key] = ve.error_messages
+
+        if key_errors:
+            raise exceptions.ValidationError(key_errors)
+        if value_errors:
+            raise exceptions.ValidationError(value_errors)
 
 TypedObjectField = TypedDictField
