@@ -8,7 +8,8 @@ from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator,
 
 __all__ = (
     'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField', 'TimeField', 'DateTimeField',
-    'HttpDateTimeField', 'TimeStampField', 'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField', 'TypedListField'
+    'HttpDateTimeField', 'TimeStampField', 'DictField', 'ObjectField', 'ArrayField',
+    'TypedArrayField', 'TypedListField', 'TypedDictField', 'TypedObjectField'
 )
 
 
@@ -497,3 +498,61 @@ class TypedListField(ListField):
         return value_list
 
 TypedArrayField = TypedListField
+
+
+class TypedDictField(DictField):
+    """
+    Dict field with both key and value fixed to a specific types. By default the key field is assumed to be a string.
+
+    Usage::
+
+        # Dict with key and value fields as string.
+        TypedDictField(key_field=StringField(), value_field=StringField())
+
+    """
+    @staticmethod
+    def data_type_name(instance):
+        key_type_name = instance.key_field.data_type_name
+        if callable(key_type_name):
+            key_type_name = key_type_name(instance.field)
+        value_type_name = instance.value_field.data_type_name
+        if callable(value_type_name):
+            value_type_name = value_type_name(instance.field)
+        return "Dict <{}, {}> pairs".format(key_type_name, value_type_name)
+
+    def __init__(self, value_field, key_field=StringField(), **options):
+        self.key_field = key_field
+        self.value_field = value_field
+        super(TypedDictField, self).__init__(**options)
+
+    def to_python(self, value):
+        value = super(TypedDictField, self).to_python(value)
+        if not value:
+            return value
+
+        value_dict = {}
+        key_errors = []
+        value_errors = {}
+        for key, value in value.items():
+            try:
+                key = self.key_field.to_python(key)
+            except exceptions.ValidationError as ve:
+                key_errors.append(ve.error_messages)
+
+            # If we have key errors no point checking values any more.
+            if key_errors:
+                continue
+
+            try:
+                value_dict[key] = self.value_field.to_python(value)
+            except exceptions.ValidationError as ve:
+                value_errors[key] = ve.error_messages
+
+        if key_errors:
+            raise exceptions.ValidationError(key_errors)
+        if value_errors:
+            raise exceptions.ValidationError(value_errors)
+
+        return value_dict
+
+TypedObjectField = TypedDictField

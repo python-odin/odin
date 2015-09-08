@@ -520,3 +520,34 @@ class FieldsTests(unittest.TestCase):
         self.assertEqual([], f.clean([]))
         self.assertRaises(ValidationError, f.clean, ['foo', 'bar'])
         self.assertEqual([1, 2, 3], f.clean([1, 2, 3]))
+
+    # TypedDictField ##########################################################
+
+    def test_typeddictfield_1(self):
+        f = TypedDictField(IntegerField())
+        self.assertRaises(ValidationError, f.clean, None)
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertEqual({}, f.clean({}))
+        self.assertRaises(ValidationError, f.clean, {'foo': 'bar'})
+        self.assertEqual({'foo': 1}, f.clean({'foo': 1}))
+
+    def test_typeddictfield_2(self):
+        f = TypedDictField(IntegerField(), null=True)
+        self.assertEqual(None, f.clean(None))
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertEqual({}, f.clean({}))
+        self.assertRaises(ValidationError, f.clean, {'foo': 'bar'})
+        self.assertEqual({'foo': 1}, f.clean({'foo': 1}))
+
+    def test_typeddictfield_3(self):
+        f = TypedDictField(StringField(), IntegerField(), null=True)
+        self.assertRaises(ValidationError, f.clean, {'foo': 'bar'})
+        self.assertEqual({1: 'foo'}, f.clean({1: 'foo'}))
+
+    def test_typeddictfield_nested_typed_array(self):
+        f = TypedDictField(TypedArrayField(StringField()))
+        self.assertEqual({}, f.clean({}))
+        self.assertRaises(ValidationError, f.clean, {'foo': 'bar'})
+        self.assertEqual({'foo': ['bar', 'eek']}, f.clean({'foo': ['bar', 'eek']}))
