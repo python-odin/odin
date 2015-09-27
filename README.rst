@@ -18,8 +18,8 @@ Odin also comes with built in serialisation tools for importing and exporting da
     :target: https://travis-ci.org/python-odin/odin
     :alt: Travis CI Status
 
-.. image:: https://img.shields.io/coveralls/timsavage/odin.svg?style=flat
-    :target: https://coveralls.io/r/timsavage/odin?branch=master
+.. image:: https://img.shields.io/coveralls/python-odin/odin.svg?style=flat
+    :target: https://coveralls.io/github/python-odin/odin
     :alt: Coveralls
 
 .. image:: https://img.shields.io/requires/github/timsavage/odin.svg?style=flat
