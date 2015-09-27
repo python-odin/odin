@@ -1,3 +1,4 @@
+import six
 from odin import resources, mapping, ResourceAdapter
 
 
@@ -19,7 +20,11 @@ class OdinEncoder(object):
             return list(o)
         elif o.__class__ in TYPE_SERIALIZERS:
             return TYPE_SERIALIZERS[o.__class__](o)
-        return super(OdinEncoder, self)
+        return o
+
+    def encode(self, o):
+        _encoder = _make_encoder(self.default)
+        return _encoder(o)
 
 
 load = resources.build_object_graph
@@ -48,4 +53,29 @@ def dump(resource, cls=OdinEncoder, **kwargs):
     :return:
 
     """
-    pass
+    encoder = cls(**kwargs)
+    return encoder.encode(resource)
+
+
+def _make_encoder(_default):
+    def _encode_list(lst):
+        if not lst:
+            return []
+        return [_encode(o) for o in lst]
+
+    def _encode_dict(dct):
+        if not dct:
+            return {}
+        return {k: _encode(o) for k, o in six.iteritems(dct)}
+
+    def _encode(o):
+        if isinstance(o, (list, tuple)):
+            return _encode_list(o)
+        elif isinstance(o, dict):
+            return _encode_dict(o)
+        else:
+            o = _default(o)
+            if isinstance(o, (list, tuple, dict)):
+                return _encode(o)
+            return o
+    return _encode
