@@ -14,12 +14,12 @@ Odin also comes with built in serialisation tools for importing and exporting da
 .. image:: https://img.shields.io/pypi/v/odin.svg?style=flat
     :target: https://pypi.python.org/pypi/odin/
 
-.. image:: https://img.shields.io/travis/timsavage/odin.svg?style=flat
-    :target: https://travis-ci.org/timsavage/odin
+.. image:: https://img.shields.io/travis/python-odin/odin.svg?style=flat
+    :target: https://travis-ci.org/python-odin/odin
     :alt: Travis CI Status
 
-.. image:: https://img.shields.io/coveralls/timsavage/odin.svg?style=flat
-    :target: https://coveralls.io/r/timsavage/odin?branch=master
+.. image:: https://img.shields.io/coveralls/python-odin/odin.svg?style=flat
+    :target: https://coveralls.io/github/python-odin/odin
     :alt: Coveralls
 
 .. image:: https://img.shields.io/requires/github/timsavage/odin.svg?style=flat
@@ -49,8 +49,8 @@ Quick links
 ***********
 
 * `Documentation <https://odin.readthedocs.org/en/latest/>`_
-* `Project home <https://github.com/timsavage/odin>`_
-* `Issue tracker <https://github.com/timsavage/odin/issues>`_
+* `Project home <https://github.com/python-odin/odin>`_
+* `Issue tracker <https://github.com/python-odin/odin/issues>`_
 
 
 Upcoming features
@@ -62,8 +62,8 @@ Upcoming features
 * XML Codec (export completed)
 * Complete documentation, this will pretty much always be here.
 * Improvements for CSV Codec (writing, reading multi resource CSV's)
-* RESTful interface with support for Flask and Django see (see `baldr <https://github.com/timsavage/baldr>`_)
-* Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms) (see `baldr <https://github.com/timsavage/baldr>`_)
+* RESTful interface with support for Flask and Django see (see `baldr <https://github.com/python-odin/baldr>`_)
+* Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms) (see `baldr <https://github.com/python-odin/baldr>`_)
 
 **Planning**
 

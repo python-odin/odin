@@ -1,0 +1,51 @@
+from odin import resources, mapping, ResourceAdapter
+
+
+TYPE_SERIALIZERS = {}
+
+
+class OdinEncoder(object):
+    def __init__(self, include_virtual_fields=True, include_type_field=True):
+        self.include_virtual_fields = include_virtual_fields
+        self.include_type_field = include_type_field
+
+    def default(self, o):
+        if isinstance(o, (resources.Resource, ResourceAdapter)):
+            obj = o.to_dict(self.include_virtual_fields)
+            if self.include_type_field:
+                obj[o._meta.type_field] = o._meta.resource_name
+            return obj
+        elif isinstance(o, mapping.MappingResult):
+            return list(o)
+        elif o.__class__ in TYPE_SERIALIZERS:
+            return TYPE_SERIALIZERS[o.__class__](o)
+        return super(OdinEncoder, self)
+
+
+load = resources.build_object_graph
+load.__doc__ = """
+    Load a :py:class:`dict` into a Resource structure.
+
+    This method is an alias of :py:func:`odin.
+
+    :param d: Dict to load
+
+    :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
+        resource. If a list is supplied the first item will be used if a resource type is not supplied.
+    :raises ValidationError: During building of the object graph and issues discovered are raised as a ValidationError.
+
+    """
+
+
+def dump(resource, cls=OdinEncoder, **kwargs):
+    """
+    Dump a resource structure into a nested :py:class:`dict`.
+
+    While a resource includes a *to_dict* method this method is not recursive. The dict codec recursively iterates
+    through the resource structure to produce a full dict. This is useful for testing for example.
+
+    :param resource: The root resource to dump
+    :return:
+
+    """
+    pass
