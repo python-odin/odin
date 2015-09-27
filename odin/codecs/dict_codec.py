@@ -59,13 +59,9 @@ def dump(resource, cls=OdinEncoder, **kwargs):
 
 def _make_encoder(_default):
     def _encode_list(lst):
-        if not lst:
-            return []
         return [_encode(o) for o in lst]
 
     def _encode_dict(dct):
-        if not dct:
-            return {}
         return {k: _encode(o) for k, o in six.iteritems(dct)}
 
     def _encode(o):
