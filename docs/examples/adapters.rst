@@ -26,25 +26,23 @@ Which fields should be filtered can be defined in one of two ways::
     simply be appended to the predefined exclude list.
 
 
-Adding functions to a resource
-==============================
+Added additional functionality to a resource
+============================================
 
-I have a resource that defines a set of results from a simulation. I want to be able to render the results of this
-simulation into several different formats (eg an HTML table, a text file, a chart).
+I have a resource that define a set of simulation results. I want to be able to render the results of this
+simulation into several different formats eg an HTML table, a text file, a chart.
 
-One approach would be to decorate the resource with different methods for each type of output eg *to_html*, *to_text*
-etc but this has a number of drawbacks:
+One approach would be to add to a method to the resource for each of the formats I wich to render like *to_html* or *to_text*, however this has a number of drawbacks:
 
-+ The resource has a lot of extra methods any new formats will require even of these methods
-+ The size of the code is greatly increased
++ The resource is not more complex with an additional method for each of the target formats
 + Rendering code is now mixed in with your data structure definition
 + In a larger team there is more chances of multiple people working on the same file making merges more complex
-+ If I define another resource for a different set of results, sharing common code is more complex.
++ If I define another resource for a different set of results, sharing common code is harder
++ The resource has a different interface for each method
 
-Again the :py:class:`odin.adapters.ResourceAdapter` class simplifies this.
+The :py:class:`odin.adapters.ResourceAdapter` class simplifies this.
 
-By defining a rendering adapter for each of your different targets, the rendering code for each of these targets is now
-encapsulated::
+By defining a rendering adapter for each of the different targets, the rendering code for each of these targets is encapsulated in a single class::
 
     class HtmlRenderingAdapter(odin.ResourceAdapter):
         def render(self):
