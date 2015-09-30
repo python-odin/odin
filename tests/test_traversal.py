@@ -171,6 +171,7 @@ class TraversalTestCase(unittest.TestCase):
             'odin.traversal.Level3 resource p 2',
         ], resources)
 
+
 class TraversalPathTestCase(unittest.TestCase):
     def test_parse(self):
         actual = traversal.TraversalPath.parse('level2')
