@@ -24,6 +24,9 @@ class And(FilterAtom):
     def __add__(self, other):
         if isinstance(other, self.__class__):
             return And(self._atoms + other._atoms)
+        elif isinstance(other, FilterComparison):
+            self._atoms += other
+            return self
         raise TypeError("{} not supported for this operation".format(other))
 
     def __call__(self, resource):
@@ -36,7 +39,10 @@ class Or(FilterAtom):
 
     def __add__(self, other):
         if isinstance(other, self.__class__):
-            return And(self._atoms + other._atoms)
+            return Or(self._atoms + other._atoms)
+        elif isinstance(other, FilterComparison):
+            self._atoms += other
+            return self
         raise TypeError("{} not supported for this operation".format(other))
 
     def __call__(self, resource):
