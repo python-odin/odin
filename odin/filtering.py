@@ -82,11 +82,15 @@ class Filter(object):
     Filtering util.
     """
     def __init__(self, *filters):
-        self._filters = filters
+        self._filters = [(TraversalPath.parse(f), t, c) for f, t, c in filters]
+
+    def __and__(self, other):
+        if isinstance(other, Filter):
+            self._filters += other._filters
+        raise ValueError('Other is not a Filter')
 
     def matches(self, resource):
         for field, transform, check in self._filters:
-            assert isinstance(field, TraversalPath)
             try:
                 value = field.get_value(resource)
             except (KeyError, IndexError):
