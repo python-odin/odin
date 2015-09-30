@@ -48,7 +48,7 @@ Highlights
 Quick links
 ***********
 
-* `Documentation <https://odin.readthedocs.org/en/latest/>`_
+* `Documentation <https://odin.readthedocs.org/>`_
 * `Project home <https://github.com/python-odin/odin>`_
 * `Issue tracker <https://github.com/python-odin/odin/issues>`_
 
