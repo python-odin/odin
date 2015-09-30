@@ -19,40 +19,48 @@ class FilterAtom(object):
 
 class And(FilterAtom):
     def __init__(self, *atoms):
-        self._atoms = atoms
+        self._atoms = list(atoms)
 
     def __add__(self, other):
         if isinstance(other, self.__class__):
-            return And(self._atoms + other._atoms)
+            return And(*self._atoms + other._atoms)
         elif isinstance(other, FilterComparison):
-            self._atoms += other
+            self._atoms.append(other)
             return self
         raise TypeError("{} not supported for this operation".format(other))
 
     def __call__(self, resource):
         return all(a(resource) for a in self._atoms)
 
+    def __str__(self):
+        return "({})".format(' AND '.join(str(a) for a in self._atoms))
+
 
 class Or(FilterAtom):
     def __init__(self, *atoms):
-        self._atoms = atoms
+        self._atoms = list(atoms)
 
     def __add__(self, other):
         if isinstance(other, self.__class__):
-            return Or(self._atoms + other._atoms)
+            return Or(*self._atoms + other._atoms)
         elif isinstance(other, FilterComparison):
-            self._atoms += other
+            self._atoms.append(other)
             return self
         raise TypeError("{} not supported for this operation".format(other))
 
     def __call__(self, resource):
         return any(a(resource) for a in self._atoms)
 
+    def __str__(self):
+        return "({})".format(' OR '.join(str(a) for a in self._atoms))
+
 
 class FilterComparison(FilterAtom):
     """
     Base class for filter operator atoms
     """
+    operator_symbol = ''
+
     def __init__(self, field, value, operation=None):
         self.field = TraversalPath.parse(field)
         self.value = value
@@ -68,36 +76,55 @@ class FilterComparison(FilterAtom):
                 value = self.operation(value)
             return self.compare(value)
 
+    def __str__(self):
+        if self.operation:
+            op_name = getattr(self.operation, 'name', self.operation.__name__)
+            return "{}({}) {} {}".format(op_name, self.field, self.operator_symbol, self.value)
+        else:
+            return "{} {} {}".format(self.field, self.operator_symbol, self.value)
+
     def compare(self, value):
         raise NotImplementedError()
 
 
 class Equal(FilterComparison):
+    operator_symbol = '=='
+
     def compare(self, value):
         return value == self.value
 
 
 class NotEqual(FilterComparison):
+    operator_symbol = '!='
+
     def compare(self, value):
         return value != self.value
 
 
 class LessThan(FilterComparison):
+    operator_symbol = '<'
+
     def compare(self, value):
         return value < self.value
 
 
 class LessThanOrEqual(FilterComparison):
+    operator_symbol = '<='
+
     def compare(self, value):
         return value <= self.value
 
 
 class GreaterThan(FilterComparison):
+    operator_symbol = '>'
+
     def compare(self, value):
         return value > self.value
 
 
 class GreaterThanOrEqual(FilterComparison):
+    operator_symbol = '>='
+
     def compare(self, value):
         return value >= self.value
 
