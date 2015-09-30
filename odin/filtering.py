@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import six
 from .traversal import TraversalPath
 
 
@@ -11,48 +10,43 @@ class FilterAtom(object):
         raise NotImplementedError()
 
     def any(self, collection):
-        return any(self(i) for i in collection)
+        return any(self(r) for r in collection)
 
     def all(self, collection):
-        return all(self(i) for i in collection)
+        return all(self(r) for r in collection)
 
 
-class And(FilterAtom):
+class FilterChain(FilterAtom):
+    operator_name = ''
+    check_operator = all
+
     def __init__(self, *atoms):
         self._atoms = list(atoms)
 
     def __add__(self, other):
         if isinstance(other, self.__class__):
-            return And(*self._atoms + other._atoms)
+            return self.__class__(*self._atoms + other._atoms)
         elif isinstance(other, FilterComparison):
             self._atoms.append(other)
             return self
         raise TypeError("{} not supported for this operation".format(other))
 
     def __call__(self, resource):
-        return all(a(resource) for a in self._atoms)
+        return self.check_operator(a(resource) for a in self._atoms)
 
     def __str__(self):
-        return "({})".format(' AND '.join(str(a) for a in self._atoms))
+        pin = " {} ".format(self.operator_name)
+        return "({})".format(pin.join(str(a) for a in self._atoms))
 
 
-class Or(FilterAtom):
-    def __init__(self, *atoms):
-        self._atoms = list(atoms)
+class And(FilterChain):
+    operator_name = 'AND'
+    check_operator = all
 
-    def __add__(self, other):
-        if isinstance(other, self.__class__):
-            return Or(*self._atoms + other._atoms)
-        elif isinstance(other, FilterComparison):
-            self._atoms.append(other)
-            return self
-        raise TypeError("{} not supported for this operation".format(other))
 
-    def __call__(self, resource):
-        return any(a(resource) for a in self._atoms)
-
-    def __str__(self):
-        return "({})".format(' OR '.join(str(a) for a in self._atoms))
+class Or(FilterChain):
+    operator_name = 'OR'
+    check_operator = any
 
 
 class FilterComparison(FilterAtom):
@@ -130,7 +124,7 @@ class GreaterThanOrEqual(FilterComparison):
 
 
 FILTER_OPERATOR_MAP = {
-    "=": Equal, "eq": Equal,
+    "==": Equal, "eq": Equal,
     "!=": NotEqual, "<>": NotEqual, "neq": NotEqual,
     "<": LessThan, "lt": LessThan,
     "<=": LessThanOrEqual, "lte": LessThanOrEqual,
@@ -139,23 +133,3 @@ FILTER_OPERATOR_MAP = {
     "in": "In",
     "is": "Is"
 }
-
-
-TOKEN_SEPARATORS = ' \n'
-START_GROUP = '('
-END_GROUP = ')'
-STRING_DELIMITERS = '"'
-
-
-def split_atoms(expression):
-    atoms = []
-    start_idx = 0
-    in_string = False
-    for idx, c in enumerate(expression.strip(TOKEN_SEPARATORS)):
-        if c in STRING_DELIMITERS:
-            if in_string:
-                pass
-
-
-def parse_filter_expression(expression):
-    current_atoms = atoms = []
