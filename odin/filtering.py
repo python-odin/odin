@@ -77,12 +77,46 @@ class Is(ComparisonOperator):
         return value is self.value
 
 
+OPERATOR_MAP = {
+    'eq': Eq,
+    'lt': LT,
+    'lte': LTE,
+    'gt': GT,
+    'gte': GTE,
+    'in': In,
+    'is': Is,
+}
+
+
+def parse_operator(operator):
+    if operator is None:
+        return
+    if callable(operator):
+        return operator
+    # if isinstance(operator, six.string_types):
+    #     result = None
+    #     operator = operator.strip()
+    #     invert = operator.startswith('!')
+    raise ValueError("Invalid operator")
+
+
 class Filter(object):
     """
     Filtering util.
+
+    A filter entry is defined as a tuple containing three values (path, transform, check_operator).
+
+    The *path* is a valid :py:class:`odin.traversal.TraversalPath` or a string that represents one.
+    The *transform* is a callable that accepts a single argument and returns a value, an example could be
+     :py:func:`len` to measure the length of a string or list; providing *None* will disable the transform.
+    The *check_operator* is used to determine if the filter passes, the check operator is a callable that accepts a
+     single value and returns a boolean indicating the outcome; providing *None* will test the value found at the
+     provided path with the :py:func:`bool` function to determine if the filter passes. Using none makes sense for tests
+     on a boolean field.
+
     """
     def __init__(self, *filters):
-        self._filters = [(TraversalPath.parse(f), t, c) for f, t, c in filters]
+        self._filters = [(TraversalPath.parse(f), t, parse_operator(c)) for f, t, c in filters]
 
     def __and__(self, other):
         if isinstance(other, Filter):
