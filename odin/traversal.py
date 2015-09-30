@@ -13,6 +13,8 @@ class TraversalPath(object):
     """
     @classmethod
     def parse(cls, path):
+        if isinstance(path, TraversalPath):
+            return path
         if isinstance(path, six.string_types):
             return cls(*[_split_atom(a) for a in path.split('.')])
 
