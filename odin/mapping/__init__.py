@@ -302,7 +302,7 @@ class MappingMeta(type):
 
 class MappingResult(ResourceIterable):
     """
-    Iterator used to return a sequence from a mapping operation (used by ``Mapping.apply``).
+    Iterator used lazily return a sequence from a mapping operation (used by ``Mapping.apply``).
     """
     def __init__(self, sequence, mapping, context=None, *mapping_options):
         super(MappingResult, self).__init__(sequence)
@@ -319,6 +319,37 @@ class MappingResult(ResourceIterable):
         self.context['_loop_idx'].pop()
 
 
+class CachingMappingResult(MappingResult):
+    """
+    Extends from the basic MappingResult to cache the results of a mapping operation and also provide methods and
+    abilities available to a list (len, indexing). The results are only evaluated when requested.
+    """
+    def __init__(self, *args, **kwargs):
+        super(CachingMappingResult, self).__init__(*args, **kwargs)
+        self._cache = None
+
+    def __iter__(self):
+        if self._cache is None:
+            self._cache = []
+            for item in super(CachingMappingResult, self).__iter__():
+                self._cache.append(item)
+                yield item
+        else:
+            yield from self._cache
+
+    @property
+    def items(self):
+        if self._cache is None:
+            list(iter(self))
+        return self._cache
+
+    def __len__(self):
+        return len(self.items)
+
+    def __getitem__(self, idx):
+        return self.items[idx]
+
+
 class MappingBase(object):
     from_obj = None
     to_obj = None
@@ -328,7 +359,7 @@ class MappingBase(object):
     to_resource = None
 
     @classmethod
-    def apply(cls, source_obj, context=None, allow_subclass=False):
+    def apply(cls, source_obj, context=None, allow_subclass=False, mapping_result=CachingMappingResult):
         """
         Apply conversion either a single resource or a list of resources using the mapping defined by this class.
 
@@ -336,12 +367,16 @@ class MappingBase(object):
 
         :param source_obj: The source resource, this must be an instance of :py:attr:`Mapping.from_obj`.
         :param context: An optional context value, this can be any value you want to aid in mapping
+        :param allow_subclass: Allow sub classes of mapping resource to be included.
+        :param mapping_result: If an iterable is provided as the source object a mapping result is returned of the type
+            specified is returned.
+
         """
         context = context or {}
         context.setdefault('_loop_idx', [])
 
-        if isinstance(source_obj, (list, tuple)) or hasattr(source_obj, '__iter__'):
-            return MappingResult(source_obj, cls, context, allow_subclass)
+        if hasattr(source_obj, '__iter__'):
+            return mapping_result(source_obj, cls, context, allow_subclass)
         elif source_obj.__class__ is cls.from_obj:
             return cls(source_obj, context).convert()
         else:
