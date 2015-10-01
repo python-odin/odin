@@ -335,7 +335,9 @@ class CachingMappingResult(MappingResult):
                 self._cache.append(item)
                 yield item
         else:
-            return iter(self._cache)
+            # Python 2.x compatible (python 3 can use yield from)
+            for item in self._cache:
+                yield item
 
     @property
     def items(self):
