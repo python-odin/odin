@@ -121,15 +121,3 @@ class GreaterThanOrEqual(FilterComparison):
 
     def compare(self, value):
         return value >= self.value
-
-
-FILTER_OPERATOR_MAP = {
-    "==": Equal, "eq": Equal,
-    "!=": NotEqual, "<>": NotEqual, "neq": NotEqual,
-    "<": LessThan, "lt": LessThan,
-    "<=": LessThanOrEqual, "lte": LessThanOrEqual,
-    ">": GreaterThan, "gt": GreaterThan,
-    ">=": GreaterThan, "gte": GreaterThan,
-    "in": "In",
-    "is": "Is"
-}
