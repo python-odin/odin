@@ -88,3 +88,18 @@ class ResourceAdapterTestCase(unittest.TestCase):
             'rrp': 123.45,
             'title': 'Foo'
         }, target.to_dict())
+
+    def test_apply_to(self):
+        sources = [
+            Library(name="Foo"),
+            Publisher(name='Bar'),
+            Library(name="Eek")
+        ]
+        result = adapters.ResourceAdapter.apply_to(sources, include=['name'])
+        actuals = list(result)
+
+        self.assertListEqual([
+            {'name': 'Foo'},
+            {'name': 'Bar'},
+            {'name': 'Eek'}
+        ], [a.to_dict() for a in actuals])

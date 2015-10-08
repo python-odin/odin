@@ -16,6 +16,7 @@ class ResourceOptionsAdapter(object):
         include = include or [f.attname for f in options.fields]
         exclude = exclude or []
         self.fields = [f for f in options.fields if f.attname in include and f.attname not in exclude]
+        self.virtual_fields = [f for f in options.virtual_fields if f.attname in include and f.attname not in exclude]
 
         # Work around so cached properties still work.
         self._cache = {}
@@ -65,7 +66,7 @@ class ResourceAdapter(object):
 
     """
     @classmethod
-    def apply_to(cls, sources, include=None, exclude=None):
+    def apply_to(cls, sources, include=None, exclude=None, **kwargs):
         """
         Convenience method that applies include/exclude lists to all items in
         an iterable collection of resources.
@@ -75,10 +76,22 @@ class ResourceAdapter(object):
         :param exclude: Fields to explicitly exclude on the adapter.
 
         """
+        meta_objects = {}
         for resource in sources:
-            yield cls(resource, include, exclude)
+            try:
+                meta = meta_objects[resource._meta.resource_name]
+            except KeyError:
+                meta = cls._create_options_adapter(resource._meta, include, exclude)
+                meta_objects[resource._meta.resource_name] = meta
+            yield cls(resource, meta=meta, **kwargs)
 
-    def __init__(self, source, include=None, exclude=None):
+    @classmethod
+    def _create_options_adapter(cls, options, include=None, exclude=None):
+        include_fields = include if include else getattr(cls, 'include_fields', None)
+        exclude_fields = exclude if exclude else getattr(cls, 'exclude_fields', None)
+        return ResourceOptionsAdapter(options, include_fields, exclude_fields)
+
+    def __init__(self, source, include=None, exclude=None, meta=None):
         """
         Initialise the adapter.
 
@@ -89,10 +102,9 @@ class ResourceAdapter(object):
         """
         self.__dict__['_source'] = source
 
-        include_fields = include if include else getattr(self, 'include_fields', None)
-        exclude_fields = exclude if exclude else getattr(self, 'exclude_fields', None)
-
-        self._meta = ResourceOptionsAdapter(source._meta, include_fields, exclude_fields)
+        if not meta:
+            meta = self._create_options_adapter(source._meta, include, exclude)
+        self._meta = meta
 
     def __getattr__(self, item):
         return getattr(self._source, item)
