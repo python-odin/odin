@@ -473,6 +473,7 @@ class FieldsTests(unittest.TestCase):
         f = TimeStampField()
         self.assertEqual(None, f.prepare(None))
         self.assertEqual(123, f.prepare(datetime.datetime(1970, 1, 1, 0, 2, 3, tzinfo=utc)))
+        self.assertEqual(123, f.prepare(123))
         self.assertEqual(123, f.prepare(
             datetime.datetime(1970, 1, 1, 10, 2, 3, tzinfo=FixedTimezone.from_hours_minutes(10))))
 
