@@ -84,6 +84,7 @@ class FieldsTests(unittest.TestCase):
         self.assertRaises(ValidationError, f.clean, {})
         self.assertRaises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
         self.assertRaises(ValidationError, f.clean, [None])
+        self.assertResourceListEqual([], f.clean([]))
         self.assertResourceListEqual([ExampleResource(name='foo')], f.clean([{'name': 'foo'}]))
         self.assertResourceListEqual([ExampleResource(name='foo')], f.clean([{
             '$': 'tests.test_composite_fields.ExampleResource', 'name': 'foo'}]))
@@ -96,6 +97,20 @@ class FieldsTests(unittest.TestCase):
         self.assertRaises(ValidationError, f.clean, {})
         self.assertRaises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
         self.assertRaises(ValidationError, f.clean, [None])
+        self.assertResourceListEqual([], f.clean([]))
+        self.assertResourceListEqual([ExampleResource(name='foo')], f.clean([{'name': 'foo'}]))
+        self.assertResourceListEqual([ExampleResource(name='foo')], f.clean([{
+            '$': 'tests.test_composite_fields.ExampleResource', 'name': 'foo'}]))
+
+    def test_arrayof_3(self):
+        f = ArrayOf(ExampleResource, empty=False)
+        self.assertRaises(ValidationError, f.clean, None)
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertRaises(ValidationError, f.clean, {})
+        self.assertRaises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
+        self.assertRaises(ValidationError, f.clean, [None])
+        self.assertRaises(ValidationError, f.clean, [])
         self.assertResourceListEqual([ExampleResource(name='foo')], f.clean([{'name': 'foo'}]))
         self.assertResourceListEqual([ExampleResource(name='foo')], f.clean([{
             '$': 'tests.test_composite_fields.ExampleResource', 'name': 'foo'}]))
@@ -110,6 +125,7 @@ class FieldsTests(unittest.TestCase):
         self.assertRaises(ValidationError, f.clean, [])
         self.assertRaises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
         self.assertRaises(ValidationError, f.clean, {'abc': None})
+        self.assertResourceDictEqual({}, f.clean({}))
         self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {'name': 'foo'}}))
         self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {
             '$': 'tests.test_composite_fields.ExampleResource', 'name': 'foo'}}))
@@ -122,6 +138,20 @@ class FieldsTests(unittest.TestCase):
         self.assertRaises(ValidationError, f.clean, [])
         self.assertRaises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
         self.assertRaises(ValidationError, f.clean, {'abc': None})
+        self.assertResourceDictEqual({}, f.clean({}))
+        self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {'name': 'foo'}}))
+        self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {
+            '$': 'tests.test_composite_fields.ExampleResource', 'name': 'foo'}}))
+
+    def test_dictof_3(self):
+        f = DictOf(ExampleResource, empty=False)
+        self.assertRaises(ValidationError, f.clean, None)
+        self.assertRaises(ValidationError, f.clean, 'abc')
+        self.assertRaises(ValidationError, f.clean, 123)
+        self.assertRaises(ValidationError, f.clean, [])
+        self.assertRaises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
+        self.assertRaises(ValidationError, f.clean, {'abc': None})
+        self.assertRaises(ValidationError, f.clean, {})
         self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {'name': 'foo'}}))
         self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {
             '$': 'tests.test_composite_fields.ExampleResource', 'name': 'foo'}}))
