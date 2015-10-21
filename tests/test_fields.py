@@ -32,6 +32,12 @@ class TestField(Field):
         return value
 
 
+class TestDynamicTypeNameField(IntegerField):
+    @staticmethod
+    def data_type_name(instance):
+        return "Foo"
+
+
 class FieldTestCase(unittest.TestCase):
     def test_error_messages_no_overrides(self):
         target = TestField()
@@ -517,10 +523,10 @@ class FieldsTests(unittest.TestCase):
         self.assertEqual(['foo', 'bar'], f.clean(['foo', 'bar']))
         self.assertEqual(['foo', 'bar', '$', 'eek'], f.clean(['foo', 'bar', '$', 'eek']))
 
-    # TypedArrayField #########################################################
+    # TypedListField #########################################################
 
-    def test_typedarrayfield_1(self):
-        f = TypedArrayField(IntegerField())
+    def test_typedlistfield_1(self):
+        f = TypedListField(IntegerField())
         self.assertEqual("List<Integer>", f.data_type_name(f))
         self.assertRaises(ValidationError, f.clean, None)
         self.assertRaises(ValidationError, f.clean, 'abc')
@@ -530,8 +536,8 @@ class FieldsTests(unittest.TestCase):
         self.assertEqual([1, 2, 3], f.clean([1, 2, 3]))
         self.assertEqual(f.default, list)
 
-    def test_typedarrayfield_2(self):
-        f = TypedArrayField(IntegerField(), null=True)
+    def test_typedlistfield_2(self):
+        f = TypedListField(IntegerField(), null=True)
         self.assertEqual("List<Integer>", f.data_type_name(f))
         self.assertEqual(None, f.clean(None))
         self.assertRaises(ValidationError, f.clean, 'abc')
@@ -539,6 +545,10 @@ class FieldsTests(unittest.TestCase):
         self.assertEqual([], f.clean([]))
         self.assertRaises(ValidationError, f.clean, ['foo', 'bar'])
         self.assertEqual([1, 2, 3], f.clean([1, 2, 3]))
+
+    def test_typed_list_field_dynamic_type_name(self):
+        f = TypedListField(TestDynamicTypeNameField(), null=True)
+        self.assertEqual("List<Foo>", f.data_type_name(f))
 
     # TypedDictField ##########################################################
 
@@ -589,3 +599,11 @@ class FieldsTests(unittest.TestCase):
         self.assertRaises(ValidationError, f.clean, {'bar': 6})
         self.assertRaises(ValidationError, f.clean, {'foo': None})
         self.assertRaises(ValidationError, f.clean, {'foo': 2})
+
+    def test_typed_dict_field_dynamic_type_name(self):
+        f = TypedDictField(
+            TestDynamicTypeNameField(),
+            TestDynamicTypeNameField(),
+        )
+        self.assertEqual("Dict<Foo, Foo>", f.data_type_name(f))
+
