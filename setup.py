@@ -7,7 +7,7 @@ except IOError:
 
 setup(
     name='odin',
-    version='0.7.0-beta',
+    version='0.7b',
     url='https://github.com/timsavage/odin',
     license='LICENSE',
     author='Tim Savage',
