@@ -21,6 +21,8 @@ setup(
         'doc_gen': ["jinja2>=2.7"],
         # Pint integration
         'pint': ["pint"],
+        # Filter Query
+        'filter_query': ["ply"]
     },
 
     classifiers=[
