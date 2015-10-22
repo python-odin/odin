@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import six
 from .traversal import TraversalPath
 
 
@@ -71,11 +72,15 @@ class FilterComparison(FilterAtom):
             return self.compare(value)
 
     def __str__(self):
+        value = self.value
+        if isinstance(self.value, six.string_types):
+            value = '"{}"'.format(value)
+
         if self.operation:
             op_name = getattr(self.operation, 'name', self.operation.__name__)
-            return "{}({}) {} {}".format(op_name, self.field, self.operator_symbol, self.value)
+            return "{}({}) {} {}".format(op_name, self.field, self.operator_symbol, value)
         else:
-            return "{} {} {}".format(self.field, self.operator_symbol, self.value)
+            return "{} {} {}".format(self.field, self.operator_symbol, value)
 
     def compare(self, value):
         raise NotImplementedError()
