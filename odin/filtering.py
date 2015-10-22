@@ -54,7 +54,9 @@ class FilterComparison(FilterAtom):
     """
     Base class for filter operator atoms
     """
-    operator_symbol = ''
+    # Symbol for this operator and alternatives. The first item is used when generating
+    # a representation of the filter, the others are used for parsing queries.
+    operator_symbols = []
 
     def __init__(self, field, value, operation=None):
         self.field = TraversalPath.parse(field)
@@ -78,51 +80,51 @@ class FilterComparison(FilterAtom):
 
         if self.operation:
             op_name = getattr(self.operation, 'name', self.operation.__name__)
-            return "{}({}) {} {}".format(op_name, self.field, self.operator_symbol, value)
+            return "{}({}) {} {}".format(op_name, self.field, self.operator_symbols[0], value)
         else:
-            return "{} {} {}".format(self.field, self.operator_symbol, value)
+            return "{} {} {}".format(self.field, self.operator_symbols[0], value)
 
     def compare(self, value):
         raise NotImplementedError()
 
 
 class Equal(FilterComparison):
-    operator_symbol = '=='
+    operator_symbols = ('==', '=', 'eq')
 
     def compare(self, value):
         return value == self.value
 
 
 class NotEqual(FilterComparison):
-    operator_symbol = '!='
+    operator_symbols = ('!=', '<>', 'neq')
 
     def compare(self, value):
         return value != self.value
 
 
 class LessThan(FilterComparison):
-    operator_symbol = '<'
+    operator_symbols = ('<', 'lt')
 
     def compare(self, value):
         return value < self.value
 
 
 class LessThanOrEqual(FilterComparison):
-    operator_symbol = '<='
+    operator_symbols = ('<=', 'lte')
 
     def compare(self, value):
         return value <= self.value
 
 
 class GreaterThan(FilterComparison):
-    operator_symbol = '>'
+    operator_symbols = ('>', 'gt')
 
     def compare(self, value):
         return value > self.value
 
 
 class GreaterThanOrEqual(FilterComparison):
-    operator_symbol = '>='
+    operator_symbols = ('>=', 'gte')
 
     def compare(self, value):
         return value >= self.value
