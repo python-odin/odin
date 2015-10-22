@@ -47,20 +47,20 @@ class FilterTestCase(unittest.TestCase):
 class FilterComparisonTestCase(unittest.TestCase):
     def test_description(self):
         comp = filtering.FilterComparison('foo', 'bar')
-        comp.operator_symbol = '%'
-        self.assertEqual('foo % "bar"', str(comp))
+        comp.operator_symbols = ['%']
+        self.assertEqual("foo % 'bar'", str(comp))
         comp = filtering.FilterComparison('foo', 42)
-        comp.operator_symbol = '%'
+        comp.operator_symbols = ['%']
         self.assertEqual('foo % 42', str(comp))
         comp = filtering.FilterComparison('foo', 'bar', any)
-        comp.operator_symbol = '%'
-        self.assertEqual('any(foo) % "bar"', str(comp))
+        comp.operator_symbols = ['%']
+        self.assertEqual("any(foo) % 'bar'", str(comp))
 
     def test_equal_string(self):
         comp = filtering.Equal('foo', 'bar')
         self.assertTrue(comp.compare('bar'))
         self.assertFalse(comp.compare('eek'))
-        self.assertEqual('foo == "bar"', str(comp))
+        self.assertEqual("foo == 'bar'", str(comp))
 
     def test_equal_integer(self):
         comp = filtering.Equal('foo', 5)
@@ -72,7 +72,7 @@ class FilterComparisonTestCase(unittest.TestCase):
         comp = filtering.NotEqual('foo', 'bar')
         self.assertTrue(comp.compare('eek'))
         self.assertFalse(comp.compare('bar'))
-        self.assertEqual('foo != "bar"', str(comp))
+        self.assertEqual("foo != 'bar'", str(comp))
 
     def test_less_than(self):
         comp = filtering.LessThan('foo', 5)
