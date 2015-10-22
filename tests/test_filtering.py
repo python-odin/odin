@@ -42,3 +42,62 @@ class FilterTestCase(unittest.TestCase):
     def test_resource_field_does_not_exist(self):
         flt = filtering.Equal('title', 'Public Library')
         self.assertFalse(flt(library))
+
+
+class FilterComparisonTestCase(unittest.TestCase):
+    def test_description(self):
+        comp = filtering.FilterComparison('foo', 'bar')
+        comp.operator_symbol = '%'
+        self.assertEqual('foo % "bar"', str(comp))
+        comp = filtering.FilterComparison('foo', 42)
+        comp.operator_symbol = '%'
+        self.assertEqual('foo % 42', str(comp))
+        comp = filtering.FilterComparison('foo', 'bar', any)
+        comp.operator_symbol = '%'
+        self.assertEqual('any(foo) % "bar"', str(comp))
+
+    def test_equal_string(self):
+        comp = filtering.Equal('foo', 'bar')
+        self.assertTrue(comp.compare('bar'))
+        self.assertFalse(comp.compare('eek'))
+        self.assertEqual('foo == "bar"', str(comp))
+
+    def test_equal_integer(self):
+        comp = filtering.Equal('foo', 5)
+        self.assertTrue(comp.compare(5))
+        self.assertFalse(comp.compare(6))
+        self.assertEqual('foo == 5', str(comp))
+
+    def test_not_equal(self):
+        comp = filtering.NotEqual('foo', 'bar')
+        self.assertTrue(comp.compare('eek'))
+        self.assertFalse(comp.compare('bar'))
+        self.assertEqual('foo != "bar"', str(comp))
+
+    def test_less_than(self):
+        comp = filtering.LessThan('foo', 5)
+        self.assertTrue(comp.compare(4))
+        self.assertFalse(comp.compare(5))
+        self.assertFalse(comp.compare(6))
+        self.assertEqual('foo < 5', str(comp))
+
+    def test_less_than_or_equal(self):
+        comp = filtering.LessThanOrEqual('foo', 5)
+        self.assertTrue(comp.compare(4))
+        self.assertTrue(comp.compare(5))
+        self.assertFalse(comp.compare(6))
+        self.assertEqual('foo <= 5', str(comp))
+
+    def test_greater_than(self):
+        comp = filtering.GreaterThan('foo', 5)
+        self.assertFalse(comp.compare(4))
+        self.assertFalse(comp.compare(5))
+        self.assertTrue(comp.compare(6))
+        self.assertEqual('foo > 5', str(comp))
+
+    def test_greater_than_or_equal(self):
+        comp = filtering.GreaterThanOrEqual('foo', 5)
+        self.assertFalse(comp.compare(4))
+        self.assertTrue(comp.compare(5))
+        self.assertTrue(comp.compare(6))
+        self.assertEqual('foo >= 5', str(comp))
