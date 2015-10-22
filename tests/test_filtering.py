@@ -44,6 +44,53 @@ class FilterTestCase(unittest.TestCase):
         self.assertFalse(flt(library))
 
 
+class FilterChainTestCase(unittest.TestCase):
+    def test_description(self):
+        flt = filtering.And(
+            filtering.Equal('fiction', True),
+            filtering.LessThan('rrp', 20),
+        )
+        self.assertEqual(
+            '(fiction == True AND rrp < 20)',
+            str(flt)
+        )
+
+    def test_combining_same_type(self):
+        flt1 = filtering.And(
+            filtering.Equal('fiction', True),
+            filtering.LessThan('rrp', 20),
+        )
+        flt2 = filtering.And(
+            filtering.Equal('authors', 1, len),
+            filtering.NotEqual('genre', 'fantasy'),
+        )
+        flt = flt1 + flt2
+
+        self.assertEqual(
+            "(fiction == True AND rrp < 20 AND len(authors) == 1 AND genre != 'fantasy')",
+            str(flt)
+        )
+
+    def test_combine_with_comparison(self):
+        flt1 = filtering.And(
+            filtering.Equal('fiction', True),
+            filtering.LessThan('rrp', 20),
+        )
+        flt = flt1 + filtering.Equal('authors', 1, len)
+
+        self.assertEqual(
+            "(fiction == True AND rrp < 20 AND len(authors) == 1)",
+            str(flt)
+        )
+
+    def test_combine_with_other_type(self):
+        flt1 = filtering.And(
+            filtering.Equal('fiction', True),
+            filtering.LessThan('rrp', 20),
+        )
+        self.assertRaises(TypeError, lambda: flt1 + 'abc')
+
+
 class FilterComparisonTestCase(unittest.TestCase):
     def test_description(self):
         comp = filtering.FilterComparison('foo', 'bar')
