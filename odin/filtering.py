@@ -7,6 +7,9 @@ class FilterAtom(object):
     """
     Base filter statement
     """
+    def __name__(self):
+        return self.__class__.__name__
+
     def __call__(self, resource):
         raise NotImplementedError()
 
@@ -24,6 +27,9 @@ class FilterChain(FilterAtom):
     def __init__(self, *atoms):
         self._atoms = list(atoms)
 
+    def __len__(self):
+        return len(self._atoms)
+
     def __add__(self, other):
         if isinstance(other, self.__class__):
             return self.__class__(*self._atoms + other._atoms)
@@ -36,6 +42,8 @@ class FilterChain(FilterAtom):
         return self.check_operator(a(resource) for a in self._atoms)
 
     def __str__(self):
+        if not self._atoms:
+            return ''
         pin = " {} ".format(self.operator_name)
         return "({})".format(pin.join(str(a) for a in self._atoms))
 
