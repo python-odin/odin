@@ -45,6 +45,10 @@ class FilterTestCase(unittest.TestCase):
 
 
 class FilterChainTestCase(unittest.TestCase):
+    def test_empty_description(self):
+        flt = filtering.And()
+        self.assertEqual('', str(flt))
+
     def test_description(self):
         flt = filtering.And(
             filtering.Equal('fiction', True),
