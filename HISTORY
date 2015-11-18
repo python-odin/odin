@@ -1,6 +1,27 @@
 0.7
 ===
 
+- Python 3.5 added for Travis CI test runner
+- Added empty flag to ListOf and DictOf files to validate if fields is allowed to be empty
+- Added key_choices to DictOf field to allow allow keys to be validated
+- Added TypedDictField this is a analog of the TypedListField but for dict objects
+- Project is now owned by the python-odin group
+- Initial work on combined string serialisation framework. This is to unify text serialisation support between the
+  various codecs so additional serialises only need to be registered in a central location.
+- Added DictCodec, this is codec for converting between a dict structure and resource structure. As Resource.to_dict
+  is explicitly designed to not act in a recursively this codec fills in a gap where a developer my require a nested
+  dict to be generated.
+- Initial implementation of resource filtering. Filtering allows for a filter expression to be defined and used to
+  filter a list of resources or ensure a particular resource matches the expression. Expressions are easy to define and
+  read and allow for filtering against sub-resources etc.
+- Added caching to the results of mapping operations. Previously iterating through a mapping multiple times caused the
+  mapping to be re-run. This has been made the default behaviour, if the previous behaviour is desired the MappingResult
+  class can be provided to Mapping.apply instead of CachingMappingResult.
+- ResourceAdapter.apply_to now caches Meta object of matching resources types, previously a new meta object was created
+  for each resource.
+- ResourceAdapterOptions.virtual_fields is now filtered using include/exclude options.
+- More tests, more docs
+- Various bug fixes.
 
 0.6
 ===

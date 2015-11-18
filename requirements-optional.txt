@@ -1,3 +1,4 @@
 jinja2>=2.7
 pint
 msgpack-python
+ply
