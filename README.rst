@@ -40,6 +40,7 @@ Highlights
 * Easy extension to support custom fields
 * Python 2.7+, Python 3.3+ and PyPy :sup:`1` supported
 * Integration with Django (see `baldr <https://github.com/timsavage/baldr>`_)
+* Support for documenting resources with `Sphinx <http://sphinx-doc.org/>`_
 * Minimal dependencies (base functionality only requires *six*)
 
 :sup:`1` certain contrib items are not supported. Pint is not installable with PyPy.
@@ -58,7 +59,6 @@ Upcoming features
 
 **In development**
 
-* Customisable generation of documentation of resources (for integration into `Sphinx <http://sphinx-doc.org/>`_)
 * XML Codec (export completed)
 * Complete documentation, this will pretty much always be here.
 * Improvements for CSV Codec (writing, reading multi resource CSV's)
