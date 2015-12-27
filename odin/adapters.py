@@ -29,7 +29,7 @@ class ResourceOptionsAdapter(object):
         self.parents = options.parents
 
         # Filter available fields
-        include = include or [f.attname for f in options.fields]
+        include = include or [f.attname for f in options.all_fields]
         exclude = exclude or []
         self.fields = [f for f in options.fields if f.attname in include and f.attname not in exclude]
         self.virtual_fields = [f for f in options.virtual_fields if f.attname in include and f.attname not in exclude]
