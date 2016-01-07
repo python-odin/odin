@@ -22,7 +22,9 @@ setup(
         # Pint integration
         'pint': ["pint"],
         # Filter Query
-        'filter_query': ["ply"]
+        'filter_query': ["ply"],
+        # Inspect
+        'inspect': ['humanfriendly'],
     },
 
     classifiers=[

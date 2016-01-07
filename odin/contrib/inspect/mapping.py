@@ -1,7 +1,6 @@
+from humanfriendly import tables
 import six
-
-from .base import SummaryBase
-from .utils import resource_reference, Table
+from .base import SummaryBase, resource_reference
 
 
 class MappingSummary(SummaryBase):
@@ -16,14 +15,13 @@ class MappingSummary(SummaryBase):
         mapping = self.mapping
         self.title("{}.{}".format(mapping.__module__, mapping.__name__))
         self.print()
-
         self.print("From:", resource_reference(mapping.from_obj))
         self.print("To:  ", resource_reference(mapping.to_obj))
         self.print()
 
         # Build mapping summary
-        table = Table(['from_field', 'action', 'to_field'])
-        table.add_header(from_field='From', action='Action', to_field='To')
+        data = []
+        column_names = ('From', 'Action', 'To')
         for from_fields, action, to_fields, to_list, bind, skip_if_none in mapping._mapping_rules:
             # Dereference
             from_fields = from_fields or ['*Assigned*']
@@ -48,8 +46,8 @@ class MappingSummary(SummaryBase):
                 if to_list:
                     to_field = '[{}]'.format(to_field)
                 if idx == 0:
-                    table.add_row(from_field=from_field, action=action, to_field=to_field)
+                    data.append([from_field, action, to_field])
                 else:
-                    table.add_row(from_field=from_field, action='+->', to_field=to_field)
+                    data.append([from_field, '+->', to_field])
 
-        table.render(self.out)
+        self.print(tables.format_pretty_table(data, column_names))

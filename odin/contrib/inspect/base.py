@@ -1,4 +1,9 @@
 from __future__ import print_function
+from humanfriendly.terminal import ansi_wrap, HIGHLIGHT_COLOR
+
+
+def resource_reference(resource):
+    return "{} <{}.{}>".format(resource._meta.resource_name, resource.__module__, resource.__name__)
 
 
 class SummaryBase(object):
@@ -12,4 +17,8 @@ class SummaryBase(object):
         print(*objects, sep=sep, end=end, file=self.out)
 
     def title(self, value, underline='='):
-        self.print(value, underline * len(value), sep='\n')
+        self.print(
+            ansi_wrap(value, bold=True, color=HIGHLIGHT_COLOR),
+            underline * len(value),
+            sep='\n'
+        )
