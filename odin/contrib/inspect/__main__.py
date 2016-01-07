@@ -1,8 +1,8 @@
 import argparse
-
 import sys
 
 from .resource import ResourceSummary
+from .mapping import MappingSummary
 
 
 def import_item(item):
@@ -18,7 +18,12 @@ def get_options():
     # Resource ##################################
 
     subparser = main_subparsers.add_parser('resource', help='Inspect a Odin resource')
-    subparser.add_argument('RESOURCE', help='Name of the resource (to be imported)')
+    subparser.add_argument('RESOURCE', help='Path to resource')
+
+    # Mapping ###################################
+
+    subparser = main_subparsers.add_parser('mapping', help='Inspect a Odin mapping')
+    subparser.add_argument('MAPPING', help='Path to mapping')
 
     return parser.parse_args()
 
@@ -28,8 +33,12 @@ def main():
 
     if options.command == 'resource':
         resource = import_item(options.RESOURCE)
-        summary = ResourceSummary(resource)
-        summary.fields(sys.stdout)
+        summary = ResourceSummary(resource, sys.stdout)
+        summary.render()
+    elif options.command == 'mapping':
+        mapping = import_item(options.MAPPING)
+        summary = MappingSummary(mapping, sys.stdout)
+        summary.render()
     else:
         print("No command supplied.", file=sys.stdout)
         exit(1)
