@@ -319,6 +319,17 @@ class MappingResult(ResourceIterable):
         self.context['_loop_idx'].pop()
 
 
+class ImmediateResult(ResourceIterable):
+    """
+    Immediately performs the mapping operation rather than delay.
+
+    This is useful if context is volatile.
+    """
+    def __init__(self, *args, **kwargs):
+        results = list(MappingResult(*args, **kwargs))
+        super(ImmediateResult, self).__init__(results)
+
+
 class CachingMappingResult(MappingResult):
     """
     Extends from the basic MappingResult to cache the results of a mapping operation and also provide methods and
@@ -360,8 +371,11 @@ class MappingBase(object):
     from_resource = None
     to_resource = None
 
+    # Default mapping result object to use
+    default_mapping_result = CachingMappingResult
+
     @classmethod
-    def apply(cls, source_obj, context=None, allow_subclass=False, mapping_result=CachingMappingResult):
+    def apply(cls, source_obj, context=None, allow_subclass=False, mapping_result=None):
         """
         Apply conversion either a single resource or a list of resources using the mapping defined by this class.
 
@@ -375,6 +389,7 @@ class MappingBase(object):
 
         """
         context = context or {}
+        mapping_result = mapping_result or cls.default_mapping_result
         context.setdefault('_loop_idx', [])
 
         if hasattr(source_obj, '__iter__'):
