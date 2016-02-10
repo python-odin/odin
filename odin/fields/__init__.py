@@ -497,6 +497,13 @@ class TypedListField(ListField):
 
         return value_list
 
+    def prepare(self, value):
+        if isinstance(value, (tuple, list)):
+            prepare = self.field.prepare
+            return [prepare(i) for i in value]
+        return value
+
+
 TypedArrayField = TypedListField
 
 
