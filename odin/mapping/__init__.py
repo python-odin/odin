@@ -561,6 +561,20 @@ class Mapping(six.with_metaclass(MappingMeta, MappingBase)):
     mappings = []
 
 
+class ImmediateMapping(six.with_metaclass(MappingMeta, MappingBase)):
+    """
+    Definition of a mapping between two Objects.
+
+    This version of the Mapping, defaults to returning an Immediate rather than
+    a cached result object.
+
+    """
+    exclude_fields = []
+    mappings = []
+
+    default_mapping_result = ImmediateResult
+
+
 def map_field(func=None, from_field=None, to_field=None, to_list=False):
     """
     Field decorator for custom mappings.
