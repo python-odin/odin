@@ -15,6 +15,7 @@ class MsgPackCodecTestCase(unittest.TestCase):
     def test_dumps_and_loads(self):
         in_resource = Book(
             title='Consider Phlebas',
+            isbn='0-333-45430-8',
             num_pages=471,
             rrp=19.50,
             fiction=True,
@@ -27,6 +28,7 @@ class MsgPackCodecTestCase(unittest.TestCase):
         out_resource = msgpack_codec.loads(data)
 
         self.assertEqual(out_resource.title, in_resource.title)
+        self.assertEqual(out_resource.isbn, in_resource.isbn)
         self.assertEqual(out_resource.num_pages, in_resource.num_pages)
         self.assertEqual(out_resource.rrp, in_resource.rrp)
         self.assertEqual(out_resource.fiction, in_resource.fiction)
@@ -34,10 +36,10 @@ class MsgPackCodecTestCase(unittest.TestCase):
         self.assertEqual(out_resource.authors[0].name, in_resource.authors[0].name)
         self.assertEqual(out_resource.publisher.name, in_resource.publisher.name)
 
-
     def test_dump_and_load_(self):
         in_resource = Book(
             title='Consider Phlebas',
+            isbn='0-333-45430-8',
             num_pages=471,
             rrp=19.50,
             fiction=True,
@@ -54,6 +56,7 @@ class MsgPackCodecTestCase(unittest.TestCase):
         out_resource = msgpack_codec.load(fp)
 
         self.assertEqual(out_resource.title, in_resource.title)
+        self.assertEqual(out_resource.isbn, in_resource.isbn)
         self.assertEqual(out_resource.num_pages, in_resource.num_pages)
         self.assertEqual(out_resource.rrp, in_resource.rrp)
         self.assertEqual(out_resource.fiction, in_resource.fiction)

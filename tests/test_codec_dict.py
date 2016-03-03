@@ -10,6 +10,7 @@ class DictCodecTestCase(unittest.TestCase):
     def test_dump(self):
         in_resource = Book(
             title='Consider Phlebas',
+            isbn='0-333-45430-8',
             num_pages=471,
             rrp=19.50,
             fiction=True,
@@ -29,6 +30,7 @@ class DictCodecTestCase(unittest.TestCase):
             'genre': "sci-fi",
             'num_pages': 471,
             'rrp': 19.50,
+            'isbn': '0-333-45430-8',
             'title': 'Consider Phlebas',
             'published': [],
             'publisher': {
@@ -40,6 +42,7 @@ class DictCodecTestCase(unittest.TestCase):
     def test_dump_no_type_field(self):
         in_resource = Book(
             title='Consider Phlebas',
+            isbn='0-333-45430-8',
             num_pages=471,
             rrp=19.50,
             fiction=True,
@@ -57,6 +60,7 @@ class DictCodecTestCase(unittest.TestCase):
             'genre': "sci-fi",
             'num_pages': 471,
             'rrp': 19.50,
+            'isbn': '0-333-45430-8',
             'title': 'Consider Phlebas',
             'published': [],
             'publisher': {
@@ -67,6 +71,7 @@ class DictCodecTestCase(unittest.TestCase):
     def test_dump_and_load_(self):
         in_resource = Book(
             title='Consider Phlebas',
+            isbn='0-333-45430-8',
             num_pages=471,
             rrp=19.50,
             fiction=True,
@@ -80,6 +85,7 @@ class DictCodecTestCase(unittest.TestCase):
         out_resource = dict_codec.load(d)
 
         self.assertEqual(out_resource.title, in_resource.title)
+        self.assertEqual(out_resource.isbn, in_resource.isbn)
         self.assertEqual(out_resource.num_pages, in_resource.num_pages)
         self.assertEqual(out_resource.rrp, in_resource.rrp)
         self.assertEqual(out_resource.fiction, in_resource.fiction)

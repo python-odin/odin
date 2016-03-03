@@ -165,6 +165,7 @@ class ConstructionMethodsTestCase(unittest.TestCase):
 
         self.assertEqual(dict(
             title=None,
+            isbn=None,
             num_pages=None,
             rrp=20.4,
             fiction=None,
@@ -180,6 +181,7 @@ class ConstructionMethodsTestCase(unittest.TestCase):
 
         self.assertEqual(dict(
             title=['This field cannot be null.'],
+            isbn=['This field cannot be null.'],
             num_pages=['This field cannot be null.'],
             fiction=['This field cannot be null.'],
             genre=['This field cannot be null.'],
@@ -196,6 +198,7 @@ class ConstructionMethodsTestCase(unittest.TestCase):
 
         self.assertEqual([dict(
             title="Book1",
+            isbn=None,
             num_pages=None,
             rrp=20.4,
             fiction=None,
@@ -205,6 +208,7 @@ class ConstructionMethodsTestCase(unittest.TestCase):
             publisher=None
         ), dict(
             title="Book2",
+            isbn=None,
             num_pages=None,
             rrp=20.4,
             fiction=None,
@@ -230,9 +234,9 @@ class ConstructionMethodsTestCase(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_build_nested_objects_with_polymorphism(self):
-        books = [{'title': "Book1", 'num_pages': 1, 'rrp': 20.4, 'fiction': True, 'genre': 'sci-fi', 'published': [],
+        books = [{'title': "Book1", "isbn": "abc-123", 'num_pages': 1, 'rrp': 20.4, 'fiction': True, 'genre': 'sci-fi', 'published': [],
                   'authors': [], 'publisher': None, '$': 'tests.resources.Book'},
-                 {'title': "Book2", 'num_pages': 1, 'rrp': 20.4, 'fiction': True, 'genre': 'sci-fi', 'published': [],
+                 {'title': "Book2", "isbn": "def-456", 'num_pages': 1, 'rrp': 20.4, 'fiction': True, 'genre': 'sci-fi', 'published': [],
                   'authors': [], 'publisher': None, '$': 'tests.resources.Book'}]
 
         library = {

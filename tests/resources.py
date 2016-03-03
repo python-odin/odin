@@ -25,7 +25,11 @@ class LibraryBook(odin.Resource):
 
 
 class Book(LibraryBook):
+    class Meta:
+        key_field = 'isbn'
+
     title = odin.StringField()
+    isbn = odin.StringField()
     num_pages = odin.IntegerField()
     rrp = odin.FloatField(default=20.4, use_default_if_not_provided=True)
     fiction = odin.BooleanField(is_attribute=True)

@@ -19,6 +19,7 @@
         "name": "Macmillan"
       },
       "rrp": 19.5,
+      "isbn": "0-333-45430-8",
       "title": "Consider Phlebas"
     },
     {
@@ -38,6 +39,7 @@
         "name": "Macmillan"
       },
       "rrp": 19.5,
+      "isbn": "1-85723-146-5",
       "title": "The Player of Games"
     },
     {
@@ -57,6 +59,7 @@
         "name": "Orbit"
       },
       "rrp": 19.5,
+      "isbn": "1-85723-135-X",
       "title": "Use of Weapons"
     },
     {
@@ -76,6 +79,7 @@
         "name": "Orbit Books"
       },
       "rrp": 19.5,
+      "isbn": "1-85723-394-8",
       "title": "Excession"
     },
     {
@@ -107,6 +111,7 @@
         "name": "Addison Wesley"
       },
       "rrp": 59.99,
+      "isbn": "0-201-63361-2",
       "title": "Design Patterns - Elements of Reusable Object-Orientated Software"
     }
   ]
