@@ -8,7 +8,7 @@ except IOError:
 setup(
     name='odin',
     version='0.7',
-    url='https://github.com/timsavage/odin',
+    url='https://github.com/python-odin/odin',
     license='LICENSE',
     author='Tim Savage',
     author_email='tim@savage.company',
@@ -26,10 +26,9 @@ setup(
         # Inspect
         'inspect': ['humanfriendly'],
     },
-
+    obsoletes=['jsrn'],
     classifiers=[
-        # 'Development Status :: 5 - Production/Stable',
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
