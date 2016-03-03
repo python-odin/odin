@@ -9,7 +9,8 @@ from odin.utils import cached_property, field_iter_items
 
 DEFAULT_TYPE_FIELD = '$'
 META_OPTION_NAMES = (
-    'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group', 'type_field'
+    'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group', 'type_field',
+    'key_field'
 )
 
 
@@ -28,6 +29,7 @@ class ResourceOptions(object):
         self.abstract = False
         self.doc_group = None
         self.type_field = DEFAULT_TYPE_FIELD
+        self.key_field = None
 
         self._cache = {}
 
@@ -215,6 +217,11 @@ class ResourceBase(type):
 
             new_class._meta.parents += base._meta.parents
             new_class._meta.parents.append(base)
+
+        # If a key_field is defined ensure it exists
+        if new_class._meta.key_field is not None:
+            if new_class._meta.key_field not in field_attnames:
+                raise Exception('Key field `{}` is not exist on this resource.'.format(new_class._meta.key_field))
 
         if abstract:
             return new_class
