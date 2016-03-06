@@ -26,7 +26,7 @@ class LibraryBook(odin.Resource):
 
 class Book(LibraryBook):
     class Meta:
-        key_field = 'isbn'
+        key_field_name = 'isbn'
 
     title = odin.StringField()
     isbn = odin.StringField()

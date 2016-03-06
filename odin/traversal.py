@@ -145,8 +145,11 @@ class ResourceTraversalIterator(object):
             else:
                 # If we have a key (ie DictOf, ListOf composite fields) update the path key field.
                 if key is not None:
-                    _, _, field = self._path[-1]
-                    self._path[-1] = (key, NotSupplied, field)
+                    _, name, field = self._path[-1]
+                    if next_resource._meta.key_field:
+                        key = next_resource._meta.key_field.value_from_object(next_resource)
+                        name = next_resource._meta.key_field.name
+                    self._path[-1] = (key, name, field)
 
                 # Get list of any composite fields for this resource (this is a cached field).
                 self._field_iters.append(list(next_resource._meta.composite_fields))

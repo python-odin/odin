@@ -10,7 +10,7 @@ from odin.utils import cached_property, field_iter_items
 DEFAULT_TYPE_FIELD = '$'
 META_OPTION_NAMES = (
     'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group', 'type_field',
-    'key_field'
+    'key_field_name'
 )
 
 
@@ -29,7 +29,7 @@ class ResourceOptions(object):
         self.abstract = False
         self.doc_group = None
         self.type_field = DEFAULT_TYPE_FIELD
-        self.key_field = None
+        self.key_field_name = None
 
         self._cache = {}
 
@@ -70,6 +70,9 @@ class ResourceOptions(object):
     def add_virtual_field(self, field):
         self.virtual_fields.append(field)
         cached_property.clear_caches(self)
+
+    def get_key_field(self):
+        return self.field_map.get(self.key_field)
 
     @property
     def resource_name(self):
@@ -134,6 +137,13 @@ class ResourceOptions(object):
     @cached_property
     def element_field_map(self):
         return {f.attname: f for f in self.element_fields}
+
+    @cached_property
+    def key_field(self):
+        """
+        Field specified as the key field
+        """
+        return self.field_map.get(self.key_field_name)
 
     def __repr__(self):
         return '<Options for %s>' % self.resource_name
@@ -219,9 +229,10 @@ class ResourceBase(type):
             new_class._meta.parents.append(base)
 
         # If a key_field is defined ensure it exists
-        if new_class._meta.key_field is not None:
-            if new_class._meta.key_field not in field_attnames:
-                raise Exception('Key field `{}` is not exist on this resource.'.format(new_class._meta.key_field))
+        if new_class._meta.key_field_name is not None and new_class._meta.key_field is None:
+                raise AttributeError('Key field `{}` is not exist on this resource.'.format(
+                    new_class._meta.key_field_name)
+                )
 
         if abstract:
             return new_class
