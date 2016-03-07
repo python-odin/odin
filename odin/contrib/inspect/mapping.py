@@ -1,3 +1,4 @@
+from __future__ import absolute_import, print_function
 from humanfriendly import tables
 import six
 from .base import SummaryBase, resource_reference

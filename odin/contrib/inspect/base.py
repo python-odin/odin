@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 from humanfriendly.terminal import ansi_wrap, HIGHLIGHT_COLOR
 
 
@@ -13,7 +13,7 @@ class SummaryBase(object):
     def __init__(self, out):
         self.out = out
 
-    def print(self, *objects, sep=' ', end='\n'):
+    def print(self, sep=' ', end='\n', *objects):
         print(*objects, sep=sep, end=end, file=self.out)
 
     def title(self, value, underline='='):
