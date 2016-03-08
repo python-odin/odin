@@ -189,6 +189,10 @@ class ResourceBase(type):
         if new_class._meta.name_space is NOT_PROVIDED:
             new_class._meta.name_space = module
 
+        # Key field is inherited
+        if base_meta and (not new_class._meta.key_field_name) or (new_class._meta.key_field_name is NOT_PROVIDED):
+            new_class._meta.key_field_name = base_meta.key_field_name
+
         # Bail out early if we have already created this class.
         r = registration.get_resource(new_class._meta.resource_name)
         if r is not None:
