@@ -1,6 +1,7 @@
 import unittest
 import odin
 from odin import traversal
+from odin.exceptions import NoMatchError, InvalidPathError, MultipleMatchesError
 
 
 class Level3(odin.Resource):
@@ -16,6 +17,7 @@ class Level2(odin.Resource):
         namespace = 'odin.traversal'
 
     name = odin.StringField()
+    label = odin.StringField(null=True)
     level3s = odin.ListOf(Level3)
 
 
@@ -33,8 +35,8 @@ TEST_STRUCTURE = Level1(
     level2=Level2(name='b', level3s=[]),
     level2s=dict(
         a=Level2(name='c', level3s=[]),
-        b=Level2(name='d', level3s=[Level3(name='e'), Level3(name='f')]),
-        c=Level2(name='g', level3s=[Level3(name='h')]),
+        b=Level2(name='d', label='not_empty', level3s=[Level3(name='e'), Level3(name='f')]),
+        c=Level2(name='g', label='not_empty', level3s=[Level3(name='h')]),
     )
 )
 
@@ -213,7 +215,7 @@ class TraversalPathTestCase(unittest.TestCase):
         self.assertIsInstance(r, Level3)
         self.assertEqual('f', r.name)
 
-        r = traversal.TraversalPath.parse('level2s[d].level3s{name=f}').get_value(TEST_STRUCTURE)
+        r = traversal.TraversalPath.parse('level2s[b].level3s{name=f}').get_value(TEST_STRUCTURE)
         self.assertIsInstance(r, Level3)
         self.assertEqual('f', r.name)
 
@@ -223,10 +225,13 @@ class TraversalPathTestCase(unittest.TestCase):
 
     def test_invalid_path(self):
         path = traversal.TraversalPath.parse('level2s[b].level3s[4]')
-        self.assertRaises(IndexError, path.get_value, TEST_STRUCTURE)
+        self.assertRaises(NoMatchError, path.get_value, TEST_STRUCTURE)
 
         path = traversal.TraversalPath.parse('level2s[b].level3s_sd[1]')
-        self.assertRaises(KeyError, path.get_value, TEST_STRUCTURE)
+        self.assertRaises(InvalidPathError, path.get_value, TEST_STRUCTURE)
 
         path = traversal.TraversalPath.parse('level2s[d].level3s{name=h}')
-        self.assertRaises(KeyError, path.get_value, TEST_STRUCTURE)
+        self.assertRaises(NoMatchError, path.get_value, TEST_STRUCTURE)
+
+        path = traversal.TraversalPath.parse('level2s{label=not_empty}.level3s{name=h}')
+        self.assertRaises(MultipleMatchesError, path.get_value, TEST_STRUCTURE)
