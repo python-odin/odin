@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import six
+from .exceptions import NoMatchError, MultipleMatchesError, InvalidPathError
 
 
 class NotSupplied(object):
@@ -73,15 +74,34 @@ class TraversalPath(object):
         """
         result = root_resource
         for value, key, attr in self:
-            field = result._meta.field_map[attr]
+            try:
+                field = result._meta.field_map[attr]
+            except KeyError:
+                raise InvalidPathError(self, "Unknown field `{}`".format(attr))
+
             result = field.value_from_object(result)
             if value is NotSupplied:
+                # Nothing is required
                 continue
             elif key is NotSupplied:
+                # Index or key into element
                 value = field.key_to_python(value)
-                result = result[value]
+                try:
+                    result = result[value]
+                except (KeyError, IndexError):
+                    raise NoMatchError(self, "Could not find index `{}` in {}.".format(value, field))
             else:
-                pass
+                # Filter elements
+                if isinstance(result, dict):
+                    result = result.values()
+                results = tuple(r for r in result if getattr(r, key) == value)
+                if len(results) == 0:
+                    raise NoMatchError(self, "Filter matched no values; `{}` == `{}` in {}.".format(key, value, field))
+                elif len(results) > 1:
+                    raise MultipleMatchesError(
+                        self, "Filter matched multiple values; `{}` == `{}`.".format(key, value, field))
+                else:
+                    result = results[0]
         return result
 
 
