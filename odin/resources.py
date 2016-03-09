@@ -161,8 +161,10 @@ class ResourceBase(type):
         if name == 'NewBase' and attrs == {}:
             return super_new(cls, name, bases, attrs)
 
-        parents = [b for b in bases if isinstance(b, ResourceBase) and not (b.__name__ == 'NewBase'
-                                                                            and b.__mro__ == (b, object))]
+        parents = [
+            b for b in bases if
+            isinstance(b, ResourceBase) and not (b.__name__ == 'NewBase' and b.__mro__ == (b, object))
+        ]
         if not parents:
             # If this isn't a subclass of Resource, don't do anything special.
             return super_new(cls, name, bases, attrs)
@@ -503,11 +505,14 @@ def build_object_graph(d, resource=None, full_clean=True, copy_dict=True):
     """
     Generate an object graph from a dict
 
+    :param d: Dictionary to build from
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
         resource. If a list is supplied the first item will be used if a resource type is not supplied.
+    :param full_clean: Perform a full clean once built; default is True
+    :param copy_dict: Clone the dict before doing build; default is True
     :raises ValidationError: During building of the object graph and issues discovered are raised as a ValidationError.
-    """
 
+    """
     if isinstance(d, dict):
         return create_resource_from_dict(d, resource, full_clean, copy_dict)
 

@@ -1,5 +1,15 @@
 # -*- coding: utf-8 -*-
-sum_fields = lambda *field_values: sum(field_values)
+
+
+def sum_fields(*field_values):
+    """
+    Return a sum of fields
+
+    :param field_values:
+    :return:
+
+    """
+    return sum(field_values)
 
 
 class CatFields(object):

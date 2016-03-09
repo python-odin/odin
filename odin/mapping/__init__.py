@@ -11,7 +11,9 @@ from odin.utils import cached_property
 __all__ = ('Mapping', 'map_field', 'map_list_field', 'assign_field', 'define', 'assign')
 
 
-force_tuple = lambda x: x if isinstance(x, (list, tuple)) else (x,)
+def force_tuple(value):
+    return value if isinstance(value, (list, tuple)) else (value,)
+
 EMPTY_LIST = tuple()
 
 
@@ -72,6 +74,7 @@ class FieldResolverBase(object):
         Odin resources).
 
         :return: Dictionary
+
         """
         return self.get_field_dict()
 
@@ -161,8 +164,10 @@ class MappingMeta(type):
         if name == 'NewBase' and attrs == {}:
             return super_new(cls, name, bases, attrs)
 
-        parents = [b for b in bases if isinstance(b, MappingMeta) and not (b.__name__ == 'NewBase'
-                                                                           and b.__mro__ == (b, MappingBase, object))]
+        parents = [
+            b for b in bases
+            if isinstance(b, MappingMeta) and not (b.__name__ == 'NewBase' and b.__mro__ == (b, MappingBase, object))
+        ]
         if not parents:
             # If this isn't a subclass of Mapping, don't do anything special.
             return super_new(cls, name, bases, attrs)

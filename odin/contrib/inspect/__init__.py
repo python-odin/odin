@@ -1,7 +1,7 @@
 # Check required libraries are installed
 def import_check():
     try:
-        import humanfriendly
+        import humanfriendly  # noqa
     except ImportError:
         raise ImportError("The `humanfriendly` library is required to use the inspector.")
 
