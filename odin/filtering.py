@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import six
+from .exceptions import InvalidPathError
 from .traversal import TraversalPath
 
 
@@ -74,7 +75,7 @@ class FilterComparison(FilterAtom):
     def __call__(self, resource):
         try:
             value = self.field.get_value(resource)
-        except KeyError:
+        except InvalidPathError:
             return False
         else:
             if self.operation:
