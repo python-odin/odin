@@ -141,7 +141,7 @@ class ListOf(CompositeField):
 
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
-        super(CompositeField, self).validate(value)
+        super(CompositeField, self).validate(value)  # noqa
         if value is not None:
             super_validate = super(ListOf, self).validate
             self._process_list(value, super_validate)
@@ -224,7 +224,7 @@ class DictOf(CompositeField):
 
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
-        super(CompositeField, self).validate(value)
+        super(CompositeField, self).validate(value)  # noqa
         if value is not None:
             super_validate = super(DictOf, self).validate
             self._process_dict(value, super_validate)
