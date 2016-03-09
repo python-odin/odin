@@ -114,7 +114,7 @@ class TraversalError(Exception):
     Exception raised during a traversal operation.
     """
     def __init__(self, path, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(TraversalError, self).__init__(*args, **kwargs)
         self.path = path
 
 
