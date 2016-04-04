@@ -15,7 +15,7 @@ def deprecated(message):
         @wraps(fun)
         def wrapper(*args, **kwargs):
             import warnings
-            warnings.warn("{} is deprecated and scheduled for removal. {}".format(fun, message))
+            warnings.warn("{} is deprecated and scheduled for removal. {}".format(fun.__name__, message))
             return fun(*args, **kwargs)
         return wrapper
     return inner
