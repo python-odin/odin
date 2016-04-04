@@ -105,3 +105,14 @@ class ResourceAdapterTestCase(unittest.TestCase):
             {'name': 'Bar'},
             {'name': 'Eek'}
         ], [a.to_dict() for a in actuals])
+
+    def test_curried(self):
+        book = Book(title="Foo", isbn='abc123', rrp=123.45, num_pages=10, fiction=True, publisher=Publisher())
+        SummaryAdapter = adapters.ResourceAdapter.curry(include=('title', 'rrp', 'fiction'))
+        target = SummaryAdapter(book)
+
+        self.assertDictEqual({
+            'fiction': True,
+            'rrp': 123.45,
+            'title': 'Foo'
+        }, target.to_dict())
