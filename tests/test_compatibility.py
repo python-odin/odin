@@ -5,8 +5,8 @@ from odin.compatibility import deprecated
 
 
 class DeprecatedTestCase(unittest.TestCase):
-    def test_add_deprecation_warning(self):
-        @deprecated(message="No longer used.")
+    def test_function_deprecation_warning(self):
+        @deprecated("No longer used.", category=UserWarning)
         def deprecated_function():
             pass
 
@@ -20,3 +20,20 @@ class DeprecatedTestCase(unittest.TestCase):
         ], [
             'deprecated_function is deprecated and scheduled for removal. No longer used.',
         ])
+
+    def test_class_deprecation_warning(self):
+        @deprecated("No longer used.", category=UserWarning)
+        class DeprecatedClass(object):
+            pass
+
+        with warnings.catch_warnings(record=True) as warning_log:
+            DeprecatedClass()
+
+        # Compare the message values
+        self.assertListEqual([
+            str(m.message) for m in
+            sorted(warning_log, key=lambda l: str(l.message))
+        ], [
+            'DeprecatedClass is deprecated and scheduled for removal. No longer used.',
+        ])
+
