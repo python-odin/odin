@@ -156,13 +156,13 @@ class MappingMeta(type):
     """
     Meta-class for all Mappings
     """
-    def __new__(cls, name, bases, attrs):
-        super_new = super(MappingMeta, cls).__new__
+    def __new__(mcs, name, bases, attrs):
+        super_new = super(MappingMeta, mcs).__new__
 
         # attrs will never be empty for classes declared in the standard way
         # (ie. with the `class` keyword). This is quite robust.
         if name == 'NewBase' and attrs == {}:
-            return super_new(cls, name, bases, attrs)
+            return super_new(mcs, name, bases, attrs)
 
         parents = [
             b for b in bases
@@ -170,7 +170,7 @@ class MappingMeta(type):
         ]
         if not parents:
             # If this isn't a subclass of Mapping, don't do anything special.
-            return super_new(cls, name, bases, attrs)
+            return super_new(mcs, name, bases, attrs)
 
         # Backward compatibility from_resource -> from_obj
         from_obj = attrs.setdefault('from_obj', attrs.get('from_resource'))
@@ -295,7 +295,7 @@ class MappingMeta(type):
         attrs['_mapping_rules'] = mapping_rules
         attrs['_subs'] = {}
 
-        registration.register_mapping(super_new(cls, name, bases, attrs))
+        registration.register_mapping(super_new(mcs, name, bases, attrs))
         mapper = registration.get_mapping(from_obj, to_obj)
 
         # Register mapping with parents mapping objects as a sub class.
@@ -378,6 +378,8 @@ class MappingBase(object):
 
     # Default mapping result object to use
     default_mapping_result = CachingMappingResult
+
+    _mapping_rules = None
 
     @classmethod
     def apply(cls, source_obj, context=None, allow_subclass=False, mapping_result=None):
@@ -524,6 +526,7 @@ class MappingBase(object):
 
         :param destination_obj: The existing destination object.
         :param ignore_fields: A list of fields that should be ignored eg ID fields
+        :param fields: Collection of fields that should be mapped.
 
         """
         assert hasattr(self, '_mapping_rules')
@@ -584,18 +587,19 @@ def map_field(func=None, from_field=None, to_field=None, to_list=False):
     """
     Field decorator for custom mappings.
 
+    :param func: Method being decorator is wrapping.
     :param from_field: Name of the field to map from; default is to use the function name.
     :param to_field: Name of the field to map to; default is to use the function name.
     :param to_list: The result is a list (rather than a multi value tuple).
     """
-    def inner(func):
-        func._mapping = define(
-            from_field or func.__name__,
-            func.__name__,
-            to_field or func.__name__,
+    def inner(fun):
+        fun._mapping = define(
+            from_field or fun.__name__,
+            fun.__name__,
+            to_field or fun.__name__,
             to_list
         )
-        return func
+        return fun
 
     return inner(func) if func else inner
 
@@ -620,17 +624,18 @@ def assign_field(func=None, to_field=None, to_list=False):
     Allows for the mapping to calculate a value based on the context or other information. Useful when a destination
     objects defaulting mechanism is not able to calculate a default that either applies or is suitable.
 
+    :param func: Method being decorator is wrapping.
     :param to_field: Name of the field to assign value to; default is to use the function name.
     :param to_list: The result is a list (rather than a multi value tuple).
     """
-    def inner(func):
-        func._mapping = define(
+    def inner(fun):
+        fun._mapping = define(
             None,
-            func.__name__,
-            to_field or func.__name__,
+            fun.__name__,
+            to_field or fun.__name__,
             to_list
         )
-        return func
+        return fun
 
     return inner(func) if func else inner
 
