@@ -40,7 +40,7 @@ Highlights
 * Mapping between resources or extended to other object types (eg Django Models)
 * Easy extension to support custom fields
 * Python 2.7+, Python 3.3+ and PyPy :sup:`1` supported
-* Integration with Django (see `baldr <https://github.com/timsavage/baldr>`_)
+* Integration with Django (see `baldr <https://github.com/python-odin/baldr>`_)
 * Support for documenting resources with `Sphinx <http://sphinx-doc.org/>`_
 * Minimal dependencies (base functionality only requires *six*)
 
