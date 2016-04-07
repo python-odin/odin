@@ -1,3 +1,4 @@
+
 ####
 Odin
 ####
@@ -62,8 +63,8 @@ Upcoming features
 * XML Codec (export completed)
 * Complete documentation, this will pretty much always be here.
 * Improvements for CSV Codec (writing, reading multi resource CSV's)
-* RESTful interface with support for Flask and Django see (see `baldr <https://github.com/python-odin/baldr>`_)
-* Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms) (see `baldr <https://github.com/python-odin/baldr>`_)
+* RESTful interface with support for Flask and Django
+* Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms)
 
 **Planning**
 
@@ -89,8 +90,7 @@ Requires
 Example
 *******
 
-**With definition:**
-::
+**With definition:**::
 
     import odin
 
@@ -140,6 +140,7 @@ Authors
 *******
 
 Tim Savage
+
 
 Special Mention
 ***************
