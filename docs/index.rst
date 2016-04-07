@@ -41,8 +41,8 @@ Integration
 Project Links
 *************
 
-* `Project home <https://github.com/timsavage/odin>`_
-* `Issue tracker <https://github.com/timsavage/odin/issues>`_
+* `Project home <https://github.com/python-odin/odin>`_
+* `Issue tracker <https://github.com/python-odin/odin/issues>`_
 
 Indices and tables
 ******************
