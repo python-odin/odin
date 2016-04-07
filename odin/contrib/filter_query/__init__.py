@@ -6,7 +6,6 @@ Query language for filtering::
 
 """
 from odin import filtering
-
 try:
     from ply import lex
 except ImportError:
@@ -36,8 +35,6 @@ def t_FLOAT(t):
     r'\d+\.\d+'
     t.value = float(t.value)
     return t
-
-
 
 
 FILTER_OPERATOR_MAP = {
