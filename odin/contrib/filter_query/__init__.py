@@ -11,6 +11,11 @@ try:
 except ImportError:
     raise ImportError("The ply package is not installed, please install this library to use filter_query syntax.")
 
+
+import warnings
+warnings.warn(message="This is a pre-release feature that is very much a work in progress.")
+
+
 keywords = (
     'DATE', 'DATETIME'
 )

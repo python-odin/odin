@@ -1,3 +1,7 @@
+import warnings
+warnings.warn(message="This is a ALPHA that is a work in progress (only works with Python 3).")
+
+
 # Check required libraries are installed
 def import_check():
     try:
