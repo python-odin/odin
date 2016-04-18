@@ -2,6 +2,7 @@
 import collections
 import six
 from odin import registration
+from odin.fields import NOT_PROVIDED
 from odin.resources import Resource, ResourceIterable
 from odin.fields.composite import ListOf, DictAs
 from odin.exceptions import MappingSetupError, MappingExecutionError
@@ -535,7 +536,7 @@ class MappingBase(object):
 
         for mapping_rule in self._mapping_rules:
             for name, value in self._apply_rule(mapping_rule).items():
-                if name in ignore_fields or (fields and name not in fields):
+                if name in ignore_fields or (fields and name not in fields) or value is NOT_PROVIDED:
                     continue
                 setattr(destination_obj, name, value)
 
