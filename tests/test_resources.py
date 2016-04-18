@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import unittest
-
-from odin.resources import ResourceOptions, build_object_graph
 import odin
+from odin.fields import NOT_PROVIDED
+from odin.resources import ResourceOptions, build_object_graph
 from odin.exceptions import ValidationError
 from .resources import Book, Library, Subscriber
 
@@ -248,3 +248,21 @@ class ConstructionMethodsTestCase(unittest.TestCase):
         actual = sorted(build_object_graph(library, resource=Library, full_clean=False).books, key=lambda s: s.title)
 
         self.assertEqual(actual, expected)
+
+    def test_create_resource_from_dict_with_default_to_not_supplied(self):
+        book = build_object_graph({
+            "title": "Foo",
+            "num_pages": 42
+        }, Book, full_clean=False, default_to_not_supplied=True)
+
+        self.assertEqual(dict(
+            title="Foo",
+            isbn=NOT_PROVIDED,
+            num_pages=42,
+            rrp=NOT_PROVIDED,
+            fiction=NOT_PROVIDED,
+            genre=NOT_PROVIDED,
+            published=NOT_PROVIDED,
+            authors=NOT_PROVIDED,
+            publisher=NOT_PROVIDED
+        ), book.to_dict())
