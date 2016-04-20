@@ -1,0 +1,66 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+import datetime
+import os
+from odin.datetimeutil import utc
+from six import StringIO
+import unittest
+from odin.codecs import yaml_codec
+from .resources import *
+
+FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
+
+
+class JSONCodecTestCase(unittest.TestCase):
+    def test_dumps_and_loads(self):
+        in_resource = Book(
+            title='Consider Phlebas',
+            isbn='0-333-45430-8',
+            num_pages=471,
+            rrp=19.50,
+            fiction=True,
+            genre="sci-fi",
+            authors=[Author(name="Iain M. Banks")],
+            publisher=Publisher(name="Macmillan"),
+        )
+
+        data = yaml_codec.dumps(in_resource)
+        out_resource = yaml_codec.loads(data)
+
+        self.assertEqual(out_resource.title, in_resource.title)
+        self.assertEqual(out_resource.isbn, in_resource.isbn)
+        self.assertEqual(out_resource.num_pages, in_resource.num_pages)
+        self.assertEqual(out_resource.rrp, in_resource.rrp)
+        self.assertEqual(out_resource.fiction, in_resource.fiction)
+        self.assertEqual(out_resource.genre, in_resource.genre)
+        self.assertEqual(out_resource.authors[0].name, in_resource.authors[0].name)
+        self.assertEqual(out_resource.publisher.name, in_resource.publisher.name)
+
+    def test_dump_and_load(self):
+        in_resource = Book(
+            title='Consider Phlebas',
+            isbn='0-333-45430-8',
+            num_pages=471,
+            rrp=19.50,
+            fiction=True,
+            genre="sci-fi",
+            authors=[Author(name="Iain M. Banks")],
+            publisher=Publisher(name="Macmillan"),
+            published=[datetime.datetime(1987, 1, 1)]
+        )
+
+        fp = StringIO()
+        yaml_codec.dump(in_resource, fp)
+
+        fp.seek(0)
+        out_resource = yaml_codec.load(fp)
+
+        self.assertEqual(out_resource.title, in_resource.title)
+        self.assertEqual(out_resource.isbn, in_resource.isbn)
+        self.assertEqual(out_resource.num_pages, in_resource.num_pages)
+        self.assertEqual(out_resource.rrp, in_resource.rrp)
+        self.assertEqual(out_resource.fiction, in_resource.fiction)
+        self.assertEqual(out_resource.genre, in_resource.genre)
+        self.assertEqual(out_resource.authors[0].name, in_resource.authors[0].name)
+        self.assertEqual(out_resource.publisher.name, in_resource.publisher.name)
+        self.assertEqual(out_resource.published[0], in_resource.published[0])

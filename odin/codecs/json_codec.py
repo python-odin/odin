@@ -48,6 +48,8 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
         resource. If a list is supplied the first item will be used if a resource type is not supplied.
     :param full_clean: Do a full clean of the object as part of the loading process.
+    :param default_to_not_supplied: Used for loading partial resources. Any fields not supplied are replaced with
+        NOT_SUPPLIED.
     :returns: A resource object or object graph of resources loaded from file.
 
     """
@@ -67,6 +69,8 @@ def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
         resource. If a list is supplied the first item will be used if a resource type is not supplied.
     :param full_clean: Do a full clean of the object as part of the loading process.
+    :param default_to_not_supplied: Used for loading partial resources. Any fields not supplied are replaced with
+        NOT_SUPPLIED.
     :returns: A resource object or object graph of resources parsed from supplied string.
 
     """

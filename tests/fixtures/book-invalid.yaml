@@ -1,0 +1,21 @@
+$: Library
+books:
+  -
+    $: library.Book
+    authors:
+      -
+        $: Author
+        name: Iain M. Banks
+      -
+        $: Author
+      -
+        $: OtherAuthor
+        name: Some other guy.
+    fiction: null
+    genre: space opera
+    num_pages: 471
+    publisher:
+      $: Publisher
+      name: Macmillan
+    rrp: 19.5
+    title: Consider Phlebas

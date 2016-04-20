@@ -52,6 +52,10 @@ setup(
     install_requires=['six'],
 
     extras_require={
+        # Additional codecs
+        'yaml': ['pyyaml'],
+        'msgpack': ['msgpack-python'],
+
         # Documentation generation
         'doc_gen': ["jinja2>=2.7"],
         # Pint integration
