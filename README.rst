@@ -66,10 +66,6 @@ Upcoming features
 * RESTful interface with support for Flask and Django
 * Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms)
 
-**Planning**
-
-* YAML codec
-
 
 Requires
 ********
@@ -80,6 +76,7 @@ Requires
 
 * simplejson - Odin will use simplejson if it is available or fallback to the builtin json library
 * msgpack-python - To enable use of the msgpack codec
+* pyyaml - To enable use of the YAML codec
 
 **Contrib**
 
