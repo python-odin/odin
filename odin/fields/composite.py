@@ -141,7 +141,7 @@ class ListOf(CompositeField):
 
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
-        super(CompositeField, self).validate(value)
+        super(CompositeField, self).validate(value)  # noqa
         if value is not None:
             super_validate = super(ListOf, self).validate
             self._process_list(value, super_validate)
@@ -215,7 +215,7 @@ class DictOf(CompositeField):
 
             def process(val):
                 if val is None:
-                    raise exceptions.ValidationError(self.error_messages['null'])
+                    raise exceptions.ValidationError(self.error_messages['null'], code='null')
                 return super_to_python(val)
 
             return self._process_dict(value, process)
@@ -224,13 +224,13 @@ class DictOf(CompositeField):
 
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
-        super(CompositeField, self).validate(value)
+        super(CompositeField, self).validate(value)  # noqa
         if value is not None:
             super_validate = super(DictOf, self).validate
             self._process_dict(value, super_validate)
 
         if (value is not None) and (not value) and (not self.empty):
-            raise exceptions.ValidationError(self.error_messages['empty'])
+            raise exceptions.ValidationError(self.error_messages['empty'], code='empty')
 
     def __iter__(self):
         # This does nothing but it does prevent inspections from complaining.

@@ -38,7 +38,7 @@ class OdinEncoder(json.JSONEncoder):
         return super(OdinEncoder, self)
 
 
-def load(fp, resource=None, full_clean=True):
+def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
     """
     Load a from a JSON encoded file.
 
@@ -48,13 +48,15 @@ def load(fp, resource=None, full_clean=True):
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
         resource. If a list is supplied the first item will be used if a resource type is not supplied.
     :param full_clean: Do a full clean of the object as part of the loading process.
+    :param default_to_not_supplied: Used for loading partial resources. Any fields not supplied are replaced with
+        NOT_SUPPLIED.
     :returns: A resource object or object graph of resources loaded from file.
 
     """
-    return loads(fp.read(), resource, full_clean)
+    return loads(fp.read(), resource, full_clean, default_to_not_supplied)
 
 
-def loads(s, resource=None, full_clean=True):
+def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
     """
     Load from a JSON encoded string.
 
@@ -67,11 +69,13 @@ def loads(s, resource=None, full_clean=True):
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
         resource. If a list is supplied the first item will be used if a resource type is not supplied.
     :param full_clean: Do a full clean of the object as part of the loading process.
+    :param default_to_not_supplied: Used for loading partial resources. Any fields not supplied are replaced with
+        NOT_SUPPLIED.
     :returns: A resource object or object graph of resources parsed from supplied string.
 
     """
     try:
-        return resources.build_object_graph(json.loads(s), resource, full_clean, copy_dict=False)
+        return resources.build_object_graph(json.loads(s), resource, full_clean, False, default_to_not_supplied)
     except (ValueError, TypeError) as ex:
         raise CodecDecodeError(str(ex))
 

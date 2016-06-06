@@ -9,7 +9,8 @@ from odin.utils import cached_property, field_iter_items
 
 DEFAULT_TYPE_FIELD = '$'
 META_OPTION_NAMES = (
-    'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group', 'type_field'
+    'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group', 'type_field',
+    'key_field_name'
 )
 
 
@@ -28,6 +29,7 @@ class ResourceOptions(object):
         self.abstract = False
         self.doc_group = None
         self.type_field = DEFAULT_TYPE_FIELD
+        self.key_field_name = None
 
         self._cache = {}
 
@@ -68,6 +70,9 @@ class ResourceOptions(object):
     def add_virtual_field(self, field):
         self.virtual_fields.append(field)
         cached_property.clear_caches(self)
+
+    def get_key_field(self):
+        return self.field_map.get(self.key_field)
 
     @property
     def resource_name(self):
@@ -133,6 +138,13 @@ class ResourceOptions(object):
     def element_field_map(self):
         return {f.attname: f for f in self.element_fields}
 
+    @cached_property
+    def key_field(self):
+        """
+        Field specified as the key field
+        """
+        return self.field_map.get(self.key_field_name)
+
     def __repr__(self):
         return '<Options for %s>' % self.resource_name
 
@@ -149,8 +161,10 @@ class ResourceBase(type):
         if name == 'NewBase' and attrs == {}:
             return super_new(cls, name, bases, attrs)
 
-        parents = [b for b in bases if isinstance(b, ResourceBase) and not (b.__name__ == 'NewBase'
-                                                                            and b.__mro__ == (b, object))]
+        parents = [
+            b for b in bases if
+            isinstance(b, ResourceBase) and not (b.__name__ == 'NewBase' and b.__mro__ == (b, object))
+        ]
         if not parents:
             # If this isn't a subclass of Resource, don't do anything special.
             return super_new(cls, name, bases, attrs)
@@ -176,6 +190,10 @@ class ResourceBase(type):
 
         if new_class._meta.name_space is NOT_PROVIDED:
             new_class._meta.name_space = module
+
+        # Key field is inherited
+        if base_meta and (not new_class._meta.key_field_name) or (new_class._meta.key_field_name is NOT_PROVIDED):
+            new_class._meta.key_field_name = base_meta.key_field_name
 
         # Bail out early if we have already created this class.
         r = registration.get_resource(new_class._meta.resource_name)
@@ -215,6 +233,12 @@ class ResourceBase(type):
 
             new_class._meta.parents += base._meta.parents
             new_class._meta.parents.append(base)
+
+        # If a key_field is defined ensure it exists
+        if new_class._meta.key_field_name is not None and new_class._meta.key_field is None:
+                raise AttributeError('Key field `{}` is not exist on this resource.'.format(
+                    new_class._meta.key_field_name)
+                )
 
         if abstract:
             return new_class
@@ -394,7 +418,7 @@ def resolve_resource_type(resource):
         return resource, DEFAULT_TYPE_FIELD
 
 
-def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True):
+def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True, default_to_not_provided=False):
     """
     Create a resource from a dict.
 
@@ -404,6 +428,8 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True)
         be a parent(s) of any resource defined by the dict.
     :param full_clean: Do a full clean as part of the creation.
     :param copy_dict: Use a copy of the input dictionary rather than destructively processing the input dict.
+    :param default_to_not_supplied: If an value is not supplied keep the value as NOT_PROVIDED. This is used
+        to support merging an updated value.
 
     """
     assert isinstance(d, dict)
@@ -458,7 +484,8 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True)
     for f in resource_type._meta.fields:
         value = d.pop(f.name, NOT_PROVIDED)
         if value is NOT_PROVIDED:
-            value = f.get_default() if f.use_default_if_not_provided else None
+            if not default_to_not_provided:
+                value = f.get_default() if f.use_default_if_not_provided else None
         else:
             try:
                 value = f.to_python(value)
@@ -477,20 +504,25 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True)
     return new_resource
 
 
-def build_object_graph(d, resource=None, full_clean=True, copy_dict=True):
+def build_object_graph(d, resource=None, full_clean=True, copy_dict=True, default_to_not_supplied=False):
     """
     Generate an object graph from a dict
 
+    :param d: Dictionary to build from
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
         resource. If a list is supplied the first item will be used if a resource type is not supplied.
+    :param full_clean: Perform a full clean once built; default is True
+    :param copy_dict: Clone the dict before doing build; default is True
+    :param default_to_not_supplied: If an value is not supplied keep the value as NOT_PROVIDED. This is used
+        to support merging an updated value.
     :raises ValidationError: During building of the object graph and issues discovered are raised as a ValidationError.
-    """
 
+    """
     if isinstance(d, dict):
-        return create_resource_from_dict(d, resource, full_clean, copy_dict)
+        return create_resource_from_dict(d, resource, full_clean, copy_dict, default_to_not_supplied)
 
     if isinstance(d, list):
-        return [build_object_graph(o, resource, full_clean, copy_dict) for o in d]
+        return [build_object_graph(o, resource, full_clean, copy_dict, default_to_not_supplied) for o in d]
 
     return d
 

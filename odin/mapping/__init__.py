@@ -2,6 +2,7 @@
 import collections
 import six
 from odin import registration
+from odin.fields import NOT_PROVIDED
 from odin.resources import Resource, ResourceIterable
 from odin.fields.composite import ListOf, DictAs
 from odin.exceptions import MappingSetupError, MappingExecutionError
@@ -11,7 +12,9 @@ from odin.utils import cached_property
 __all__ = ('Mapping', 'map_field', 'map_list_field', 'assign_field', 'define', 'assign')
 
 
-force_tuple = lambda x: x if isinstance(x, (list, tuple)) else (x,)
+def force_tuple(value):
+    return value if isinstance(value, (list, tuple)) else (value,)
+
 EMPTY_LIST = tuple()
 
 
@@ -72,6 +75,7 @@ class FieldResolverBase(object):
         Odin resources).
 
         :return: Dictionary
+
         """
         return self.get_field_dict()
 
@@ -153,19 +157,21 @@ class MappingMeta(type):
     """
     Meta-class for all Mappings
     """
-    def __new__(cls, name, bases, attrs):
-        super_new = super(MappingMeta, cls).__new__
+    def __new__(mcs, name, bases, attrs):
+        super_new = super(MappingMeta, mcs).__new__
 
         # attrs will never be empty for classes declared in the standard way
         # (ie. with the `class` keyword). This is quite robust.
         if name == 'NewBase' and attrs == {}:
-            return super_new(cls, name, bases, attrs)
+            return super_new(mcs, name, bases, attrs)
 
-        parents = [b for b in bases if isinstance(b, MappingMeta) and not (b.__name__ == 'NewBase'
-                                                                           and b.__mro__ == (b, MappingBase, object))]
+        parents = [
+            b for b in bases
+            if isinstance(b, MappingMeta) and not (b.__name__ == 'NewBase' and b.__mro__ == (b, MappingBase, object))
+        ]
         if not parents:
             # If this isn't a subclass of Mapping, don't do anything special.
-            return super_new(cls, name, bases, attrs)
+            return super_new(mcs, name, bases, attrs)
 
         # Backward compatibility from_resource -> from_obj
         from_obj = attrs.setdefault('from_obj', attrs.get('from_resource'))
@@ -290,7 +296,7 @@ class MappingMeta(type):
         attrs['_mapping_rules'] = mapping_rules
         attrs['_subs'] = {}
 
-        registration.register_mapping(super_new(cls, name, bases, attrs))
+        registration.register_mapping(super_new(mcs, name, bases, attrs))
         mapper = registration.get_mapping(from_obj, to_obj)
 
         # Register mapping with parents mapping objects as a sub class.
@@ -302,7 +308,7 @@ class MappingMeta(type):
 
 class MappingResult(ResourceIterable):
     """
-    Iterator used to return a sequence from a mapping operation (used by ``Mapping.apply``).
+    Iterator used lazily return a sequence from a mapping operation (used by ``Mapping.apply``).
     """
     def __init__(self, sequence, mapping, context=None, *mapping_options):
         super(MappingResult, self).__init__(sequence)
@@ -319,6 +325,50 @@ class MappingResult(ResourceIterable):
         self.context['_loop_idx'].pop()
 
 
+class ImmediateResult(ResourceIterable):
+    """
+    Immediately performs the mapping operation rather than delay.
+
+    This is useful if context is volatile.
+    """
+    def __init__(self, *args, **kwargs):
+        results = list(MappingResult(*args, **kwargs))
+        super(ImmediateResult, self).__init__(results)
+
+
+class CachingMappingResult(MappingResult):
+    """
+    Extends from the basic MappingResult to cache the results of a mapping operation and also provide methods and
+    abilities available to a list (len, indexing). The results are only evaluated when requested.
+    """
+    def __init__(self, *args, **kwargs):
+        super(CachingMappingResult, self).__init__(*args, **kwargs)
+        self._cache = None
+
+    def __iter__(self):
+        if self._cache is None:
+            self._cache = []
+            for item in super(CachingMappingResult, self).__iter__():
+                self._cache.append(item)
+                yield item
+        else:
+            # Python 2.x compatible (python 3 can use yield from)
+            for item in self._cache:
+                yield item
+
+    @property
+    def items(self):
+        if self._cache is None:
+            list(iter(self))
+        return self._cache
+
+    def __len__(self):
+        return len(self.items)
+
+    def __getitem__(self, idx):
+        return self.items[idx]
+
+
 class MappingBase(object):
     from_obj = None
     to_obj = None
@@ -327,8 +377,13 @@ class MappingBase(object):
     from_resource = None
     to_resource = None
 
+    # Default mapping result object to use
+    default_mapping_result = CachingMappingResult
+
+    _mapping_rules = None
+
     @classmethod
-    def apply(cls, source_obj, context=None, allow_subclass=False):
+    def apply(cls, source_obj, context=None, allow_subclass=False, mapping_result=None):
         """
         Apply conversion either a single resource or a list of resources using the mapping defined by this class.
 
@@ -336,12 +391,17 @@ class MappingBase(object):
 
         :param source_obj: The source resource, this must be an instance of :py:attr:`Mapping.from_obj`.
         :param context: An optional context value, this can be any value you want to aid in mapping
+        :param allow_subclass: Allow sub classes of mapping resource to be included.
+        :param mapping_result: If an iterable is provided as the source object a mapping result is returned of the type
+            specified is returned.
+
         """
         context = context or {}
+        mapping_result = mapping_result or cls.default_mapping_result
         context.setdefault('_loop_idx', [])
 
-        if isinstance(source_obj, (list, tuple)) or hasattr(source_obj, '__iter__'):
-            return MappingResult(source_obj, cls, context, allow_subclass)
+        if hasattr(source_obj, '__iter__'):
+            return mapping_result(source_obj, cls, context, allow_subclass)
         elif source_obj.__class__ is cls.from_obj:
             return cls(source_obj, context).convert()
         else:
@@ -467,6 +527,7 @@ class MappingBase(object):
 
         :param destination_obj: The existing destination object.
         :param ignore_fields: A list of fields that should be ignored eg ID fields
+        :param fields: Collection of fields that should be mapped.
 
         """
         assert hasattr(self, '_mapping_rules')
@@ -475,7 +536,7 @@ class MappingBase(object):
 
         for mapping_rule in self._mapping_rules:
             for name, value in self._apply_rule(mapping_rule).items():
-                if name in ignore_fields or (fields and name not in fields):
+                if name in ignore_fields or (fields and name not in fields) or value is NOT_PROVIDED:
                     continue
                 setattr(destination_obj, name, value)
 
@@ -509,22 +570,37 @@ class Mapping(six.with_metaclass(MappingMeta, MappingBase)):
     mappings = []
 
 
+class ImmediateMapping(six.with_metaclass(MappingMeta, MappingBase)):
+    """
+    Definition of a mapping between two Objects.
+
+    This version of the Mapping, defaults to returning an Immediate rather than
+    a cached result object.
+
+    """
+    exclude_fields = []
+    mappings = []
+
+    default_mapping_result = ImmediateResult
+
+
 def map_field(func=None, from_field=None, to_field=None, to_list=False):
     """
     Field decorator for custom mappings.
 
+    :param func: Method being decorator is wrapping.
     :param from_field: Name of the field to map from; default is to use the function name.
     :param to_field: Name of the field to map to; default is to use the function name.
     :param to_list: The result is a list (rather than a multi value tuple).
     """
-    def inner(func):
-        func._mapping = define(
-            from_field or func.__name__,
-            func.__name__,
-            to_field or func.__name__,
+    def inner(fun):
+        fun._mapping = define(
+            from_field or fun.__name__,
+            fun.__name__,
+            to_field or fun.__name__,
             to_list
         )
-        return func
+        return fun
 
     return inner(func) if func else inner
 
@@ -549,17 +625,18 @@ def assign_field(func=None, to_field=None, to_list=False):
     Allows for the mapping to calculate a value based on the context or other information. Useful when a destination
     objects defaulting mechanism is not able to calculate a default that either applies or is suitable.
 
+    :param func: Method being decorator is wrapping.
     :param to_field: Name of the field to assign value to; default is to use the function name.
     :param to_list: The result is a list (rather than a multi value tuple).
     """
-    def inner(func):
-        func._mapping = define(
+    def inner(fun):
+        fun._mapping = define(
             None,
-            func.__name__,
-            to_field or func.__name__,
+            fun.__name__,
+            to_field or fun.__name__,
             to_list
         )
-        return func
+        return fun
 
     return inner(func) if func else inner
 

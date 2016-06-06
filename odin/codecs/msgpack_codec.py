@@ -36,7 +36,7 @@ class OdinPacker(msgpack.Packer):
             return TYPE_SERIALIZERS[o.__class__](o)
 
 
-def load(fp, resource=None, encoding='UTF8', full_clean=True):
+def load(fp, resource=None, encoding='UTF8', full_clean=True, default_to_not_supplied=False):
     """
     Load a from a MessagePack encoded file.
 
@@ -47,10 +47,11 @@ def load(fp, resource=None, encoding='UTF8', full_clean=True):
     :param full_clean: Do a full clean of the object as part of the loading process.
     :returns: A resource object or object graph of resources loaded from file.
     """
-    return resources.build_object_graph(msgpack.load(fp, encoding=encoding), resource, full_clean)
+    return resources.build_object_graph(msgpack.load(fp, encoding=encoding), resource, full_clean,
+                                        default_to_not_supplied)
 
 
-def loads(s, resource=None, encoding='UTF8', full_clean=True):
+def loads(s, resource=None, encoding='UTF8', full_clean=True, default_to_not_supplied=False):
     """
     Load from a MessagePack encoded string/bytes.
 
@@ -64,7 +65,8 @@ def loads(s, resource=None, encoding='UTF8', full_clean=True):
     :param full_clean: Do a full clean of the object as part of the loading process.
     :returns: A resource object or object graph of resources parsed from supplied string.
     """
-    return resources.build_object_graph(msgpack.loads(s, encoding=encoding), resource, full_clean, copy_dict=False)
+    return resources.build_object_graph(msgpack.loads(s, encoding=encoding), resource, full_clean, False,
+                                        default_to_not_supplied)
 
 
 def dump(resource, fp, cls=OdinPacker, include_virtual_fields=True, **kwargs):

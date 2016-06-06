@@ -1,0 +1,118 @@
+{
+  "$": "Library",
+  "name": "Tim's Library",
+  "books": [
+    {
+      "$": "library.Book",
+      "authors": [
+        {
+          "$": "Author",
+          "name": "Iain M. Banks"
+        }
+      ],
+      "fiction": true,
+      "published": ["1987-01-01T00:00:00.000Z"],
+      "genre": "sci-fi",
+      "num_pages": 471,
+      "publisher": {
+        "$": "Publisher",
+        "name": "Macmillan"
+      },
+      "rrp": 19.5,
+      "isbn": "0-333-45430-8",
+      "title": "Consider Phlebas"
+    },
+    {
+      "$": "library.Book",
+      "authors": [
+        {
+          "$": "Author",
+          "name": "Iain M. Banks"
+        }
+      ],
+      "fiction": true,
+      "published": ["1988-01-01T00:00:00.000Z"],
+      "genre": "sci-fi",
+      "num_pages": 288,
+      "publisher": {
+        "$": "Publisher",
+        "name": "Macmillan"
+      },
+      "rrp": 19.5,
+      "isbn": "1-85723-146-5",
+      "title": "The Player of Games"
+    },
+    {
+      "$": "library.Book",
+      "authors": [
+        {
+          "$": "Author",
+          "name": "Iain M. Banks"
+        }
+      ],
+      "fiction": true,
+      "published": ["1990-01-01T00:00:00.000Z"],
+      "genre": "sci-fi",
+      "num_pages": 352,
+      "publisher": {
+        "$": "Publisher",
+        "name": "Orbit"
+      },
+      "rrp": 19.5,
+      "isbn": "1-85723-135-X",
+      "title": "Use of Weapons"
+    },
+    {
+      "$": "library.Book",
+      "authors": [
+        {
+          "$": "Author",
+          "name": "Iain M. Banks"
+        }
+      ],
+      "fiction": true,
+      "published": ["1996-01-01T00:00:00.000Z"],
+      "genre": "sci-fi",
+      "num_pages": 451,
+      "publisher": {
+        "$": "Publisher",
+        "name": "Orbit Books"
+      },
+      "rrp": 19.5,
+      "isbn": "1-85723-394-8",
+      "title": "Excession"
+    },
+    {
+      "$": "library.Book",
+      "authors": [
+        {
+          "$": "Author",
+          "name": "Erich Gamma"
+        },
+        {
+          "$": "Author",
+          "name": "Richard Helm"
+        },
+        {
+          "$": "Author",
+          "name": "Ralph Johnson"
+        },
+        {
+          "$": "Author",
+          "name": "John Vlissides"
+        }
+      ],
+      "fiction": false,
+      "published": ["1995-01-01T00:00:00.000Z"],
+      "genre": "computers-and-tech",
+      "num_pages": 395,
+      "publisher": {
+        "$": "Publisher",
+        "name": "Addison Wesley"
+      },
+      "rrp": 59.99,
+      "isbn": "0-201-63361-2",
+      "title": "Design Patterns - Elements of Reusable Object-Orientated Software"
+    }
+  ]
+}

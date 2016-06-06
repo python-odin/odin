@@ -446,6 +446,14 @@ class SubClassMappingTestCase(MappingTestCase):
 
     def test_abstract_mapping(self):
         source = [ResourceB(foo="1", bar="2"), ResourceC(foo="3", eek="4"), ResourceB(foo="5", bar="6")]
+        result = ResourceAToResourceX.apply(source)
+
+        self.assertIsInstance(result[0], ResourceY)
+        self.assertIsInstance(result[1], ResourceZ)
+        self.assertIsInstance(result[2], ResourceY)
+
+    def test_mapping_to_list(self):
+        source = [ResourceB(foo="1", bar="2"), ResourceC(foo="3", eek="4"), ResourceB(foo="5", bar="6")]
         result = list(ResourceAToResourceX.apply(source))
 
         self.assertIsInstance(result[0], ResourceY)

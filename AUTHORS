@@ -2,4 +2,4 @@
 
 Contributors:
 
-* thedrow for a patch that adds tests that expose a bug in handling of nested resources.
+* thedrow for a patch that adds tests that exposes a bug in handling of nested resources.

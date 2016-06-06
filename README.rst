@@ -1,3 +1,4 @@
+
 ####
 Odin
 ####
@@ -39,7 +40,8 @@ Highlights
 * Mapping between resources or extended to other object types (eg Django Models)
 * Easy extension to support custom fields
 * Python 2.7+, Python 3.3+ and PyPy :sup:`1` supported
-* Integration with Django (see `baldr <https://github.com/timsavage/baldr>`_)
+* Integration with Django (see `baldr <https://github.com/python-odin/baldr>`_)
+* Support for documenting resources with `Sphinx <http://sphinx-doc.org/>`_
 * Minimal dependencies (base functionality only requires *six*)
 
 :sup:`1` certain contrib items are not supported. Pint is not installable with PyPy.
@@ -48,7 +50,7 @@ Highlights
 Quick links
 ***********
 
-* `Documentation <https://odin.readthedocs.org/en/latest/>`_
+* `Documentation <https://odin.readthedocs.org/>`_
 * `Project home <https://github.com/python-odin/odin>`_
 * `Issue tracker <https://github.com/python-odin/odin/issues>`_
 
@@ -58,16 +60,11 @@ Upcoming features
 
 **In development**
 
-* Customisable generation of documentation of resources (for integration into `Sphinx <http://sphinx-doc.org/>`_)
 * XML Codec (export completed)
 * Complete documentation, this will pretty much always be here.
 * Improvements for CSV Codec (writing, reading multi resource CSV's)
-* RESTful interface with support for Flask and Django see (see `baldr <https://github.com/python-odin/baldr>`_)
-* Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms) (see `baldr <https://github.com/python-odin/baldr>`_)
-
-**Planning**
-
-* YAML codec
+* RESTful interface with support for Flask and Django
+* Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms)
 
 
 Requires
@@ -79,6 +76,7 @@ Requires
 
 * simplejson - Odin will use simplejson if it is available or fallback to the builtin json library
 * msgpack-python - To enable use of the msgpack codec
+* pyyaml - To enable use of the YAML codec
 
 **Contrib**
 
@@ -89,8 +87,7 @@ Requires
 Example
 *******
 
-**With definition:**
-::
+**With definition:**::
 
     import odin
 
@@ -141,9 +138,10 @@ Authors
 
 Tim Savage
 
+
 Special Mention
 ***************
 
-I would like to acknowledge the strong influence on the design of Odin from the Django ORM and it's notable contributor
-Malcolm Tredinnick. He was a valued colleague who's untimely passing left a large void in our company and the wider
-community.
+I would like to acknowledge the strong influence on the design of Odin Resources from the Django ORM and it's notable
+contributor Malcolm Tredinnick. He was a valued colleague who's untimely passing left a large void in our company and
+the wider community.

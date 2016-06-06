@@ -18,7 +18,7 @@ FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 class KitchenSinkTestCase(TestCase):
     def test_dumps_with_valid_data(self):
-        book = Book(title="Consider Phlebas", num_pages=471, rrp=19.50, genre="sci-fi", fiction=True,
+        book = Book(title="Consider Phlebas", isbn="0-333-45430-8", num_pages=471, rrp=19.50, genre="sci-fi", fiction=True,
                     published=datetime.datetime(1987, 1, 1, tzinfo=utc))
         book.publisher = Publisher(name="Macmillan")
         book.authors.append(Author(name="Iain M. Banks"))
@@ -38,6 +38,7 @@ class KitchenSinkTestCase(TestCase):
                 "name": "Macmillan"
             },
             "num_pages": 471,
+            "isbn": "0-333-45430-8",
             "title": "Consider Phlebas",
             "authors": [
                 {

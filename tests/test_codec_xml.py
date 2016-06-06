@@ -16,6 +16,7 @@ class XmlLoadTestCase(unittest.TestCase):
     def test_dumps(self):
         book = Book(
             title='Consider Phlebas & Other stories',
+            isbn='0-333-45430-8',
             num_pages=471,
             rrp=19.50,
             fiction=True,
@@ -27,6 +28,7 @@ class XmlLoadTestCase(unittest.TestCase):
         self.assertEqual(
 """<Book fiction="True">
 <title>Consider Phlebas &amp; Other stories</title>
+<isbn>0-333-45430-8</isbn>
 <num_pages>471</num_pages>
 <rrp>19.5</rrp>
 <genre>sci-fi</genre>

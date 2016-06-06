@@ -3,7 +3,7 @@ from copy import deepcopy
 import unittest
 import datetime
 from odin.fields import *
-from odin.fields import Field, TimeStampField
+from odin.fields import Field, TimeStampField, NOT_PROVIDED
 from odin.datetimeutil import utc, FixedTimezone
 from odin.fields.virtual import VirtualField
 from odin.validators import MinValueValidator, MaxValueValidator, MaxLengthValidator, RegexValidator
@@ -27,9 +27,20 @@ class TestValidator(object):
             raise ValidationError(code=self.code, message=self.message, params=self.params)
 
 
+class TestField(Field):
+    def to_python(self, value):
+        return value
+
+
+class TestDynamicTypeNameField(IntegerField):
+    @staticmethod
+    def data_type_name(instance):
+        return "Foo"
+
+
 class FieldTestCase(unittest.TestCase):
     def test_error_messages_no_overrides(self):
-        target = Field()
+        target = TestField()
 
         self.assertDictEqual({
             'invalid_choice': 'Value %r is not a valid choice.',
@@ -38,7 +49,7 @@ class FieldTestCase(unittest.TestCase):
         }, target.error_messages)
 
     def test_error_messages_override_add(self):
-        target = Field(error_messages={
+        target = TestField(error_messages={
             'null': 'Override',
             'other': 'Other Value',
         })
@@ -51,7 +62,7 @@ class FieldTestCase(unittest.TestCase):
         }, target.error_messages)
 
     def test_set_attributes_from_name(self):
-        target = Field()
+        target = TestField()
         target.set_attributes_from_name("test_name")
 
         self.assertEqual("test_name", target.name)
@@ -60,7 +71,7 @@ class FieldTestCase(unittest.TestCase):
         self.assertEqual("test names", target.verbose_name_plural)
 
     def test_set_attributes_from_name_with_name(self):
-        target = Field(name="init_name")
+        target = TestField(name="init_name")
         target.set_attributes_from_name("test_name")
 
         self.assertEqual("init_name", target.name)
@@ -69,7 +80,7 @@ class FieldTestCase(unittest.TestCase):
         self.assertEqual("init names", target.verbose_name_plural)
 
     def test_set_attributes_from_name_with_verbose_name(self):
-        target = Field(verbose_name="init Verbose Name")
+        target = TestField(verbose_name="init Verbose Name")
         target.set_attributes_from_name("test_name")
 
         self.assertEqual("test_name", target.name)
@@ -78,32 +89,32 @@ class FieldTestCase(unittest.TestCase):
         self.assertEqual("init Verbose Names", target.verbose_name_plural)
 
     def test_has_default(self):
-        target = Field()
+        target = TestField()
 
         self.assertFalse(target.has_default())
 
     def test_has_default_supplied(self):
-        target = Field(default="123")
+        target = TestField(default="123")
 
         self.assertTrue(target.has_default())
 
     def test_get_default(self):
-        target = Field()
+        target = TestField()
 
         self.assertIsNone(target.get_default())
 
     def test_get_default_supplied(self):
-        target = Field(default="123")
+        target = TestField(default="123")
 
         self.assertEqual("123", target.get_default())
 
     def test_get_default_callable(self):
-        target = Field(default=lambda: "321")
+        target = TestField(default=lambda: "321")
 
         self.assertEqual("321", target.get_default())
 
     def test_value_from_object(self):
-        target = Field()
+        target = TestField()
         target.set_attributes_from_name("test_name")
 
         an_obj = ObjectValue()
@@ -119,7 +130,7 @@ class FieldTestCase(unittest.TestCase):
         self.assertEqual("<odin.fields.Field: eek>", repr(target))
 
     def test__deep_copy(self):
-        field = Field(name="Test")
+        field = TestField(name="Test")
         target_copy = deepcopy(field)
         target_assign = field
         self.assertIs(field, target_assign)
@@ -127,7 +138,7 @@ class FieldTestCase(unittest.TestCase):
         self.assertEqual(field.name, target_copy.name)
 
     def test_run_validators_and_override_validator_message(self):
-        target = Field(error_messages={'test_code': 'Override message'}, validators=[TestValidator(True)])
+        target = TestField(error_messages={'test_code': 'Override message'}, validators=[TestValidator(True)])
 
         try:
             target.run_validators("Placeholder")
@@ -137,7 +148,7 @@ class FieldTestCase(unittest.TestCase):
             raise AssertionError("Validation Error not raised.")
 
     def test_run_validators_and_override_validator_message_with_params(self):
-        target = Field(error_messages={'test_code': 'Override message: %s'}, validators=[TestValidator(True, "123")])
+        target = TestField(error_messages={'test_code': 'Override message: %s'}, validators=[TestValidator(True, "123")])
 
         try:
             target.run_validators("Placeholder")
@@ -149,6 +160,17 @@ class FieldTestCase(unittest.TestCase):
     def test_default_to_python_raises_not_implemented(self):
         target = Field()
         self.assertRaises(NotImplementedError, target.to_python, "Anything...")
+
+    def test_clean_uses_default_if_value_is_not_provided_is_true(self):
+        target = TestField(use_default_if_not_provided=True, default='foo')
+        actual = target.clean(NOT_PROVIDED)
+        self.assertEqual('foo', actual)
+
+    def test_clean_uses_default_if_value_is_not_provided_is_false(self):
+        # Need to allow None as the if use_default_if_not_provided is false NOT_PROVIDED evaluates to None.
+        target = TestField(use_default_if_not_provided=False, default='foo', null=True)
+        actual = target.clean(NOT_PROVIDED)
+        self.assertIsNone(actual)
 
 
 class TestVirtualField(VirtualField):
@@ -457,6 +479,7 @@ class FieldsTests(unittest.TestCase):
         f = TimeStampField()
         self.assertEqual(None, f.prepare(None))
         self.assertEqual(123, f.prepare(datetime.datetime(1970, 1, 1, 0, 2, 3, tzinfo=utc)))
+        self.assertEqual(123, f.prepare(123))
         self.assertEqual(123, f.prepare(
             datetime.datetime(1970, 1, 1, 10, 2, 3, tzinfo=FixedTimezone.from_hours_minutes(10))))
 
@@ -500,10 +523,10 @@ class FieldsTests(unittest.TestCase):
         self.assertEqual(['foo', 'bar'], f.clean(['foo', 'bar']))
         self.assertEqual(['foo', 'bar', '$', 'eek'], f.clean(['foo', 'bar', '$', 'eek']))
 
-    # TypedArrayField #########################################################
+    # TypedListField #########################################################
 
-    def test_typedarrayfield_1(self):
-        f = TypedArrayField(IntegerField())
+    def test_typedlistfield_1(self):
+        f = TypedListField(IntegerField())
         self.assertEqual("List<Integer>", f.data_type_name(f))
         self.assertRaises(ValidationError, f.clean, None)
         self.assertRaises(ValidationError, f.clean, 'abc')
@@ -513,8 +536,8 @@ class FieldsTests(unittest.TestCase):
         self.assertEqual([1, 2, 3], f.clean([1, 2, 3]))
         self.assertEqual(f.default, list)
 
-    def test_typedarrayfield_2(self):
-        f = TypedArrayField(IntegerField(), null=True)
+    def test_typedlistfield_2(self):
+        f = TypedListField(IntegerField(), null=True)
         self.assertEqual("List<Integer>", f.data_type_name(f))
         self.assertEqual(None, f.clean(None))
         self.assertRaises(ValidationError, f.clean, 'abc')
@@ -522,6 +545,10 @@ class FieldsTests(unittest.TestCase):
         self.assertEqual([], f.clean([]))
         self.assertRaises(ValidationError, f.clean, ['foo', 'bar'])
         self.assertEqual([1, 2, 3], f.clean([1, 2, 3]))
+
+    def test_typed_list_field_dynamic_type_name(self):
+        f = TypedListField(TestDynamicTypeNameField(), null=True)
+        self.assertEqual("List<Foo>", f.data_type_name(f))
 
     # TypedDictField ##########################################################
 
@@ -572,3 +599,11 @@ class FieldsTests(unittest.TestCase):
         self.assertRaises(ValidationError, f.clean, {'bar': 6})
         self.assertRaises(ValidationError, f.clean, {'foo': None})
         self.assertRaises(ValidationError, f.clean, {'foo': 2})
+
+    def test_typed_dict_field_dynamic_type_name(self):
+        f = TypedDictField(
+            TestDynamicTypeNameField(),
+            TestDynamicTypeNameField(),
+        )
+        self.assertEqual("Dict<Foo, Foo>", f.data_type_name(f))
+

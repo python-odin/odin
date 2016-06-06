@@ -25,7 +25,11 @@ class LibraryBook(odin.Resource):
 
 
 class Book(LibraryBook):
+    class Meta:
+        key_field_name = 'isbn'
+
     title = odin.StringField()
+    isbn = odin.StringField()
     num_pages = odin.IntegerField()
     rrp = odin.FloatField(default=20.4, use_default_if_not_provided=True)
     fiction = odin.BooleanField(is_attribute=True)
@@ -34,6 +38,7 @@ class Book(LibraryBook):
         ('fantasy', 'Fantasy'),
         ('biography', 'Biography'),
         ('others', 'Others'),
+        ('computers-and-tech', 'Computers & technology'),
     ))
     published = odin.TypedArrayField(odin.DateTimeField())
     authors = odin.ArrayOf(Author, use_container=True)
@@ -42,7 +47,6 @@ class Book(LibraryBook):
     def __eq__(self, other):
         if other:
             return vars(self) == vars(other)
-
         return False
 
 
@@ -53,8 +57,6 @@ class Subscriber(odin.Resource):
     def __eq__(self, other):
         if other:
             return self.name == other.name and self.address == other.address
-
-        return None
 
 
 class Library(odin.Resource):
@@ -76,6 +78,7 @@ class OldBook(LibraryBook):
         ('fantasy', 'Fantasy'),
         ('biography', 'Biography'),
         ('others', 'Others'),
+        ('computers-and-tech', 'Computers & technology'),
     ))
     published = odin.DateTimeField()
     author = odin.ObjectAs(Author)

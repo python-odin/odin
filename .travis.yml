@@ -2,14 +2,9 @@ language: python
 sudo: false
 python:
   - "2.7"
-  - "3.3"
   - "3.4"
-  - "3.5-dev"
+  - "3.5"
   - "pypy"
-
-matrix:
-  allow_failures:
-    - python: "3.5-dev"
 
 branches:
   only:
@@ -17,8 +12,8 @@ branches:
     - development
 
 install:
-  - travis_retry pip install -r requirements.txt "jinja2>=2.7" msgpack-python
-  - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then travis_retry pip install pint coveralls; fi
+  - travis_retry pip install -r requirements.txt "jinja2>=2.7" msgpack-python pyyaml
+  - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then travis_retry pip install pint coveralls ply; fi
 
 script:
   - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then nosetests --all-modules --with-coverage --cover-package odin tests/ ; fi

@@ -97,13 +97,40 @@ class CodecError(Exception):
     """
 
 
-class CodecDecodeError(Exception):
+class CodecDecodeError(CodecError):
     """
     Exception raised by a codec during a decoding operation.
     """
 
 
-class CodecEncodeError(Exception):
+class CodecEncodeError(CodecError):
     """
     Exception raised by a codec during an encoding operation.
+    """
+
+
+class TraversalError(Exception):
+    """
+    Exception raised during a traversal operation.
+    """
+    def __init__(self, path, *args, **kwargs):
+        super(TraversalError, self).__init__(*args, **kwargs)
+        self.path = path
+
+
+class InvalidPathError(TraversalError):
+    """
+    Raised when a path is invalid (eg referencing an unknown field)
+    """
+
+
+class NoMatchError(TraversalError):
+    """
+    When traversing a path to get a value no match was found.
+    """
+
+
+class MultipleMatchesError(TraversalError):
+    """
+    When traversing a path to get a single value, a filtering operation matched multiple values.
     """

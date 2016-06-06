@@ -1,10 +1,12 @@
 import unittest
 import odin
 from odin import traversal
+from odin.exceptions import NoMatchError, InvalidPathError, MultipleMatchesError
 
 
 class Level3(odin.Resource):
     class Meta:
+        key_field_name = 'name'
         namespace = 'odin.traversal'
 
     name = odin.StringField()
@@ -15,6 +17,7 @@ class Level2(odin.Resource):
         namespace = 'odin.traversal'
 
     name = odin.StringField()
+    label = odin.StringField(null=True)
     level3s = odin.ListOf(Level3)
 
 
@@ -32,8 +35,8 @@ TEST_STRUCTURE = Level1(
     level2=Level2(name='b', level3s=[]),
     level2s=dict(
         a=Level2(name='c', level3s=[]),
-        b=Level2(name='d', level3s=[Level3(name='e'), Level3(name='f')]),
-        c=Level2(name='g', level3s=[Level3(name='h')]),
+        b=Level2(name='d', label='not_empty', level3s=[Level3(name='e'), Level3(name='f')]),
+        c=Level2(name='g', label='not_empty', level3s=[Level3(name='h')]),
     )
 )
 
@@ -88,14 +91,14 @@ class TraversalTestCase(unittest.TestCase):
                 'on_enter: level2s[a]',
                 'on_exit: level2s[a]',
                 'on_enter: level2s[b]',
-                    'on_enter: level2s[b].level3s[0]',
-                    'on_exit: level2s[b].level3s[0]',
-                    'on_enter: level2s[b].level3s[1]',
-                    'on_exit: level2s[b].level3s[1]',
+                    'on_enter: level2s[b].level3s{name=e}',
+                    'on_exit: level2s[b].level3s{name=e}',
+                    'on_enter: level2s[b].level3s{name=f}',
+                    'on_exit: level2s[b].level3s{name=f}',
                 'on_exit: level2s[b]',
                 'on_enter: level2s[c]',
-                'on_enter: level2s[c].level3s[0]',
-                'on_exit: level2s[c].level3s[0]',
+                'on_enter: level2s[c].level3s{name=h}',
+                'on_exit: level2s[c].level3s{name=h}',
                 'on_exit: level2s[c]',
             'on_exit: ',
         ], resource_iter.events)
@@ -124,14 +127,14 @@ class TraversalTestCase(unittest.TestCase):
                 'on_enter: level2s[a]',
                 'on_exit: level2s[a]',
                 'on_enter: level2s[b]',
-                    'on_enter: level2s[b].level3s[0]',
-                    'on_exit: level2s[b].level3s[0]',
-                    'on_enter: level2s[b].level3s[1]',
-                    'on_exit: level2s[b].level3s[1]',
+                    'on_enter: level2s[b].level3s{name=e}',
+                    'on_exit: level2s[b].level3s{name=e}',
+                    'on_enter: level2s[b].level3s{name=f}',
+                    'on_exit: level2s[b].level3s{name=f}',
                 'on_exit: level2s[b]',
                 'on_enter: level2s[c]',
-                'on_enter: level2s[c].level3s[0]',
-                'on_exit: level2s[c].level3s[0]',
+                'on_enter: level2s[c].level3s{name=h}',
+                'on_exit: level2s[c].level3s{name=h}',
                 'on_exit: level2s[c]',
             'on_exit: ',
             'on_enter: ',
@@ -140,14 +143,14 @@ class TraversalTestCase(unittest.TestCase):
                 'on_enter: level2s[a]',
                 'on_exit: level2s[a]',
                 'on_enter: level2s[b]',
-                    'on_enter: level2s[b].level3s[0]',
-                    'on_exit: level2s[b].level3s[0]',
-                    'on_enter: level2s[b].level3s[1]',
-                    'on_exit: level2s[b].level3s[1]',
+                    'on_enter: level2s[b].level3s{name=m}',
+                    'on_exit: level2s[b].level3s{name=m}',
+                    'on_enter: level2s[b].level3s{name=n}',
+                    'on_exit: level2s[b].level3s{name=n}',
                 'on_exit: level2s[b]',
                 'on_enter: level2s[c]',
-                'on_enter: level2s[c].level3s[0]',
-                'on_exit: level2s[c].level3s[0]',
+                'on_enter: level2s[c].level3s{name=p}',
+                'on_exit: level2s[c].level3s{name=p}',
                 'on_exit: level2s[c]',
             'on_exit: ',
         ], resource_iter.events)
@@ -171,16 +174,31 @@ class TraversalTestCase(unittest.TestCase):
             'odin.traversal.Level3 resource p 2',
         ], resources)
 
+
 class TraversalPathTestCase(unittest.TestCase):
     def test_parse(self):
         actual = traversal.TraversalPath.parse('level2')
-        self.assertEqual(traversal.TraversalPath((None, 'level2'),), actual)
+        self.assertEqual(traversal.TraversalPath((traversal.NotSupplied, traversal.NotSupplied, 'level2'),), actual)
 
         actual = traversal.TraversalPath.parse('level2.name')
-        self.assertEqual(traversal.TraversalPath((None, 'level2'), (None, 'name')), actual)
+        self.assertEqual(traversal.TraversalPath(
+            (traversal.NotSupplied, traversal.NotSupplied, 'level2'),
+            (traversal.NotSupplied, traversal.NotSupplied, 'name')
+        ), actual)
 
         actual = traversal.TraversalPath.parse('level2s[b].level3s[1].name')
-        self.assertEqual(traversal.TraversalPath(('b', 'level2s'), ('1', 'level3s'), (None, 'name')), actual)
+        self.assertEqual(traversal.TraversalPath(
+            ('b', traversal.NotSupplied, 'level2s'),
+            ('1', traversal.NotSupplied, 'level3s'),
+            (traversal.NotSupplied, traversal.NotSupplied, 'name')
+        ), actual)
+
+        actual = traversal.TraversalPath.parse('level2s[b].level3s{code=abc}.name')
+        self.assertEqual(traversal.TraversalPath(
+            ('b', traversal.NotSupplied, 'level2s'),
+            ('abc', 'code', 'level3s'),
+            (traversal.NotSupplied, traversal.NotSupplied, 'name')
+        ), actual)
 
     def test_add(self):
         actual = traversal.TraversalPath.parse('level2') + 'name'
@@ -197,9 +215,23 @@ class TraversalPathTestCase(unittest.TestCase):
         self.assertIsInstance(r, Level3)
         self.assertEqual('f', r.name)
 
+        r = traversal.TraversalPath.parse('level2s[b].level3s{name=f}').get_value(TEST_STRUCTURE)
+        self.assertIsInstance(r, Level3)
+        self.assertEqual('f', r.name)
+
+        r = traversal.TraversalPath.parse('level2s{name=g}.level3s{name=h}').get_value(TEST_STRUCTURE)
+        self.assertIsInstance(r, Level3)
+        self.assertEqual('h', r.name)
+
     def test_invalid_path(self):
         path = traversal.TraversalPath.parse('level2s[b].level3s[4]')
-        self.assertRaises(IndexError, path.get_value, TEST_STRUCTURE)
+        self.assertRaises(NoMatchError, path.get_value, TEST_STRUCTURE)
 
         path = traversal.TraversalPath.parse('level2s[b].level3s_sd[1]')
-        self.assertRaises(KeyError, path.get_value, TEST_STRUCTURE)
+        self.assertRaises(InvalidPathError, path.get_value, TEST_STRUCTURE)
+
+        path = traversal.TraversalPath.parse('level2s[d].level3s{name=h}')
+        self.assertRaises(NoMatchError, path.get_value, TEST_STRUCTURE)
+
+        path = traversal.TraversalPath.parse('level2s{label=not_empty}.level3s{name=h}')
+        self.assertRaises(MultipleMatchesError, path.get_value, TEST_STRUCTURE)

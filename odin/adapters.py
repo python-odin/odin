@@ -4,6 +4,22 @@ from odin.utils import cached_property, field_iter_items
 __all__ = ('ResourceAdapter',)
 
 
+class CurriedAdapter(object):
+    """
+    Curry wrapper for a Adapter to allow for pre-config of include/exclude and
+    any other user defined arguments provided in kwargs.
+    """
+    def __init__(self, cls, **kwargs):
+        self.cls = cls
+        self.kwargs = kwargs.copy()
+
+    def __call__(self, source):
+        return self.cls(source, **self.kwargs)
+
+    def apply_to(self, sources):
+        return self.cls.apply_to(sources, **self.kwargs)
+
+
 class ResourceOptionsAdapter(object):
     """
     A lightweight wrapper for the *ResourceOptions* class that filters fields.
@@ -13,9 +29,10 @@ class ResourceOptionsAdapter(object):
         self.parents = options.parents
 
         # Filter available fields
-        include = include or [f.attname for f in options.fields]
+        include = include or [f.attname for f in options.all_fields]
         exclude = exclude or []
         self.fields = [f for f in options.fields if f.attname in include and f.attname not in exclude]
+        self.virtual_fields = [f for f in options.virtual_fields if f.attname in include and f.attname not in exclude]
 
         # Work around so cached properties still work.
         self._cache = {}
@@ -54,31 +71,56 @@ class ResourceOptionsAdapter(object):
 
 class ResourceAdapter(object):
     """
-    A lightweight wrapper that can be placed around a resource to filter out specific fields or to provide additional
-    specific methods or calculated properties.
+    A lightweight wrapper that can be placed around a resource to filter out specific
+    fields or to provide additional specific methods or calculated properties.
 
-    A good use case for an adapter is an API where you wish to filter out certain fields or in a UI where you wish to
-    add methods for rendering objects without extending the underlying resource that may be shared between multiple
-    rendering engines or other subsystems.
+    A good use case for an adapter is an API where you wish to filter out certain fields
+    or in a UI where you wish to add methods for rendering objects without extending the
+    underlying resource that may be shared between multiple rendering engines or other
+    subsystems.
 
     The *ResourceAdapter* can be passed to Odin codecs just like a *Resource*.
 
     """
     @classmethod
-    def apply_to(cls, sources, include=None, exclude=None):
+    def apply_to(cls, sources, include=None, exclude=None, **kwargs):
         """
-        Convenience method that applies include/exclude lists to all items in
-        an iterable collection of resources.
+        Convenience method that applies include/exclude lists to all items in an
+        iterable collection of resources.
 
         :param sources: Source resources being wrapped.
         :param include: Fields that should be explicitly included on the adapter.
         :param exclude: Fields to explicitly exclude on the adapter.
 
         """
+        meta_objects = {}
         for resource in sources:
-            yield cls(resource, include, exclude)
+            try:
+                meta = meta_objects[resource._meta.resource_name]
+            except KeyError:
+                meta = cls._create_options_adapter(resource._meta, include, exclude)
+                meta_objects[resource._meta.resource_name] = meta
+            yield cls(resource, meta=meta, **kwargs)
 
-    def __init__(self, source, include=None, exclude=None):
+    @classmethod
+    def _create_options_adapter(cls, options, include=None, exclude=None):
+        include_fields = include if include else getattr(cls, 'include_fields', None)
+        exclude_fields = exclude if exclude else getattr(cls, 'exclude_fields', None)
+        return ResourceOptionsAdapter(options, include_fields, exclude_fields)
+
+    @classmethod
+    def curry(cls, include=None, exclude=None, **kwargs):
+        """
+        Creates an Adapter that has include and exclude (and any other options) preset.
+
+        :param include: Fields that should be explicitly included on the adapter.
+        :param exclude: Fields to explicitly exclude on the adapter.
+        :param kwargs:
+
+        """
+        return CurriedAdapter(cls, include=include, exclude=exclude, **kwargs)
+
+    def __init__(self, source, include=None, exclude=None, meta=None):
         """
         Initialise the adapter.
 
@@ -89,10 +131,9 @@ class ResourceAdapter(object):
         """
         self.__dict__['_source'] = source
 
-        include_fields = include if include else getattr(self, 'include_fields', None)
-        exclude_fields = exclude if exclude else getattr(self, 'exclude_fields', None)
-
-        self._meta = ResourceOptionsAdapter(source._meta, include_fields, exclude_fields)
+        if not meta:
+            meta = self._create_options_adapter(source._meta, include, exclude)
+        self._meta = meta
 
     def __getattr__(self, item):
         return getattr(self._source, item)

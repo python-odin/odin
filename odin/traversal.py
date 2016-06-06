@@ -1,10 +1,22 @@
 # -*- coding: utf-8 -*-
 import six
+from .exceptions import NoMatchError, MultipleMatchesError, InvalidPathError
+
+
+class NotSupplied(object):
+    pass
 
 
 def _split_atom(atom):
-    field, _, key = atom.rstrip(']').partition('[')
-    return key or None, field
+    if '[' in atom:
+        field, _, idx = atom.rstrip(']').partition('[')
+        return idx, NotSupplied, field
+    elif '{' in atom:
+        field, _, kv = atom.rstrip('}').partition('{')
+        key, _, value = kv.partition('=')
+        return value, key, field
+    else:
+        return NotSupplied, NotSupplied, atom
 
 
 class TraversalPath(object):
@@ -13,6 +25,8 @@ class TraversalPath(object):
     """
     @classmethod
     def parse(cls, path):
+        if isinstance(path, TraversalPath):
+            return path
         if isinstance(path, six.string_types):
             return cls(*[_split_atom(a) for a in path.split('.')])
 
@@ -23,7 +37,15 @@ class TraversalPath(object):
         return "<TraversalPath: %s>" % self
 
     def __str__(self):
-        return '.'.join("%s" % f if k is None else "%s[%s]" % (f, k) for k, f in self._path)
+        atoms = []
+        for value, key, field in self._path:
+            if value is NotSupplied:
+                atoms.append(field)
+            elif key is NotSupplied:
+                atoms.append("{}[{}]".format(field, value))
+            else:
+                atoms.append("{}{{{}={}}}".format(field, key, value))
+        return '.'.join(atoms)
 
     def __hash__(self):
         return hash(self._path)
@@ -39,7 +61,7 @@ class TraversalPath(object):
 
         # Assume appending a field
         if isinstance(other, six.string_types):
-            return TraversalPath(*(self._path + tuple([(None, other)])))
+            return TraversalPath(*(self._path + tuple([(NotSupplied, NotSupplied, other)])))
 
         raise TypeError("Cannot add '%s' to a path." % other)
 
@@ -50,14 +72,37 @@ class TraversalPath(object):
         """
         Get a value from a resource structure.
         """
-        value = root_resource
-        for key, attr in self:
-            field = value._meta.field_map[attr]
-            value = field.value_from_object(value)
-            if key is not None:
-                key = field.key_to_python(key)
-                value = value[key]
-        return value
+        result = root_resource
+        for value, key, attr in self:
+            try:
+                field = result._meta.field_map[attr]
+            except KeyError:
+                raise InvalidPathError(self, "Unknown field `{}`".format(attr))
+
+            result = field.value_from_object(result)
+            if value is NotSupplied:
+                # Nothing is required
+                continue
+            elif key is NotSupplied:
+                # Index or key into element
+                value = field.key_to_python(value)
+                try:
+                    result = result[value]
+                except (KeyError, IndexError):
+                    raise NoMatchError(self, "Could not find index `{}` in {}.".format(value, field))
+            else:
+                # Filter elements
+                if isinstance(result, dict):
+                    result = result.values()
+                results = tuple(r for r in result if getattr(r, key) == value)
+                if len(results) == 0:
+                    raise NoMatchError(self, "Filter matched no values; `{}` == `{}` in {}.".format(key, value, field))
+                elif len(results) > 1:
+                    raise MultipleMatchesError(
+                        self, "Filter matched multiple values; `{}` == `{}`.".format(key, value, field))
+                else:
+                    result = results[0]
+        return result
 
 
 class ResourceTraversalIterator(object):
@@ -81,7 +126,7 @@ class ResourceTraversalIterator(object):
         # Stack of composite fields, found on each resource, each composite field is interrogated for resources.
         self._field_iters = []
         # The "path" to the current resource.
-        self._path = [(None, None)]
+        self._path = [(NotSupplied, NotSupplied, NotSupplied)]
         self._resource_stack = [None]
 
     def __iter__(self):
@@ -97,7 +142,7 @@ class ResourceTraversalIterator(object):
                     # Request a list of resources along with keys from the composite field.
                     self._resource_iters.append(field.item_iter_from_object(self.current_resource))
                     # Update the path
-                    self._path.append((None, field.name))
+                    self._path.append((NotSupplied, NotSupplied, field.name))
                     self._resource_stack.append(None)
                     # Remove the field from the list (and remove this field entry if it has been emptied)
                     self._field_iters[-1].pop(0)
@@ -120,8 +165,11 @@ class ResourceTraversalIterator(object):
             else:
                 # If we have a key (ie DictOf, ListOf composite fields) update the path key field.
                 if key is not None:
-                    _, field = self._path[-1]
-                    self._path[-1] = (key, field)
+                    _, name, field = self._path[-1]
+                    if next_resource._meta.key_field:
+                        key = next_resource._meta.key_field.value_from_object(next_resource)
+                        name = next_resource._meta.key_field.name
+                    self._path[-1] = (key, name, field)
 
                 # Get list of any composite fields for this resource (this is a cached field).
                 self._field_iters.append(list(next_resource._meta.composite_fields))

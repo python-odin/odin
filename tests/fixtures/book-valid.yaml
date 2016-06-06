@@ -1,0 +1,20 @@
+$: Library
+name: Public Library
+books:
+  -
+    $: library.Book
+    authors:
+      -
+        $: Author
+        name: Iain M. Banks
+    fiction: true
+    published:
+      - 1987-01-01T00:00:00.000Z
+    genre": sci-fi
+    num_pages": 471
+    publisher:
+      $: Publisher
+      name: Macmillan
+    rrp: 19.5
+    isbn: 1-85723-394-8
+    title: Consider Phlebas
