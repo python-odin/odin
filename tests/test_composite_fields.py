@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import unittest
+import pytest
 import odin
 from odin.exceptions import ValidationError
 from odin.fields.composite import DictAs, ArrayOf, DictOf
@@ -9,7 +9,7 @@ class ExampleResource(odin.Resource):
     name = odin.StringField()
 
 
-class FieldsTests(unittest.TestCase):
+class TestFields(object):
     def assertResourceEqual(self, first, second):
         if not first:
             raise AssertionError("First item is None")
@@ -49,27 +49,27 @@ class FieldsTests(unittest.TestCase):
     # DictAs ##################################################################
 
     def test_dictas_ensure_is_resource(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             DictAs("an item")
 
     def test_dictas_1(self):
         f = DictAs(ExampleResource)
-        self.assertRaises(ValidationError, f.clean, None)
-        self.assertRaises(ValidationError, f.clean, 'abc')
-        self.assertRaises(ValidationError, f.clean, 123)
-        self.assertRaises(ValidationError, f.clean, {})
-        self.assertRaises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
+        pytest.raises(ValidationError, f.clean, None)
+        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, 123)
+        pytest.raises(ValidationError, f.clean, {})
+        pytest.raises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
         self.assertResourceEqual(ExampleResource(name='foo'), f.clean({'name': 'foo'}))
         self.assertResourceEqual(ExampleResource(name='foo'), f.clean({
             '$': 'tests.test_composite_fields.ExampleResource', 'name': 'foo'}))
 
     def test_dictas_2(self):
         f = DictAs(ExampleResource, null=True)
-        self.assertEqual(None, f.clean(None))
-        self.assertRaises(ValidationError, f.clean, 'abc')
-        self.assertRaises(ValidationError, f.clean, 123)
-        self.assertRaises(ValidationError, f.clean, {})
-        self.assertRaises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
+        assert f.clean(None) is None
+        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, 123)
+        pytest.raises(ValidationError, f.clean, {})
+        pytest.raises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
         self.assertResourceEqual(ExampleResource(name='foo'), f.clean({'name': 'foo'}))
         self.assertResourceEqual(ExampleResource(name='foo'), f.clean({
             '$': 'tests.test_composite_fields.ExampleResource', 'name': 'foo'}))
@@ -78,12 +78,12 @@ class FieldsTests(unittest.TestCase):
 
     def test_arrayof_1(self):
         f = ArrayOf(ExampleResource)
-        self.assertRaises(ValidationError, f.clean, None)
-        self.assertRaises(ValidationError, f.clean, 'abc')
-        self.assertRaises(ValidationError, f.clean, 123)
-        self.assertRaises(ValidationError, f.clean, {})
-        self.assertRaises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
-        self.assertRaises(ValidationError, f.clean, [None])
+        pytest.raises(ValidationError, f.clean, None)
+        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, 123)
+        pytest.raises(ValidationError, f.clean, {})
+        pytest.raises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
+        pytest.raises(ValidationError, f.clean, [None])
         self.assertResourceListEqual([], f.clean([]))
         self.assertResourceListEqual([ExampleResource(name='foo')], f.clean([{'name': 'foo'}]))
         self.assertResourceListEqual([ExampleResource(name='foo')], f.clean([{
@@ -91,12 +91,12 @@ class FieldsTests(unittest.TestCase):
 
     def test_arrayof_2(self):
         f = ArrayOf(ExampleResource, null=True)
-        self.assertEqual(None, f.clean(None))
-        self.assertRaises(ValidationError, f.clean, 'abc')
-        self.assertRaises(ValidationError, f.clean, 123)
-        self.assertRaises(ValidationError, f.clean, {})
-        self.assertRaises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
-        self.assertRaises(ValidationError, f.clean, [None])
+        assert f.clean(None) is None
+        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, 123)
+        pytest.raises(ValidationError, f.clean, {})
+        pytest.raises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
+        pytest.raises(ValidationError, f.clean, [None])
         self.assertResourceListEqual([], f.clean([]))
         self.assertResourceListEqual([ExampleResource(name='foo')], f.clean([{'name': 'foo'}]))
         self.assertResourceListEqual([ExampleResource(name='foo')], f.clean([{
@@ -104,13 +104,13 @@ class FieldsTests(unittest.TestCase):
 
     def test_arrayof_3(self):
         f = ArrayOf(ExampleResource, empty=False)
-        self.assertRaises(ValidationError, f.clean, None)
-        self.assertRaises(ValidationError, f.clean, 'abc')
-        self.assertRaises(ValidationError, f.clean, 123)
-        self.assertRaises(ValidationError, f.clean, {})
-        self.assertRaises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
-        self.assertRaises(ValidationError, f.clean, [None])
-        self.assertRaises(ValidationError, f.clean, [])
+        pytest.raises(ValidationError, f.clean, None)
+        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, 123)
+        pytest.raises(ValidationError, f.clean, {})
+        pytest.raises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
+        pytest.raises(ValidationError, f.clean, [None])
+        pytest.raises(ValidationError, f.clean, [])
         self.assertResourceListEqual([ExampleResource(name='foo')], f.clean([{'name': 'foo'}]))
         self.assertResourceListEqual([ExampleResource(name='foo')], f.clean([{
             '$': 'tests.test_composite_fields.ExampleResource', 'name': 'foo'}]))
@@ -119,12 +119,12 @@ class FieldsTests(unittest.TestCase):
 
     def test_dictof_1(self):
         f = DictOf(ExampleResource)
-        self.assertRaises(ValidationError, f.clean, None)
-        self.assertRaises(ValidationError, f.clean, 'abc')
-        self.assertRaises(ValidationError, f.clean, 123)
-        self.assertRaises(ValidationError, f.clean, [])
-        self.assertRaises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
-        self.assertRaises(ValidationError, f.clean, {'abc': None})
+        pytest.raises(ValidationError, f.clean, None)
+        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, 123)
+        pytest.raises(ValidationError, f.clean, [])
+        pytest.raises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
+        pytest.raises(ValidationError, f.clean, {'abc': None})
         self.assertResourceDictEqual({}, f.clean({}))
         self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {'name': 'foo'}}))
         self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {
@@ -132,12 +132,12 @@ class FieldsTests(unittest.TestCase):
 
     def test_dictof_2(self):
         f = DictOf(ExampleResource, null=True)
-        self.assertEqual(None, f.clean(None))
-        self.assertRaises(ValidationError, f.clean, 'abc')
-        self.assertRaises(ValidationError, f.clean, 123)
-        self.assertRaises(ValidationError, f.clean, [])
-        self.assertRaises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
-        self.assertRaises(ValidationError, f.clean, {'abc': None})
+        assert f.clean(None) is None
+        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, 123)
+        pytest.raises(ValidationError, f.clean, [])
+        pytest.raises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
+        pytest.raises(ValidationError, f.clean, {'abc': None})
         self.assertResourceDictEqual({}, f.clean({}))
         self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {'name': 'foo'}}))
         self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {
@@ -145,13 +145,13 @@ class FieldsTests(unittest.TestCase):
 
     def test_dictof_3(self):
         f = DictOf(ExampleResource, empty=False)
-        self.assertRaises(ValidationError, f.clean, None)
-        self.assertRaises(ValidationError, f.clean, 'abc')
-        self.assertRaises(ValidationError, f.clean, 123)
-        self.assertRaises(ValidationError, f.clean, [])
-        self.assertRaises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
-        self.assertRaises(ValidationError, f.clean, {'abc': None})
-        self.assertRaises(ValidationError, f.clean, {})
+        pytest.raises(ValidationError, f.clean, None)
+        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, 123)
+        pytest.raises(ValidationError, f.clean, [])
+        pytest.raises(ValidationError, f.clean, {'$': 'tests.test_composite_fields.ExampleResource'})
+        pytest.raises(ValidationError, f.clean, {'abc': None})
+        pytest.raises(ValidationError, f.clean, {})
         self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {'name': 'foo'}}))
         self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {
             '$': 'tests.test_composite_fields.ExampleResource', 'name': 'foo'}}))
@@ -161,5 +161,5 @@ class FieldsTests(unittest.TestCase):
             ('foo', 'Foo'),
             (None, 'None'),
         ))
-        self.assertRaises(ValidationError, f.clean, {'eek': ExampleResource(name='foo')})
+        pytest.raises(ValidationError, f.clean, {'eek': ExampleResource(name='foo')})
         self.assertResourceDictEqual({'foo': ExampleResource(name='foo')}, f.clean({'foo': {'name': 'foo'}}))

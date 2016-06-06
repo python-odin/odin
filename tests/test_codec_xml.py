@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import os
-import unittest
 from odin.codecs import xml_codec
 from .resources import *
 
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
-class XmlLoadTestCase(unittest.TestCase):
+class TestXmlLoad(object):
     # def test_valid(self):
     #     with open(os.path.join(FIXTURE_PATH_ROOT, "book-valid.xml")) as f:
     #         xml_codec.load(f, Library)
@@ -25,7 +24,7 @@ class XmlLoadTestCase(unittest.TestCase):
             publisher=Publisher(name="Macmillan"),
         )
 
-        self.assertEqual(
+        assert(
 """<Book fiction="True">
 <title>Consider Phlebas &amp; Other stories</title>
 <isbn>0-333-45430-8</isbn>
@@ -41,4 +40,4 @@ class XmlLoadTestCase(unittest.TestCase):
 <name>Macmillan</name>
 </Publisher>
 </Book>
-""", xml_codec.dumps(book, line_ending='\n'))
+""" == xml_codec.dumps(book, line_ending='\n'))

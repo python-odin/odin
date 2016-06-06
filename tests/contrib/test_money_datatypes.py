@@ -10,54 +10,54 @@ d = datatypes.Amount(44, "NZD")
 
 class DataTypesTestCase(unittest.TestCase):
     def test_amount_init(self):
-        self.assertEqual("10.0000", str(datatypes.Amount(10)))
-        self.assertEqual("10.0000", str(datatypes.Amount("10")))
-        self.assertEqual("10.00 AUD", str(datatypes.Amount("10", "AUD")))
-        self.assertEqual("-12.30 AUD", str(datatypes.Amount("-12.3", "AUD")))
-        self.assertEqual("12.35 USD", str(datatypes.Amount(12.345, "USD")))
+        assert "10.0000" == str(datatypes.Amount(10))
+        assert "10.0000" == str(datatypes.Amount("10"))
+        assert "10.00 AUD", str(datatypes.Amount("10" == "AUD"))
+        assert "-12.30 AUD", str(datatypes.Amount("-12.3" == "AUD"))
+        assert "12.35 USD", str(datatypes.Amount(12.345 == "USD"))
         self.assertRaises(TypeError, datatypes.Amount, None)
         self.assertRaises(ValueError, datatypes.Amount, "abs")
         self.assertRaises(TypeError, datatypes.Amount, 12, object())
         # Unknown currency
         self.assertRaises(KeyError, datatypes.Amount, 12, 'ZZZ')
         # From tuple
-        self.assertEqual("10.0000", str(datatypes.Amount(("10",))))
-        self.assertEqual("10.00 NZD", str(datatypes.Amount(("10", "NZD"))))
+        assert "10.0000" == str(datatypes.Amount(("10",)))
+        assert "10.00 NZD", str(datatypes.Amount(("10" == "NZD")))
         self.assertRaises(ValueError, datatypes.Amount, ("10", "NZD", "hmmm"))
 
     # These tests assume that the decimal library is correct.
 
     def test_amount_type_conversion(self):
-        self.assertEqual(12, int(datatypes.Amount(12.345)))
-        self.assertEqual(12.34, float(datatypes.Amount(12.34)))
-        self.assertEqual("<Amount: 12.34, <Currency: NZD>>", repr(datatypes.Amount(12.34, 'NZD')))
+        assert 12 == int(datatypes.Amount(12.345))
+        assert 12.34 == float(datatypes.Amount(12.34))
+        assert "<Amount: 12.34, <Currency: NZD>>", repr(datatypes.Amount(12.34 == 'NZD'))
 
     def test_amount_neg_pos(self):
-        self.assertEqual("-11.0000", str(-a))
-        self.assertEqual("-22.00 AUD", str(-b))
-        self.assertEqual("11.0000", str(+a))
-        self.assertEqual("22.00 AUD", str(+b))
+        assert "-11.0000" == str(-a)
+        assert "-22.00 AUD" == str(-b)
+        assert "11.0000" == str(+a)
+        assert "22.00 AUD" == str(+b)
 
     def test_amount_add(self):
-        self.assertEqual("33.00 AUD", str(a + b))
-        self.assertEqual("55.00 AUD", str(b + c))
-        self.assertEqual("55.00 NZD", str(d + a))
+        assert "33.00 AUD" == str(a + b)
+        assert "55.00 AUD" == str(b + c)
+        assert "55.00 NZD" == str(d + a)
         self.assertRaises(ValueError, lambda: c + d)
 
     def test_amount_sub(self):
-        self.assertEqual("-11.00 AUD", str(a - b))
-        self.assertEqual("-11.00 AUD", str(b - c))
-        self.assertEqual("33.00 NZD", str(d - a))
+        assert "-11.00 AUD" == str(a - b)
+        assert "-11.00 AUD" == str(b - c)
+        assert "33.00 NZD" == str(d - a)
         self.assertRaises(ValueError, lambda: c - d)
 
     def test_amount_mul(self):
-        self.assertEqual("22.0000", str(a * 2))
-        self.assertEqual("44.00 AUD", str(b * 2))
+        assert "22.0000" == str(a * 2)
+        assert "44.00 AUD" == str(b * 2)
         self.assertRaises(TypeError, lambda: d * a)
 
     def test_amount_div(self):
-        self.assertEqual("11.00 AUD", str(b / 2))
-        self.assertEqual(1.5, c / b)
+        assert "11.00 AUD" == str(b / 2)
+        assert 1.5 == c / b
         self.assertRaises(ValueError, lambda: c / d)
 
     def test_amount_eq(self):
@@ -88,8 +88,8 @@ class DataTypesTestCase(unittest.TestCase):
         self.assertRaises(ValueError, lambda: d >= c)
 
     def test_amount_format(self):
-        self.assertEqual("11.00", a.format("{value_raw:0.2f}"))
-        self.assertEqual("$22.00 AUD", b.format("{currency.symbol}{value} {currency.code}"))
+        assert "11.00" == a.format("{value_raw:0.2f}")
+        assert "$22.00 AUD" == b.format("{currency.symbol}{value} {currency.code}")
 
     def test_assign_currency(self):
         target = a.assign_currency("NZD")

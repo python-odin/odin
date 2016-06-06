@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import unittest
+import pytest
 import datetime
 from odin.exceptions import MappingSetupError, MappingExecutionError
 from odin.mapping import MappingResult
@@ -34,18 +34,17 @@ class SimpleFromTo(odin.Mapping):
             return value
 
 
-class MappingTestCase(unittest.TestCase):
-    def assertMappingEquivalent(self, a, b):
-        flat_a = sorted(str(i) for i in a)
-        flat_b = sorted(str(i) for i in b)
-        self.assertListEqual(flat_a, flat_b)
+def assertMappingEquivalent(a, b):
+    flat_a = sorted(str(i) for i in a)
+    flat_b = sorted(str(i) for i in b)
+    assert flat_a == flat_b
 
 
-class MappingBaseTestCase(MappingTestCase):
+class TestMappingBase(object):
     maxDiff = None
 
     def test_full_mapping(self):
-        self.assertMappingEquivalent([
+        assertMappingEquivalent([
             (('from_field1',), None, ('to_field1',), False, False, False),
             (('from_field2',), int, ('to_field2',), False, False, False),
             (('from_field3', 'from_field4'), sum_fields, ('to_field3',), False, False, False),
@@ -87,31 +86,31 @@ class MappingBaseTestCase(MappingTestCase):
 
         to_resource = from_resource.convert_to(ToResource)
 
-        self.assertEqual('Foo', to_resource.title)
-        self.assertEqual('42', to_resource.count)
-        self.assertEqual(None, to_resource.excluded1)
-        self.assertEqual('abc', to_resource.to_field1)
-        self.assertEqual(62, to_resource.to_field2)
-        self.assertEqual(69, to_resource.to_field3)
-        self.assertEqual('abc', to_resource.same_but_different)
-        self.assertEqual('foo-bar-eek', to_resource.to_field_c1)
-        self.assertEqual('first', to_resource.to_field_c2)
-        self.assertEqual('second-third', to_resource.to_field_c3)
-        self.assertEqual("DO SOMETHING", to_resource.not_auto_c5)
-        self.assertEqual(['foo', 'bar', 'eek'], to_resource.array_string)
+        assert 'Foo' == to_resource.title
+        assert '42' == to_resource.count
+        assert None == to_resource.excluded1
+        assert 'abc' == to_resource.to_field1
+        assert 62 == to_resource.to_field2
+        assert 69 == to_resource.to_field3
+        assert 'abc' == to_resource.same_but_different
+        assert 'foo-bar-eek' == to_resource.to_field_c1
+        assert 'first' == to_resource.to_field_c2
+        assert 'second-third' == to_resource.to_field_c3
+        assert "DO SOMETHING" == to_resource.not_auto_c5
+        assert ['foo', 'bar', 'eek'] == to_resource.array_string
 
     def test_missing_from_resource(self):
-        with self.assertRaises(MappingSetupError):
+        with pytest.raises(MappingSetupError):
             class _(odin.Mapping):
                 to_obj = FakeToResource
 
     def test_missing_to_resource(self):
-        with self.assertRaises(MappingSetupError):
+        with pytest.raises(MappingSetupError):
             class _(odin.Mapping):
                 from_obj = SimpleFromResource
 
     def test_unknown_from_field_mappings(self):
-        with self.assertRaises(MappingSetupError):
+        with pytest.raises(MappingSetupError):
             class _(odin.Mapping):
                 from_obj = SimpleFromResource
                 to_obj = FakeToResource
@@ -121,7 +120,7 @@ class MappingBaseTestCase(MappingTestCase):
                 )
 
     def test_unknown_from_field_mappings_multiple(self):
-        with self.assertRaises(MappingSetupError):
+        with pytest.raises(MappingSetupError):
             class _(odin.Mapping):
                 from_obj = SimpleFromResource
                 to_obj = FakeToResource
@@ -131,7 +130,7 @@ class MappingBaseTestCase(MappingTestCase):
                 )
 
     def test_unknown_from_field_custom(self):
-        with self.assertRaises(MappingSetupError):
+        with pytest.raises(MappingSetupError):
             class _(odin.Mapping):
                 from_obj = SimpleFromResource
                 to_obj = FakeToResource
@@ -141,7 +140,7 @@ class MappingBaseTestCase(MappingTestCase):
                     pass
 
     def test_bad_action_not_callable(self):
-        with self.assertRaises(MappingSetupError):
+        with pytest.raises(MappingSetupError):
             class _(odin.Mapping):
                 from_obj = SimpleFromResource
                 to_obj = FakeToResource
@@ -151,7 +150,7 @@ class MappingBaseTestCase(MappingTestCase):
                 )
 
     def test_bad_action_not_defined(self):
-        with self.assertRaises(MappingSetupError):
+        with pytest.raises(MappingSetupError):
             class _(odin.Mapping):
                 from_obj = SimpleFromResource
                 to_obj = FakeToResource
@@ -161,7 +160,7 @@ class MappingBaseTestCase(MappingTestCase):
                 )
 
     def test_bad_action_defined_not_callable(self):
-        with self.assertRaises(MappingSetupError):
+        with pytest.raises(MappingSetupError):
             class _(odin.Mapping):
                 from_obj = SimpleFromResource
                 to_obj = FakeToResource
@@ -173,7 +172,7 @@ class MappingBaseTestCase(MappingTestCase):
                 )
 
     def test_unknown_to_field_mappings(self):
-        with self.assertRaises(MappingSetupError):
+        with pytest.raises(MappingSetupError):
             class _(odin.Mapping):
                 from_obj = SimpleFromResource
                 to_obj = FakeToResource
@@ -183,7 +182,7 @@ class MappingBaseTestCase(MappingTestCase):
                 )
 
     def test_unknown_to_field_mappings_multiple(self):
-        with self.assertRaises(MappingSetupError):
+        with pytest.raises(MappingSetupError):
             class _(odin.Mapping):
                 from_obj = SimpleFromResource
                 to_obj = FakeToResource
@@ -193,7 +192,7 @@ class MappingBaseTestCase(MappingTestCase):
                 )
 
     def test_unknown_to_field_custom(self):
-        with self.assertRaises(MappingSetupError):
+        with pytest.raises(MappingSetupError):
             class _(odin.Mapping):
                 from_obj = SimpleFromResource
                 to_obj = FakeToResource
@@ -203,7 +202,7 @@ class MappingBaseTestCase(MappingTestCase):
                     pass
 
     def test_bad_mapping(self):
-        with self.assertRaises(MappingSetupError):
+        with pytest.raises(MappingSetupError):
             class _(odin.Mapping):
                 from_obj = SimpleFromResource
                 to_obj = FakeToResource
@@ -213,7 +212,7 @@ class MappingBaseTestCase(MappingTestCase):
                 )
 
     def test_invalid_list_to_multiple_mapping(self):
-        with self.assertRaises(MappingSetupError) as cm:
+        with pytest.raises(MappingSetupError) as cm:
             class _(odin.Mapping):
                 from_obj = SimpleFromResource
                 to_obj = FakeToResource
@@ -221,10 +220,10 @@ class MappingBaseTestCase(MappingTestCase):
                 mappings = (
                     ('title', None, ('title', 'name'), True, False, False),
                 )
-        self.assertIn("specifies a to_list mapping, these can only be applied to a", str(cm.exception))
+        assert "specifies a to_list mapping, these can only be applied to a" in str(cm.value)
 
     def test_assignment_with_no_action(self):
-        with self.assertRaises(MappingSetupError) as cm:
+        with pytest.raises(MappingSetupError) as cm:
             class _(odin.Mapping):
                 from_obj = SimpleFromResource
                 to_obj = FakeToResource
@@ -232,37 +231,37 @@ class MappingBaseTestCase(MappingTestCase):
                 mappings = (
                     (None, None, ('title', 'name'), False, False, False),
                 )
-        self.assertIn("No action supplied for ", str(cm.exception))
+        assert "No action supplied for " in str(cm.value)
 
     def test_from_field_no_field_resolver(self):
-        with self.assertRaises(MappingSetupError) as cm:
+        with pytest.raises(MappingSetupError) as cm:
             class _(odin.Mapping):
                 from_obj = object
                 to_obj = FakeToResource
-        self.assertIn(r"`from_obj`", str(cm.exception))
-        self.assertIn(r"does not have an attribute resolver defined.", str(cm.exception))
+        assert r"`from_obj`" in str(cm.value)
+        assert r"does not have an attribute resolver defined." in str(cm.value)
 
     def test_to_field_no_field_resolver(self):
-        with self.assertRaises(MappingSetupError) as cm:
+        with pytest.raises(MappingSetupError) as cm:
             class _(odin.Mapping):
                 from_obj = FakeToResource
                 to_obj = object
 
-        self.assertIn(r"`to_obj`", str(cm.exception))
-        self.assertIn(r"does not have an attribute resolver defined.", str(cm.exception))
+        assert r"`to_obj`" in str(cm.value)
+        assert r"does not have an attribute resolver defined." in str(cm.value)
 
 
-class ExecuteMappingTestCase(MappingTestCase):
+class TestExecuteMapping(object):
     def test_not_valid_from_resource(self):
-        self.assertRaises(TypeError, FromToMapping, SimpleFromResource())
+        pytest.raises(TypeError, FromToMapping, SimpleFromResource())
 
     def test_invalid_from_value_count(self):
-        with self.assertRaises(MappingExecutionError):
+        with pytest.raises(MappingExecutionError):
             target = FromToMapping(FromResource())
             target._apply_rule((('from_field_c1', 'from_field_c2'), 'one_to_multi', ('title'), False, False, False))
 
     def test_invalid_to_value_count(self):
-        with self.assertRaises(MappingExecutionError):
+        with pytest.raises(MappingExecutionError):
             target = FromToMapping(FromResource(title='Test'))
             target._apply_rule((('title',), 'multi_to_one', ('from_field_c1', 'from_field_c2'), False, False, False))
 
@@ -270,15 +269,15 @@ class ExecuteMappingTestCase(MappingTestCase):
         f = SimpleFromResource(title="ABC")
         t = SimpleFromTo.apply(f)
 
-        self.assertIsInstance(t, SimpleToResource)
-        self.assertEqual("ABC", t.title)
+        assert isinstance(t, SimpleToResource)
+        assert "ABC" == t.title
 
     def test_apply_single_resource_with_context(self):
         f = SimpleFromResource(title="ABC")
         t = SimpleFromTo.apply(f)
 
-        self.assertIsInstance(t, SimpleToResource)
-        self.assertEqual("ABC", t.title_count)
+        assert isinstance(t, SimpleToResource)
+        assert "ABC" == t.title_count
 
     def test_apply_multiple_resources(self):
         from_resources = [
@@ -288,8 +287,8 @@ class ExecuteMappingTestCase(MappingTestCase):
         ]
 
         to_resource_iter = SimpleFromTo.apply(from_resources)
-        self.assertIsInstance(to_resource_iter, MappingResult)
-        self.assertListEqual(['Foo', 'Bar', 'Eek'], [t.title for t in to_resource_iter])
+        assert isinstance(to_resource_iter, MappingResult)
+        assert ['Foo', 'Bar', 'Eek'] == [t.title for t in to_resource_iter]
 
     def test_apply_multiple_resources_with_context(self):
         from_resources = [
@@ -299,11 +298,11 @@ class ExecuteMappingTestCase(MappingTestCase):
         ]
 
         to_resource_iter = SimpleFromTo.apply(from_resources)
-        self.assertIsInstance(to_resource_iter, MappingResult)
-        self.assertListEqual(['0: Foo', '1: Bar', '2: Eek'], [t.title_count for t in to_resource_iter])
+        assert isinstance(to_resource_iter, MappingResult)
+        assert ['0: Foo', '1: Bar', '2: Eek'] == [t.title_count for t in to_resource_iter]
 
 
-class ResourceMappingHelpersTestCase(unittest.TestCase):
+class TestResourceMappingHelpers(object):
     def test_update_existing(self):
         resource = OldBook(
             name="Bar",  # odin.StringField()
@@ -325,11 +324,11 @@ class ResourceMappingHelpersTestCase(unittest.TestCase):
 
         resource.update_existing(existing_resource)
 
-        self.assertEqual("Bar", existing_resource.title)
-        self.assertEqual(42, existing_resource.num_pages)
-        self.assertEqual(12.50, existing_resource.rrp)
-        self.assertEqual(False, existing_resource.fiction)
-        self.assertEqual("fantasy", existing_resource.genre)
+        assert "Bar" == existing_resource.title
+        assert 42 == existing_resource.num_pages
+        assert 12.50 == existing_resource.rrp
+        assert False == existing_resource.fiction
+        assert "fantasy" == existing_resource.genre
 
     def test_update_filtered_existing(self):
         resource = OldBook(
@@ -352,11 +351,11 @@ class ResourceMappingHelpersTestCase(unittest.TestCase):
 
         resource.update_existing(existing_resource, ignore_fields=['num_pages'])
 
-        self.assertEqual("Bar", existing_resource.title)
-        self.assertEqual(12, existing_resource.num_pages)
-        self.assertEqual(12.50, existing_resource.rrp)
-        self.assertEqual(False, existing_resource.fiction)
-        self.assertEqual("fantasy", existing_resource.genre)
+        assert "Bar" == existing_resource.title
+        assert 12 == existing_resource.num_pages
+        assert 12.50 == existing_resource.rrp
+        assert False == existing_resource.fiction
+        assert "fantasy" == existing_resource.genre
 
 
 class ResourceA(odin.Resource):
@@ -412,7 +411,7 @@ class ResourceCToResourceZ(ResourceAToResourceX):
         return value
 
 
-class SubClassMappingTestCase(MappingTestCase):
+class TestSubClassMapping(object):
     """
     Test the concept of a sub class mapping ie
 
@@ -428,18 +427,18 @@ class SubClassMappingTestCase(MappingTestCase):
 
     """
     def test_abstract_resource_definitions(self):
-        self.assertListEqual(['bar', 'foo'], [f.name for f in ResourceB._meta.fields])
-        self.assertListEqual(['eek', 'foo'], [f.name for f in ResourceC._meta.fields])
-        self.assertListEqual(['bar', 'foo'], [f.name for f in ResourceY._meta.fields])
-        self.assertListEqual(['alt', 'foo'], [f.name for f in ResourceZ._meta.fields])
+        assert ['bar', 'foo'] == [f.name for f in ResourceB._meta.fields]
+        assert ['eek', 'foo'] == [f.name for f in ResourceC._meta.fields]
+        assert ['bar', 'foo'] == [f.name for f in ResourceY._meta.fields]
+        assert ['alt', 'foo'] == [f.name for f in ResourceZ._meta.fields]
 
     def test_abstract_mapping_definitions(self):
-        self.assertMappingEquivalent([
+        assertMappingEquivalent([
             (('foo',), 'foo', ('foo',), False, False, False),
             (('bar',), None, ('bar',), False, False, False),
         ], ResourceBToResourceY._mapping_rules)
 
-        self.assertMappingEquivalent([
+        assertMappingEquivalent([
             (('eek',), 'alt', ('alt',), False, False, False),
             (('foo',), 'foo', ('foo',), False, False, False),
         ], ResourceCToResourceZ._mapping_rules)
@@ -448,47 +447,47 @@ class SubClassMappingTestCase(MappingTestCase):
         source = [ResourceB(foo="1", bar="2"), ResourceC(foo="3", eek="4"), ResourceB(foo="5", bar="6")]
         result = ResourceAToResourceX.apply(source)
 
-        self.assertIsInstance(result[0], ResourceY)
-        self.assertIsInstance(result[1], ResourceZ)
-        self.assertIsInstance(result[2], ResourceY)
+        assert isinstance(result[0], ResourceY)
+        assert isinstance(result[1], ResourceZ)
+        assert isinstance(result[2], ResourceY)
 
     def test_mapping_to_list(self):
         source = [ResourceB(foo="1", bar="2"), ResourceC(foo="3", eek="4"), ResourceB(foo="5", bar="6")]
         result = list(ResourceAToResourceX.apply(source))
 
-        self.assertIsInstance(result[0], ResourceY)
-        self.assertIsInstance(result[1], ResourceZ)
-        self.assertIsInstance(result[2], ResourceY)
+        assert isinstance(result[0], ResourceY)
+        assert isinstance(result[1], ResourceZ)
+        assert isinstance(result[2], ResourceY)
 
     def test_subs(self):
-        self.assertEqual({
+        assert {
             ResourceB: ResourceBToResourceY,
             ResourceC: ResourceCToResourceZ,
-        }, ResourceAToResourceX._subs)
+        } == ResourceAToResourceX._subs
 
     def test_invalid_abstract_mapping_from_obj(self):
         # All sub_class.from_obj should be an sub_class of base_class.from_obj
-        with self.assertRaises(MappingSetupError) as cm:
+        with pytest.raises(MappingSetupError) as cm:
             class _(ResourceAToResourceX):
                 from_obj = ResourceY
                 to_obj = ResourceZ
 
-        self.assertEqual('`from_obj` must be a subclass of `parent.from_obj`', str(cm.exception))
+        assert '`from_obj` must be a subclass of `parent.from_obj`' == str(cm.value)
 
     def test_invalid_abstract_mapping_to_obj(self):
         # All sub_class.from_obj should be an sub_class of base_class.to_obj
-        with self.assertRaises(MappingSetupError) as cm:
+        with pytest.raises(MappingSetupError) as cm:
             class _(ResourceAToResourceX):
                 from_obj = ResourceC
                 to_obj = ResourceB
 
-        self.assertIn('`to_obj` must be a subclass of `parent.to_obj`', str(cm.exception))
+        assert '`to_obj` must be a subclass of `parent.to_obj`' in str(cm.value)
 
     def test_invalid_inherited_type(self):
-        with self.assertRaises(TypeError) as cm:
+        with pytest.raises(TypeError) as cm:
             class ResourceD(ResourceA):
                 pass
             ResourceAToResourceX.apply(ResourceD())
 
-        self.assertIn("`source_resource` parameter must be an instance of", str(cm.exception))
+        assert "`source_resource` parameter must be an instance of" in str(cm.value)
 
