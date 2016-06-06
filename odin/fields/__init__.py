@@ -473,7 +473,7 @@ class TypedListField(ListField):
         type_name = instance.field.data_type_name
         if callable(type_name):
             type_name = type_name(instance.field)
-        return "List<{}>".format(type_name)
+        return "List<{0}>".format(type_name)
 
     def __init__(self, field, **options):
         self.field = field
@@ -527,7 +527,7 @@ class TypedDictField(DictField):
         if callable(value_type_name):
             value_type_name = value_type_name(instance.value_field)
 
-        return "Dict<{}, {}>".format(key_type_name, value_type_name)
+        return "Dict<{0}, {1}>".format(key_type_name, value_type_name)
 
     def __init__(self, value_field, key_field=StringField(), **options):
         self.key_field = key_field
