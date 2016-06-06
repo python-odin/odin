@@ -19,7 +19,7 @@ def deprecated(message, category=DeprecationWarning):
 
             def wrapped_init(*args, **kwargs):
                 warnings.warn(
-                    "{} is deprecated and scheduled for removal. {}".format(obj.__name__, message),
+                    "{0} is deprecated and scheduled for removal. {1}".format(obj.__name__, message),
                     category=category
                 )
                 return old_init(*args, **kwargs)
@@ -30,7 +30,7 @@ def deprecated(message, category=DeprecationWarning):
         else:
             def wrapped_func(*args):
                 warnings.warn(
-                    "{} is deprecated and scheduled for removal. {}".format(obj.__name__, message),
+                    "{0} is deprecated and scheduled for removal. {1}".format(obj.__name__, message),
                     category=category
                 )
                 return obj(*args)
