@@ -492,9 +492,9 @@ class MappingBase(object):
                 len(to_fields), len(to_values), mapping_rule))
 
         if skip_if_none:
-            return {f: to_values[i] for i, f in enumerate(to_fields) if to_values[i] is not None}
+            return dict((f, to_values[i]) for i, f in enumerate(to_fields) if to_values[i] is not None)
         else:
-            return {f: to_values[i] for i, f in enumerate(to_fields)}
+            return dict((f, to_values[i]) for i, f in enumerate(to_fields))
 
     def create_object(self, **field_values):
         """
