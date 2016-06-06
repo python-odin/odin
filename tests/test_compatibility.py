@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-import unittest
 import warnings
 from odin.compatibility import deprecated
 
 
-class DeprecatedTestCase(unittest.TestCase):
+class TestDeprecated(object):
     def test_function_deprecation_warning(self):
         @deprecated("No longer used.", category=UserWarning)
         def deprecated_function():
@@ -14,12 +13,12 @@ class DeprecatedTestCase(unittest.TestCase):
             deprecated_function()
 
         # Compare the message values
-        self.assertListEqual([
+        assert [
             str(m.message) for m in
             sorted(warning_log, key=lambda l: str(l.message))
-        ], [
+        ] == [
             'deprecated_function is deprecated and scheduled for removal. No longer used.',
-        ])
+        ]
 
     def test_class_deprecation_warning(self):
         @deprecated("No longer used.", category=UserWarning)
@@ -30,10 +29,10 @@ class DeprecatedTestCase(unittest.TestCase):
             DeprecatedClass()
 
         # Compare the message values
-        self.assertListEqual([
+        assert [
             str(m.message) for m in
             sorted(warning_log, key=lambda l: str(l.message))
-        ], [
+        ] == [
             'DeprecatedClass is deprecated and scheduled for removal. No longer used.',
-        ])
+        ]
 
