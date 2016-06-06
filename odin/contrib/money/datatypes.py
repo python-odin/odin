@@ -223,7 +223,7 @@ class Amount(tuple):
         """
         assert isinstance(format_string, six.string_types)
         return format_string.format(
-            value=('{:0.%if}' % self.currency.precision).format(self.value),
+            value=('{0:0.%if}' % self.currency.precision).format(self.value),
             value_raw=self.value,
             currency=self.currency,
         )
