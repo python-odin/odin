@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import unittest
 import odin
 from odin.contrib.geo import (
     LatitudeField, LongitudeField, LatLngField, PointField,
@@ -24,7 +23,7 @@ class GeoResource(odin.Resource):
     point_b = PointField()
 
 
-class GeoSerialisationTestCase(unittest.TestCase):
+class TestGeoSerialisation(object):
     def test_serialise(self):
         resource = GeoResource(
             lat_a=None,
@@ -41,8 +40,8 @@ class GeoSerialisationTestCase(unittest.TestCase):
 
         actual = json_codec.dumps(resource, sort_keys=True)
 
-        self.assertEqual(
-            actual,
+        assert (
+            actual ==
             '{"$": "odin.tests.GeoResource", '
             '"lat_a": null, "lat_b": 23.67, "lat_c": -23.67, '
             '"latlng_a": null, "latlng_b": [23.67, -123.56], '
@@ -59,13 +58,13 @@ class GeoSerialisationTestCase(unittest.TestCase):
             '"point_a": null, "point_b": [66.66, -33.33]}'
         )
 
-        self.assertEqual(None, resource.lat_a)
-        self.assertEqual(latitude(23.67), resource.lat_b)
-        self.assertEqual(latitude(-23.67), resource.lat_c)
-        self.assertEqual(None, resource.lng_a)
-        self.assertEqual(longitude(123.56), resource.lng_b)
-        self.assertEqual(longitude(-123.56), resource.lng_c)
-        self.assertEqual(None, resource.latlng_a)
-        self.assertEqual(latlng(23.67, -123.56), resource.latlng_b)
-        self.assertEqual(None, resource.point_a)
-        self.assertEqual(point(66.66, -33.33), resource.point_b)
+        assert None == resource.lat_a
+        assert latitude(23.67) == resource.lat_b
+        assert latitude(-23.67) == resource.lat_c
+        assert None == resource.lng_a
+        assert longitude(123.56) == resource.lng_b
+        assert longitude(-123.56) == resource.lng_c
+        assert None == resource.latlng_a
+        assert latlng(23.67, -123.56) == resource.latlng_b
+        assert None == resource.point_a
+        assert point(66.66, -33.33) == resource.point_b

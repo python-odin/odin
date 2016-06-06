@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import unittest
+import pytest
 from odin.contrib.money import AmountField
 from odin.contrib.money import Amount
 from odin.exceptions import ValidationError
@@ -10,17 +10,17 @@ c = Amount(33, "AUD")
 d = Amount(44, "NZD")
 
 
-class AmountFieldsTestCase(unittest.TestCase):
+class TestAmountFields(object):
     # AmountField #############################################################
 
     def test_money_field(self):
         f = AmountField()
-        self.assertRaises(ValidationError, f.clean, None)
-        self.assertRaises(ValidationError, f.clean, 'a')
-        self.assertEqual(a, f.clean(11))
-        self.assertEqual(b, f.clean((22, 'AUD')))
+        pytest.raises(ValidationError, f.clean, None)
+        pytest.raises(ValidationError, f.clean, 'a')
+        assert a == f.clean(11)
+        assert b == f.clean((22, 'AUD'))
 
     def test_money_field_1(self):
         f = AmountField(allowed_currencies=('NZD', 'AUD'))
-        self.assertEqual(d, f.clean((44, 'NZD')))
-        self.assertRaises(ValidationError, f.clean, (22, 'USD'))
+        assert d == f.clean((44, 'NZD'))
+        pytest.raises(ValidationError, f.clean, (22, 'USD'))
