@@ -45,8 +45,8 @@ class FilterChain(FilterAtom):
     def __str__(self):
         if not self._atoms:
             return ''
-        pin = " {} ".format(self.operator_name)
-        return "({})".format(pin.join(str(a) for a in self._atoms))
+        pin = " {0} ".format(self.operator_name)
+        return "({0})".format(pin.join(str(a) for a in self._atoms))
 
 
 class And(FilterChain):
