@@ -5,32 +5,32 @@ from odin.contrib import filter_query
 
 
 class TestFilterQuery(object):
-    @pytest.xfail
+    @pytest.skip
     def test_single_operator(self):
         ftr = filter_query.parse("foo == 123")
 
         assert isinstance(ftr, filtering.FilterChain)
         # self.assertEqual(1, len(ftr.))
 
-    @pytest.xfail
+    @pytest.skip
     def test_string_value(self):
         ftr = filter_query.parse('foo == "123 bar"')
 
         assert isinstance(ftr, filtering.FilterChain)
 
-    @pytest.xfail
+    @pytest.skip
     def test_int_value(self):
         ftr = filter_query.parse("foo == 123")
 
         assert isinstance(ftr, filtering.FilterChain)
 
-    @pytest.xfail
+    @pytest.skip
     def test_float_value(self):
         ftr = filter_query.parse("foo == 123.45")
 
         assert isinstance(ftr, filtering.FilterChain)
 
-    @pytest.xfail
+    @pytest.skip
     def test_none_value(self):
         ftr = filter_query.parse("foo == None")
 
@@ -40,25 +40,25 @@ class TestFilterQuery(object):
 
         assert isinstance(ftr, filtering.FilterChain)
 
-    @pytest.xfail
+    @pytest.skip
     def test_and_clause(self):
         ftr = filter_query.parse('foo == "bar" AND bar == 123')
 
         assert isinstance(ftr, filtering.FilterChain)
 
-    @pytest.xfail
+    @pytest.skip
     def test_or_clause(self):
         ftr = filter_query.parse('foo == "bar" OR bar == 123')
 
         assert isinstance(ftr, filtering.FilterChain)
 
-    @pytest.xfail
+    @pytest.skip
     def test_chained_clauses(self):
         ftr = filter_query.parse('foo == "bar" OR bar == 123 AND eek == 321')
 
         assert isinstance(ftr, filtering.FilterChain)
 
-    @pytest.xfail
+    @pytest.skip
     def test_nested_clauses(self):
         ftr = filter_query.parse('((foo == "bar" OR bar == 123) AND eek == 321)')
 
