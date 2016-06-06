@@ -111,7 +111,7 @@ class ResourceOptions(object):
 
     @cached_property
     def field_map(self):
-        return {f.attname: f for f in self.fields}
+        return dict((f.attname, f) for f in self.fields)
 
     @cached_property
     def parent_resource_names(self):
@@ -136,7 +136,7 @@ class ResourceOptions(object):
 
     @cached_property
     def element_field_map(self):
-        return {f.attname: f for f in self.element_fields}
+        return dict((f.attname, f) for f in self.element_fields)
 
     @cached_property
     def key_field(self):
