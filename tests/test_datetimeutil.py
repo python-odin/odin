@@ -88,45 +88,45 @@ class TestParseIsoTimeString(object):
 class TestParseIsoDateTimeString(object):
     def test_valid_values(self):
         assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc),
+            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc) ==
             datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33')
         )
         assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc),
+            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc) ==
             datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33Z')
         )
         assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 432, datetimeutil.utc),
+            datetime.datetime(2014, 1, 13, 0, 28, 33, 432, datetimeutil.utc) ==
             datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33.432Z')
         )
         assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.FixedTimezone.from_hours_minutes(10, 0)),
+            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.FixedTimezone.from_hours_minutes(10, 0)) ==
             datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33+10')
         )
         assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 432, datetimeutil.FixedTimezone.from_hours_minutes(10, 0)),
+            datetime.datetime(2014, 1, 13, 0, 28, 33, 432, datetimeutil.FixedTimezone.from_hours_minutes(10, 0)) ==
             datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33.432+10')
         )
         assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.FixedTimezone.from_hours_minutes(10, 30)),
+            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.FixedTimezone.from_hours_minutes(10, 30)) ==
             datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33+10:30')
         )
         assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 432, datetimeutil.FixedTimezone.from_hours_minutes(-10, -30)),
+            datetime.datetime(2014, 1, 13, 0, 28, 33, 432, datetimeutil.FixedTimezone.from_hours_minutes(-10, -30)) ==
             datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33.432-10:30')
         )
         assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 432, datetimeutil.FixedTimezone.from_hours_minutes(10, 30)),
+            datetime.datetime(2014, 1, 13, 0, 28, 33, 432, datetimeutil.FixedTimezone.from_hours_minutes(10, 30)) ==
             datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33.432+1030')
         )
 
         # Non-Standard but close formats that are common
         assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc),
+            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc) ==
             datetimeutil.parse_iso_datetime_string('2014-01-13 00:28:33Z')
         )
         assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc),
+            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc) ==
             datetimeutil.parse_iso_datetime_string('2014-01-13 00:28:33 GMT')
         )
 

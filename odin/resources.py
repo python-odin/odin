@@ -236,9 +236,9 @@ class ResourceBase(type):
 
         # If a key_field is defined ensure it exists
         if new_class._meta.key_field_name is not None and new_class._meta.key_field is None:
-                raise AttributeError('Key field `{}` is not exist on this resource.'.format(
-                    new_class._meta.key_field_name)
-                )
+            raise AttributeError('Key field `{0}` is not exist on this resource.'.format(
+                new_class._meta.key_field_name)
+            )
 
         if abstract:
             return new_class
