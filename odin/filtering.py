@@ -85,7 +85,7 @@ class FilterComparison(FilterAtom):
     def __str__(self):
         value = self.value
         if isinstance(self.value, six.string_types):
-            value = "'{1}'".format(value)
+            value = "'{0}'".format(value)
 
         if self.operation:
             op_name = getattr(self.operation, 'name', self.operation.__name__)
