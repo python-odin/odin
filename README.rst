@@ -39,7 +39,7 @@ Highlights
 * Field and Resource level validation
 * Mapping between resources or extended to other object types (eg Django Models)
 * Easy extension to support custom fields
-* Python 2.7+, Python 3.3+ and PyPy :sup:`1` supported
+* Python 2.6 :sup:`1`, Python 2.7+, Python 3.3+ and PyPy :sup:`1` supported
 * Integration with Django (see `baldr <https://github.com/python-odin/baldr>`_)
 * Support for documenting resources with `Sphinx <http://sphinx-doc.org/>`_
 * Minimal dependencies (base functionality only requires *six*)
@@ -61,10 +61,11 @@ Upcoming features
 **In development**
 
 * XML Codec (export completed)
-* Complete documentation, this will pretty much always be here.
+* Complete documentation coverage
 * Improvements for CSV Codec (writing, reading multi resource CSV's)
 * RESTful interface with support for Flask and Django
 * Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms)
+* Integration with SQLAlchemy
 
 
 Requires
@@ -83,6 +84,10 @@ Requires
 * jinja2 >= 2.7 - For documentation generation
 * pint - Support for physical quantities using the `Pint <http://pint.readthedocs.org/>`_ library.
 
+**Development**
+
+* pytest - Testing
+* pytest-cov - Coverage reporting
 
 Example
 *******
