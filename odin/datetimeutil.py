@@ -3,6 +3,7 @@ import datetime
 import re
 import time
 import six
+import sys
 from email.utils import parsedate_tz as parse_http_datetime
 
 
@@ -179,12 +180,26 @@ def now_local():
     return datetime.datetime.now(tz=local)
 
 
+# Fallback for python 2.6
+if sys.version_info[0] == 2 and sys.version_info[1] == 6:
+    def total_seconds(timedelta):
+        """
+        Backported implementation of total_seconds
+        """
+        return (
+            timedelta.microseconds + 0.0 +
+            (timedelta.seconds + timedelta.days * 24 * 3600)
+        )
+else:
+    total_seconds = datetime.timedelta.total_seconds
+
+
 UNIX_EPOCH = datetime.datetime(1970, 1, 1, tzinfo=utc)
 if six.PY3:
     to_timestamp = datetime.datetime.timestamp
 else:
     def to_timestamp(dt):
-        return (dt - UNIX_EPOCH).total_seconds()
+        return total_seconds((dt - UNIX_EPOCH))
 
 
 ISO8601_DATE_STRING_RE = re.compile(
