@@ -21,4 +21,5 @@ script:
   - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]] && [[ $TRAVIS_PYTHON_VERSION != '2.6' ]]; then py.test tests/ --cov=odin ; fi
 
 after_success:
+  - bash <(curl -s https://codecov.io/bash)
   - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then coveralls; fi
