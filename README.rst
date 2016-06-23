@@ -92,7 +92,7 @@ Requires
 Example
 *******
 
-**With definition:**::
+**With definition**::
 
     import odin
 
