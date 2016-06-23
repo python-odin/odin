@@ -1,3 +1,9 @@
+0.8.2
+=====
+
+- Migrated all tests to py.test
+- Support for Python 2.6 for _most_ features (some contrib features are not supported see docs for detail)
+
 0.8.1
 =====
 
@@ -6,6 +12,7 @@
 
 0.8
 ===
+
 - Added key_fields to resource meta options. This allows definition of which field(s) are used to uniquely identify the
   resource.
 - Added support to TraversalPath (and ResourceTraversalIterator) for using key_fields, both generating and traversing a
