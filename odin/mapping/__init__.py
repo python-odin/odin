@@ -17,6 +17,9 @@ def force_tuple(value):
 
 EMPTY_LIST = tuple()
 
+FieldMapping = collections.namedtuple('FieldMapping', ('from_field', 'action', 'to_field',
+                                                       'to_list', 'bind', 'skip_if_none'))
+
 
 def define(from_field=None, action=None, to_field=None, to_list=False, bind=False, skip_if_none=False):
     """
@@ -34,7 +37,7 @@ def define(from_field=None, action=None, to_field=None, to_list=False, bind=Fals
     """
     if from_field is None and to_field is None:
         raise MappingSetupError("Either `from_field` or `to_field` must be defined.")
-    return from_field, action, to_field or from_field, to_list, bind, skip_if_none
+    return FieldMapping(from_field, action, to_field or from_field, to_list, bind, skip_if_none)
 
 
 def assign(to_field, action, to_list=False, bind=True, skip_if_none=False):
@@ -52,7 +55,7 @@ def assign(to_field, action, to_list=False, bind=True, skip_if_none=False):
     """
     if to_field is None:
         raise MappingSetupError("`to_field` must be defined.")
-    return None, action, to_field, to_list, bind, skip_if_none
+    return FieldMapping(None, action, to_field, to_list, bind, skip_if_none)
 
 
 class FieldResolverBase(object):
@@ -132,12 +135,12 @@ def _generate_auto_mapping(name, from_fields, to_fields):
     if isinstance(from_field, ListOf) and isinstance(to_field, ListOf):
         try:
             mapping = registration.get_mapping(from_field.of, to_field.of)
-            return define(name, MapListOf(mapping), name, to_list=False, bind=True)
+            return FieldMapping(name, MapListOf(mapping), name, to_list=False, bind=True, skip_if_none=False)
         except KeyError:
             # If both items are from and to fields refer to the same object automatically use a mapper that just
             # produces a clone.
             if from_field.of is to_field.of:
-                return define(name, MapListOf(NoOpMapper), name, to_list=False, bind=True)
+                return FieldMapping(name, MapListOf(NoOpMapper), name, to_list=False, bind=True, skip_if_none=False)
 
     # Handle DictAs fields
     elif isinstance(from_field, DictAs) and isinstance(to_field, DictAs):
@@ -241,7 +244,7 @@ class MappingMeta(type):
                 if f not in to_fields:
                     raise MappingSetupError('Field `%s` of %s `%s` not found on to object. ' % (f, def_type, ref))
 
-            return map_from, action, map_to, to_list, bind, skip_if_none
+            return FieldMapping(map_from, action, map_to, to_list, bind, skip_if_none)
 
         # Determine what fields need to have mappings generated
         exclude_fields = attrs.get('exclude_fields') or tuple()
