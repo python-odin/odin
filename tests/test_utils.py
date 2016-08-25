@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import unittest
 from odin import utils
 from .resources import Book
 
