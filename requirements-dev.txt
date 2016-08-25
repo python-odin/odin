@@ -1,5 +1,5 @@
 -r requirements.txt
 -r requirements-optional.txt
 tox
-nose
+pytest
 coverage
