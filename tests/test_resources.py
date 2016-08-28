@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import unittest
-
-from odin.resources import ResourceOptions, build_object_graph
+import pytest
 import odin
+from odin.fields import NOT_PROVIDED
+from odin.resources import ResourceOptions, build_object_graph
 from odin.exceptions import ValidationError
 from .resources import Book, Library, Subscriber
 
@@ -45,39 +45,39 @@ class ResourceD(ResourceC):
     pass
 
 
-class ResourceTestCase(unittest.TestCase):
+class TestResource(object):
     def test_constructor_kwargs_only(self):
         r = Author(name="Foo")
-        self.assertEqual("Foo", r.name)
+        assert "Foo" == r.name
 
     def test_constructor_kwargs_only_with_unknown_field(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             Author(name="Foo", age=42)
 
     def test_constructor_args_only(self):
         r = Author("Foo")
-        self.assertEqual("Foo", r.name)
-        self.assertEqual(None, r.country)
+        assert "Foo" == r.name
+        assert None == r.country
 
     def test_constructor_args_excess(self):
-        with self.assertRaises(TypeError) as ex:
+        with pytest.raises(TypeError) as ex:
             Author("Foo", "Australia", 42)
-        self.assertEqual("This resource takes 2 positional arguments but 3 where given.", str(ex.exception))
+        assert "This resource takes 2 positional arguments but 3 where given." == str(ex.value)
 
     def test_constructor_args_and_kwargs(self):
         r = Author("Foo", country="Australia")
-        self.assertEqual("Foo", r.name)
-        self.assertEqual("Australia", r.country)
+        assert "Foo" == r.name
+        assert "Australia" == r.country
 
     def test_constructor_args_and_kwargs_overrides(self):
         r = Author("Foo", name="Bar", country="Australia")
-        self.assertEqual("Foo", r.name)
-        self.assertEqual("Australia", r.country)
+        assert "Foo" == r.name
+        assert "Australia" == r.country
 
     def test_simple_methods(self):
         r = Author()
-        self.assertEqual("<Author: tests.test_resources.Author resource>", repr(r))
-        self.assertEqual("tests.test_resources.Author resource", str(r))
+        assert "<Author: tests.test_resources.Author resource>" == repr(r)
+        assert "tests.test_resources.Author resource" == str(r)
 
     def test_clean_fields_1(self):
         r = Author(name="Foo")
@@ -85,16 +85,16 @@ class ResourceTestCase(unittest.TestCase):
 
         r.clean_fields()
 
-        self.assertEqual("Foo", r.name)
-        self.assertEqual("Australia!", r.country)
+        assert "Foo" == r.name
+        assert "Australia!" == r.country
 
     def test_clean_fields_2(self):
         r = Author(name="Foo")
 
         r.clean_fields()
 
-        self.assertEqual("Foo", r.name)
-        self.assertEqual(None, r.country)
+        assert "Foo" == r.name
+        assert None == r.country
 
     def test_clean_fields_3(self):
         r = Author(name="Foo", country="England")
@@ -102,7 +102,7 @@ class ResourceTestCase(unittest.TestCase):
         try:
             r.clean_fields()
         except ValidationError as ve:
-            self.assertEqual(["What are ya?"], ve.message_dict['country'])
+            assert ["What are ya?"] == ve.message_dict['country']
         else:
             raise AssertionError("ValidationError not raised.")
 
@@ -112,7 +112,7 @@ class ResourceTestCase(unittest.TestCase):
         try:
             r.clean_fields()
         except ValidationError as ve:
-            self.assertEqual(["This field cannot be null."], ve.message_dict['name'])
+            assert ["This field cannot be null."] == ve.message_dict['name']
         else:
             raise AssertionError("ValidationError not raised.")
 
@@ -122,7 +122,7 @@ class ResourceTestCase(unittest.TestCase):
         try:
             r.full_clean()
         except ValidationError as ve:
-            self.assertEqual(["No no no no"], ve.message_dict['__all__'])
+            assert ["No no no no"] == ve.message_dict['__all__']
         else:
             raise AssertionError("ValidationError not raised.")
 
@@ -131,21 +131,21 @@ class ResourceTestCase(unittest.TestCase):
 
         r.full_clean(exclude=('country',))
 
-        self.assertEqual("Bruce", r.name)
-        self.assertEqual("England", r.country)
+        assert "Bruce" == r.name
+        assert "England" == r.country
 
     # Fix for #11
     def test_multiple_abstract_namespaces(self):
-        self.assertEqual('example.ResourceC', ResourceC._meta.resource_name)
+        assert 'example.ResourceC' == ResourceC._meta.resource_name
 
     def test_parents_1(self):
-        self.assertListEqual([], ResourceA._meta.parents)
-        self.assertListEqual([ResourceA], ResourceB._meta.parents)
-        self.assertListEqual([ResourceA, ResourceB], ResourceC._meta.parents)
-        self.assertListEqual([ResourceA, ResourceB, ResourceC], ResourceD._meta.parents)
+        assert [] == ResourceA._meta.parents
+        assert [ResourceA] == ResourceB._meta.parents
+        assert [ResourceA, ResourceB] == ResourceC._meta.parents
+        assert [ResourceA, ResourceB, ResourceC] == ResourceD._meta.parents
 
 
-class MetaOptionsTestCase(unittest.TestCase):
+class TestMetaOptions(object):
     def test_invalid_options(self):
         class Meta:
             random_val = 10
@@ -155,15 +155,15 @@ class MetaOptionsTestCase(unittest.TestCase):
 
         target = ResourceOptions(Meta)
 
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             target.contribute_to_class(NewResource, 'etc')
 
 
-class ConstructionMethodsTestCase(unittest.TestCase):
+class TestConstructionMethods(object):
     def test_build_object_graph_empty_dict_no_clean(self):
         book = build_object_graph({}, Book, full_clean=False)
 
-        self.assertEqual(dict(
+        assert dict(
             title=None,
             isbn=None,
             num_pages=None,
@@ -173,13 +173,13 @@ class ConstructionMethodsTestCase(unittest.TestCase):
             published=None,
             authors=None,
             publisher=None
-        ), book.to_dict())
+        ) == book.to_dict()
 
     def test_build_object_graph_empty_dict(self):
-        with self.assertRaises(ValidationError) as ctx:
+        with pytest.raises(ValidationError) as ctx:
             build_object_graph({}, Book)
 
-        self.assertEqual(dict(
+        assert dict(
             title=['This field cannot be null.'],
             isbn=['This field cannot be null.'],
             num_pages=['This field cannot be null.'],
@@ -187,7 +187,7 @@ class ConstructionMethodsTestCase(unittest.TestCase):
             genre=['This field cannot be null.'],
             published=['This field cannot be null.'],
             authors=['List cannot contain null entries.'],
-        ), ctx.exception.error_messages)
+        ) == ctx.value.error_messages
 
     def test_build_object_graph_from_list(self):
         books = build_object_graph([dict(
@@ -196,7 +196,7 @@ class ConstructionMethodsTestCase(unittest.TestCase):
             title="Book2"
         )], Book, full_clean=False)
 
-        self.assertEqual([dict(
+        assert [dict(
             title="Book1",
             isbn=None,
             num_pages=None,
@@ -216,7 +216,7 @@ class ConstructionMethodsTestCase(unittest.TestCase):
             published=None,
             authors=None,
             publisher=None
-        )], [book.to_dict() for book in books])
+        )] == [book.to_dict() for book in books]
 
     def test_build_nested_objects(self):
         subscribers = [
@@ -231,7 +231,7 @@ class ConstructionMethodsTestCase(unittest.TestCase):
         expected = sorted(build_object_graph(subscribers, resource=Subscriber, full_clean=False), key=lambda s: s.name)
         actual = sorted(build_object_graph(library, resource=Library, full_clean=False).subscribers, key=lambda s: s.name)
 
-        self.assertEqual(actual, expected)
+        assert actual == expected
 
     def test_build_nested_objects_with_polymorphism(self):
         books = [{'title': "Book1", "isbn": "abc-123", 'num_pages': 1, 'rrp': 20.4, 'fiction': True, 'genre': 'sci-fi', 'published': [],
@@ -247,4 +247,22 @@ class ConstructionMethodsTestCase(unittest.TestCase):
         expected = sorted(build_object_graph(books, full_clean=False), key=lambda s: s.title)
         actual = sorted(build_object_graph(library, resource=Library, full_clean=False).books, key=lambda s: s.title)
 
-        self.assertEqual(actual, expected)
+        assert actual == expected
+
+    def test_create_resource_from_dict_with_default_to_not_supplied(self):
+        book = build_object_graph({
+            "title": "Foo",
+            "num_pages": 42
+        }, Book, full_clean=False, default_to_not_supplied=True)
+
+        assert dict(
+            title="Foo",
+            isbn=NOT_PROVIDED,
+            num_pages=42,
+            rrp=NOT_PROVIDED,
+            fiction=NOT_PROVIDED,
+            genre=NOT_PROVIDED,
+            published=NOT_PROVIDED,
+            authors=NOT_PROVIDED,
+            publisher=NOT_PROVIDED
+        ) == book.to_dict()

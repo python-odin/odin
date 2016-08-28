@@ -2,15 +2,14 @@
 from __future__ import absolute_import
 import datetime
 import os
-from odin.datetimeutil import utc
-from six import BytesIO
-from odin.codecs import msgpack_codec
+from six import StringIO
+from odin.codecs import yaml_codec
 from .resources import *
 
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
-class TestMsgPackCodec(object):
+class TestJSONCodec(object):
     def test_dumps_and_loads(self):
         in_resource = Book(
             title='Consider Phlebas',
@@ -23,8 +22,8 @@ class TestMsgPackCodec(object):
             publisher=Publisher(name="Macmillan"),
         )
 
-        data = msgpack_codec.dumps(in_resource)
-        out_resource = msgpack_codec.loads(data)
+        data = yaml_codec.dumps(in_resource)
+        out_resource = yaml_codec.loads(data)
 
         assert out_resource.title == in_resource.title
         assert out_resource.isbn == in_resource.isbn
@@ -35,7 +34,7 @@ class TestMsgPackCodec(object):
         assert out_resource.authors[0].name == in_resource.authors[0].name
         assert out_resource.publisher.name == in_resource.publisher.name
 
-    def test_dump_and_load_(self):
+    def test_dump_and_load(self):
         in_resource = Book(
             title='Consider Phlebas',
             isbn='0-333-45430-8',
@@ -45,14 +44,14 @@ class TestMsgPackCodec(object):
             genre="sci-fi",
             authors=[Author(name="Iain M. Banks")],
             publisher=Publisher(name="Macmillan"),
-            published=[datetime.datetime(1987, 1, 1, tzinfo=utc)]
+            published=[datetime.datetime(1987, 1, 1)]
         )
 
-        fp = BytesIO()
-        msgpack_codec.dump(in_resource, fp)
+        fp = StringIO()
+        yaml_codec.dump(in_resource, fp)
 
         fp.seek(0)
-        out_resource = msgpack_codec.load(fp)
+        out_resource = yaml_codec.load(fp)
 
         assert out_resource.title == in_resource.title
         assert out_resource.isbn == in_resource.isbn

@@ -1,4 +1,4 @@
-import unittest
+import pytest
 import odin
 from odin import traversal
 from odin.exceptions import NoMatchError, InvalidPathError, MultipleMatchesError
@@ -77,14 +77,14 @@ class TestResourceTraversalIterator(traversal.ResourceTraversalIterator):
         self.events.append("on_exit: %s" % self.path)
 
 
-class TraversalTestCase(unittest.TestCase):
+class TestTraversal(object):
     def test_structure(self):
         TEST_STRUCTURE.full_clean()
 
         resource_iter = TestResourceTraversalIterator(TEST_STRUCTURE)
         resources = ["%s %s %s" % (r, r.name, resource_iter.depth) for r in resource_iter]
 
-        self.assertListEqual([
+        assert [
             'on_enter: ',
                 'on_enter: level2',
                 'on_exit: level2',
@@ -101,9 +101,9 @@ class TraversalTestCase(unittest.TestCase):
                 'on_exit: level2s[c].level3s{name=h}',
                 'on_exit: level2s[c]',
             'on_exit: ',
-        ], resource_iter.events)
+        ] == resource_iter.events
 
-        self.assertListEqual([
+        assert [
             'odin.traversal.Level1 resource a 0',
             'odin.traversal.Level2 resource b 1',
             'odin.traversal.Level2 resource c 1',
@@ -112,7 +112,7 @@ class TraversalTestCase(unittest.TestCase):
             'odin.traversal.Level3 resource f 2',
             'odin.traversal.Level2 resource g 1',
             'odin.traversal.Level3 resource h 2',
-        ], resources)
+        ] == resources
 
     def test_list_structure(self):
         TEST_STRUCTURE.full_clean()
@@ -120,7 +120,7 @@ class TraversalTestCase(unittest.TestCase):
         resource_iter = TestResourceTraversalIterator(TEST_LIST_STRUCTURE)
         resources = ["%s %s %s" % (r, r.name, resource_iter.depth) for r in resource_iter]
 
-        self.assertListEqual([
+        assert [
             'on_enter: ',
                 'on_enter: level2',
                 'on_exit: level2',
@@ -153,9 +153,9 @@ class TraversalTestCase(unittest.TestCase):
                 'on_exit: level2s[c].level3s{name=p}',
                 'on_exit: level2s[c]',
             'on_exit: ',
-        ], resource_iter.events)
+        ] == resource_iter.events
 
-        self.assertListEqual([
+        assert [
             'odin.traversal.Level1 resource a 0',
             'odin.traversal.Level2 resource b 1',
             'odin.traversal.Level2 resource c 1',
@@ -172,66 +172,66 @@ class TraversalTestCase(unittest.TestCase):
             'odin.traversal.Level3 resource n 2',
             'odin.traversal.Level2 resource o 1',
             'odin.traversal.Level3 resource p 2',
-        ], resources)
+        ] == resources
 
 
-class TraversalPathTestCase(unittest.TestCase):
+class TestTraversalPath(object):
     def test_parse(self):
         actual = traversal.TraversalPath.parse('level2')
-        self.assertEqual(traversal.TraversalPath((traversal.NotSupplied, traversal.NotSupplied, 'level2'),), actual)
+        assert traversal.TraversalPath((traversal.NotSupplied, traversal.NotSupplied, 'level2'),) == actual
 
         actual = traversal.TraversalPath.parse('level2.name')
-        self.assertEqual(traversal.TraversalPath(
+        assert traversal.TraversalPath(
             (traversal.NotSupplied, traversal.NotSupplied, 'level2'),
             (traversal.NotSupplied, traversal.NotSupplied, 'name')
-        ), actual)
+        ) == actual
 
         actual = traversal.TraversalPath.parse('level2s[b].level3s[1].name')
-        self.assertEqual(traversal.TraversalPath(
+        assert traversal.TraversalPath(
             ('b', traversal.NotSupplied, 'level2s'),
             ('1', traversal.NotSupplied, 'level3s'),
             (traversal.NotSupplied, traversal.NotSupplied, 'name')
-        ), actual)
+        ) == actual
 
         actual = traversal.TraversalPath.parse('level2s[b].level3s{code=abc}.name')
-        self.assertEqual(traversal.TraversalPath(
+        assert traversal.TraversalPath(
             ('b', traversal.NotSupplied, 'level2s'),
             ('abc', 'code', 'level3s'),
             (traversal.NotSupplied, traversal.NotSupplied, 'name')
-        ), actual)
+        ) == actual
 
     def test_add(self):
         actual = traversal.TraversalPath.parse('level2') + 'name'
-        self.assertEqual(traversal.TraversalPath.parse('level2.name'), actual)
+        assert traversal.TraversalPath.parse('level2.name') == actual
 
         actual = traversal.TraversalPath.parse('level2s[b]') + traversal.TraversalPath.parse('level3s[1].name')
-        self.assertEqual(traversal.TraversalPath.parse('level2s[b].level3s[1].name'), actual)
+        assert traversal.TraversalPath.parse('level2s[b].level3s[1].name') == actual
 
     def test_valid_path(self):
-        self.assertEqual('a', traversal.TraversalPath.parse('name').get_value(TEST_STRUCTURE))
-        self.assertEqual('b', traversal.TraversalPath.parse('level2.name').get_value(TEST_STRUCTURE))
+        assert 'a' == traversal.TraversalPath.parse('name').get_value(TEST_STRUCTURE)
+        assert 'b' == traversal.TraversalPath.parse('level2.name').get_value(TEST_STRUCTURE)
 
         r = traversal.TraversalPath.parse('level2s[b].level3s[1]').get_value(TEST_STRUCTURE)
-        self.assertIsInstance(r, Level3)
-        self.assertEqual('f', r.name)
+        assert isinstance(r, Level3)
+        assert 'f' == r.name
 
         r = traversal.TraversalPath.parse('level2s[b].level3s{name=f}').get_value(TEST_STRUCTURE)
-        self.assertIsInstance(r, Level3)
-        self.assertEqual('f', r.name)
+        assert isinstance(r, Level3)
+        assert 'f' == r.name
 
         r = traversal.TraversalPath.parse('level2s{name=g}.level3s{name=h}').get_value(TEST_STRUCTURE)
-        self.assertIsInstance(r, Level3)
-        self.assertEqual('h', r.name)
+        assert isinstance(r, Level3)
+        assert 'h' == r.name
 
     def test_invalid_path(self):
         path = traversal.TraversalPath.parse('level2s[b].level3s[4]')
-        self.assertRaises(NoMatchError, path.get_value, TEST_STRUCTURE)
+        pytest.raises(NoMatchError, path.get_value, TEST_STRUCTURE)
 
         path = traversal.TraversalPath.parse('level2s[b].level3s_sd[1]')
-        self.assertRaises(InvalidPathError, path.get_value, TEST_STRUCTURE)
+        pytest.raises(InvalidPathError, path.get_value, TEST_STRUCTURE)
 
         path = traversal.TraversalPath.parse('level2s[d].level3s{name=h}')
-        self.assertRaises(NoMatchError, path.get_value, TEST_STRUCTURE)
+        pytest.raises(NoMatchError, path.get_value, TEST_STRUCTURE)
 
         path = traversal.TraversalPath.parse('level2s{label=not_empty}.level3s{name=h}')
-        self.assertRaises(MultipleMatchesError, path.get_value, TEST_STRUCTURE)
+        pytest.raises(MultipleMatchesError, path.get_value, TEST_STRUCTURE)

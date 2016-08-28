@@ -52,7 +52,7 @@ class ResourceOptionsAdapter(object):
 
     @cached_property
     def field_map(self):
-        return {f.attname: f for f in self.fields}
+        return dict((f.attname, f) for f in self.fields)
 
     @property
     def attribute_fields(self):

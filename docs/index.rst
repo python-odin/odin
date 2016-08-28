@@ -19,7 +19,7 @@ Working with resources
 Resources are the basic building block of Odin.
 
 * Resources: :doc:`ref/resources/fields` | :doc:`ref/resources/options`
-* Loading and Saving: :doc:`ref/codecs/json_codec` | :doc:`ref/codecs/csv_codec` | :doc:`ref/codecs/msgpack_codec`
+* Loading and Saving: :doc:`ref/codecs/json_codec` | :doc:`ref/codecs/yaml_codec` | :doc:`ref/codecs/csv_codec` | :doc:`ref/codecs/msgpack_codec`
 * Mapping: :doc:`ref/mapping/classes`
 * Adapters: :doc:`ref/adapters`
 * Documenting: :doc:`ref/contrib/sphinx/index`
@@ -41,8 +41,8 @@ Integration
 Project Links
 *************
 
-* `Project home <https://github.com/timsavage/odin>`_
-* `Issue tracker <https://github.com/timsavage/odin/issues>`_
+* `Project home <https://github.com/python-odin/odin>`_
+* `Issue tracker <https://github.com/python-odin/odin/issues>`_
 
 Indices and tables
 ******************

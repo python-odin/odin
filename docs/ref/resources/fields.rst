@@ -199,7 +199,7 @@ DateField
 =========
 ``class DateField([**options])``
 
-A :py:class:`date` field or date encoded in `ISO-8601 date string <http://en.wikipedia.org/wiki/ISO_8601#Dates>`_
+A :py:class:`date` field or date encoded in `ISO-8601 date string <https://en.wikipedia.org/wiki/ISO_8601#Dates>`_
 format.
 
 .. _field-time_field:
@@ -208,7 +208,7 @@ TimeField
 =========
 ``class TimeField([assume_local=True, **options])``
 
-A :py:class:`time` field or time encoded in `ISO-8601 time string <http://en.wikipedia.org/wiki/ISO_8601#Times>`_
+A :py:class:`time` field or time encoded in `ISO-8601 time string <https://en.wikipedia.org/wiki/ISO_8601#Times>`_
 format.
 
 TimeField has an extra argument:
@@ -226,7 +226,7 @@ DateTimeField
 ``class DateTimeField([**options])``
 
 A :py:class:`datetime` field or date encoded in
-`ISO-8601 datetime string <http://en.wikipedia.org/wiki/ISO_8601#Combined_date_and_time_representations>`_ format.
+`ISO-8601 datetime string <https://en.wikipedia.org/wiki/ISO_8601#Combined_date_and_time_representations>`_ format.
 
 DateTimeField has an extra argument:
 

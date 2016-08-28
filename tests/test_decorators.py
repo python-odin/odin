@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-import unittest
+import pytest
 from odin import decorators
 from odin.codecs import json_codec
 from odin.exceptions import ValidationError
 from .resources import Author
 
 
-class DecoratorsTestCase(unittest.TestCase):
+class TestDecorators(object):
     def test_returns_resource(self):
         @decorators.returns_resource(resource=Author)
         def test():
             return {"name": "Foo"}
         target = test()
-        self.assertEqual("Foo", target.name)
+        assert "Foo" == target.name
 
     def test_returns_resource_full_clean(self):
         @decorators.returns_resource(resource=Author)
@@ -23,11 +23,11 @@ class DecoratorsTestCase(unittest.TestCase):
         def test_unclean():
             return {"name": None}
 
-        with self.assertRaises(ValidationError) as c:
+        with pytest.raises(ValidationError):
             test_full_clean()
 
         target = test_unclean()
-        self.assertIsNone(target.name)
+        assert target.name is None
 
     def test_returns_resource_with_codec(self):
         @decorators.returns_resource(resource=Author, codec=json_codec)
@@ -35,4 +35,4 @@ class DecoratorsTestCase(unittest.TestCase):
             return '{"name": "Foo"}'
 
         target = test()
-        self.assertEqual("Foo", target.name)
+        assert "Foo" == target.name

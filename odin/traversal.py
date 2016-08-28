@@ -34,7 +34,7 @@ class TraversalPath(object):
         self._path = path
 
     def __repr__(self):
-        return "<TraversalPath: %s>" % self
+        return "<TraversalPath: {0}>".format(self)
 
     def __str__(self):
         atoms = []
@@ -42,9 +42,9 @@ class TraversalPath(object):
             if value is NotSupplied:
                 atoms.append(field)
             elif key is NotSupplied:
-                atoms.append("{}[{}]".format(field, value))
+                atoms.append("{0}[{1}]".format(field, value))
             else:
-                atoms.append("{}{{{}={}}}".format(field, key, value))
+                atoms.append("{0}{{{1}={2}}}".format(field, key, value))
         return '.'.join(atoms)
 
     def __hash__(self):
@@ -77,7 +77,7 @@ class TraversalPath(object):
             try:
                 field = result._meta.field_map[attr]
             except KeyError:
-                raise InvalidPathError(self, "Unknown field `{}`".format(attr))
+                raise InvalidPathError(self, "Unknown field `{0}`".format(attr))
 
             result = field.value_from_object(result)
             if value is NotSupplied:
@@ -89,17 +89,17 @@ class TraversalPath(object):
                 try:
                     result = result[value]
                 except (KeyError, IndexError):
-                    raise NoMatchError(self, "Could not find index `{}` in {}.".format(value, field))
+                    raise NoMatchError(self, "Could not find index `{0}` in {1}.".format(value, field))
             else:
                 # Filter elements
                 if isinstance(result, dict):
                     result = result.values()
                 results = tuple(r for r in result if getattr(r, key) == value)
                 if len(results) == 0:
-                    raise NoMatchError(self, "Filter matched no values; `{}` == `{}` in {}.".format(key, value, field))
+                    raise NoMatchError(self, "Filter matched no values; `{0}` == `{1}` in {2}.".format(key, value, field))
                 elif len(results) > 1:
                     raise MultipleMatchesError(
-                        self, "Filter matched multiple values; `{}` == `{}`.".format(key, value, field))
+                        self, "Filter matched multiple values; `{0}` == `{1}`.".format(key, value, field))
                 else:
                     result = results[0]
         return result

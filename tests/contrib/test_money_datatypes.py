@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import unittest
+import pytest
 from odin.contrib.money import datatypes
 
 a = datatypes.Amount(11)
@@ -8,92 +8,92 @@ c = datatypes.Amount(33, "AUD")
 d = datatypes.Amount(44, "NZD")
 
 
-class DataTypesTestCase(unittest.TestCase):
+class TestDataTypes(object):
     def test_amount_init(self):
-        self.assertEqual("10.0000", str(datatypes.Amount(10)))
-        self.assertEqual("10.0000", str(datatypes.Amount("10")))
-        self.assertEqual("10.00 AUD", str(datatypes.Amount("10", "AUD")))
-        self.assertEqual("-12.30 AUD", str(datatypes.Amount("-12.3", "AUD")))
-        self.assertEqual("12.35 USD", str(datatypes.Amount(12.345, "USD")))
-        self.assertRaises(TypeError, datatypes.Amount, None)
-        self.assertRaises(ValueError, datatypes.Amount, "abs")
-        self.assertRaises(TypeError, datatypes.Amount, 12, object())
+        assert "10.0000" == str(datatypes.Amount(10))
+        assert "10.0000" == str(datatypes.Amount("10"))
+        assert "10.00 AUD", str(datatypes.Amount("10" == "AUD"))
+        assert "-12.30 AUD", str(datatypes.Amount("-12.3" == "AUD"))
+        assert "12.35 USD", str(datatypes.Amount(12.345 == "USD"))
+        pytest.raises(TypeError, datatypes.Amount, None)
+        pytest.raises(ValueError, datatypes.Amount, "abs")
+        pytest.raises(TypeError, datatypes.Amount, 12, object())
         # Unknown currency
-        self.assertRaises(KeyError, datatypes.Amount, 12, 'ZZZ')
+        pytest.raises(KeyError, datatypes.Amount, 12, 'ZZZ')
         # From tuple
-        self.assertEqual("10.0000", str(datatypes.Amount(("10",))))
-        self.assertEqual("10.00 NZD", str(datatypes.Amount(("10", "NZD"))))
-        self.assertRaises(ValueError, datatypes.Amount, ("10", "NZD", "hmmm"))
+        assert "10.0000" == str(datatypes.Amount(("10",)))
+        assert "10.00 NZD", str(datatypes.Amount(("10" == "NZD")))
+        pytest.raises(ValueError, datatypes.Amount, ("10", "NZD", "hmmm"))
 
     # These tests assume that the decimal library is correct.
 
     def test_amount_type_conversion(self):
-        self.assertEqual(12, int(datatypes.Amount(12.345)))
-        self.assertEqual(12.34, float(datatypes.Amount(12.34)))
-        self.assertEqual("<Amount: 12.34, <Currency: NZD>>", repr(datatypes.Amount(12.34, 'NZD')))
+        assert 12 == int(datatypes.Amount(12.345))
+        assert 12.34 == float(datatypes.Amount(12.34))
+        assert "<Amount: 12.34, <Currency: NZD>>", repr(datatypes.Amount(12.34 == 'NZD'))
 
     def test_amount_neg_pos(self):
-        self.assertEqual("-11.0000", str(-a))
-        self.assertEqual("-22.00 AUD", str(-b))
-        self.assertEqual("11.0000", str(+a))
-        self.assertEqual("22.00 AUD", str(+b))
+        assert "-11.0000" == str(-a)
+        assert "-22.00 AUD" == str(-b)
+        assert "11.0000" == str(+a)
+        assert "22.00 AUD" == str(+b)
 
     def test_amount_add(self):
-        self.assertEqual("33.00 AUD", str(a + b))
-        self.assertEqual("55.00 AUD", str(b + c))
-        self.assertEqual("55.00 NZD", str(d + a))
-        self.assertRaises(ValueError, lambda: c + d)
+        assert "33.00 AUD" == str(a + b)
+        assert "55.00 AUD" == str(b + c)
+        assert "55.00 NZD" == str(d + a)
+        pytest.raises(ValueError, lambda: c + d)
 
     def test_amount_sub(self):
-        self.assertEqual("-11.00 AUD", str(a - b))
-        self.assertEqual("-11.00 AUD", str(b - c))
-        self.assertEqual("33.00 NZD", str(d - a))
-        self.assertRaises(ValueError, lambda: c - d)
+        assert "-11.00 AUD" == str(a - b)
+        assert "-11.00 AUD" == str(b - c)
+        assert "33.00 NZD" == str(d - a)
+        pytest.raises(ValueError, lambda: c - d)
 
     def test_amount_mul(self):
-        self.assertEqual("22.0000", str(a * 2))
-        self.assertEqual("44.00 AUD", str(b * 2))
-        self.assertRaises(TypeError, lambda: d * a)
+        assert "22.0000" == str(a * 2)
+        assert "44.00 AUD" == str(b * 2)
+        pytest.raises(TypeError, lambda: d * a)
 
     def test_amount_div(self):
-        self.assertEqual("11.00 AUD", str(b / 2))
-        self.assertEqual(1.5, c / b)
-        self.assertRaises(ValueError, lambda: c / d)
+        assert "11.00 AUD" == str(b / 2)
+        assert 1.5 == c / b
+        pytest.raises(ValueError, lambda: c / d)
 
     def test_amount_eq(self):
-        self.assertFalse(a == 11)
-        self.assertTrue(a + b == c)
-        self.assertFalse(b * 2 == d)
+        assert not a == 11
+        assert a + b == c
+        assert not b * 2 == d
         # and ne
-        self.assertFalse(a + b != c)
+        assert not a + b != c
 
     def test_amount_lt(self):
-        self.assertTrue(a < b)
-        self.assertTrue(b < c)
-        self.assertRaises(ValueError, lambda: c < d)
+        assert a < b
+        assert b < c
+        pytest.raises(ValueError, lambda: c < d)
         # and le
-        self.assertTrue(a <= b)
-        self.assertTrue(b <= c)
-        self.assertTrue(a + b <= c)
-        self.assertRaises(ValueError, lambda: c <= d)
+        assert a <= b
+        assert b <= c
+        assert a + b <= c
+        pytest.raises(ValueError, lambda: c <= d)
 
     def test_amount_gt(self):
-        self.assertTrue(b > a)
-        self.assertTrue(c > b)
-        self.assertRaises(ValueError, lambda: d > c)
+        assert b > a
+        assert c > b
+        pytest.raises(ValueError, lambda: d > c)
         # and ge
-        self.assertTrue(b >= a)
-        self.assertTrue(c >= b)
-        self.assertTrue(c >= a + b)
-        self.assertRaises(ValueError, lambda: d >= c)
+        assert b >= a
+        assert c >= b
+        assert c >= a + b
+        pytest.raises(ValueError, lambda: d >= c)
 
     def test_amount_format(self):
-        self.assertEqual("11.00", a.format("{value_raw:0.2f}"))
-        self.assertEqual("$22.00 AUD", b.format("{currency.symbol}{value} {currency.code}"))
+        assert "11.00" == a.format("{value_raw:0.2f}")
+        assert "$22.00 AUD" == b.format("{currency.symbol}{value} {currency.code}")
 
     def test_assign_currency(self):
         target = a.assign_currency("NZD")
-        self.assertTrue(a.is_naive)
-        self.assertTrue(target.currency == 'NZD')
+        assert a.is_naive
+        assert target.currency == 'NZD'
 
-        self.assertRaises(ValueError, b.assign_currency, 'AUD')
+        pytest.raises(ValueError, b.assign_currency, 'AUD')

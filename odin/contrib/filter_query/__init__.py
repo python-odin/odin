@@ -6,11 +6,15 @@ Query language for filtering::
 
 """
 from odin import filtering
-
 try:
     from ply import lex
 except ImportError:
     raise ImportError("The ply package is not installed, please install this library to use filter_query syntax.")
+
+
+import warnings
+warnings.warn(message="This is a pre-release feature that is very much a work in progress.")
+
 
 keywords = (
     'DATE', 'DATETIME'
@@ -36,8 +40,6 @@ def t_FLOAT(t):
     r'\d+\.\d+'
     t.value = float(t.value)
     return t
-
-
 
 
 FILTER_OPERATOR_MAP = {

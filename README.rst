@@ -1,3 +1,4 @@
+
 ####
 Odin
 ####
@@ -18,9 +19,9 @@ Odin also comes with built in serialisation tools for importing and exporting da
     :target: https://travis-ci.org/python-odin/odin
     :alt: Travis CI Status
 
-.. image:: https://img.shields.io/coveralls/python-odin/odin.svg?style=flat
-    :target: https://coveralls.io/github/python-odin/odin
-    :alt: Coveralls
+.. image:: https://codecov.io/gh/python-odin/odin/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/python-odin/odin
+    :alt: Code cov
 
 .. image:: https://img.shields.io/requires/github/timsavage/odin.svg?style=flat
     :target: https://requires.io/github/timsavage/odin/requirements/?branch=master
@@ -38,8 +39,8 @@ Highlights
 * Field and Resource level validation
 * Mapping between resources or extended to other object types (eg Django Models)
 * Easy extension to support custom fields
-* Python 2.7+, Python 3.3+ and PyPy :sup:`1` supported
-* Integration with Django (see `baldr <https://github.com/timsavage/baldr>`_)
+* Python 2.6 :sup:`1`, Python 2.7+, Python 3.3+ and PyPy :sup:`1` supported
+* Integration with Django (see `baldr <https://github.com/python-odin/baldr>`_)
 * Support for documenting resources with `Sphinx <http://sphinx-doc.org/>`_
 * Minimal dependencies (base functionality only requires *six*)
 
@@ -60,14 +61,11 @@ Upcoming features
 **In development**
 
 * XML Codec (export completed)
-* Complete documentation, this will pretty much always be here.
+* Complete documentation coverage
 * Improvements for CSV Codec (writing, reading multi resource CSV's)
-* RESTful interface with support for Flask and Django see (see `baldr <https://github.com/python-odin/baldr>`_)
-* Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms) (see `baldr <https://github.com/python-odin/baldr>`_)
-
-**Planning**
-
-* YAML codec
+* RESTful interface with support for Flask and Django
+* Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms)
+* Integration with SQLAlchemy
 
 
 Requires
@@ -79,18 +77,22 @@ Requires
 
 * simplejson - Odin will use simplejson if it is available or fallback to the builtin json library
 * msgpack-python - To enable use of the msgpack codec
+* pyyaml - To enable use of the YAML codec
 
 **Contrib**
 
 * jinja2 >= 2.7 - For documentation generation
 * pint - Support for physical quantities using the `Pint <http://pint.readthedocs.org/>`_ library.
 
+**Development**
+
+* pytest - Testing
+* pytest-cov - Coverage reporting
 
 Example
 *******
 
-**With definition:**
-::
+**With definition**::
 
     import odin
 
@@ -141,9 +143,10 @@ Authors
 
 Tim Savage
 
+
 Special Mention
 ***************
 
-I would like to acknowledge the strong influence on the design of Odin from the Django ORM and it's notable contributor
-Malcolm Tredinnick. He was a valued colleague who's untimely passing left a large void in our company and the wider
-community.
+I would like to acknowledge the strong influence on the design of Odin Resources from the Django ORM and it's notable
+contributor Malcolm Tredinnick. He was a valued colleague who's untimely passing left a large void in our company and
+the wider community.

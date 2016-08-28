@@ -111,7 +111,7 @@ class ResourceOptions(object):
 
     @cached_property
     def field_map(self):
-        return {f.attname: f for f in self.fields}
+        return dict((f.attname, f) for f in self.fields)
 
     @cached_property
     def parent_resource_names(self):
@@ -136,7 +136,7 @@ class ResourceOptions(object):
 
     @cached_property
     def element_field_map(self):
-        return {f.attname: f for f in self.element_fields}
+        return dict((f.attname, f) for f in self.element_fields)
 
     @cached_property
     def key_field(self):
@@ -236,9 +236,9 @@ class ResourceBase(type):
 
         # If a key_field is defined ensure it exists
         if new_class._meta.key_field_name is not None and new_class._meta.key_field is None:
-                raise AttributeError('Key field `{}` is not exist on this resource.'.format(
-                    new_class._meta.key_field_name)
-                )
+            raise AttributeError('Key field `{0}` is not exist on this resource.'.format(
+                new_class._meta.key_field_name)
+            )
 
         if abstract:
             return new_class
@@ -418,7 +418,7 @@ def resolve_resource_type(resource):
         return resource, DEFAULT_TYPE_FIELD
 
 
-def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True):
+def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True, default_to_not_provided=False):
     """
     Create a resource from a dict.
 
@@ -428,6 +428,8 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True)
         be a parent(s) of any resource defined by the dict.
     :param full_clean: Do a full clean as part of the creation.
     :param copy_dict: Use a copy of the input dictionary rather than destructively processing the input dict.
+    :param default_to_not_supplied: If an value is not supplied keep the value as NOT_PROVIDED. This is used
+        to support merging an updated value.
 
     """
     assert isinstance(d, dict)
@@ -482,7 +484,8 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True)
     for f in resource_type._meta.fields:
         value = d.pop(f.name, NOT_PROVIDED)
         if value is NOT_PROVIDED:
-            value = f.get_default() if f.use_default_if_not_provided else None
+            if not default_to_not_provided:
+                value = f.get_default() if f.use_default_if_not_provided else None
         else:
             try:
                 value = f.to_python(value)
@@ -501,7 +504,7 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True)
     return new_resource
 
 
-def build_object_graph(d, resource=None, full_clean=True, copy_dict=True):
+def build_object_graph(d, resource=None, full_clean=True, copy_dict=True, default_to_not_supplied=False):
     """
     Generate an object graph from a dict
 
@@ -510,14 +513,16 @@ def build_object_graph(d, resource=None, full_clean=True, copy_dict=True):
         resource. If a list is supplied the first item will be used if a resource type is not supplied.
     :param full_clean: Perform a full clean once built; default is True
     :param copy_dict: Clone the dict before doing build; default is True
+    :param default_to_not_supplied: If an value is not supplied keep the value as NOT_PROVIDED. This is used
+        to support merging an updated value.
     :raises ValidationError: During building of the object graph and issues discovered are raised as a ValidationError.
 
     """
     if isinstance(d, dict):
-        return create_resource_from_dict(d, resource, full_clean, copy_dict)
+        return create_resource_from_dict(d, resource, full_clean, copy_dict, default_to_not_supplied)
 
     if isinstance(d, list):
-        return [build_object_graph(o, resource, full_clean, copy_dict) for o in d]
+        return [build_object_graph(o, resource, full_clean, copy_dict, default_to_not_supplied) for o in d]
 
     return d
 

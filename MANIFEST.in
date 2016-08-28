@@ -1,1 +1,5 @@
-include runner README.rst
+include LICENSE
+include AUTHORS
+include HISTORY
+recursive-include odin *.html
+recursive-include odin *.rst

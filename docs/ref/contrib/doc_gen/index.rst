@@ -11,8 +11,8 @@ Odin has built in support for generating documentation of resources that have be
 Quick example
 *************
 
-The default documentation format is reStructuredText, to enable easy integration with `Sphinx <http://sphinx-doc.org/>`_
-for producing project documentation.
+The default documentation format is reStructuredText, to enable easy integration with
+`Sphinx <http://www.sphinx-doc.org/en/stable/>`_ for producing project documentation.
 
 A basic example:
 ::

@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-import unittest
+import pytest
 from odin import validators
 from odin.exceptions import ValidationError
 
 
-class ValidatorTestCase(unittest.TestCase):
+class TestValidator(object):
     def test_regex_validator(self):
         target = validators.RegexValidator(r'^[a-z]{3}$', "Please enter 3 alpha characters.", "match_chars")
 
-        self.assertEqual("Please enter 3 alpha characters.", target.message)
-        self.assertEqual("match_chars", target.code)
+        assert "Please enter 3 alpha characters." == target.message
+        assert "match_chars" == target.code
 
         target("abc")
         target("cba")
-        self.assertRaises(ValidationError, target, "a")
-        self.assertRaises(ValidationError, target, "abcd")
-        self.assertRaises(ValidationError, target, "123")
+        pytest.raises(ValidationError, target, "a")
+        pytest.raises(ValidationError, target, "abcd")
+        pytest.raises(ValidationError, target, "123")
 
     def test_url(self):
         validators.validate_url('http://www.djangoproject.com/')
@@ -35,15 +35,15 @@ class ValidatorTestCase(unittest.TestCase):
         validators.validate_url('ftps://example.com/')
         validators.validate_url('http://savage.company/')
     
-        self.assertRaises(ValidationError, validators.validate_url, 'foo')
-        self.assertRaises(ValidationError, validators.validate_url, 'http://')
-        self.assertRaises(ValidationError, validators.validate_url, 'http://example')
-        self.assertRaises(ValidationError, validators.validate_url, 'http://example.')
-        self.assertRaises(ValidationError, validators.validate_url, 'http://.com')
-        self.assertRaises(ValidationError, validators.validate_url, 'http://invalid-.com')
-        self.assertRaises(ValidationError, validators.validate_url, 'http://-invalid.com')
-        self.assertRaises(ValidationError, validators.validate_url, 'http://inv-.alid-.com')
-        self.assertRaises(ValidationError, validators.validate_url, 'http://inv-.-alid.com')
+        pytest.raises(ValidationError, validators.validate_url, 'foo')
+        pytest.raises(ValidationError, validators.validate_url, 'http://')
+        pytest.raises(ValidationError, validators.validate_url, 'http://example')
+        pytest.raises(ValidationError, validators.validate_url, 'http://example.')
+        pytest.raises(ValidationError, validators.validate_url, 'http://.com')
+        pytest.raises(ValidationError, validators.validate_url, 'http://invalid-.com')
+        pytest.raises(ValidationError, validators.validate_url, 'http://-invalid.com')
+        pytest.raises(ValidationError, validators.validate_url, 'http://inv-.alid-.com')
+        pytest.raises(ValidationError, validators.validate_url, 'http://inv-.-alid.com')
 
     def test_max_value_validator(self):
         target = validators.MaxValueValidator(10)
@@ -51,21 +51,21 @@ class ValidatorTestCase(unittest.TestCase):
         target(10)
         target(1)
         target(-10)
-        self.assertRaises(ValidationError, target, 11)
+        pytest.raises(ValidationError, target, 11)
 
     def test_min_value_validator(self):
         target = validators.MinValueValidator(10)
 
         target(10)
-        self.assertRaises(ValidationError, target, 1)
-        self.assertRaises(ValidationError, target, -10)
+        pytest.raises(ValidationError, target, 1)
+        pytest.raises(ValidationError, target, -10)
         target(11)
 
     def test_length_validator(self):
         target = validators.LengthValidator(10)
         target("1234567890")
-        self.assertRaises(ValidationError, target, "123456789")
-        self.assertRaises(ValidationError, target, "12345678901")
+        pytest.raises(ValidationError, target, "123456789")
+        pytest.raises(ValidationError, target, "12345678901")
 
     def test_max_length_validator(self):
         target = validators.MaxLengthValidator(10)
@@ -73,25 +73,25 @@ class ValidatorTestCase(unittest.TestCase):
         target("123457890")
         target("12345")
         target("")
-        self.assertRaises(ValidationError, target, "12345678901")
+        pytest.raises(ValidationError, target, "12345678901")
 
     def test_min_length_validator(self):
         target = validators.MinLengthValidator(10)
 
-        self.assertRaises(ValidationError, target, "123457890")
-        self.assertRaises(ValidationError, target, "12345")
-        self.assertRaises(ValidationError, target, "")
+        pytest.raises(ValidationError, target, "123457890")
+        pytest.raises(ValidationError, target, "12345")
+        pytest.raises(ValidationError, target, "")
         target("12345678901")
 
 
-class SimpleValidatorTestCase(unittest.TestCase):
+class TestSimpleValidator(object):
     def test_method(self):
         def reflect(v):
             return v
 
         validator = validators.simple_validator(reflect)
 
-        self.assertRaises(ValidationError, validator, False)
+        pytest.raises(ValidationError, validator, False)
         validator(True)
 
     def test_decorator(self):
@@ -100,5 +100,5 @@ class SimpleValidatorTestCase(unittest.TestCase):
         def reflect_validator(v):
             return v
 
-        self.assertRaises(ValidationError, reflect_validator, False)
+        pytest.raises(ValidationError, reflect_validator, False)
         reflect_validator(True)

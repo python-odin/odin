@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-import unittest
+import pytest
 import odin
 from odin.codecs.csv_codec import ResourceReader
 
@@ -20,16 +20,15 @@ class Book(odin.Resource):
     publisher = odin.StringField(name="Publisher")
 
 
-class CsvResourceReaderTestCase(unittest.TestCase):
+class TestCsvResourceReader(object):
     def test_valid(self):
         with open(os.path.join(FIXTURE_PATH_ROOT, "libary-valid.csv")) as f:
             books = [book for book in ResourceReader(f, Book)]
 
-        self.assertEqual(6, len(books))
-        self.assertEqual("Consider Phlebas", books[0].title)
+        assert 6 == len(books)
+        assert "Consider Phlebas" == books[0].title
 
     def test_invalid(self):
         with open(os.path.join(FIXTURE_PATH_ROOT, "libary-invalid.csv")) as f:
-
-            with self.assertRaises(odin.exceptions.ValidationError):
+            with pytest.raises(odin.exceptions.ValidationError):
                 books = [book for book in ResourceReader(f, Book)]

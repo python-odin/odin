@@ -167,7 +167,7 @@ def extract_fields_from_dict(d, resource):
     :returns: a dictionary of the resource fields that where found in the dict.
 
     """
-    return {f.name: d[f.name] for f in field_iter(resource) if f.name in d}
+    return dict((f.name, d[f.name]) for f in field_iter(resource) if f.name in d)
 
 
 def value_in_choices(value, choices):
