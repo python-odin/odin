@@ -36,105 +36,89 @@ class TestParseIsoDateString(object):
     def test_valid_values(self):
         assert datetime.date(2014, 1, 13) == datetimeutil.parse_iso_date_string('2014-01-13')
 
-    def test_invalid_values(self):
-        with pytest.raises(ValueError):
-            datetimeutil.parse_iso_date_string(123)
-        with pytest.raises(ValueError):
-            datetimeutil.parse_iso_date_string('2014-1-13')
-        with pytest.raises(ValueError):
-            datetimeutil.parse_iso_date_string('2014/01/13')
+    @pytest.mark.parametrize('value', (
+        123, '2014-1-13', '2014/01/13'
+    ))
+    def test_invalid_values(self, value):
+        pytest.raises(ValueError, datetimeutil.parse_iso_date_string, value)
 
 
 class TestParseIsoTimeString(object):
-    def test_valid_values(self):
+    @pytest.mark.parametrize(('value', 'expected'), (
+        ('23:53:25', datetime.time(23, 53, 25, 0, datetimeutil.utc)),
+        ('23:53:25Z', datetime.time(23, 53, 25, 0, datetimeutil.utc)),
+        ('23:53:25.432Z', datetime.time(23, 53, 25, 432, datetimeutil.utc)),
+        ('23:53:25+10', datetime.time(23, 53, 25, 0, datetimeutil.FixedTimezone.from_hours_minutes(10, 0))),
+        ('23:53:25.432+10', datetime.time(23, 53, 25, 432, datetimeutil.FixedTimezone.from_hours_minutes(10, 0))),
+        ('23:53:25+10:30', datetime.time(23, 53, 25, 0, datetimeutil.FixedTimezone.from_hours_minutes(10, 30))),
+        ('23:53:25.432-10:30', datetime.time(23, 53, 25, 432,
+                                             datetimeutil.FixedTimezone.from_hours_minutes(-10, -30))),
+    ))
+    def test_valid_values(self, value, expected):
+        assert datetimeutil.parse_iso_time_string(value) == expected
+
+    @pytest.mark.parametrize(('value', 'default_tz', 'expected'), (
+        ('23:53:25', None, datetime.time(23, 53, 25)),
+        ('23:53:25', datetimeutil.IgnoreTimezone, datetime.time(23, 53, 25)),
+        ('23:53:25Z', None, datetime.time(23, 53, 25, 0, datetimeutil.utc)),
+        ('23:53:25Z', datetimeutil.IgnoreTimezone, datetime.time(23, 53, 25, 0)),
+    ))
+    def test_valid_values_timezone_handling(self, value, default_tz, expected):
+        assert datetimeutil.parse_iso_time_string(value, default_tz) == expected
+
+    def test_value_values_with_alternate_timezone(self):
         assert(
             datetime.time(23, 53, 25, 0, datetimeutil.FixedTimezone.from_hours_minutes(10, 0)) ==
             datetimeutil.parse_iso_time_string(
                 '23:53:25', default_timezone=datetimeutil.FixedTimezone.from_hours_minutes(10, 0))
         )
-        assert(
-            datetime.time(23, 53, 25, 0, datetimeutil.utc) == datetimeutil.parse_iso_time_string('23:53:25')
-        )
-        assert(
-            datetime.time(23, 53, 25, 0, datetimeutil.utc) == datetimeutil.parse_iso_time_string('23:53:25Z')
-        )
-        assert(
-            datetime.time(23, 53, 25, 432, datetimeutil.utc) == datetimeutil.parse_iso_time_string('23:53:25.432Z')
-        )
-        assert(
-            datetime.time(23, 53, 25, 0, datetimeutil.FixedTimezone.from_hours_minutes(10, 0)) ==
-            datetimeutil.parse_iso_time_string('23:53:25+10')
-        )
-        assert(
-            datetime.time(23, 53, 25, 432, datetimeutil.FixedTimezone.from_hours_minutes(10, 0)) ==
-            datetimeutil.parse_iso_time_string('23:53:25.432+10')
-        )
-        assert(
-            datetime.time(23, 53, 25, 0, datetimeutil.FixedTimezone.from_hours_minutes(10, 30)) ==
-            datetimeutil.parse_iso_time_string('23:53:25+10:30')
-        )
-        assert(
-            datetime.time(23, 53, 25, 432, datetimeutil.FixedTimezone.from_hours_minutes(-10, -30)) ==
-            datetimeutil.parse_iso_time_string('23:53:25.432-10:30')
-        )
 
-    def test_invalid_values(self):
-        with pytest.raises(ValueError):
-            datetimeutil.parse_iso_time_string(123)
-        with pytest.raises(ValueError):
-            datetimeutil.parse_iso_time_string('23:53:25EST')
+    @pytest.mark.parametrize('value', (
+        123, '23:53:25EST'
+    ))
+    def test_invalid_values(self, value):
+        pytest.raises(ValueError, datetimeutil.parse_iso_time_string, value)
 
 
 class TestParseIsoDateTimeString(object):
-    def test_valid_values(self):
-        assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc) ==
-            datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33')
-        )
-        assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc) ==
-            datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33Z')
-        )
-        assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 432, datetimeutil.utc) ==
-            datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33.432Z')
-        )
-        assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.FixedTimezone.from_hours_minutes(10, 0)) ==
-            datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33+10')
-        )
-        assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 432, datetimeutil.FixedTimezone.from_hours_minutes(10, 0)) ==
-            datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33.432+10')
-        )
-        assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.FixedTimezone.from_hours_minutes(10, 30)) ==
-            datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33+10:30')
-        )
-        assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 432, datetimeutil.FixedTimezone.from_hours_minutes(-10, -30)) ==
-            datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33.432-10:30')
-        )
-        assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 432, datetimeutil.FixedTimezone.from_hours_minutes(10, 30)) ==
-            datetimeutil.parse_iso_datetime_string('2014-01-13T00:28:33.432+1030')
-        )
-
+    @pytest.mark.parametrize(('value', 'expected'), (
+        ('2014-01-13T00:28:33', datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc)),
+        ('2014-01-13T00:28:33Z', datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc)),
+        ('2014-01-13T00:28:33.432Z', datetime.datetime(2014, 1, 13, 0, 28, 33, 432, datetimeutil.utc)),
+        ('2014-01-13T00:28:33+10', datetime.datetime(2014, 1, 13, 0, 28, 33, 0,
+                                                     datetimeutil.FixedTimezone.from_hours_minutes(10, 0))),
+        ('2014-01-13T00:28:33.432+10', datetime.datetime(2014, 1, 13, 0, 28, 33, 432,
+                                                         datetimeutil.FixedTimezone.from_hours_minutes(10, 0))),
+        ('2014-01-13T00:28:33+10:30', datetime.datetime(2014, 1, 13, 0, 28, 33, 0,
+                                                        datetimeutil.FixedTimezone.from_hours_minutes(10, 30))),
+        ('2014-01-13T00:28:33.432-10:30', datetime.datetime(2014, 1, 13, 0, 28, 33, 432,
+                                                            datetimeutil.FixedTimezone.from_hours_minutes(-10, -30))),
+        ('2014-01-13T00:28:33.432+1030', datetime.datetime(2014, 1, 13, 0, 28, 33, 432,
+                                                           datetimeutil.FixedTimezone.from_hours_minutes(10, 30))),
         # Non-Standard but close formats that are common
-        assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc) ==
-            datetimeutil.parse_iso_datetime_string('2014-01-13 00:28:33Z')
-        )
-        assert(
-            datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc) ==
-            datetimeutil.parse_iso_datetime_string('2014-01-13 00:28:33 GMT')
-        )
+        ('2014-01-13 00:28:33Z', datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc)),
+        ('2014-01-13 00:28:33 GMT', datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc))
+    ))
+    def test_valid_values(self, value, expected):
+        assert datetimeutil.parse_iso_datetime_string(value) == expected
 
-    def test_invalid_values(self):
-        pytest.raises(ValueError, datetimeutil.parse_iso_datetime_string, 123)
-        pytest.raises(ValueError, datetimeutil.parse_iso_datetime_string, '2014-1-13T00:28:33Z')
-        pytest.raises(ValueError, datetimeutil.parse_iso_datetime_string, '2014/1/13T00:28:33Z')
-        pytest.raises(ValueError, datetimeutil.parse_iso_datetime_string, '2014-01-13T00:28:33EST')
+    @pytest.mark.parametrize(('value', 'default_tz', 'expected'), (
+        ('2014-01-13T00:28:33', None, datetime.datetime(2014, 1, 13, 0, 28, 33)),
+        ('2014-01-13T00:28:33', datetimeutil.IgnoreTimezone, datetime.datetime(2014, 1, 13, 0, 28, 33)),
+        ('2014-01-13T00:28:33Z', None, datetime.datetime(2014, 1, 13, 0, 28, 33, 0, datetimeutil.utc)),
+        ('2014-01-13T00:28:33Z', datetimeutil.IgnoreTimezone, datetime.datetime(2014, 1, 13, 0, 28, 33)),
+    ))
+    def test_valid_values_timezone_handling(self, value, default_tz, expected):
+        assert datetimeutil.parse_iso_datetime_string(value, default_tz) == expected
+
+    @pytest.mark.parametrize('value', (
+        123,
+        '2014-1-13T00:28:33Z',
+        '2014/1/13T00:28:33Z',
+        '2014-01-13T00:28:33EST',
+    ))
+    def test_invalid_values(self, value):
+        pytest.raises(ValueError, datetimeutil.parse_iso_datetime_string, value)
 
 
 class TestToDateString(object):
@@ -150,33 +134,29 @@ class TestToDateString(object):
 
 
 class TestParseHttpDateString(object):
-    def test_valid_values(self):
-        assert(
-            datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=datetimeutil.FixedTimezone.from_hours_minutes(10, 30)) ==
-            datetimeutil.parse_http_datetime_string('Wed Aug 29 17:12:58 +1030 2012')
-        )
-        assert(
-            datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=datetimeutil.FixedTimezone.from_hours_minutes(8, 00)) ==
-            datetimeutil.parse_http_datetime_string('Wed Aug 29 17:12:58 +0800 2012')
-        )
-        assert(
-            datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=datetimeutil.FixedTimezone.from_hours_minutes(-9, 0)) ==
-            datetimeutil.parse_http_datetime_string('Wed Aug 29 17:12:58 -0900 2012')
-        )
-        assert(
-            datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=datetimeutil.FixedTimezone.from_hours_minutes(-9, -30)) ==
-            datetimeutil.parse_http_datetime_string('Wed Aug 29 17:12:58 -0930 2012')
-        )
+    @pytest.mark.parametrize(('value', 'expected'), (
+        ('Wed Aug 29 17:12:58 +1030 2012', datetime.datetime(2012, 8, 29, 17, 12, 58, 0,
+                                                             datetimeutil.FixedTimezone.from_hours_minutes(10, 30))),
+        ('Wed Aug 29 17:12:58 -0900 2012', datetime.datetime(2012, 8, 29, 17, 12, 58, 0,
+                                                             datetimeutil.FixedTimezone.from_hours_minutes(-9, 0))),
+        ('Wed Aug 29 17:12:58 -0930 2012', datetime.datetime(2012, 8, 29, 17, 12, 58, 0,
+                                                             datetimeutil.FixedTimezone.from_hours_minutes(-9, -30))),
+        ('Wed Aug 29 17:12:58 +0800 2012', datetime.datetime(2012, 8, 29, 17, 12, 58, 0,
+                                                             datetimeutil.FixedTimezone.from_hours_minutes(8, 00))),
         # Alternate position for the year
-        assert(
-            datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=datetimeutil.FixedTimezone.from_hours_minutes(-9, -30)) ==
-            datetimeutil.parse_http_datetime_string('Wed, Aug 29 2012 17:12:58 -0930')
-        )
+        ('Wed, Aug 29 2012 17:12:58 -0930', datetime.datetime(2012, 8, 29, 17, 12, 58, 0,
+                                                              datetimeutil.FixedTimezone.from_hours_minutes(-9, -30))),
+    ))
+    def test_valid_values(self, value, expected):
+        assert datetimeutil.parse_http_datetime_string(value) == expected
 
-    def test_invalid_values(self):
-        pytest.raises(ValueError, datetimeutil.parse_http_datetime_string, 123)
-        pytest.raises(ValueError, datetimeutil.parse_http_datetime_string, '2014-1-13T00:28:33Z')
-        pytest.raises(ValueError, datetimeutil.parse_http_datetime_string, '2014/1/13T00:28:33Z')
-        pytest.raises(ValueError, datetimeutil.parse_http_datetime_string, '2014-01-13T00:28:33EST')
+    @pytest.mark.parametrize('value', (
+        123,
+        '2014-1-13T00:28:33Z',
+        '2014/1/13T00:28:33Z',
+        '2014-01-13T00:28:33EST',
+    ))
+    def test_invalid_values(self, value):
+        pytest.raises(ValueError, datetimeutil.parse_http_datetime_string, value)
 
 

@@ -7,6 +7,10 @@ import sys
 from email.utils import parsedate_tz as parse_http_datetime
 
 
+class IgnoreTimezone(object):
+    pass
+
+
 ZERO = datetime.timedelta(0)
 LOCAL_STD_OFFSET = datetime.timedelta(seconds=-time.timezone)
 LOCAL_DST_OFFSET = datetime.timedelta(seconds=-time.altzone) if time.daylight else LOCAL_STD_OFFSET
@@ -234,7 +238,7 @@ def parse_iso_date_string(date_string):
 
 def parse_iso_time_string(time_string, default_timezone=utc):
     """
-    Parse a time in the string format defined in ISO 8601.
+    Parse a time in the string format defined by ISO 8601.
     """
     if not isinstance(time_string, six.string_types):
         raise ValueError("Expected string")
@@ -244,7 +248,10 @@ def parse_iso_time_string(time_string, default_timezone=utc):
         raise ValueError("Expected ISO 8601 formatted time string.")
 
     groups = matches.groupdict()
-    tz = FixedTimezone.from_groups(groups, default_timezone)
+    if default_timezone is IgnoreTimezone:
+        tz = None
+    else:
+        tz = FixedTimezone.from_groups(groups, default_timezone)
     return datetime.time(
         int(groups['hour']),
         int(groups['minute']),
@@ -256,7 +263,7 @@ def parse_iso_time_string(time_string, default_timezone=utc):
 
 def parse_iso_datetime_string(datetime_string, default_timezone=utc):
     """
-    Parse a datetime in the string format defined in ISO 8601.
+    Parse a datetime in the string format defined by ISO 8601.
     """
     if not isinstance(datetime_string, six.string_types):
         raise ValueError("Expected string")
@@ -266,7 +273,10 @@ def parse_iso_datetime_string(datetime_string, default_timezone=utc):
         raise ValueError("Expected ISO 8601 formatted datetime string.")
 
     groups = matches.groupdict()
-    tz = FixedTimezone.from_groups(groups, default_timezone)
+    if default_timezone is IgnoreTimezone:
+        tz = None
+    else:
+        tz = FixedTimezone.from_groups(groups, default_timezone)
     return datetime.datetime(
         int(groups['year']),
         int(groups['month']),
@@ -281,7 +291,7 @@ def parse_iso_datetime_string(datetime_string, default_timezone=utc):
 
 def to_ecma_datetime_string(dt, default_timezone=local):
     """
-    Convert a python datetime into the string format defined in ECMA-262.
+    Convert a python datetime into the string format defined by ECMA-262.
 
     See ECMA international standard: ECMA-262 section 15.9.1.15
 
@@ -297,7 +307,7 @@ def to_ecma_datetime_string(dt, default_timezone=local):
 
 def parse_http_datetime_string(datetime_string):
     """
-    Parse a datetime in the string format defined in ISO-1123 (or HTTP date time).
+    Parse a datetime in the string format defined by ISO-1123 (or HTTP date time).
     """
     elements = None
     if isinstance(datetime_string, six.string_types):
