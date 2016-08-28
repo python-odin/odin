@@ -305,8 +305,10 @@ class TimeField(Field):
 
     The format of the string is that defined by ISO-8601.
 
-    Use the ``assume_local`` flag to customise how naive (datetime values with no timezone) are handled and also how
-    dates are decoded. If ``assume_local`` is True naive dates are assumed to represent the current system timezone.
+    Use the ``assume_local`` flag to customise how naive (datetime values with
+    no timezone) are handled and also how dates are decoded. If
+    ``assume_local`` is True naive dates are assumed to represent the current
+    system timezone.
 
     """
     default_error_messages = {
@@ -323,8 +325,46 @@ class TimeField(Field):
             return
         if isinstance(value, datetime.time):
             return value
+        default_timezone = datetimeutil.local if self.assume_local else datetimeutil.utc
         try:
-            default_timezone = datetimeutil.local if self.assume_local else datetimeutil.utc
+            return datetimeutil.parse_iso_time_string(value, default_timezone)
+        except ValueError:
+            pass
+        msg = self.error_messages['invalid']
+        raise exceptions.ValidationError(msg)
+
+
+class NaiveTimeField(Field):
+    """
+    Field that handles time values encoded as a string.
+
+    The format of the string is that defined by ISO-8601.
+
+    The naive time field differs from :py:`~TimeField` in the handling of the
+    timezone, a timezone will not be applied if one is not specified.
+
+    Use the ``ignore_timezone`` flag to have any timezone information ignored
+    when decoding the time field.
+
+    """
+    default_error_messages = {
+        'invalid': "Not a valid time string.",
+    }
+    data_type_name = "Naive ISO-8601 Time"
+
+    def __init__(self, ignore_timezone=False, **options):
+        super(NaiveTimeField, self).__init__(**options)
+        self.ignore_timezone = ignore_timezone
+
+    def to_python(self, value):
+        if value in EMPTY_VALUES:
+            return
+        if isinstance(value, datetime.time):
+            if value.tzinfo and self.ignore_timezone:
+                return value.replace(tzinfo=None)
+            return value
+        default_timezone = datetimeutil.IgnoreTimezone if self.ignore_timezone else None
+        try:
             return datetimeutil.parse_iso_time_string(value, default_timezone)
         except ValueError:
             pass
@@ -338,8 +378,10 @@ class DateTimeField(Field):
 
     The format of the string is that defined by ISO-8601.
 
-    Use the ``assume_local`` flag to customise how naive (datetime values with no timezone) are handled and also how
-    dates are decoded. If ``assume_local`` is True naive dates are assumed to represent the current system timezone.
+    Use the ``assume_local`` flag to customise how naive (datetime values
+    with no timezone) are handled and also how dates are decoded. If
+    ``assume_local`` is True naive dates are assumed to represent the current
+    system timezone.
 
     """
     default_error_messages = {
@@ -357,6 +399,44 @@ class DateTimeField(Field):
         if isinstance(value, datetime.datetime):
             return value
         default_timezone = datetimeutil.local if self.assume_local else datetimeutil.utc
+        try:
+            return datetimeutil.parse_iso_datetime_string(value, default_timezone)
+        except ValueError:
+            pass
+        msg = self.error_messages['invalid']
+        raise exceptions.ValidationError(msg)
+
+
+class NaiveDateTimeField(Field):
+    """
+    Field that handles datetime values encoded as a string.
+
+    The format of the string is that defined by ISO-8601.
+
+    The naive time field differs from :py:`~DateTimeField` in the handling of the
+    timezone, a timezone will not be applied if one is not specified.
+
+    Use the ``ignore_timezone`` flag to have any timezone information ignored
+    when decoding the time field.
+
+    """
+    default_error_messages = {
+        'invalid': "Not a valid datetime string.",
+    }
+    data_type_name = "Naive ISO-8601 DateTime"
+
+    def __init__(self, ignore_timezone=False, **options):
+        super(NaiveDateTimeField, self).__init__(**options)
+        self.ignore_timezone = ignore_timezone
+
+    def to_python(self, value):
+        if value in EMPTY_VALUES:
+            return
+        if isinstance(value, datetime.datetime):
+            if value.tzinfo and self.ignore_timezone:
+                return value.replace(tzinfo=None)
+            return value
+        default_timezone = datetimeutil.IgnoreTimezone if self.ignore_timezone else None
         try:
             return datetimeutil.parse_iso_datetime_string(value, default_timezone)
         except ValueError:
