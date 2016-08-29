@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pytest
 from odin import utils
 from .resources import Book
 
@@ -59,3 +60,23 @@ class TestValueInChoice(object):
         assert not utils.value_in_choices('xyz', self.CHOICES)
         assert not utils.value_in_choices(False, self.CHOICES)
         assert not utils.value_in_choices(321, self.CHOICES)
+
+
+class TestForceTuple(object):
+    """
+    Tests for odin.utils.force_tuple
+    """
+    @pytest.mark.parametrize(('value', 'expected'), (
+        (None, tuple()),
+        ('', ('',)),
+        (0, (0,)),
+        (False, (False,)),
+        (True, (True,)),
+        (123, (123,)),
+        ('Foo', ('Foo',)),
+        (['Foo', 'bar'], ('Foo', 'bar')),
+        (('Foo', 'bar'), ('Foo', 'bar')),
+        (['Foo', 123, 'bar', 'eek'], ('Foo', 123, 'bar', 'eek')),
+    ))
+    def test_values(self, value, expected):
+        assert utils.force_tuple(value) == expected
