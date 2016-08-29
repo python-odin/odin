@@ -208,8 +208,8 @@ TimeField
 =========
 ``class TimeField([assume_local=True, **options])``
 
-A :py:class:`time` field or time encoded in `ISO-8601 time string <https://en.wikipedia.org/wiki/ISO_8601#Times>`_
-format.
+A :py:class:`datetime.time` field or time encoded in
+`ISO-8601 time string <https://en.wikipedia.org/wiki/ISO_8601#Times>`_ format.
 
 TimeField has an extra argument:
 
@@ -219,13 +219,29 @@ TimeField has an extra argument:
     be in the current system timezone. Similarly on decoding a time string the output :py:class:`time` will be converted
     to the current system timezone.
 
+.. _field-naive_time_field:
+
+NaiveTimeField
+==============
+``class NaiveTimeField([ignore_timezone=False, **options])``
+
+A :py:class:`datetime.time` field or time encoded in
+`ISO-8601 time string <https://en.wikipedia.org/wiki/ISO_8601#Times>`_ format. The naive time field differs from
+:py:class:`~TimeField` in the handling of the timezone, a timezone will not be applied if one is not specified.
+
+NaiveTimeField has an extra argument:
+
+:py:attr:`NaiveTimeField.ignore_timezone`
+    Ignore any timezone information provided to the field during parsing. Will also actively strip out any timezone
+    information when processing an existing time value.
+
 .. _field-date_time_field:
 
 DateTimeField
 =============
 ``class DateTimeField([**options])``
 
-A :py:class:`datetime` field or date encoded in
+A :py:class:`datetime.datetime` field or date encoded in
 `ISO-8601 datetime string <https://en.wikipedia.org/wiki/ISO_8601#Combined_date_and_time_representations>`_ format.
 
 DateTimeField has an extra argument:
@@ -235,6 +251,23 @@ DateTimeField has an extra argument:
     timezone specified. By default assume_local is :py:const:`True`, in this state naive :py:class:`datetime` objects
     are assumed to be in the current system timezone. Similarly on decoding a date time string the output
     :py:class:`datetime` will be converted to the current system timezone.
+
+.. _field-naive_date_time_field:
+
+NaiveDateTimeField
+==================
+``class NaiveDateTimeField([ignore_timezone=False, **options])``
+
+A :py:class:`datetime.datetime` field or time encoded in
+`ISO-8601 datetime string <https://en.wikipedia.org/wiki/ISO_8601#Times>`_ format. The naive date time field differs
+from :py:class:`~DateTimeField` in the handling of the timezone, a timezone will not be applied if one is not
+specified.
+
+NaiveDateTimeField has an extra argument:
+
+:py:attr:`NaiveDateTimeField.ignore_timezone`
+    Ignore any timezone information provided to the field during parsing. Will also actively strip out any timezone
+    information when processing an existing datetime value.
 
 .. _field-http_date_time_field:
 
