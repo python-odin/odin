@@ -183,3 +183,23 @@ def value_in_choices(value, choices):
         if value == choice[0]:
             return True
     return False
+
+
+def chunk(iterable, n):
+    """
+    Return list of n items from an iterable.
+
+    :param iterable: Iterable of items
+    :param n: Size of iterable chunks to return.
+    :return: List containing n items.
+
+    """
+    items = []
+    for item in iterable:
+        items.append(item)
+        if len(items) == n:
+            yield items
+            items = []
+
+    if items:
+        yield items
