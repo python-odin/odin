@@ -47,3 +47,9 @@ class TestResourceBase(object):
                     key_field_name = 'missing_field'
 
                 field_1 = odin.StringField()
+
+    def test_key_fields_from_field_attributes(self):
+        """
+        Ensure that multiple keys can be defined from fields and in the right order.
+        """
+        assert ['name', 'genre'] == [f.attname for f in resources.OldBook._meta.key_fields]

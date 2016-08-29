@@ -169,7 +169,7 @@ class ResourceOptions(object):
         # Move over any fields defined as keys
         if self._key_fields:
             for field in self._key_fields:
-                if field.attrname not in self.key_field_names:
+                if field.attname not in self.key_field_names:
                     fields.append(field)
 
         return fields
