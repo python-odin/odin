@@ -47,7 +47,7 @@ setup(
 
     keywords='data-structure validation data-mapping',
 
-    packages=find_packages(),
+    packages=find_packages(include=('odin',)),
 
     install_requires=['six'],
 
