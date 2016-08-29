@@ -7,9 +7,9 @@ from odin.utils import value_in_choices
 from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url
 
 __all__ = (
-    'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField', 'TimeField', 'DateTimeField',
-    'HttpDateTimeField', 'TimeStampField', 'DictField', 'ObjectField', 'ArrayField',
-    'TypedArrayField', 'TypedListField', 'TypedDictField', 'TypedObjectField'
+    'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField',
+    'TimeField', 'NaiveTimeField', 'DateTimeField', 'NaiveDateTimeField', 'HttpDateTimeField', 'TimeStampField',
+    'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField', 'TypedListField', 'TypedDictField', 'TypedObjectField'
 )
 
 
