@@ -38,7 +38,7 @@ class Field(object):
 
     def __init__(self, verbose_name=None, verbose_name_plural=None, name=None, null=False, choices=None,
                  use_default_if_not_provided=False, default=NOT_PROVIDED, help_text='', validators=None,
-                 error_messages=None, is_attribute=False, doc_text=''):
+                 error_messages=None, is_attribute=False, doc_text='', key=False):
         """
         Initialisation of a Field.
 
@@ -55,6 +55,8 @@ class Field(object):
             validation).
         :param is_attribute: Special flag for codecs that support attributes on nodes (ie XML)
         :param doc_text: Documentation for the field, replaces help text
+        :param key: Mark this field as a key field (used to generated a unique identifier).
+
         """
         self.verbose_name, self.verbose_name_plural = verbose_name, verbose_name_plural
         self.name = name
@@ -63,6 +65,7 @@ class Field(object):
         self.doc_text = doc_text or help_text
         self.validators = self.default_validators + (validators or [])
         self.is_attribute = is_attribute
+        self.key = key
 
         self.creation_counter = Field.creation_counter
         Field.creation_counter += 1

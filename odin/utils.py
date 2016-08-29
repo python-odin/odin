@@ -185,6 +185,22 @@ def value_in_choices(value, choices):
     return False
 
 
+def force_tuple(value):
+    """
+    Forces a value to be a tuple.
+
+    Either by converting into a tuple (if is a list) or changing value to be a tuple.
+
+    """
+    if value is None:
+        return tuple()
+    if isinstance(value, tuple):
+        return value
+    if isinstance(value, list):
+        return tuple(value)
+    return value,
+
+
 def chunk(iterable, n):
     """
     Return list of n items from an iterable.
