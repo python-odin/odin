@@ -47,7 +47,7 @@ setup(
 
     keywords='data-structure validation data-mapping',
 
-    packages=find_packages(include=('odin',)),
+    packages=find_packages(include=('odin*',)),
 
     install_requires=['six'],
 
@@ -58,10 +58,13 @@ setup(
 
         # Documentation generation
         'doc_gen': ["jinja2>=2.7"],
+
         # Pint integration
         'pint': ["pint"],
+
         # Filter Query
         'filter_query': ["ply"],
+
         # Inspect
         'inspect': ['humanfriendly'],
     },
