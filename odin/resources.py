@@ -457,7 +457,7 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True,
         be a parent(s) of any resource defined by the dict.
     :param full_clean: Do a full clean as part of the creation.
     :param copy_dict: Use a copy of the input dictionary rather than destructively processing the input dict.
-    :param default_to_not_supplied: If an value is not supplied keep the value as NOT_PROVIDED. This is used
+    :param default_to_not_provided: If an value is not supplied keep the value as NOT_PROVIDED. This is used
         to support merging an updated value.
 
     """
