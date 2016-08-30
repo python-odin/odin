@@ -374,6 +374,20 @@ class NaiveTimeField(Field):
         msg = self.error_messages['invalid']
         raise exceptions.ValidationError(msg)
 
+    def prepare(self, value):
+        """
+        Prepare for serialisation
+
+        :param value:
+        :return:
+
+        """
+        if value is not None:
+            if self.ignore_timezone and value.tzinfo is not None:
+                # Strip the timezone
+                value = value.replace(tzinfo=None)
+        return value
+
 
 class DateTimeField(Field):
     """
@@ -446,6 +460,20 @@ class NaiveDateTimeField(Field):
             pass
         msg = self.error_messages['invalid']
         raise exceptions.ValidationError(msg)
+
+    def prepare(self, value):
+        """
+        Prepare for serialisation
+
+        :param value:
+        :return:
+
+        """
+        if value is not None:
+            if self.ignore_timezone and value.tzinfo is not None:
+                # Strip the timezone
+                value = value.replace(tzinfo=None)
+        return value
 
 
 class HttpDateTimeField(Field):
