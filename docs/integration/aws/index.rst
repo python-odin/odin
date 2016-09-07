@@ -54,3 +54,8 @@ Example::
     for book in session.scan(Book):
         print(book.title)
 
+
+SQS
+===
+
+This is development in progress to use Odin for defining and verifying SQS messages.
