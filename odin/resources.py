@@ -7,13 +7,14 @@ from odin.fields import NOT_PROVIDED
 from odin.utils import cached_property, field_iter_items, force_tuple
 
 DEFAULT_TYPE_FIELD = '$'
-META_OPTION_NAMES = (
-    'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group', 'type_field',
-    'key_field_name', 'key_field_names'
-)
 
 
 class ResourceOptions(object):
+    META_OPTION_NAMES = (
+        'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group',
+        'type_field', 'key_field_name', 'key_field_names'
+    )
+
     def __init__(self, meta):
         self.meta = meta
         self.parents = []
@@ -43,7 +44,7 @@ class ResourceOptions(object):
             for name in self.meta.__dict__:
                 if name.startswith('_'):
                     del meta_attrs[name]
-            for attr_name in META_OPTION_NAMES:
+            for attr_name in self.META_OPTION_NAMES:
                 if attr_name in meta_attrs:
                     # Allow meta to be defined as namespace
                     if attr_name == 'namespace':
@@ -174,6 +175,12 @@ class ResourceOptions(object):
 
         return fields
 
+    def check(self):
+        """
+        Run checks on meta data to ensure correctness
+        """
+        pass
+
     def __repr__(self):
         return '<Options for %s>' % self.resource_name
 
@@ -182,6 +189,8 @@ class ResourceType(type):
     """
     Metaclass for all Resources.
     """
+    meta_options = ResourceOptions
+
     def __new__(cls, name, bases, attrs):
         super_new = super(ResourceType, cls).__new__
 
@@ -209,7 +218,7 @@ class ResourceType(type):
             meta = attr_meta
         base_meta = getattr(new_class, '_meta', None)
 
-        new_class.add_to_class('_meta', ResourceOptions(meta))
+        new_class.add_to_class('_meta', cls.meta_options(meta))
 
         # Generate a namespace if one is not provided
         if new_class._meta.name_space is NOT_PROVIDED and base_meta:
