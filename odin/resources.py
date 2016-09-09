@@ -178,12 +178,12 @@ class ResourceOptions(object):
         return '<Options for %s>' % self.resource_name
 
 
-class ResourceBase(type):
+class ResourceType(type):
     """
     Metaclass for all Resources.
     """
     def __new__(cls, name, bases, attrs):
-        super_new = super(ResourceBase, cls).__new__
+        super_new = super(ResourceType, cls).__new__
 
         # attrs will never be empty for classes declared in the standard way
         # (ie. with the `class` keyword). This is quite robust.
@@ -192,8 +192,8 @@ class ResourceBase(type):
 
         parents = [
             b for b in bases if
-            isinstance(b, ResourceBase) and not (b.__name__ == 'NewBase' and b.__mro__ == (b, object))
-        ]
+            isinstance(b, ResourceType) and not (b.__name__ == 'NewBase' and b.__mro__ == (b, object))
+            ]
         if not parents:
             # If this isn't a subclass of Resource, don't do anything special.
             return super_new(cls, name, bases, attrs)
@@ -288,8 +288,7 @@ class ResourceBase(type):
             setattr(cls, name, value)
 
 
-@six.add_metaclass(ResourceBase)
-class Resource(object):
+class ResourceBase(object):
     def __init__(self, *args, **kwargs):
         args_len = len(args)
         if args_len > len(self._meta.fields):
@@ -438,6 +437,11 @@ class Resource(object):
 
         if errors:
             raise ValidationError(errors)
+
+
+@six.add_metaclass(ResourceType)
+class Resource(ResourceBase):
+    pass
 
 
 def resolve_resource_type(resource):
