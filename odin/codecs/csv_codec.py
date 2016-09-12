@@ -41,7 +41,7 @@ def reader(f, resource, includes_header=False, csv_module=csv, *args, **kwargs):
     else:
         # Iterate CSV and process input
         for row in csv_reader:
-            yield create_resource_from_iter(row, resource)
+            yield create_resource_from_iter((NOT_PROVIDED if col is None else col for col in row), resource)
 
 
 class ResourceReader(csv.DictReader):
