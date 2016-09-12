@@ -5,7 +5,7 @@ import six
 from odin import exceptions, registration
 from odin.exceptions import ValidationError
 from odin.fields import NOT_PROVIDED
-from odin.utils import cached_property, field_iter_items, force_tuple
+from odin.utils import cached_property, field_iter_items, force_tuple, getmeta
 
 DEFAULT_TYPE_FIELD = '$'
 
@@ -128,7 +128,7 @@ class ResourceOptions(object):
         """
         List of parent resource names.
         """
-        return [p._meta.resource_name for p in self.parents]
+        return [getmeta(p).resource_name for p in self.parents]
 
     @cached_property
     def attribute_fields(self):
@@ -203,7 +203,7 @@ class ResourceType(type):
         parents = [
             b for b in bases if
             isinstance(b, ResourceType) and not (b.__name__ == 'NewBase' and b.__mro__ == (b, object))
-            ]
+        ]
         if not parents:
             # If this isn't a subclass of Resource, don't do anything special.
             return super_new(mcs, name, bases, attrs)
@@ -232,8 +232,8 @@ class ResourceType(type):
             new_meta.name_space = module
 
         # Key field is inherited
-        if base_meta and (not new_class._meta.key_field_names) or (new_class._meta.key_field_names is NOT_PROVIDED):
-            new_class._meta.key_field_names = base_meta.key_field_names
+        if base_meta and (not new_meta.key_field_names) or (new_meta.key_field_names is NOT_PROVIDED):
+            new_meta.key_field_names = base_meta.key_field_names
 
         # Bail out early if we have already created this class.
         r = registration.get_resource(new_meta.resource_name)
@@ -277,9 +277,9 @@ class ResourceType(type):
             new_meta.parents.append(base)
 
         # If a key_field is defined ensure it exists
-        if new_class._meta.key_field_names:
-            for field_name in new_class._meta.key_field_names:
-                if field_name not in new_class._meta.field_map:
+        if new_meta.key_field_names:
+            for field_name in new_meta.key_field_names:
+                if field_name not in new_meta.field_map:
                     raise AttributeError('Key field `{0}` is not exist on this resource.'.format(field_name))
 
         if abstract:
@@ -304,15 +304,16 @@ class ResourceType(type):
 class ResourceBase(object):
     def __init__(self, *args, **kwargs):
         args_len = len(args)
-        if args_len > len(self._meta.fields):
+        meta = getmeta(self)
+        if args_len > len(meta.fields):
             raise TypeError('This resource takes %s positional arguments but %s where given.' % (
-                len(self._meta.fields), args_len))
+                len(meta.fields), args_len))
 
         # The ordering of the zip calls matter - zip throws StopIteration
         # when an iter throws it. So if the first iter throws it, the second
         # is *not* consumed. We rely on this, so don't change the order
         # without changing the logic.
-        fields_iter = iter(self._meta.fields)
+        fields_iter = iter(meta.fields)
         if args_len:
             if not kwargs:
                 for val, field in zip(args, fields_iter):
@@ -338,7 +339,7 @@ class ResourceBase(object):
         return '<%s: %s>' % (self.__class__.__name__, self)
 
     def __str__(self):
-        return '%s resource' % self._meta.resource_name
+        return '%s resource' % getmeta(self).resource_name
 
     @classmethod
     def create_from_dict(cls, d, full_clean=False):
@@ -359,7 +360,8 @@ class ResourceBase(object):
         :param include_virtual: Include virtual fields when generating `dict`.
 
         """
-        fields = self._meta.all_fields if include_virtual else self._meta.fields
+        meta = getmeta(self)
+        fields = meta.all_fields if include_virtual else meta.fields
         return dict((f.name, v) for f, v in field_iter_items(self, fields))
 
     def convert_to(self, to_resource, context=None, ignore_fields=None, **field_values):
@@ -424,7 +426,7 @@ class ResourceBase(object):
     def clean_fields(self, exclude=None):
         errors = {}
 
-        for f in self._meta.fields:
+        for f in getmeta(self).fields:
             if exclude and f.name in exclude:
                 continue
 
@@ -459,7 +461,8 @@ class Resource(ResourceBase):
 
 def resolve_resource_type(resource):
     if isinstance(resource, type) and issubclass(resource, Resource):
-        return resource._meta.resource_name, resource._meta.type_field
+        meta = getmeta(resource)
+        return meta.resource_name, meta.type_field
     else:
         return resource, DEFAULT_TYPE_FIELD
 
@@ -480,7 +483,7 @@ def create_resource_from_iter(i, resource, full_clean=True, default_to_not_provi
     """
     i = list(i)
     resource_type = resource
-    fields = resource_type._meta.fields
+    fields = getmeta(resource_type).fields
 
     # Optimisation to allow the assumption that len(fields) == len(i)
     extra = []
@@ -556,7 +559,7 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True,
             if document_resource_name:
                 # Check resource types match or are inherited types
                 if (resource_name == document_resource_name or
-                        resource_name in resource_type._meta.parent_resource_names):
+                        resource_name in getmeta(resource_type).parent_resource_names):
                     break  # We are done
             else:
                 break
@@ -577,7 +580,7 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True,
 
     attrs = []
     errors = {}
-    for f in resource_type._meta.fields:
+    for f in getmeta(resource_type).fields:
         value = d.pop(f.name, NOT_PROVIDED)
         if value is NOT_PROVIDED:
             if not default_to_not_provided:
