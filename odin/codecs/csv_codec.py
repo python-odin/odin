@@ -86,7 +86,7 @@ def dump_to_writer(writer, resources, resource_type=None, fields=None):
     :returns: List of fields that where written to.
 
     """
-    resource_type = _get_resource_type(resources, resource_type)
+    resource_type = resource_type or _get_resource_type(resources, resource_type)
 
     if not fields:
         fields = value_fields(resource_type)
@@ -111,7 +111,7 @@ def dump(f, resources, resource_type=None, include_header=True, cls=csv.writer, 
     :param kwargs: Additional parameters to be supplied to the writer instance.
 
     """
-    resource_type = _get_resource_type(resources, resource_type)
+    resource_type = resource_type or _get_resource_type(resources, resource_type)
 
     fields = value_fields(resource_type)
 
