@@ -192,8 +192,8 @@ class ResourceType(type):
     """
     meta_options = ResourceOptions
 
-    def __new__(cls, name, bases, attrs):
-        super_new = super(ResourceType, cls).__new__
+    def __new__(mcs, name, bases, attrs):
+        super_new = super(ResourceType, mcs).__new__
 
         # attrs will never be empty for classes declared in the standard way
         # (ie. with the `class` keyword). This is quite robust.
@@ -219,7 +219,8 @@ class ResourceType(type):
             meta = attr_meta
         base_meta = getattr(new_class, '_meta', None)
 
-        new_class.add_to_class('_meta', cls.meta_options(meta))
+        new_meta = mcs.meta_options(meta)
+        new_class.add_to_class('_meta', new_meta)
 
         # Generate a namespace if one is not provided
         if new_meta.name_space is NOT_PROVIDED and base_meta:
