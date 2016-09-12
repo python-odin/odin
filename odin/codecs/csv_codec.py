@@ -5,36 +5,43 @@ import csv
 from odin.fields import NOT_PROVIDED
 from odin.resources import create_resource_from_iter, create_resource_from_dict
 from odin.mapping import MappingResult
+from odin.utils import getmeta
 
 CONTENT_TYPE = 'text/csv'
 
 
-def reader(f, resource, csv_module=csv, *args, **kwargs):
+def reader(f, resource, includes_header=False, csv_module=csv, *args, **kwargs):
     """
     Reader that returns resources.
 
     :param f: file like object
     :param resource:
+    :param includes_header: File includes a header that should be used to map columns
     :param csv_module: Specify an alternate csv module (eg unicodecsv); defaults to the builtin csv as this module
         is implemented in C.
     :return: Iterable reader object
 
     """
     csv_reader = csv_module.reader(f, *args, **kwargs)
-    fields = resource._meta.fields
+    if includes_header:
+        fields = getmeta(resource).fields
 
-    # Pre-generate field mapping
-    header = csv_reader.next()
-    mapping = []
-    for field in fields:
-        if field.name in header:
-            mapping.append(header.index(field.name))
-        else:
-            mapping.append(None)
+        # Pre-generate field mapping
+        header = csv_reader.next()
+        mapping = []
+        for field in fields:
+            if field.name in header:
+                mapping.append(header.index(field.name))
+            else:
+                mapping.append(None)
 
-    # Iterate CSV and process input
-    for row in csv_reader:
-        yield create_resource_from_iter((NOT_PROVIDED if s is None else row[s] for s in mapping), resource)
+        # Iterate CSV and process input
+        for row in csv_reader:
+            yield create_resource_from_iter((NOT_PROVIDED if s is None else row[s] for s in mapping), resource)
+    else:
+        # Iterate CSV and process input
+        for row in csv_reader:
+            yield create_resource_from_iter(row, resource)
 
 
 class ResourceReader(csv.DictReader):
@@ -111,7 +118,7 @@ def dump(f, resources, resource_type=None, include_header=True, cls=csv.writer, 
     :param kwargs: Additional parameters to be supplied to the writer instance.
 
     """
-    resource_type = resource_type or _get_resource_type(resources, resource_type)
+    resource_type = _get_resource_type(resources, resource_type)
 
     fields = value_fields(resource_type)
 
