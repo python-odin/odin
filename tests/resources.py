@@ -70,10 +70,10 @@ class Library(odin.Resource):
 
 
 class OldBook(LibraryBook):
-    name = odin.StringField()
+    name = odin.StringField(key=True)
     num_pages = odin.IntegerField()
     price = odin.FloatField()
-    genre = odin.StringField(choices=(
+    genre = odin.StringField(key=True, choices=(
         ('sci-fi', 'Science Fiction'),
         ('fantasy', 'Fantasy'),
         ('biography', 'Biography'),

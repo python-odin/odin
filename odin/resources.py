@@ -5,21 +5,22 @@ import six
 from odin import exceptions, registration
 from odin.exceptions import ValidationError
 from odin.fields import NOT_PROVIDED
-from odin.utils import cached_property, field_iter_items
-
+from odin.utils import cached_property, field_iter_items, force_tuple
 
 DEFAULT_TYPE_FIELD = '$'
-META_OPTION_NAMES = (
-    'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group', 'type_field',
-    'key_field_name'
-)
 
 
 class ResourceOptions(object):
+    META_OPTION_NAMES = (
+        'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group',
+        'type_field', 'key_field_name', 'key_field_names'
+    )
+
     def __init__(self, meta):
         self.meta = meta
         self.parents = []
         self.fields = []
+        self._key_fields = []
         self.virtual_fields = []
 
         self.name = None
@@ -30,7 +31,7 @@ class ResourceOptions(object):
         self.abstract = False
         self.doc_group = None
         self.type_field = DEFAULT_TYPE_FIELD
-        self.key_field_name = None
+        self.key_field_names = None
 
         self._cache = {}
 
@@ -44,11 +45,14 @@ class ResourceOptions(object):
             for name in self.meta.__dict__:
                 if name.startswith('_'):
                     del meta_attrs[name]
-            for attr_name in META_OPTION_NAMES:
+            for attr_name in self.META_OPTION_NAMES:
                 if attr_name in meta_attrs:
                     # Allow meta to be defined as namespace
                     if attr_name == 'namespace':
                         setattr(self, 'name_space', meta_attrs.pop(attr_name))
+                    # Allow key_field_names to be defined as key_field_name
+                    elif attr_name == 'key_field_name':
+                        setattr(self, 'key_field_names', meta_attrs.pop(attr_name))
                     else:
                         setattr(self, attr_name, meta_attrs.pop(attr_name))
                 elif hasattr(self.meta, attr_name):
@@ -59,21 +63,26 @@ class ResourceOptions(object):
                 raise TypeError("'class Meta' got invalid attribute(s): %s" % ','.join(meta_attrs.keys()))
         del self.meta
 
+        # Ensure key fields is a tuple
+        self.key_field_names = force_tuple(self.key_field_names)
+
         if not self.verbose_name:
             self.verbose_name = self.name.replace('_', ' ').strip('_ ')
         if not self.verbose_name_plural:
             self.verbose_name_plural = self.verbose_name + 's'
 
+    def _add_key_field(self, field):
+        self._key_fields.append(field)
+
     def add_field(self, field):
         self.fields.append(field)
+        if field.key:
+            self._add_key_field(field)
         cached_property.clear_caches(self)
 
     def add_virtual_field(self, field):
         self.virtual_fields.append(field)
         cached_property.clear_caches(self)
-
-    def get_key_field(self):
-        return self.field_map.get(self.key_field)
 
     @property
     def resource_name(self):
@@ -144,18 +153,47 @@ class ResourceOptions(object):
         """
         Field specified as the key field
         """
-        return self.field_map.get(self.key_field_name)
+        if self.key_fields:
+            return self.key_fields[0]
+
+    @cached_property
+    def key_fields(self):
+        """
+        Tuple of fields specified as the key fields
+        """
+        fields = []
+
+        # Key fields named in meta go first
+        if self.key_field_names:
+            for field_name in self.key_field_names:
+                fields.append(self.field_map[field_name])
+
+        # Move over any fields defined as keys
+        if self._key_fields:
+            for field in sorted(self._key_fields, key=hash):
+                if field.attname not in self.key_field_names:
+                    fields.append(field)
+
+        return fields
+
+    def check(self):
+        """
+        Run checks on meta data to ensure correctness
+        """
+        pass
 
     def __repr__(self):
         return '<Options for %s>' % self.resource_name
 
 
-class ResourceBase(type):
+class ResourceType(type):
     """
     Metaclass for all Resources.
     """
-    def __new__(mcs, name, bases, attrs):
-        super_new = super(ResourceBase, mcs).__new__
+    meta_options = ResourceOptions
+
+    def __new__(cls, name, bases, attrs):
+        super_new = super(ResourceType, cls).__new__
 
         # attrs will never be empty for classes declared in the standard way
         # (ie. with the `class` keyword). This is quite robust.
@@ -164,8 +202,8 @@ class ResourceBase(type):
 
         parents = [
             b for b in bases if
-            isinstance(b, ResourceBase) and not (b.__name__ == 'NewBase' and b.__mro__ == (b, object))
-        ]
+            isinstance(b, ResourceType) and not (b.__name__ == 'NewBase' and b.__mro__ == (b, object))
+            ]
         if not parents:
             # If this isn't a subclass of Resource, don't do anything special.
             return super_new(mcs, name, bases, attrs)
@@ -181,8 +219,7 @@ class ResourceBase(type):
             meta = attr_meta
         base_meta = getattr(new_class, '_meta', None)
 
-        new_meta = ResourceOptions(meta)
-        new_class.add_to_class('_meta', new_meta)
+        new_class.add_to_class('_meta', cls.meta_options(meta))
 
         # Generate a namespace if one is not provided
         if new_meta.name_space is NOT_PROVIDED and base_meta:
@@ -194,8 +231,8 @@ class ResourceBase(type):
             new_meta.name_space = module
 
         # Key field is inherited
-        if base_meta and (not new_meta.key_field_name) or (new_meta.key_field_name is NOT_PROVIDED):
-            new_meta.key_field_name = base_meta.key_field_name
+        if base_meta and (not new_class._meta.key_field_names) or (new_class._meta.key_field_names is NOT_PROVIDED):
+            new_class._meta.key_field_names = base_meta.key_field_names
 
         # Bail out early if we have already created this class.
         r = registration.get_resource(new_meta.resource_name)
@@ -239,10 +276,10 @@ class ResourceBase(type):
             new_meta.parents.append(base)
 
         # If a key_field is defined ensure it exists
-        if new_meta.key_field_name is not None and new_meta.key_field is None:
-            raise AttributeError('Key field `{0}` is not exist on this resource.'.format(
-                new_meta.key_field_name)
-            )
+        if new_class._meta.key_field_names:
+            for field_name in new_class._meta.key_field_names:
+                if field_name not in new_class._meta.field_map:
+                    raise AttributeError('Key field `{0}` is not exist on this resource.'.format(field_name))
 
         if abstract:
             return new_class
@@ -263,8 +300,7 @@ class ResourceBase(type):
             setattr(cls, name, value)
 
 
-@six.add_metaclass(ResourceBase)
-class Resource(object):
+class ResourceBase(object):
     def __init__(self, *args, **kwargs):
         args_len = len(args)
         if args_len > len(self._meta.fields):
@@ -413,6 +449,11 @@ class Resource(object):
 
         if errors:
             raise ValidationError(errors)
+
+
+@six.add_metaclass(ResourceType)
+class Resource(ResourceBase):
+    pass
 
 
 def resolve_resource_type(resource):

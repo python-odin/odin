@@ -347,7 +347,7 @@ class TestFields(object):
 
     def test_floatfield_2(self):
         f = FloatField(null=True)
-        assert None == f.clean(None)
+        assert f.clean(None) is None
         pytest.raises(ValidationError, f.clean, 'abc')
         assert 69 == f.clean(69)
         assert 69.5 == f.clean('69.5')
@@ -386,7 +386,7 @@ class TestFields(object):
 
     def test_datefield_2(self):
         f = DateField(null=True)
-        assert None == f.clean(None)
+        assert f.clean(None) is None
         pytest.raises(ValidationError, f.clean, 'abc')
         pytest.raises(ValidationError, f.clean, 123)
         assert datetime.date(2013, 11, 24) == f.clean('2013-11-24')
@@ -405,11 +405,52 @@ class TestFields(object):
 
     def test_timefield_2(self):
         f = TimeField(assume_local=False, null=True)
-        assert None == f.clean(None)
+        assert f.clean(None) is None
         pytest.raises(ValidationError, f.clean, 'abc')
         pytest.raises(ValidationError, f.clean, 123)
         assert datetime.time(18, 43, tzinfo=utc) == f.clean('18:43:00.000Z')
         assert datetime.time(18, 43, tzinfo=utc) == f.clean(datetime.time(18, 43, tzinfo=utc))
+
+    # NaiveTimeField ##########################################################
+
+    @pytest.mark.parametrize(('target', 'value', 'expected'), (
+        (NaiveTimeField(ignore_timezone=False), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
+        (NaiveTimeField(ignore_timezone=False), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
+        (NaiveTimeField(ignore_timezone=False), datetime.time(18, 43, tzinfo=utc), datetime.time(18, 43, tzinfo=utc)),
+
+        (NaiveTimeField(ignore_timezone=False, null=True), None, None),
+        (NaiveTimeField(ignore_timezone=False, null=True), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
+        (NaiveTimeField(ignore_timezone=False, null=True), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
+        (NaiveTimeField(ignore_timezone=False, null=True), datetime.time(18, 43, tzinfo=utc), datetime.time(18, 43, tzinfo=utc)),
+
+        (NaiveTimeField(ignore_timezone=True), '18:43:00.000Z', datetime.time(18, 43)),
+        (NaiveTimeField(ignore_timezone=True), '18:43:00.000Z', datetime.time(18, 43)),
+        (NaiveTimeField(ignore_timezone=True), datetime.time(18, 43, tzinfo=utc), datetime.time(18, 43)),
+    ))
+    def test_naivetimefield__clean_valid_values(self, target, value, expected):
+        assert target.clean(value) == expected
+
+    @pytest.mark.parametrize(('target', 'value'), (
+        (NaiveTimeField(ignore_timezone=False), None),
+        (NaiveTimeField(ignore_timezone=False), 'abc'),
+        (NaiveTimeField(ignore_timezone=False), 123),
+
+        (NaiveTimeField(ignore_timezone=False, null=True), 'abc'),
+        (NaiveTimeField(ignore_timezone=False, null=True), 123),
+
+        (NaiveTimeField(ignore_timezone=True), None),
+        (NaiveTimeField(ignore_timezone=True), 'abc'),
+        (NaiveTimeField(ignore_timezone=True), 123),
+    ))
+    def test_naivetimefield__clean_invalid_values(self, target, value):
+        pytest.raises(ValidationError, target.clean, value)
+
+    @pytest.mark.parametrize(('target', 'value', 'expected'), (
+        (NaiveTimeField(ignore_timezone=False), datetime.time(18, 43, tzinfo=utc), datetime.time(18, 43, tzinfo=utc)),
+        (NaiveTimeField(ignore_timezone=True), datetime.time(18, 43, tzinfo=utc), datetime.time(18, 43)),
+    ))
+    def test_naivetimefield__prepare(self, target, value, expected):
+        assert target.prepare(value) == expected
 
     # DateTimeField ###########################################################
 
@@ -424,12 +465,53 @@ class TestFields(object):
 
     def test_datetimefield_2(self):
         f = DateTimeField(assume_local=False, null=True)
-        assert None == f.clean(None)
+        assert f.clean(None) is None
         pytest.raises(ValidationError, f.clean, 'abc')
         pytest.raises(ValidationError, f.clean, 123)
         assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean('2013-11-24T18:43:00.000Z')
         assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean('2013-11-24 18:43:00.000Z')
         assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
+
+    # NaiveDateTimeField ######################################################
+
+    @pytest.mark.parametrize(('target', 'value', 'expected'), (
+        (NaiveDateTimeField(ignore_timezone=False), '2013-11-24T18:43:00.000Z', datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
+        (NaiveDateTimeField(ignore_timezone=False), '2013-11-24 18:43:00.000Z', datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
+        (NaiveDateTimeField(ignore_timezone=False), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
+
+        (NaiveDateTimeField(ignore_timezone=False, null=True), None, None),
+        (NaiveDateTimeField(ignore_timezone=False, null=True), '2013-11-24T18:43:00.000Z', datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
+        (NaiveDateTimeField(ignore_timezone=False, null=True), '2013-11-24 18:43:00.000Z', datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
+        (NaiveDateTimeField(ignore_timezone=False, null=True), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
+
+        (NaiveDateTimeField(ignore_timezone=True), '2013-11-24T18:43:00.000Z', datetime.datetime(2013, 11, 24, 18, 43)),
+        (NaiveDateTimeField(ignore_timezone=True), '2013-11-24 18:43:00.000Z', datetime.datetime(2013, 11, 24, 18, 43)),
+        (NaiveDateTimeField(ignore_timezone=True), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), datetime.datetime(2013, 11, 24, 18, 43)),
+    ))
+    def test_naivedatetimefield__clean_valid_values(self, target, value, expected):
+        assert target.clean(value) == expected
+
+    @pytest.mark.parametrize(('target', 'value'), (
+        (NaiveDateTimeField(ignore_timezone=False), None),
+        (NaiveDateTimeField(ignore_timezone=False), 'abc'),
+        (NaiveDateTimeField(ignore_timezone=False), 123),
+
+        (NaiveDateTimeField(ignore_timezone=False, null=True), 'abc'),
+        (NaiveDateTimeField(ignore_timezone=False, null=True), 123),
+
+        (NaiveDateTimeField(ignore_timezone=True), None),
+        (NaiveDateTimeField(ignore_timezone=True), 'abc'),
+        (NaiveDateTimeField(ignore_timezone=True), 123),
+    ))
+    def test_naivedatetimefield__clean_invalid_values(self, target, value):
+        pytest.raises(ValidationError, target.clean, value)
+
+    @pytest.mark.parametrize(('target', 'value', 'expected'), (
+        (NaiveDateTimeField(ignore_timezone=False), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
+        (NaiveDateTimeField(ignore_timezone=True), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), datetime.datetime(2013, 11, 24, 18, 43)),
+    ))
+    def test_naivedatetimefield__prepare(self, target, value, expected):
+        assert target.prepare(value) == expected
 
     # HttpDateTimeField #######################################################
 
@@ -443,7 +525,7 @@ class TestFields(object):
 
     def test_httpdatetimefield_2(self):
         f = HttpDateTimeField(null=True)
-        assert None == f.clean(None)
+        assert f.clean(None) is None
         pytest.raises(ValidationError, f.clean, 'abc')
         pytest.raises(ValidationError, f.clean, 123)
         assert datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=utc) == f.clean('Wed Aug 29 17:12:58 +0000 2012')

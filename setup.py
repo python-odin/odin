@@ -11,7 +11,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 setup(
     name='odin',
 
-    version='0.8.2',
+    version='0.9b0',
 
     description='Data-structure definition/validation/traversal, mapping and serialisation toolkit for Python',
     long_description=long_description,
@@ -47,7 +47,7 @@ setup(
 
     keywords='data-structure validation data-mapping',
 
-    packages=find_packages(),
+    packages=find_packages(include=('odin*',)),
 
     install_requires=['six'],
 
@@ -58,10 +58,13 @@ setup(
 
         # Documentation generation
         'doc_gen': ["jinja2>=2.7"],
+
         # Pint integration
         'pint': ["pint"],
+
         # Filter Query
         'filter_query': ["ply"],
+
         # Inspect
         'inspect': ['humanfriendly'],
     },

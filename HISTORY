@@ -1,3 +1,11 @@
+0.9a0
+=====
+
+- Support for multipart keys.
+- Support for naive dates and times.
+- Boolean fields now accept y/n as truthy
+- Change of Resource iterable base class
+
 0.8.2
 =====
 

@@ -7,9 +7,9 @@ from odin.utils import value_in_choices
 from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url
 
 __all__ = (
-    'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField', 'TimeField', 'DateTimeField',
-    'HttpDateTimeField', 'TimeStampField', 'DictField', 'ObjectField', 'ArrayField',
-    'TypedArrayField', 'TypedListField', 'TypedDictField', 'TypedObjectField'
+    'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField',
+    'TimeField', 'NaiveTimeField', 'DateTimeField', 'NaiveDateTimeField', 'HttpDateTimeField', 'TimeStampField',
+    'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField', 'TypedListField', 'TypedDictField', 'TypedObjectField'
 )
 
 
@@ -38,7 +38,7 @@ class Field(object):
 
     def __init__(self, verbose_name=None, verbose_name_plural=None, name=None, null=False, choices=None,
                  use_default_if_not_provided=False, default=NOT_PROVIDED, help_text='', validators=None,
-                 error_messages=None, is_attribute=False, doc_text=''):
+                 error_messages=None, is_attribute=False, doc_text='', key=False):
         """
         Initialisation of a Field.
 
@@ -55,6 +55,8 @@ class Field(object):
             validation).
         :param is_attribute: Special flag for codecs that support attributes on nodes (ie XML)
         :param doc_text: Documentation for the field, replaces help text
+        :param key: Mark this field as a key field (used to generated a unique identifier).
+
         """
         self.verbose_name, self.verbose_name_plural = verbose_name, verbose_name_plural
         self.name = name
@@ -63,6 +65,7 @@ class Field(object):
         self.doc_text = doc_text or help_text
         self.validators = self.default_validators + (validators or [])
         self.is_attribute = is_attribute
+        self.key = key
 
         self.creation_counter = Field.creation_counter
         Field.creation_counter += 1
@@ -191,8 +194,8 @@ class BooleanField(Field):
     default_error_messages = {
         'invalid': "'%s' value must be either True or False."
     }
-    true_strings = ('t', 'true', 'yes', 'on', '1')
-    false_strings = ('f', 'false', 'no', 'off', '0')
+    true_strings = ('t', 'true', 'y', 'yes', 'on', '1')
+    false_strings = ('f', 'false', 'n', 'no', 'off', '0')
     data_type_name = "Boolean"
 
     def to_python(self, value):
@@ -305,8 +308,10 @@ class TimeField(Field):
 
     The format of the string is that defined by ISO-8601.
 
-    Use the ``assume_local`` flag to customise how naive (datetime values with no timezone) are handled and also how
-    dates are decoded. If ``assume_local`` is True naive dates are assumed to represent the current system timezone.
+    Use the ``assume_local`` flag to customise how naive (datetime values with
+    no timezone) are handled and also how dates are decoded. If
+    ``assume_local`` is True naive dates are assumed to represent the current
+    system timezone.
 
     """
     default_error_messages = {
@@ -323,13 +328,65 @@ class TimeField(Field):
             return
         if isinstance(value, datetime.time):
             return value
+        default_timezone = datetimeutil.local if self.assume_local else datetimeutil.utc
         try:
-            default_timezone = datetimeutil.local if self.assume_local else datetimeutil.utc
             return datetimeutil.parse_iso_time_string(value, default_timezone)
         except ValueError:
             pass
         msg = self.error_messages['invalid']
         raise exceptions.ValidationError(msg)
+
+
+class NaiveTimeField(Field):
+    """
+    Field that handles time values encoded as a string.
+
+    The format of the string is that defined by ISO-8601.
+
+    The naive time field differs from :py:`~TimeField` in the handling of the
+    timezone, a timezone will not be applied if one is not specified.
+
+    Use the ``ignore_timezone`` flag to have any timezone information ignored
+    when decoding the time field.
+
+    """
+    default_error_messages = {
+        'invalid': "Not a valid time string.",
+    }
+    data_type_name = "Naive ISO-8601 Time"
+
+    def __init__(self, ignore_timezone=False, **options):
+        super(NaiveTimeField, self).__init__(**options)
+        self.ignore_timezone = ignore_timezone
+
+    def to_python(self, value):
+        if value in EMPTY_VALUES:
+            return
+        if isinstance(value, datetime.time):
+            if value.tzinfo and self.ignore_timezone:
+                return value.replace(tzinfo=None)
+            return value
+        default_timezone = datetimeutil.IgnoreTimezone if self.ignore_timezone else None
+        try:
+            return datetimeutil.parse_iso_time_string(value, default_timezone)
+        except ValueError:
+            pass
+        msg = self.error_messages['invalid']
+        raise exceptions.ValidationError(msg)
+
+    def prepare(self, value):
+        """
+        Prepare for serialisation
+
+        :param value:
+        :return:
+
+        """
+        if value is not None:
+            if self.ignore_timezone and value.tzinfo is not None:
+                # Strip the timezone
+                value = value.replace(tzinfo=None)
+        return value
 
 
 class DateTimeField(Field):
@@ -338,8 +395,10 @@ class DateTimeField(Field):
 
     The format of the string is that defined by ISO-8601.
 
-    Use the ``assume_local`` flag to customise how naive (datetime values with no timezone) are handled and also how
-    dates are decoded. If ``assume_local`` is True naive dates are assumed to represent the current system timezone.
+    Use the ``assume_local`` flag to customise how naive (datetime values
+    with no timezone) are handled and also how dates are decoded. If
+    ``assume_local`` is True naive dates are assumed to represent the current
+    system timezone.
 
     """
     default_error_messages = {
@@ -363,6 +422,58 @@ class DateTimeField(Field):
             pass
         msg = self.error_messages['invalid']
         raise exceptions.ValidationError(msg)
+
+
+class NaiveDateTimeField(Field):
+    """
+    Field that handles datetime values encoded as a string.
+
+    The format of the string is that defined by ISO-8601.
+
+    The naive time field differs from :py:`~DateTimeField` in the handling of the
+    timezone, a timezone will not be applied if one is not specified.
+
+    Use the ``ignore_timezone`` flag to have any timezone information ignored
+    when decoding the time field.
+
+    """
+    default_error_messages = {
+        'invalid': "Not a valid datetime string.",
+    }
+    data_type_name = "Naive ISO-8601 DateTime"
+
+    def __init__(self, ignore_timezone=False, **options):
+        super(NaiveDateTimeField, self).__init__(**options)
+        self.ignore_timezone = ignore_timezone
+
+    def to_python(self, value):
+        if value in EMPTY_VALUES:
+            return
+        if isinstance(value, datetime.datetime):
+            if value.tzinfo and self.ignore_timezone:
+                return value.replace(tzinfo=None)
+            return value
+        default_timezone = datetimeutil.IgnoreTimezone if self.ignore_timezone else None
+        try:
+            return datetimeutil.parse_iso_datetime_string(value, default_timezone)
+        except ValueError:
+            pass
+        msg = self.error_messages['invalid']
+        raise exceptions.ValidationError(msg)
+
+    def prepare(self, value):
+        """
+        Prepare for serialisation
+
+        :param value:
+        :return:
+
+        """
+        if value is not None:
+            if self.ignore_timezone and value.tzinfo is not None:
+                # Strip the timezone
+                value = value.replace(tzinfo=None)
+        return value
 
 
 class HttpDateTimeField(Field):
