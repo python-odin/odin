@@ -75,8 +75,8 @@ class TraversalPath(object):
         Get a value from a resource structure.
         """
         result = root_resource
-        meta = getmeta()
         for value, key, attr in self:
+            meta = getmeta(result)
             try:
                 field = meta.field_map[attr]
             except KeyError:
