@@ -419,8 +419,8 @@ class TestSubClassMapping(object):
                     |                                |                                |
                _____|_____                      _____|_____                      _____|_____
               /           \                    /           \                    /           \
-             /             \                  /             \                  /             \
-        Resource B     Resource C        Mapping B-Y    Mapping C-Z       Resource Y     Resource Z
+             /            \                   /            \                   /            \
+        Resource B    Resource C         Mapping B-Y   Mapping C-Z        Resource Y    Resource Z
 
     Define a mapping that can handle a list of *Resource A* and *Resource B* objects being mapped by an abstract mapping
     *Mapping A-X* to the corresponding *Resource Y* and *Resource Z* objects.
