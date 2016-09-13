@@ -460,7 +460,7 @@ class Resource(ResourceBase):
 
 
 def resolve_resource_type(resource):
-    if isinstance(resource, type) and issubclass(resource, Resource):
+    if isinstance(resource, type) and issubclass(resource, ResourceBase):
         meta = getmeta(resource)
         return meta.resource_name, meta.type_field
     else:
