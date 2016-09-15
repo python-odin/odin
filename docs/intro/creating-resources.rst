@@ -59,8 +59,8 @@ With a resource defined the API can be used to work with resources::
     >>> b.author.name
     'Iain M. Banks'
 
-    # Get all the data as a dict for
-    >>> a.to_dict
+    # Get all the data as a dict
+    >>> a.to_dict()
     {'name': 'Iain M. Banks'}
 
     # Validate that the information entered is valid.

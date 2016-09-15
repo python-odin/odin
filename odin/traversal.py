@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import six
+from odin.utils import getmeta
+
 from .exceptions import NoMatchError, MultipleMatchesError, InvalidPathError
 
 
@@ -74,8 +76,9 @@ class TraversalPath(object):
         """
         result = root_resource
         for value, key, attr in self:
+            meta = getmeta(result)
             try:
-                field = result._meta.field_map[attr]
+                field = meta.field_map[attr]
             except KeyError:
                 raise InvalidPathError(self, "Unknown field `{0}`".format(attr))
 
@@ -99,7 +102,7 @@ class TraversalPath(object):
                     raise NoMatchError(self, "Filter matched no values; `{0}` == `{1}` in {2}.".format(key, value, field))
                 elif len(results) > 1:
                     raise MultipleMatchesError(
-                        self, "Filter matched multiple values; `{0}` == `{1}`.".format(key, value, field))
+                        self, "Filter matched multiple values; `{0}` == `{1}`.".format(key, value))
                 else:
                     result = results[0]
         return result
@@ -163,16 +166,17 @@ class ResourceTraversalIterator(object):
 
                 return next(self)
             else:
+                next_meta = getmeta(next_resource)
                 # If we have a key (ie DictOf, ListOf composite fields) update the path key field.
                 if key is not None:
                     _, name, field = self._path[-1]
-                    if next_resource._meta.key_field:
-                        key = next_resource._meta.key_field.value_from_object(next_resource)
-                        name = next_resource._meta.key_field.name
+                    if next_meta.key_field:
+                        key = next_meta.key_field.value_from_object(next_resource)
+                        name = next_meta.key_field.name
                     self._path[-1] = (key, name, field)
 
                 # Get list of any composite fields for this resource (this is a cached field).
-                self._field_iters.append(list(next_resource._meta.composite_fields))
+                self._field_iters.append(list(next_meta.composite_fields))
 
                 # self.current_resource = next_resource
                 self._resource_stack[-1] = next_resource

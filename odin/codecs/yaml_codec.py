@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from six import StringIO
-from odin import serializers, resources, mapping, ResourceAdapter
-from odin.exceptions import CodecDecodeError, CodecEncodeError
+from odin import resources, mapping, ResourceAdapter
+from odin.exceptions import CodecEncodeError
+from odin.utils import getmeta
 
 try:
     import yaml
@@ -28,7 +29,8 @@ class OdinDumper(SafeDumper):
     def represent_resource(self, data):
         obj = data.to_dict(self.include_virtual_fields)
         if self.include_type_field:
-            obj[data._meta.type_field] = data._meta.resource_name
+            meta = getmeta(data)
+            obj[meta.type_field] = meta.resource_name
         return self.represent_dict(obj)
 
 

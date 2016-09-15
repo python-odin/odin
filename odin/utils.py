@@ -87,6 +87,17 @@ class cached_property(object):
         return value
 
 
+def getmeta(resource):
+    """
+    Get meta object from a resource or resource instance.
+
+    :param resource:
+    :return: Meta options class
+
+    """
+    return getattr(resource, '_meta')
+
+
 def field_iter(resource, include_virtual=True):
     """
     Return an iterator that yields fields from a resource.
@@ -96,10 +107,11 @@ def field_iter(resource, include_virtual=True):
     :returns: an iterator that returns fields.
 
     """
+    meta = getmeta(resource)
     if include_virtual:
-        return iter(resource._meta.all_fields)
+        return iter(meta.all_fields)
     else:
-        return iter(resource._meta.fields)
+        return iter(meta.fields)
 
 
 def field_iter_items(resource, fields=None):
@@ -111,8 +123,9 @@ def field_iter_items(resource, fields=None):
     :returns: an iterator that returns (field, value) tuples.
 
     """
+    meta = getmeta(resource)
     if fields is None:
-        fields = resource._meta.all_fields
+        fields = meta.all_fields
     for f in fields:
         yield f, f.prepare(f.value_from_object(resource))
 
@@ -125,7 +138,8 @@ def virtual_field_iter_items(resource):
     :returns: an iterator that returns (field, value) tuples.
 
     """
-    return field_iter_items(resource, resource._meta.virtual_fields)
+    meta = getmeta(resource)
+    return field_iter_items(resource, meta.virtual_fields)
 
 
 def attribute_field_iter_items(resource):

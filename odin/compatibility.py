@@ -28,12 +28,12 @@ def deprecated(message, category=DeprecationWarning):
             return obj
 
         else:
-            def wrapped_func(*args):
+            def wrapped_func(*args, **kwargs):
                 warnings.warn(
                     "{0} is deprecated and scheduled for removal. {1}".format(obj.__name__, message),
                     category=category
                 )
-                return obj(*args)
+                return obj(*args, **kwargs)
 
             return wrapped_func
     return wrap

@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
 import copy
 import six
+
 from odin import exceptions, registration
 from odin.exceptions import ValidationError
 from odin.fields import NOT_PROVIDED
-from odin.utils import cached_property, field_iter_items, force_tuple
+from odin.utils import cached_property, field_iter_items, force_tuple, getmeta
 
 DEFAULT_TYPE_FIELD = '$'
-META_OPTION_NAMES = (
-    'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group', 'type_field',
-    'key_field_name', 'key_field_names'
-)
 
 
 class ResourceOptions(object):
+    META_OPTION_NAMES = (
+        'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group',
+        'type_field', 'key_field_name', 'key_field_names'
+    )
+
     def __init__(self, meta):
         self.meta = meta
         self.parents = []
@@ -33,7 +35,7 @@ class ResourceOptions(object):
 
         self._cache = {}
 
-    def contribute_to_class(self, cls, name):
+    def contribute_to_class(self, cls, _):
         cls._meta = self
         self.name = cls.__name__
         self.class_name = "%s.%s" % (cls.__module__, cls.__name__)
@@ -43,7 +45,7 @@ class ResourceOptions(object):
             for name in self.meta.__dict__:
                 if name.startswith('_'):
                     del meta_attrs[name]
-            for attr_name in META_OPTION_NAMES:
+            for attr_name in self.META_OPTION_NAMES:
                 if attr_name in meta_attrs:
                     # Allow meta to be defined as namespace
                     if attr_name == 'namespace':
@@ -126,7 +128,7 @@ class ResourceOptions(object):
         """
         List of parent resource names.
         """
-        return [p._meta.resource_name for p in self.parents]
+        return [getmeta(p).resource_name for p in self.parents]
 
     @cached_property
     def attribute_fields(self):
@@ -174,33 +176,41 @@ class ResourceOptions(object):
 
         return fields
 
+    def check(self):
+        """
+        Run checks on meta data to ensure correctness
+        """
+        pass
+
     def __repr__(self):
         return '<Options for %s>' % self.resource_name
 
 
-class ResourceBase(type):
+class ResourceType(type):
     """
     Metaclass for all Resources.
     """
-    def __new__(cls, name, bases, attrs):
-        super_new = super(ResourceBase, cls).__new__
+    meta_options = ResourceOptions
+
+    def __new__(mcs, name, bases, attrs):
+        super_new = super(ResourceType, mcs).__new__
 
         # attrs will never be empty for classes declared in the standard way
         # (ie. with the `class` keyword). This is quite robust.
         if name == 'NewBase' and attrs == {}:
-            return super_new(cls, name, bases, attrs)
+            return super_new(mcs, name, bases, attrs)
 
         parents = [
             b for b in bases if
-            isinstance(b, ResourceBase) and not (b.__name__ == 'NewBase' and b.__mro__ == (b, object))
+            isinstance(b, ResourceType) and not (b.__name__ == 'NewBase' and b.__mro__ == (b, object))
         ]
         if not parents:
             # If this isn't a subclass of Resource, don't do anything special.
-            return super_new(cls, name, bases, attrs)
+            return super_new(mcs, name, bases, attrs)
 
         # Create the class.
         module = attrs.pop('__module__')
-        new_class = super_new(cls, name, bases, {'__module__': module})
+        new_class = super_new(mcs, name, bases, {'__module__': module})
         attr_meta = attrs.pop('Meta', None)
         abstract = getattr(attr_meta, 'abstract', False)
         if not attr_meta:
@@ -209,23 +219,24 @@ class ResourceBase(type):
             meta = attr_meta
         base_meta = getattr(new_class, '_meta', None)
 
-        new_class.add_to_class('_meta', ResourceOptions(meta))
+        new_meta = mcs.meta_options(meta)
+        new_class.add_to_class('_meta', new_meta)
 
         # Generate a namespace if one is not provided
-        if new_class._meta.name_space is NOT_PROVIDED and base_meta:
+        if new_meta.name_space is NOT_PROVIDED and base_meta:
             # Namespace is inherited
-            if (not new_class._meta.name_space) or (new_class._meta.name_space is NOT_PROVIDED):
-                new_class._meta.name_space = base_meta.name_space
+            if (not new_meta.name_space) or (new_meta.name_space is NOT_PROVIDED):
+                new_meta.name_space = base_meta.name_space
 
-        if new_class._meta.name_space is NOT_PROVIDED:
-            new_class._meta.name_space = module
+        if new_meta.name_space is NOT_PROVIDED:
+            new_meta.name_space = module
 
         # Key field is inherited
-        if base_meta and (not new_class._meta.key_field_names) or (new_class._meta.key_field_names is NOT_PROVIDED):
-            new_class._meta.key_field_names = base_meta.key_field_names
+        if base_meta and (not new_meta.key_field_names) or (new_meta.key_field_names is NOT_PROVIDED):
+            new_meta.key_field_names = base_meta.key_field_names
 
         # Bail out early if we have already created this class.
-        r = registration.get_resource(new_class._meta.resource_name)
+        r = registration.get_resource(new_meta.resource_name)
         if r is not None:
             return r
 
@@ -234,14 +245,16 @@ class ResourceBase(type):
             new_class.add_to_class(obj_name, obj)
 
         # Sort the fields
-        new_class._meta.fields = sorted(new_class._meta.fields, key=hash)
+        new_meta.fields = sorted(new_meta.fields, key=hash)
 
         # All the fields of any type declared on this model
-        local_field_attnames = set([f.attname for f in new_class._meta.fields])
+        local_field_attnames = set([f.attname for f in new_meta.fields])
         field_attnames = set(local_field_attnames)
 
         for base in parents:
-            if not hasattr(base, '_meta'):
+            try:
+                base_meta = getattr(base, '_meta')
+            except AttributeError:
                 # Things without _meta aren't functional models, so they're
                 # uninteresting parents.
                 continue
@@ -249,24 +262,24 @@ class ResourceBase(type):
             # Check for clashes between locally declared fields and those
             # on the base classes (we cannot handle shadowed fields at the
             # moment).
-            for field in base._meta.all_fields:
+            for field in base_meta.all_fields:
                 if field.attname in local_field_attnames:
                     raise Exception('Local field %r in class %r clashes with field of similar name from '
                                     'base class %r' % (field.attname, name, base.__name__))
-            for field in base._meta.fields:
+            for field in base_meta.fields:
                 if field.attname not in field_attnames:
                     field_attnames.add(field.attname)
                     new_class.add_to_class(field.attname, copy.deepcopy(field))
-            for field in base._meta.virtual_fields:
+            for field in base_meta.virtual_fields:
                 new_class.add_to_class(field.attname, copy.deepcopy(field))
 
-            new_class._meta.parents += base._meta.parents
-            new_class._meta.parents.append(base)
+            new_meta.parents += base_meta.parents
+            new_meta.parents.append(base)
 
         # If a key_field is defined ensure it exists
-        if new_class._meta.key_field_names:
-            for field_name in new_class._meta.key_field_names:
-                if field_name not in new_class._meta.field_map:
+        if new_meta.key_field_names:
+            for field_name in new_meta.key_field_names:
+                if field_name not in new_meta.field_map:
                     raise AttributeError('Key field `{0}` is not exist on this resource.'.format(field_name))
 
         if abstract:
@@ -279,7 +292,7 @@ class ResourceBase(type):
         # the first time this model tries to register with the framework. There
         # should only be one class for each model, so we always return the
         # registered version.
-        return registration.get_resource(new_class._meta.resource_name)
+        return registration.get_resource(new_meta.resource_name)
 
     def add_to_class(cls, name, value):
         if hasattr(value, 'contribute_to_class'):
@@ -288,19 +301,19 @@ class ResourceBase(type):
             setattr(cls, name, value)
 
 
-@six.add_metaclass(ResourceBase)
-class Resource(object):
+class ResourceBase(object):
     def __init__(self, *args, **kwargs):
         args_len = len(args)
-        if args_len > len(self._meta.fields):
+        meta = getmeta(self)
+        if args_len > len(meta.fields):
             raise TypeError('This resource takes %s positional arguments but %s where given.' % (
-                len(self._meta.fields), args_len))
+                len(meta.fields), args_len))
 
         # The ordering of the zip calls matter - zip throws StopIteration
         # when an iter throws it. So if the first iter throws it, the second
         # is *not* consumed. We rely on this, so don't change the order
         # without changing the logic.
-        fields_iter = iter(self._meta.fields)
+        fields_iter = iter(meta.fields)
         if args_len:
             if not kwargs:
                 for val, field in zip(args, fields_iter):
@@ -326,7 +339,7 @@ class Resource(object):
         return '<%s: %s>' % (self.__class__.__name__, self)
 
     def __str__(self):
-        return '%s resource' % self._meta.resource_name
+        return '%s resource' % getmeta(self).resource_name
 
     @classmethod
     def create_from_dict(cls, d, full_clean=False):
@@ -347,7 +360,8 @@ class Resource(object):
         :param include_virtual: Include virtual fields when generating `dict`.
 
         """
-        fields = self._meta.all_fields if include_virtual else self._meta.fields
+        meta = getmeta(self)
+        fields = meta.all_fields if include_virtual else meta.fields
         return dict((f.name, v) for f, v in field_iter_items(self, fields))
 
     def convert_to(self, to_resource, context=None, ignore_fields=None, **field_values):
@@ -412,7 +426,7 @@ class Resource(object):
     def clean_fields(self, exclude=None):
         errors = {}
 
-        for f in self._meta.fields:
+        for f in getmeta(self).fields:
             if exclude and f.name in exclude:
                 continue
 
@@ -440,11 +454,67 @@ class Resource(object):
             raise ValidationError(errors)
 
 
+@six.add_metaclass(ResourceType)
+class Resource(ResourceBase):
+    pass
+
+
 def resolve_resource_type(resource):
-    if isinstance(resource, type) and issubclass(resource, Resource):
-        return resource._meta.resource_name, resource._meta.type_field
+    if isinstance(resource, type) and issubclass(resource, ResourceBase):
+        meta = getmeta(resource)
+        return meta.resource_name, meta.type_field
     else:
         return resource, DEFAULT_TYPE_FIELD
+
+
+def create_resource_from_iter(i, resource, full_clean=True, default_to_not_provided=False):
+    """
+    Create a resource from an iterable sequence
+
+    :param i: Iterable of values (it is assumed the values are in field order)
+    :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
+        resource.
+    :param full_clean: Perform a full clean as part of the creation, this is useful for parsing data with known
+        columns (eg CSV data).
+    :param default_to_not_provided: If an value is not supplied keep the value as NOT_PROVIDED. This is used
+        to support merging an updated value.
+    :return: New instance of resource type specified in the *resource* param.
+
+    """
+    i = list(i)
+    resource_type = resource
+    fields = getmeta(resource_type).fields
+
+    # Optimisation to allow the assumption that len(fields) == len(i)
+    extra = []
+    if len(i) < len(fields):
+        i += [NOT_PROVIDED] * (len(fields) - len(i))
+    elif len(i) > len(fields):
+        i = i[:len(fields)]
+        extra = i[len(fields):]
+
+    attrs = []
+    errors = {}
+    for f, value in zip(fields, i):
+        if value is NOT_PROVIDED:
+            if not default_to_not_provided:
+                value = f.get_default() if f.use_default_if_not_provided else None
+        else:
+            try:
+                value = f.to_python(value)
+            except ValidationError as ve:
+                errors[f.name] = ve.error_messages
+        attrs.append(value)
+
+    if errors:
+        raise ValidationError(errors)
+
+    new_resource = resource_type(*attrs)
+    if extra:
+        new_resource.extra_attrs(extra)
+    if full_clean:
+        new_resource.full_clean()
+    return new_resource
 
 
 def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True, default_to_not_provided=False):
@@ -455,7 +525,7 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True,
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
         resource. If a list is supplied the first item will be used if a resource type is not supplied; this could also
         be a parent(s) of any resource defined by the dict.
-    :param full_clean: Do a full clean as part of the creation.
+    :param full_clean: Perform a full clean as part of the creation.
     :param copy_dict: Use a copy of the input dictionary rather than destructively processing the input dict.
     :param default_to_not_provided: If an value is not supplied keep the value as NOT_PROVIDED. This is used
         to support merging an updated value.
@@ -489,7 +559,7 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True,
             if document_resource_name:
                 # Check resource types match or are inherited types
                 if (resource_name == document_resource_name or
-                        resource_name in resource_type._meta.parent_resource_names):
+                        resource_name in getmeta(resource_type).parent_resource_names):
                     break  # We are done
             else:
                 break
@@ -510,7 +580,7 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True,
 
     attrs = []
     errors = {}
-    for f in resource_type._meta.fields:
+    for f in getmeta(resource_type).fields:
         value = d.pop(f.name, NOT_PROVIDED)
         if value is NOT_PROVIDED:
             if not default_to_not_provided:

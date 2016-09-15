@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from sphinx.ext.autodoc import Documenter, ModuleLevelDocumenter, bool_option
 import odin
-from odin.utils import field_iter
+from odin.utils import field_iter, getmeta
 
 
 def reference_to(obj):
@@ -38,12 +38,13 @@ class ResourceDocumenter(ModuleLevelDocumenter):
     )
 
     @classmethod
-    def can_document_member(cls, member, membername, isattr, parent):
+    def can_document_member(cls, member, *_):
         return isinstance(member, odin.Resource)
 
-    def add_directive_header(self, sig):
-        self.add_line(".. py:currentmodule:: %s" % self.object._meta.name_space, '<odin_sphinx>')
-        self.add_line(".. py:class:: %s" % self.object._meta.name, '<odin_sphinx>')
+    def add_directive_header(self, _):
+        meta = getmeta(self.object)
+        self.add_line(".. py:currentmodule:: %s" % meta.name_space, '<odin_sphinx>')
+        self.add_line(".. py:class:: %s" % meta.name, '<odin_sphinx>')
         if self.options.noindex:
             self.add_line('   :noindex:', '<odin_sphinx>')
 

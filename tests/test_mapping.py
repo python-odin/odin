@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import pytest
 import datetime
 from odin.exceptions import MappingSetupError, MappingExecutionError
-from odin.mapping import MappingResult
+from odin.mapping import MappingResult, FieldMapping
 from odin.mapping.helpers import MapDictAs, MapListOf, NoOpMapper
 from .resources import *
 
@@ -45,19 +45,19 @@ class TestMappingBase(object):
 
     def test_full_mapping(self):
         assertMappingEquivalent([
-            (('from_field1',), None, ('to_field1',), False, False, False),
-            (('from_field2',), int, ('to_field2',), False, False, False),
-            (('from_field3', 'from_field4'), sum_fields, ('to_field3',), False, False, False),
-            (('from_field1',), None, ('same_but_different',), False, False, False),
-            (('from_field_c1', 'from_field_c2', 'from_field_c3'), 'multi_to_one', ('to_field_c1',), False, False, False),
-            (('from_field_c4',), 'one_to_multi', ('to_field_c2', 'to_field_c3'), False, False, False),
-            (('not_auto_c5',), 'not_auto_c5', ('not_auto_c5',), False, False, False),
-            (('comma_separated_string',), 'comma_separated_string', ('array_string',), True, False, False),
-            (None, 'assigned_field', ('assigned_field',), False, False, False),
-            (('count',), None, ('count',), False, False, False),
-            (('child',), MapDictAs(NoOpMapper), ('child',), False, True, False),
-            (('children',), MapListOf(NoOpMapper), ('children',), False, True, False),
-            (('title',), None, ('title',), False, False, False),
+            FieldMapping(('from_field1',), None, ('to_field1',), False, False, False),
+            FieldMapping(('from_field2',), int, ('to_field2',), False, False, False),
+            FieldMapping(('from_field3', 'from_field4'), sum_fields, ('to_field3',), False, False, False),
+            FieldMapping(('from_field1',), None, ('same_but_different',), False, False, False),
+            FieldMapping(('from_field_c1', 'from_field_c2', 'from_field_c3'), 'multi_to_one', ('to_field_c1',), False, False, False),
+            FieldMapping(('from_field_c4',), 'one_to_multi', ('to_field_c2', 'to_field_c3'), False, False, False),
+            FieldMapping(('not_auto_c5',), 'not_auto_c5', ('not_auto_c5',), False, False, False),
+            FieldMapping(('comma_separated_string',), 'comma_separated_string', ('array_string',), True, False, False),
+            FieldMapping(None, 'assigned_field', ('assigned_field',), False, False, False),
+            FieldMapping(('count',), None, ('count',), False, False, False),
+            FieldMapping(('child',), MapDictAs(NoOpMapper), ('child',), False, True, False),
+            FieldMapping(('children',), MapListOf(NoOpMapper), ('children',), False, True, False),
+            FieldMapping(('title',), None, ('title',), False, False, False),
         ], FromToMapping._mapping_rules)
 
     def test_map(self):
@@ -419,8 +419,8 @@ class TestSubClassMapping(object):
                     |                                |                                |
                _____|_____                      _____|_____                      _____|_____
               /           \                    /           \                    /           \
-             /             \                  /             \                  /             \
-        Resource B     Resource C        Mapping B-Y    Mapping C-Z       Resource Y     Resource Z
+             /            \                   /            \                   /            \
+        Resource B    Resource C         Mapping B-Y   Mapping C-Z        Resource Y    Resource Z
 
     Define a mapping that can handle a list of *Resource A* and *Resource B* objects being mapped by an abstract mapping
     *Mapping A-X* to the corresponding *Resource Y* and *Resource Z* objects.
@@ -434,13 +434,13 @@ class TestSubClassMapping(object):
 
     def test_abstract_mapping_definitions(self):
         assertMappingEquivalent([
-            (('foo',), 'foo', ('foo',), False, False, False),
-            (('bar',), None, ('bar',), False, False, False),
+            FieldMapping(('foo',), 'foo', ('foo',), False, False, False),
+            FieldMapping(('bar',), None, ('bar',), False, False, False),
         ], ResourceBToResourceY._mapping_rules)
 
         assertMappingEquivalent([
-            (('eek',), 'alt', ('alt',), False, False, False),
-            (('foo',), 'foo', ('foo',), False, False, False),
+            FieldMapping(('eek',), 'alt', ('alt',), False, False, False),
+            FieldMapping(('foo',), 'foo', ('foo',), False, False, False),
         ], ResourceCToResourceZ._mapping_rules)
 
     def test_abstract_mapping(self):
