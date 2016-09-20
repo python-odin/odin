@@ -26,7 +26,7 @@ class OdinPacker(msgpack.Packer):
         self.include_virtual_fields = include_virtual_fields
 
     def default(self, o):
-        if isinstance(o, (resources.Resource, ResourceAdapter)):
+        if isinstance(o, (resources.ResourceBase, ResourceAdapter)):
             obj = o.to_dict(self.include_virtual_fields)
             obj[o._meta.type_field] = o._meta.resource_name
             return obj

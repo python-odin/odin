@@ -34,7 +34,7 @@ class OdinDumper(SafeDumper):
         return self.represent_dict(obj)
 
 
-OdinDumper.add_multi_representer(resources.Resource, OdinDumper.represent_resource)
+OdinDumper.add_multi_representer(resources.ResourceBase, OdinDumper.represent_resource)
 OdinDumper.add_multi_representer(ResourceAdapter, OdinDumper.represent_resource)
 OdinDumper.add_multi_representer(mapping.MappingResult, OdinDumper.represent_list)
 

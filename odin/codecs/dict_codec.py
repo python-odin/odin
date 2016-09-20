@@ -11,7 +11,7 @@ class OdinEncoder(object):
         self.include_type_field = include_type_field
 
     def default(self, o):
-        if isinstance(o, (resources.Resource, ResourceAdapter)):
+        if isinstance(o, (resources.ResourceBase, ResourceAdapter)):
             obj = o.to_dict(self.include_virtual_fields)
             if self.include_type_field:
                 obj[o._meta.type_field] = o._meta.resource_name
