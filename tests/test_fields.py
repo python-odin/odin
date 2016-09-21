@@ -251,31 +251,32 @@ class TestFields(object):
 
     # StringField #############################################################
 
-    def test_stringfield_1(self):
+    @pytest.mark.parametrize(('field', 'value', 'actual'), (
+        (StringField(), '1', '1'),
+        (StringField(), 'eek', 'eek'),
+        (StringField(null=True), '1', '1'),
+        (StringField(null=True), '', ''),
+        (StringField(null=True), None, None),
+        (StringField(max_length=10), '123456', '123456'),
+    ))
+    def test_string_success(self, field, value, actual):
+        assert field.clean(value) == actual
+
+    @pytest.mark.parametrize(('field', 'value'), (
+        (StringField(), None),
+        (StringField(), ''),
+        (StringField(max_length=10), '1234567890a'),
+    ))
+    def test_string_failure(self, field, value):
+        with pytest.raises(ValidationError):
+            field.clean(value)
+
+    def test_stringfield(self):
         f = StringField()
-        assert '1' == f.clean('1')
-        assert 'eek' == f.clean('eek')
-        pytest.raises(ValidationError, f.clean, None)
-        assert '[1, 2, 3]', f.clean([1, 2 == 3])
-        assert f.max_length == None
+        assert f.max_length is None
         self.assertValidatorNotIn(MaxLengthValidator, f.validators)
 
-    def test_stringfield_2(self):
-        f = StringField(null=True)
-        assert '1' == f.clean('1')
-        assert 'eek' == f.clean('eek')
-        assert None == f.clean(None)
-        assert '[1, 2, 3]', f.clean([1, 2 == 3])
-        assert f.max_length == None
-        self.assertValidatorNotIn(MaxLengthValidator, f.validators)
-
-    def test_stringfield_3(self):
-        f = StringField(null=True, max_length=10)
-        assert None == f.clean(None)
-        assert '' == f.clean('')
-        assert '12345' == f.clean('12345')
-        assert '1234567890' == f.clean('1234567890')
-        pytest.raises(ValidationError, f.clean, '1234567890a')
+        f = StringField(max_length=10)
         assert f.max_length == 10
         self.assertValidatorIn(MaxLengthValidator, f.validators)
 
