@@ -140,7 +140,7 @@ class Field(object):
             msg = self.error_messages['invalid_choice'] % value
             raise exceptions.ValidationError(msg)
 
-        if value is None and not self.null:
+        if not self.null and value is None:
             raise exceptions.ValidationError(self.error_messages['null'])
 
     def clean(self, value):
@@ -216,11 +216,24 @@ class BooleanField(Field):
 
 
 class StringField(Field):
+    """
+    A string.
+
+    StringField has two extra arguments:
+
+    :py:attr:`StringField.empty`
+        The string can be empty. This is similar to None but captures an empty string in addition to ``None``.
+        The default state of this flag is ``False``.
+
+    :py:attr:`StringField.max_length`
+        The maximum length (in characters) of the field. The ``max_length`` value is enforced Odin’s validation.
+    """
     data_type_name = "String"
 
-    def __init__(self, max_length=None, **options):
+    def __init__(self, max_length=None, empty=False, **options):
         super(StringField, self).__init__(**options)
         self.max_length = max_length
+        self.empty = empty
         if max_length is not None:
             self.validators.append(MaxLengthValidator(max_length))
 
@@ -228,6 +241,12 @@ class StringField(Field):
         if isinstance(value, six.string_types) or value is None:
             return value
         return str(value)
+
+    def validate(self, value):
+        if not self.empty and value == '':
+            raise exceptions.ValidationError(self.error_messages['null'])
+
+        super(StringField, self).validate(value)
 
 
 class UrlField(StringField):

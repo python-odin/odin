@@ -255,8 +255,9 @@ class TestFields(object):
         (StringField(), '1', '1'),
         (StringField(), 'eek', 'eek'),
         (StringField(null=True), '1', '1'),
-        (StringField(null=True), '', ''),
         (StringField(null=True), None, None),
+        (StringField(null=True, empty=True), '', ''),
+        (StringField(empty=True), '', ''),
         (StringField(max_length=10), '123456', '123456'),
     ))
     def test_string_success(self, field, value, actual):
@@ -265,6 +266,7 @@ class TestFields(object):
     @pytest.mark.parametrize(('field', 'value'), (
         (StringField(), None),
         (StringField(), ''),
+        (StringField(null=True), ''),
         (StringField(max_length=10), '1234567890a'),
     ))
     def test_string_failure(self, field, value):
