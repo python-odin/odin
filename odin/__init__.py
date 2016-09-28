@@ -9,3 +9,7 @@ from odin.fields.virtual import *  # noqa
 from odin.mapping import *  # noqa
 from odin.resources import Resource  # noqa
 from odin.adapters import ResourceAdapter  # noqa
+
+# Disable logging if an explicit handler is not added
+import logging
+logging.getLogger('odin').addHandler(logging.NullHandler())
