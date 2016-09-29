@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import copy
 import six
+from odin import bases
 
 from odin import exceptions, registration
 from odin.exceptions import ValidationError
@@ -626,7 +627,7 @@ def build_object_graph(d, resource=None, full_clean=True, copy_dict=True, defaul
     return d
 
 
-class ResourceIterable(object):
+class ResourceIterable(bases.ResourceIterable):
     """
     Iterable that yields resources.
     """

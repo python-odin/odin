@@ -1,5 +1,6 @@
 import six
-from odin import resources, mapping, ResourceAdapter
+from odin import bases
+from odin import resources, ResourceAdapter
 
 
 TYPE_SERIALIZERS = {}
@@ -16,7 +17,7 @@ class OdinEncoder(object):
             if self.include_type_field:
                 obj[o._meta.type_field] = o._meta.resource_name
             return obj
-        elif isinstance(o, mapping.MappingResult):
+        elif isinstance(o, bases.ResourceIterable):
             return list(o)
         elif o.__class__ in TYPE_SERIALIZERS:
             return TYPE_SERIALIZERS[o.__class__](o)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from six import StringIO
-from odin import resources, mapping, ResourceAdapter
+from odin import bases
+from odin import resources, ResourceAdapter
 from odin.exceptions import CodecEncodeError
 from odin.utils import getmeta
 
@@ -36,7 +37,7 @@ class OdinDumper(SafeDumper):
 
 OdinDumper.add_multi_representer(resources.ResourceBase, OdinDumper.represent_resource)
 OdinDumper.add_multi_representer(ResourceAdapter, OdinDumper.represent_resource)
-OdinDumper.add_multi_representer(mapping.MappingResult, OdinDumper.represent_list)
+OdinDumper.add_multi_representer(bases.ResourceIterable, OdinDumper.represent_list)
 
 
 def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):

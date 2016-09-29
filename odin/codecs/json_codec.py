@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import datetime
+
+from odin import bases
 from odin import serializers, resources, ResourceAdapter
 from odin.exceptions import CodecDecodeError, CodecEncodeError
-from odin.resources import ResourceIterable
 
 try:
     import simplejson as json
@@ -32,7 +33,7 @@ class OdinEncoder(json.JSONEncoder):
             if self.include_type_field:
                 obj[o._meta.type_field] = o._meta.resource_name
             return obj
-        elif isinstance(o, ResourceIterable):
+        elif isinstance(o, bases.ResourceIterable):
             return list(o)
         elif o.__class__ in JSON_TYPES:
             return JSON_TYPES[o.__class__](o)
