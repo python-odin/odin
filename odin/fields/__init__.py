@@ -6,7 +6,7 @@ import datetime
 import six
 
 from odin import exceptions, datetimeutil, registration
-from odin.utils import value_in_choices
+from odin.utils import value_in_choices, getmeta
 from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url
 from .base import BaseField
 
@@ -59,13 +59,10 @@ class Field(BaseField):
         :param key: Mark this field as a key field (used to generated a unique identifier).
 
         """
-        super(Field, self).__init__()
+        super(Field, self).__init__(verbose_name, verbose_name_plural, name, doc_text or help_text)
 
-        self.verbose_name, self.verbose_name_plural = verbose_name, verbose_name_plural
-        self.name = name
         self.null, self.choices = null, choices
         self.default, self.use_default_if_not_provided = default, use_default_if_not_provided
-        self.doc_text = doc_text or help_text
         self.validators = self.default_validators + (validators or [])
         self.is_attribute = is_attribute
         self.key = key
@@ -86,29 +83,10 @@ class Field(BaseField):
         memodict[id(self)] = obj
         return obj
 
-    def __repr__(self):
-        """
-        Displays the module, class and name of the field.
-        """
-        path = '%s.%s' % (self.__class__.__module__, self.__class__.__name__)
-        name = getattr(self, 'name', None)
-        if name is not None:
-            return '<%s: %s>' % (path, name)
-        return '<%s>' % path
-
-    def set_attributes_from_name(self, attname):
-        if not self.name:
-            self.name = attname
-        self.attname = attname
-        if self.verbose_name is None and self.name:
-            self.verbose_name = self.name.replace('_', ' ')
-        if self.verbose_name_plural is None and self.verbose_name:
-            self.verbose_name_plural = "%ss" % self.verbose_name
-
     def contribute_to_class(self, cls, name):
         self.set_attributes_from_name(name)
         self.resource = cls
-        cls._meta.add_field(self)
+        getmeta(cls).add_field(self)
 
     def to_python(self, value):
         """
