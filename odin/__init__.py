@@ -11,8 +11,8 @@ from odin.resources import Resource  # noqa
 from odin.adapters import ResourceAdapter  # noqa
 
 # Disable logging if an explicit handler is not added
-import logging
 try:
+    import logging
     logging.getLogger('odin').addHandler(logging.NullHandler())
 except AttributeError:
     pass  # Fallback for python 2.6
