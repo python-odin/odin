@@ -87,15 +87,17 @@ class cached_property(object):
         return value
 
 
-def getmeta(resource):
+def getmeta(resource_or_instance):
     """
     Get meta object from a resource or resource instance.
 
-    :param resource:
+    :param resource_or_instance: Resource or instance of a resource.
+    :type resource_or_instance: odin.resources.ResourceType | odin.resources.ResourceBase
     :return: Meta options class
+    :rtype: odin.resources.ResourceOptions
 
     """
-    return getattr(resource, '_meta')
+    return getattr(resource_or_instance, '_meta')
 
 
 def field_iter(resource, include_virtual=True):
@@ -205,6 +207,9 @@ def force_tuple(value):
 
     Either by converting into a tuple (if is a list) or changing value to be a tuple.
 
+    :type value: T | tuple[T] | list[T]
+    :rtype: tuple[T]
+
     """
     if value is None:
         return tuple()
@@ -221,7 +226,9 @@ def chunk(iterable, n):
 
     :param iterable: Iterable of items
     :param n: Size of iterable chunks to return.
+    :type n: int
     :return: List containing n items.
+    :rtype: list[T]
 
     """
     items = []
