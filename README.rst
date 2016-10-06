@@ -23,6 +23,10 @@ Odin also comes with built in serialisation tools for importing and exporting da
     :target: https://codecov.io/gh/python-odin/odin
     :alt: Code cov
 
+.. image:: https://landscape.io/github/python-odin/odin/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/python-odin/odin/master
+   :alt: Code Health
+   
 .. image:: https://img.shields.io/requires/github/timsavage/odin.svg?style=flat
     :target: https://requires.io/github/timsavage/odin/requirements/?branch=master
     :alt: Requirements Status
