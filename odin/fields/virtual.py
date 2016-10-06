@@ -121,6 +121,12 @@ class MultiPartField(VirtualField):
         self._fields = None
 
     def __get__(self, instance, owner):
+        return self.generate_value(instance)
+
+    def generate_value(self, instance):
+        """
+        Generate a key based on other values.
+        """
         values = [f.prepare(f.value_from_object(instance)) for f in self._fields]
         return self.separator.join(str(v) for v in values)
 
