@@ -230,10 +230,15 @@ class StringField(Field):
     """
     data_type_name = "String"
 
-    def __init__(self, max_length=None, empty=False, **options):
+    def __init__(self, max_length=None, empty=None, **options):
         super(StringField, self).__init__(**options)
         self.max_length = max_length
+
+        # Mirror null is not explicitly defined
+        if empty is None:
+            empty = options.get('null', False)
         self.empty = empty
+
         if max_length is not None:
             self.validators.append(MaxLengthValidator(max_length))
 

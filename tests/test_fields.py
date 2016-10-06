@@ -256,6 +256,7 @@ class TestFields(object):
         (StringField(), 'eek', 'eek'),
         (StringField(null=True), '1', '1'),
         (StringField(null=True), None, None),
+        (StringField(null=True), '', ''),
         (StringField(null=True, empty=True), '', ''),
         (StringField(empty=True), '', ''),
         (StringField(max_length=10), '123456', '123456'),
@@ -266,7 +267,8 @@ class TestFields(object):
     @pytest.mark.parametrize(('field', 'value'), (
         (StringField(), None),
         (StringField(), ''),
-        (StringField(null=True), ''),
+        (StringField(null=True, empty=False), ''),
+        (StringField(empty=False), ''),
         (StringField(max_length=10), '1234567890a'),
     ))
     def test_string_failure(self, field, value):
@@ -281,6 +283,18 @@ class TestFields(object):
         f = StringField(max_length=10)
         assert f.max_length == 10
         self.assertValidatorIn(MaxLengthValidator, f.validators)
+
+    @pytest.mark.parametrize(('field', 'empty_value'), (
+        (StringField(), False),
+        (StringField(null=True), True),
+        (StringField(null=False), False),
+        (StringField(null=True, empty=True), True),
+        (StringField(null=False, empty=True), True),
+        (StringField(null=True, empty=False), False),
+        (StringField(null=False, empty=False), False),
+    ))
+    def test_stringfield__handling_of_null_empty(self, field, empty_value):
+        assert field.empty == empty_value
 
     # URLField ################################################################
 
