@@ -83,6 +83,8 @@ class ResourceOptions(object):
 
     def add_virtual_field(self, field):
         self.virtual_fields.append(field)
+        if field.key:
+            self._add_key_field(field)
         cached_property.clear_caches(self)
 
     @property
