@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
+from .base import BaseField
 
 
-class VirtualField(object):
+class VirtualField(BaseField):
     """
     Base class for virtual fields. A virtual fields is treated like any other field during encoding/decoding (provided
     it can be written to).
     """
-    # These track each time a VirtualField instance is created. Used to retain order.
-    creation_counter = 0
     data_type_name = None
 
     def __init__(self, verbose_name=None, verbose_name_plural=None, name=None, data_type_name=None, doc_text='',
-                 is_attribute=False):
+                 is_attribute=False, key=False):
         """
         Initialisation of virtual field
 
@@ -22,17 +23,14 @@ class VirtualField(object):
         :param doc_text: Documentation for the field, replaces help text
         :param is_attribute: Special flag for codecs that support attributes on nodes (ie XML)
         """
+        super(VirtualField, self).__init__()
+
         self.verbose_name, self.verbose_name_plural = verbose_name, verbose_name_plural
         self.name = name
         self.doc_text = doc_text
         self.data_type_name = data_type_name
         self.is_attribute = is_attribute
-
-        self.creation_counter = VirtualField.creation_counter
-        VirtualField.creation_counter += 1
-
-    def __hash__(self):
-        return self.creation_counter
+        self.key = key
 
     def __get__(self, instance, owner):
         raise NotImplementedError

@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import copy
 import datetime
 import six
+
 from odin import exceptions, datetimeutil, registration
 from odin.utils import value_in_choices
 from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url
+from .base import BaseField
 
 __all__ = (
     'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField',
@@ -21,13 +25,10 @@ class NOT_PROVIDED:
     pass
 
 
-class Field(object):
+class Field(BaseField):
     """
     Base class for fields.
     """
-    # These track each time a Field instance is created. Used to retain order.
-    creation_counter = 0
-
     default_validators = []
     default_error_messages = {
         'invalid_choice': 'Value %r is not a valid choice.',
@@ -58,6 +59,8 @@ class Field(object):
         :param key: Mark this field as a key field (used to generated a unique identifier).
 
         """
+        super(Field, self).__init__()
+
         self.verbose_name, self.verbose_name_plural = verbose_name, verbose_name_plural
         self.name = name
         self.null, self.choices = null, choices
@@ -66,9 +69,6 @@ class Field(object):
         self.validators = self.default_validators + (validators or [])
         self.is_attribute = is_attribute
         self.key = key
-
-        self.creation_counter = Field.creation_counter
-        Field.creation_counter += 1
 
         messages = {}
         for c in reversed(self.__class__.__mro__):
@@ -85,9 +85,6 @@ class Field(object):
         obj = copy.copy(self)
         memodict[id(self)] = obj
         return obj
-
-    def __hash__(self):
-        return self.creation_counter
 
     def __repr__(self):
         """
