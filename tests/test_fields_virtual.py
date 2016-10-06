@@ -21,4 +21,4 @@ class TestFields(object):
                 id = odin.IntegerField()
                 two_parts = odin.MultiPartField(('id', 'code'), separator=':')
 
-        assert result.value.message.startswith("Attribute 'code' not found")
+        assert str(result.value).startswith("Attribute 'code' not found")
