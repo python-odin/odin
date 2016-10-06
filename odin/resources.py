@@ -285,6 +285,12 @@ class ResourceType(type):
                 if field_name not in new_meta.field_map:
                     raise AttributeError('Key field `{0}` is not exist on this resource.'.format(field_name))
 
+        # Give fields an opportunity to do additional operations after the
+        # resource is full populated and ready.
+        for field in new_meta.all_fields:
+            if hasattr(field, 'on_resource_ready'):
+                field.on_resource_ready()
+
         if abstract:
             return new_class
 
