@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+from odin.utils import force_tuple, getmeta
+
 from .base import BaseField
+
+__all__ = ('ConstantField', 'CalculatedField', 'calculated_field', 'MultiPartField')
 
 
 class VirtualField(BaseField):
@@ -23,14 +27,13 @@ class VirtualField(BaseField):
         :param doc_text: Documentation for the field, replaces help text
         :param is_attribute: Special flag for codecs that support attributes on nodes (ie XML)
         """
-        super(VirtualField, self).__init__()
+        super(VirtualField, self).__init__(verbose_name, verbose_name_plural, name, doc_text)
 
-        self.verbose_name, self.verbose_name_plural = verbose_name, verbose_name_plural
-        self.name = name
-        self.doc_text = doc_text
         self.data_type_name = data_type_name
         self.is_attribute = is_attribute
         self.key = key
+
+        self.resource = None
 
     def __get__(self, instance, owner):
         raise NotImplementedError
@@ -38,30 +41,10 @@ class VirtualField(BaseField):
     def __set__(self, instance, value):
         raise AttributeError("Read only")
 
-    def __repr__(self):
-        """
-        Displays the module, class and name of the field.
-        """
-        path = '%s.%s' % (self.__class__.__module__, self.__class__.__name__)
-        name = getattr(self, 'name', None)
-        if name is not None:
-            return '<%s: %s>' % (path, name)
-        return '<%s>' % path
-
-    def set_attributes_from_name(self, attname):
-        if not self.name:
-            self.name = attname
-        self.attname = attname
-        if self.verbose_name is None and self.name:
-            self.verbose_name = self.name.replace('_', ' ')
-        if self.verbose_name_plural is None and self.verbose_name:
-            self.verbose_name_plural = "%ss" % self.verbose_name
-
     def contribute_to_class(self, cls, name):
         self.set_attributes_from_name(name)
         self.resource = cls
-        cls._meta.add_virtual_field(self)
-
+        getmeta(cls).add_virtual_field(self)
         setattr(cls, name, self)
 
     def prepare(self, value):
@@ -114,3 +97,34 @@ def calculated_field(method=None, **kwargs):
     def inner(expr):
         return CalculatedField(expr, **kwargs)
     return inner if method is None else inner(method)
+
+
+class MultiPartField(VirtualField):
+    """
+    A field whose value is the combination of several other fields.
+
+    This field should be included after the field that make up the multipart value.
+    """
+    def __init__(self, field_names, separator='', **kwargs):
+        """
+        :param field_names: Name(s) of fields to make up key
+        :type field_names: str | tuple[str] | list[str]
+        :param separator: Separator to use between values.
+        :type separator: str
+        :param kwargs: Additional kwargs for VirtualField
+
+        """
+        kwargs.setdefault('data_type_name', 'String')
+        super(MultiPartField, self).__init__(**kwargs)
+        self.field_names = force_tuple(field_names)
+        self.separator = separator
+        self._fields = None
+
+    def __get__(self, instance, owner):
+        values = [f.prepare(f.value_from_object(instance)) for f in self._fields]
+        return self.separator.join(str(v) for v in values)
+
+    def on_resource_ready(self):
+        # Extract reference to fields
+        meta = getmeta(self.resource)
+        self._fields = tuple(meta.field_map[name] for name in self.field_names)
