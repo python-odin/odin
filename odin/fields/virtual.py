@@ -127,4 +127,7 @@ class MultiPartField(VirtualField):
     def on_resource_ready(self):
         # Extract reference to fields
         meta = getmeta(self.resource)
-        self._fields = tuple(meta.field_map[name] for name in self.field_names)
+        try:
+            self._fields = tuple(meta.field_map[name] for name in self.field_names)
+        except KeyError as ex:
+            raise AttributeError("Attribute `{}` not found on {!r}".format(ex.message, self.resource))
