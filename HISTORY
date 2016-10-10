@@ -1,3 +1,12 @@
+0.10b9
+======
+- Added support for MultiPartField field type. A virtual field that allows for the easy generation of key values
+  composed of several other fields.
+- Documentation updates and some initial type hints added (using :type... style) 
+- Allow a virtual field to be identified as a key
+- Introduce a common base class for ALL field types, this allows them to be identified separatly via hash (for sorting and keys)
+- Tweaked the new string.empty option so by default it behaves in the same way as it was previously defined (eg null assumes empty)
+
 0.10b
 =====
 - Possible breaking change with date and time serializers, they no longer apply a timezone as this is expected to be
