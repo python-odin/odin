@@ -137,7 +137,7 @@ def simple_validator(assertion=None, message='The supplied value is invalid', co
 
     This can also be used as a decorator::
 
-        @create_validator(message="This value cannot be none")
+        @simple_validator(message="This value cannot be none")
         def none_validator(v):
             return v is not None
     """
