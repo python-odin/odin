@@ -684,7 +684,7 @@ class TypedDictField(DictField):
         value_errors = {}
         for key, value in value.items():
             try:
-                key = self.key_field.validate(key)
+                self.key_field.validate(key)
             except exceptions.ValidationError as ve:
                 key_errors += ve.error_messages
 
