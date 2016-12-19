@@ -3,31 +3,24 @@ from __future__ import division
 import decimal
 import six
 
-__all__ = ('Currency', 'set_default_currency', 'Amount')
+from collections import namedtuple
+
+__all__ = ('Currency', 'set_default_currency', 'Amount', 'NO_CURRENCY')
 
 
-class Currency(object):
-    """
-    A monetary currency.
-    """
+class Currency(namedtuple('Currency', 'code number name symbol precision')):
     def __new__(cls, code, number, name="", symbol=u"", precision=2):
-        self = object.__new__(cls)
-        self.code = code
-        self.number = number
-        self.name = name
-        self.symbol = symbol
-        self.precision = precision
-        return self
+        return super(Currency, cls).__new__(cls, code, number, name, symbol, precision)
 
     def __eq__(self, other):
         if isinstance(other, Currency):
             return self.code == other.code
         if isinstance(other, str):
             return self.code == other
-        return False
+        return NotImplemented
 
     def __repr__(self):
-        return "<Currency: %s>" % self.code
+        return "Currency({!r}, {!r})".format(self.code, self.number)
 
     def __str__(self):
         if self.name:
@@ -142,7 +135,7 @@ class Amount(tuple):
     def __eq__(self, other):
         if isinstance(other, Amount):
             return self.value == other.value and self.currency == other.currency
-        return False
+        return NotImplemented
 
     def __ne__(self, other):
         return not self.__eq__(other)
