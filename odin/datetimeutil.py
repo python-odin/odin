@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+import calendar
 import datetime
 import re
 import time
 import six
 import sys
-from email.utils import parsedate_tz as parse_http_datetime
+from email.utils import parsedate_tz as parse_http_datetime, formatdate as format_http_datetime
 
 
 class IgnoreTimezone(object):
@@ -317,3 +318,20 @@ def parse_http_datetime_string(datetime_string):
         raise ValueError("Expected ISO-1123 formatted datetime string.")
 
     return datetime.datetime(*elements[:6], tzinfo=FixedTimezone.from_seconds(elements[-1]))
+
+
+def to_http_datetime_string(dt, default_timezone=local):
+    """
+    Convert a python datetime into the string format defined by ISO-1123 (or HTTP date time).
+    """
+    assert isinstance(dt, datetime.datetime)
+
+    dt = get_tz_aware_dt(dt, default_timezone).astimezone(utc)
+    timeval = time.mktime(dt.timetuple())
+    now = time.localtime(timeval)
+    return '{}, {:02d} {} {:04d} {:02d}:{:02d}:{:02d} {}'.format(
+        ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][now[6]],
+        now[2],
+        ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now[1] - 1],
+        now[0], now[3], now[4], now[5], 'GMT')

@@ -160,3 +160,12 @@ class TestParseHttpDateString(object):
         pytest.raises(ValueError, datetimeutil.parse_http_datetime_string, value)
 
 
+class TestToHttpDateString(object):
+    @pytest.mark.parametrize(('value', 'expected'), (
+        (datetime.datetime(2012, 8, 29, 17, 12, 58, 0, datetimeutil.FixedTimezone.from_hours_minutes(10, 30)),
+         'Wed, 29 Aug 2012 06:42:58 GMT'),
+        (datetime.datetime(2012, 8, 29, 17, 12, 58, 0, datetimeutil.utc),
+         'Wed, 29 Aug 2012 17:12:58 GMT'),
+    ))
+    def test_valid_values(self, value, expected):
+        assert datetimeutil.to_http_datetime_string(value) == expected

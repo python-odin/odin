@@ -74,7 +74,6 @@ class Field(BaseField):
         self.error_messages = messages
 
         self.resource = None
-        self.attname = None
 
     def __deepcopy__(self, memodict):
         # We don't have to deepcopy very much here, since most things are not
@@ -131,14 +130,6 @@ class Field(BaseField):
         self.run_validators(value)
         return value
 
-    def prepare(self, value):
-        """
-        Prepare a value for serialisation.
-        :param value:
-        :return:
-        """
-        return value
-
     def has_default(self):
         """
         Returns a boolean of whether this field has a default value.
@@ -155,13 +146,14 @@ class Field(BaseField):
             return self.default
         return None
 
-    def value_from_object(self, obj):
-        """
-        Returns the value of this field in the given resource instance.
-        """
-        return getattr(obj, self.attname)
-
     def value_to_object(self, obj, data):
+        """
+        Assign a value to an object
+
+        :param obj:
+        :param data:
+
+        """
         setattr(obj, self.attname, data)
 
 
@@ -274,7 +266,20 @@ class FloatField(ScalarField):
     scalar_type = float
 
 
-class DateField(Field):
+class _IsoFormatMixin(BaseField):
+    def as_string(self, value):
+        """
+        Generate a string representation of a field.
+
+        :param value:
+        :rtype: str
+
+        """
+        if value:
+            return value.isoformat()
+
+
+class DateField(_IsoFormatMixin, Field):
     """
     Field that handles date values encoded as a string.
 
@@ -301,7 +306,7 @@ class DateField(Field):
         raise exceptions.ValidationError(msg)
 
 
-class TimeField(Field):
+class TimeField(_IsoFormatMixin, Field):
     """
     Field that handles time values encoded as a string.
 
@@ -336,7 +341,7 @@ class TimeField(Field):
         raise exceptions.ValidationError(msg)
 
 
-class NaiveTimeField(Field):
+class NaiveTimeField(_IsoFormatMixin, Field):
     """
     Field that handles time values encoded as a string.
 
@@ -388,7 +393,7 @@ class NaiveTimeField(Field):
         return value
 
 
-class DateTimeField(Field):
+class DateTimeField(_IsoFormatMixin, Field):
     """
     Field that handles datetime values encoded as a string.
 
@@ -423,7 +428,7 @@ class DateTimeField(Field):
         raise exceptions.ValidationError(msg)
 
 
-class NaiveDateTimeField(Field):
+class NaiveDateTimeField(_IsoFormatMixin, Field):
     """
     Field that handles datetime values encoded as a string.
 
@@ -498,6 +503,17 @@ class HttpDateTimeField(Field):
             pass
         msg = self.error_messages['invalid']
         raise exceptions.ValidationError(msg)
+
+    def as_string(self, value):
+        """
+        Generate a string representation of a field.
+
+        :param value:
+        :rtype: str
+
+        """
+        if value is not None:
+            return datetimeutil.to_http_datetime_string(value)
 
 
 class TimeStampField(Field):
