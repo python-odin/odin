@@ -43,10 +43,10 @@ class TestField(object):
         target = FieldTest()
 
         assert {
-            'invalid_choice': 'Value %r is not a valid choice.',
-            'null': 'This field cannot be null.',
-            'required': 'This field is required.',
-        } == target.error_messages
+                   'invalid_choice': 'Value %r is not a valid choice.',
+                   'null': 'This field cannot be null.',
+                   'required': 'This field is required.',
+               } == target.error_messages
 
     def test_error_messages_override_add(self):
         target = FieldTest(error_messages={
@@ -55,11 +55,11 @@ class TestField(object):
         })
 
         assert {
-            'invalid_choice': 'Value %r is not a valid choice.',
-            'null': 'Override',
-            'required': 'This field is required.',
-            'other': 'Other Value',
-        } == target.error_messages
+                   'invalid_choice': 'Value %r is not a valid choice.',
+                   'null': 'Override',
+                   'required': 'This field is required.',
+                   'other': 'Other Value',
+               } == target.error_messages
 
     def test_set_attributes_from_name(self):
         target = FieldTest()
@@ -148,7 +148,8 @@ class TestField(object):
             raise AssertionError("Validation Error not raised.")
 
     def test_run_validators_and_override_validator_message_with_params(self):
-        target = FieldTest(error_messages={'test_code': 'Override message: %s'}, validators=[TestValidator(True, "123")])
+        target = FieldTest(error_messages={'test_code': 'Override message: %s'},
+                           validators=[TestValidator(True, "123")])
 
         try:
             target.run_validators("Placeholder")
@@ -196,6 +197,7 @@ class TestVirtualField(object):
     def test_default_descriptor_behaviour(self):
         class TestObj(object):
             test_field = VirtualField()
+
         target = TestObj()
 
         with pytest.raises(NotImplementedError):
@@ -231,47 +233,55 @@ class TestFields(object):
 
     # BooleanField ############################################################
 
-    def test_booleanfield_1(self):
-        f = BooleanField()
-        pytest.raises(ValidationError, f.clean, None)
-        pytest.raises(ValidationError, f.clean, '')
-        assert f.clean(True)
-        assert f.clean(1)
-        assert f.clean('Yes')
-        assert f.clean('true')
-        assert f.clean('T')
-        assert f.clean('1')
-        pytest.raises(ValidationError, f.clean, 'Awesome!')
-        assert not f.clean(False)
-        assert not f.clean(0)
-        assert not f.clean('No')
-        assert not f.clean('false')
-        assert not f.clean('F')
-        assert not f.clean('0')
+    @pytest.mark.parametrize(('field', 'value', 'actual'), (
+            (BooleanField(), True, True),
+            (BooleanField(), 1, True),
+            (BooleanField(), 'Yes', True),
+            (BooleanField(), 'true', True),
+            (BooleanField(), 'T', True),
+            (BooleanField(), '1', True),
+            (BooleanField(), False, False),
+            (BooleanField(), 0, False),
+            (BooleanField(), 'No', False),
+            (BooleanField(), 'false', False),
+            (BooleanField(), 'F', False),
+            (BooleanField(), '0', False),
+    ))
+    def test_booleanfield_success(self, field, value, actual):
+        assert field.clean(value) == actual
+
+    @pytest.mark.parametrize(('field', 'value'), (
+            (BooleanField(), None),
+            (BooleanField(), ''),
+            (BooleanField(), 'Awesome!'),
+    ))
+    def test_booleanfield_failure(self, field, value):
+        with pytest.raises(ValidationError):
+            field.clean(value)
 
     # StringField #############################################################
 
     @pytest.mark.parametrize(('field', 'value', 'actual'), (
-        (StringField(), '1', '1'),
-        (StringField(), 'eek', 'eek'),
-        (StringField(null=True), '1', '1'),
-        (StringField(null=True), None, None),
-        (StringField(null=True), '', ''),
-        (StringField(null=True, empty=True), '', ''),
-        (StringField(empty=True), '', ''),
-        (StringField(max_length=10), '123456', '123456'),
+            (StringField(), '1', '1'),
+            (StringField(), 'eek', 'eek'),
+            (StringField(null=True), '1', '1'),
+            (StringField(null=True), None, None),
+            (StringField(null=True), '', ''),
+            (StringField(null=True, empty=True), '', ''),
+            (StringField(empty=True), '', ''),
+            (StringField(max_length=10), '123456', '123456'),
     ))
-    def test_string_success(self, field, value, actual):
+    def test_stringfield_success(self, field, value, actual):
         assert field.clean(value) == actual
 
     @pytest.mark.parametrize(('field', 'value'), (
-        (StringField(), None),
-        (StringField(), ''),
-        (StringField(null=True, empty=False), ''),
-        (StringField(empty=False), ''),
-        (StringField(max_length=10), '1234567890a'),
+            (StringField(), None),
+            (StringField(), ''),
+            (StringField(null=True, empty=False), ''),
+            (StringField(empty=False), ''),
+            (StringField(max_length=10), '1234567890a'),
     ))
-    def test_string_failure(self, field, value):
+    def test_stringfield_failure(self, field, value):
         with pytest.raises(ValidationError):
             field.clean(value)
 
@@ -285,13 +295,13 @@ class TestFields(object):
         self.assertValidatorIn(MaxLengthValidator, f.validators)
 
     @pytest.mark.parametrize(('field', 'empty_value'), (
-        (StringField(), False),
-        (StringField(null=True), True),
-        (StringField(null=False), False),
-        (StringField(null=True, empty=True), True),
-        (StringField(null=False, empty=True), True),
-        (StringField(null=True, empty=False), False),
-        (StringField(null=False, empty=False), False),
+            (StringField(), False),
+            (StringField(null=True), True),
+            (StringField(null=False), False),
+            (StringField(null=True, empty=True), True),
+            (StringField(null=False, empty=True), True),
+            (StringField(null=True, empty=False), False),
+            (StringField(null=False, empty=False), False),
     ))
     def test_stringfield__handling_of_null_empty(self, field, empty_value):
         assert field.empty == empty_value
@@ -392,23 +402,28 @@ class TestFields(object):
 
     # DateField ###############################################################
 
-    def test_datefield_1(self):
-        f = DateField()
-        pytest.raises(ValidationError, f.clean, None)
-        pytest.raises(ValidationError, f.clean, 'abc')
-        pytest.raises(ValidationError, f.clean, 123)
-        assert datetime.date(2013, 11, 24) == f.clean('2013-11-24')
-        assert datetime.date(2013, 11, 24) == f.clean(datetime.date(2013, 11, 24))
-        assert datetime.date(2013, 11, 24) == f.clean(datetime.datetime(2013, 11, 24, 1, 14))
+    @pytest.mark.parametrize('field,value,expected'.split(','), (
+            (DateField(), '2013-11-24', datetime.date(2013, 11, 24)),
+            (DateField(), datetime.date(2013, 11, 24), datetime.date(2013, 11, 24)),
+            (DateField(), datetime.datetime(2013, 11, 24, 1, 14), datetime.date(2013, 11, 24)),
+            (DateField(null=True), None, None),
+    ))
+    def test_datefield_clean_success(self, field, value, expected):
+        assert field.clean(value) == expected
 
-    def test_datefield_2(self):
-        f = DateField(null=True)
-        assert f.clean(None) is None
-        pytest.raises(ValidationError, f.clean, 'abc')
-        pytest.raises(ValidationError, f.clean, 123)
-        assert datetime.date(2013, 11, 24) == f.clean('2013-11-24')
-        assert datetime.date(2013, 11, 24) == f.clean(datetime.date(2013, 11, 24))
-        assert datetime.date(2013, 11, 24) == f.clean(datetime.datetime(2013, 11, 24, 1, 14))
+    @pytest.mark.parametrize('field,value'.split(','), (
+            (DateField(), None),
+            (DateField(), 'abc'),
+            (DateField(), 123),
+    ))
+    def test_datefield_clean_failure(self, field, value):
+        pytest.raises(ValidationError, field.clean, value)
+
+    @pytest.mark.parametrize('field,value,expected'.split(','), (
+            (DateField(), datetime.date(2013, 11, 24), '2013-11-24'),
+    ))
+    def test_datefield_as_string(self, field, value, expected):
+        assert field.as_string(value) == expected
 
     # TimeField ###############################################################
 
@@ -428,43 +443,53 @@ class TestFields(object):
         assert datetime.time(18, 43, tzinfo=utc) == f.clean('18:43:00.000Z')
         assert datetime.time(18, 43, tzinfo=utc) == f.clean(datetime.time(18, 43, tzinfo=utc))
 
+    @pytest.mark.parametrize('field,value,expected'.split(','), (
+            (TimeField(), datetime.time(12, 44, 12, 12), '12:44:12.000012'),
+            (TimeField(), datetime.time(12, 44, 12, 12, utc), '12:44:12.000012+00:00'),
+    ))
+    def test_timefield_as_string(self, field, value, expected):
+        assert field.as_string(value) == expected
+
     # NaiveTimeField ##########################################################
 
     @pytest.mark.parametrize(('target', 'value', 'expected'), (
-        (NaiveTimeField(ignore_timezone=False), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
-        (NaiveTimeField(ignore_timezone=False), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
-        (NaiveTimeField(ignore_timezone=False), datetime.time(18, 43, tzinfo=utc), datetime.time(18, 43, tzinfo=utc)),
+            (NaiveTimeField(ignore_timezone=False), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
+            (NaiveTimeField(ignore_timezone=False), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
+            (NaiveTimeField(ignore_timezone=False), datetime.time(18, 43, tzinfo=utc),
+             datetime.time(18, 43, tzinfo=utc)),
 
-        (NaiveTimeField(ignore_timezone=False, null=True), None, None),
-        (NaiveTimeField(ignore_timezone=False, null=True), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
-        (NaiveTimeField(ignore_timezone=False, null=True), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
-        (NaiveTimeField(ignore_timezone=False, null=True), datetime.time(18, 43, tzinfo=utc), datetime.time(18, 43, tzinfo=utc)),
+            (NaiveTimeField(ignore_timezone=False, null=True), None, None),
+            (NaiveTimeField(ignore_timezone=False, null=True), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
+            (NaiveTimeField(ignore_timezone=False, null=True), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
+            (NaiveTimeField(ignore_timezone=False, null=True), datetime.time(18, 43, tzinfo=utc),
+             datetime.time(18, 43, tzinfo=utc)),
 
-        (NaiveTimeField(ignore_timezone=True), '18:43:00.000Z', datetime.time(18, 43)),
-        (NaiveTimeField(ignore_timezone=True), '18:43:00.000Z', datetime.time(18, 43)),
-        (NaiveTimeField(ignore_timezone=True), datetime.time(18, 43, tzinfo=utc), datetime.time(18, 43)),
+            (NaiveTimeField(ignore_timezone=True), '18:43:00.000Z', datetime.time(18, 43)),
+            (NaiveTimeField(ignore_timezone=True), '18:43:00.000Z', datetime.time(18, 43)),
+            (NaiveTimeField(ignore_timezone=True), datetime.time(18, 43, tzinfo=utc), datetime.time(18, 43)),
     ))
     def test_naivetimefield__clean_valid_values(self, target, value, expected):
         assert target.clean(value) == expected
 
     @pytest.mark.parametrize(('target', 'value'), (
-        (NaiveTimeField(ignore_timezone=False), None),
-        (NaiveTimeField(ignore_timezone=False), 'abc'),
-        (NaiveTimeField(ignore_timezone=False), 123),
+            (NaiveTimeField(ignore_timezone=False), None),
+            (NaiveTimeField(ignore_timezone=False), 'abc'),
+            (NaiveTimeField(ignore_timezone=False), 123),
 
-        (NaiveTimeField(ignore_timezone=False, null=True), 'abc'),
-        (NaiveTimeField(ignore_timezone=False, null=True), 123),
+            (NaiveTimeField(ignore_timezone=False, null=True), 'abc'),
+            (NaiveTimeField(ignore_timezone=False, null=True), 123),
 
-        (NaiveTimeField(ignore_timezone=True), None),
-        (NaiveTimeField(ignore_timezone=True), 'abc'),
-        (NaiveTimeField(ignore_timezone=True), 123),
+            (NaiveTimeField(ignore_timezone=True), None),
+            (NaiveTimeField(ignore_timezone=True), 'abc'),
+            (NaiveTimeField(ignore_timezone=True), 123),
     ))
     def test_naivetimefield__clean_invalid_values(self, target, value):
         pytest.raises(ValidationError, target.clean, value)
 
     @pytest.mark.parametrize(('target', 'value', 'expected'), (
-        (NaiveTimeField(ignore_timezone=False), datetime.time(18, 43, tzinfo=utc), datetime.time(18, 43, tzinfo=utc)),
-        (NaiveTimeField(ignore_timezone=True), datetime.time(18, 43, tzinfo=utc), datetime.time(18, 43)),
+            (NaiveTimeField(ignore_timezone=False), datetime.time(18, 43, tzinfo=utc),
+             datetime.time(18, 43, tzinfo=utc)),
+            (NaiveTimeField(ignore_timezone=True), datetime.time(18, 43, tzinfo=utc), datetime.time(18, 43)),
     ))
     def test_naivetimefield__prepare(self, target, value, expected):
         assert target.prepare(value) == expected
@@ -478,7 +503,8 @@ class TestFields(object):
         pytest.raises(ValidationError, f.clean, 123)
         assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean('2013-11-24T18:43:00.000Z')
         assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean('2013-11-24 18:43:00.000Z')
-        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
+        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
+            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
 
     def test_datetimefield_2(self):
         f = DateTimeField(assume_local=False, null=True)
@@ -487,45 +513,65 @@ class TestFields(object):
         pytest.raises(ValidationError, f.clean, 123)
         assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean('2013-11-24T18:43:00.000Z')
         assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean('2013-11-24 18:43:00.000Z')
-        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
+        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
+            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
+
+    @pytest.mark.parametrize('field,value,expected'.split(','), (
+            (DateTimeField(), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=FixedTimezone.from_hours_minutes(10)),
+             '2013-11-24T18:43:00+10:00'),
+            (DateTimeField(), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), '2013-11-24T18:43:00+00:00'),
+    ))
+    def test_datetimefield_as_string(self, field, value, expected):
+        assert field.as_string(value) == expected
 
     # NaiveDateTimeField ######################################################
 
     @pytest.mark.parametrize(('target', 'value', 'expected'), (
-        (NaiveDateTimeField(ignore_timezone=False), '2013-11-24T18:43:00.000Z', datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
-        (NaiveDateTimeField(ignore_timezone=False), '2013-11-24 18:43:00.000Z', datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
-        (NaiveDateTimeField(ignore_timezone=False), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
+            (NaiveDateTimeField(ignore_timezone=False), '2013-11-24T18:43:00.000Z',
+             datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
+            (NaiveDateTimeField(ignore_timezone=False), '2013-11-24 18:43:00.000Z',
+             datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
+            (NaiveDateTimeField(ignore_timezone=False), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+             datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
 
-        (NaiveDateTimeField(ignore_timezone=False, null=True), None, None),
-        (NaiveDateTimeField(ignore_timezone=False, null=True), '2013-11-24T18:43:00.000Z', datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
-        (NaiveDateTimeField(ignore_timezone=False, null=True), '2013-11-24 18:43:00.000Z', datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
-        (NaiveDateTimeField(ignore_timezone=False, null=True), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
+            (NaiveDateTimeField(ignore_timezone=False, null=True), None, None),
+            (NaiveDateTimeField(ignore_timezone=False, null=True), '2013-11-24T18:43:00.000Z',
+             datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
+            (NaiveDateTimeField(ignore_timezone=False, null=True), '2013-11-24 18:43:00.000Z',
+             datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
+            (NaiveDateTimeField(ignore_timezone=False, null=True), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+             datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
 
-        (NaiveDateTimeField(ignore_timezone=True), '2013-11-24T18:43:00.000Z', datetime.datetime(2013, 11, 24, 18, 43)),
-        (NaiveDateTimeField(ignore_timezone=True), '2013-11-24 18:43:00.000Z', datetime.datetime(2013, 11, 24, 18, 43)),
-        (NaiveDateTimeField(ignore_timezone=True), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), datetime.datetime(2013, 11, 24, 18, 43)),
+            (NaiveDateTimeField(ignore_timezone=True), '2013-11-24T18:43:00.000Z',
+             datetime.datetime(2013, 11, 24, 18, 43)),
+            (NaiveDateTimeField(ignore_timezone=True), '2013-11-24 18:43:00.000Z',
+             datetime.datetime(2013, 11, 24, 18, 43)),
+            (NaiveDateTimeField(ignore_timezone=True), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+             datetime.datetime(2013, 11, 24, 18, 43)),
     ))
     def test_naivedatetimefield__clean_valid_values(self, target, value, expected):
         assert target.clean(value) == expected
 
     @pytest.mark.parametrize(('target', 'value'), (
-        (NaiveDateTimeField(ignore_timezone=False), None),
-        (NaiveDateTimeField(ignore_timezone=False), 'abc'),
-        (NaiveDateTimeField(ignore_timezone=False), 123),
+            (NaiveDateTimeField(ignore_timezone=False), None),
+            (NaiveDateTimeField(ignore_timezone=False), 'abc'),
+            (NaiveDateTimeField(ignore_timezone=False), 123),
 
-        (NaiveDateTimeField(ignore_timezone=False, null=True), 'abc'),
-        (NaiveDateTimeField(ignore_timezone=False, null=True), 123),
+            (NaiveDateTimeField(ignore_timezone=False, null=True), 'abc'),
+            (NaiveDateTimeField(ignore_timezone=False, null=True), 123),
 
-        (NaiveDateTimeField(ignore_timezone=True), None),
-        (NaiveDateTimeField(ignore_timezone=True), 'abc'),
-        (NaiveDateTimeField(ignore_timezone=True), 123),
+            (NaiveDateTimeField(ignore_timezone=True), None),
+            (NaiveDateTimeField(ignore_timezone=True), 'abc'),
+            (NaiveDateTimeField(ignore_timezone=True), 123),
     ))
     def test_naivedatetimefield__clean_invalid_values(self, target, value):
         pytest.raises(ValidationError, target.clean, value)
 
     @pytest.mark.parametrize(('target', 'value', 'expected'), (
-        (NaiveDateTimeField(ignore_timezone=False), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
-        (NaiveDateTimeField(ignore_timezone=True), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), datetime.datetime(2013, 11, 24, 18, 43)),
+            (NaiveDateTimeField(ignore_timezone=False), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+             datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
+            (NaiveDateTimeField(ignore_timezone=True), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+             datetime.datetime(2013, 11, 24, 18, 43)),
     ))
     def test_naivedatetimefield__prepare(self, target, value, expected):
         assert target.prepare(value) == expected
@@ -538,7 +584,8 @@ class TestFields(object):
         pytest.raises(ValidationError, f.clean, 'abc')
         pytest.raises(ValidationError, f.clean, 123)
         assert datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=utc) == f.clean('Wed Aug 29 17:12:58 +0000 2012')
-        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
+        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
+            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
 
     def test_httpdatetimefield_2(self):
         f = HttpDateTimeField(null=True)
@@ -546,7 +593,8 @@ class TestFields(object):
         pytest.raises(ValidationError, f.clean, 'abc')
         pytest.raises(ValidationError, f.clean, 123)
         assert datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=utc) == f.clean('Wed Aug 29 17:12:58 +0000 2012')
-        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
+        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
+            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
 
     # TimeStampField ##########################################################
 
@@ -556,19 +604,21 @@ class TestFields(object):
         pytest.raises(ValidationError, f.clean, 'abc')
         pytest.raises(ValidationError, f.clean, 'Wed Aug 29 17:12:58 +0000 2012')
         assert datetime.datetime(1970, 1, 1, 0, 2, 3, tzinfo=utc) == f.clean(123)
-        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
+        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
+            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
 
     def test_timestampfield_2(self):
         f = TimeStampField(null=True)
-        assert None == f.clean(None)
+        assert f.clean(None) is None
         pytest.raises(ValidationError, f.clean, 'abc')
         pytest.raises(ValidationError, f.clean, 'Wed Aug 29 17:12:58 +0000 2012')
         assert datetime.datetime(1970, 1, 1, 0, 2, 3, tzinfo=utc) == f.clean(123)
-        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
+        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
+            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
 
     def test_timestampfield_3(self):
         f = TimeStampField()
-        assert None == f.prepare(None)
+        assert f.prepare(None) is None
         assert 123 == f.prepare(datetime.datetime(1970, 1, 1, 0, 2, 3, tzinfo=utc))
         assert 123 == f.prepare(123)
         assert 123 == f.prepare(
@@ -697,4 +747,3 @@ class TestFields(object):
             TestDynamicTypeNameField(),
         )
         assert "Dict<Foo, Foo>" == f.data_type_name(f)
-

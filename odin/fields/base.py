@@ -11,6 +11,8 @@ class BaseField(object):
         self.creation_counter = BaseField.creation_counter
         BaseField.creation_counter += 1
 
+        self.attname = None
+
     def __hash__(self):
         return self.creation_counter
 
@@ -32,3 +34,29 @@ class BaseField(object):
             self.verbose_name = self.name.replace('_', ' ')
         if self.verbose_name_plural is None and self.verbose_name:
             self.verbose_name_plural = "%ss" % self.verbose_name
+
+    def prepare(self, value):
+        """
+        Prepare a value for serialisation.
+
+        :param value:
+        :return:
+        """
+        return value
+
+    def as_string(self, value):
+        """
+        Generate a string representation of a field.
+
+        :param value:
+        :rtype: str
+
+        """
+        if value is not None:
+            return str(value)
+
+    def value_from_object(self, obj):
+        """
+        Returns the value of this field in the given resource instance.
+        """
+        return getattr(obj, self.attname)

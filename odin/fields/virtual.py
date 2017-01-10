@@ -47,21 +47,6 @@ class VirtualField(BaseField):
         getmeta(cls).add_virtual_field(self)
         setattr(cls, name, self)
 
-    def prepare(self, value):
-        """
-        Prepare a value for serialisation.
-
-        :param value:
-        :return:
-        """
-        return value
-
-    def value_from_object(self, obj):
-        """
-        Returns the value of this field in the given resource instance.
-        """
-        return getattr(obj, self.attname)
-
 
 class ConstantField(VirtualField):
     """
