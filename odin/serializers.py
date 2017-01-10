@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 from odin import datetimeutil
-
+from odin.compatibility import deprecated
 
 STRING_TYPES = {}
 
@@ -26,6 +26,8 @@ def date_iso_format(value):
     return value.isoformat()
 
 
+@deprecated("Defaulting the timezone should be preformed by the fields only, this confuses things. "
+            "Most codecs have already migrated to not use this class.")
 class DatetimeIsoFormat(object):
     """
     Serialise a datetime.time or datetime.datetime to ISO string format.
@@ -39,11 +41,27 @@ class DatetimeIsoFormat(object):
             value = value.replace(tzinfo=self.default_timezone)
         return value.isoformat()
 
-datetime_iso_format = DatetimeIsoFormat()
 TimeIsoFormat = DatetimeIsoFormat
-time_iso_format = TimeIsoFormat()
 
 
+def datetime_iso_format(value):
+    """
+    Serialise a datetime.datetime to ISO string format.
+    """
+    assert isinstance(value, datetime.datetime)
+    return value.isoformat()
+
+
+def time_iso_format(value):
+    """
+    Serialise a datetime.time to ISO string format.
+    """
+    assert isinstance(value, datetime.time)
+    return value.isoformat()
+
+
+@deprecated("Defaulting the timezone should be preformed by the fields only, this confuses things. "
+            "Most codecs have already migrated to not use this class.")
 class DatetimeEcmaFormat(object):
     """
     Serialize a datetime object into the ECMA defined format.

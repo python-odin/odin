@@ -36,13 +36,14 @@ Extras
 Integration
 ***********
 
+* :doc:`integration/aws/index`
 * :doc:`integration/django/index`
 
 Project Links
 *************
 
 * `Project home <https://github.com/python-odin/odin>`_
-* `Issue tracker <https://github.com/python-odin/odin/issues>`_
+* `Issue/Bug tracker <https://github.com/python-odin/odin/issues>`_
 
 Indices and tables
 ******************

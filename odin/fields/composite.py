@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import six
+from odin import bases
 from odin import exceptions
-from odin.resources import create_resource_from_dict, ResourceIterable
+from odin.resources import create_resource_from_dict
 from odin.fields import Field
 from odin.utils import value_in_choices
 from odin.validators import EMPTY_VALUES
@@ -127,7 +128,7 @@ class ListOf(CompositeField):
     def to_python(self, value):
         if value is None:
             return None
-        if isinstance(value, (list, ResourceIterable)):
+        if isinstance(value, (list, bases.ResourceIterable)):
             super_to_python = super(ListOf, self).to_python
 
             def process(val):

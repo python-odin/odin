@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import copy
 import six
+from odin import bases
 
 from odin import exceptions, registration
 from odin.exceptions import ValidationError
@@ -82,6 +83,8 @@ class ResourceOptions(object):
 
     def add_virtual_field(self, field):
         self.virtual_fields.append(field)
+        if field.key:
+            self._add_key_field(field)
         cached_property.clear_caches(self)
 
     @property
@@ -281,6 +284,12 @@ class ResourceType(type):
             for field_name in new_meta.key_field_names:
                 if field_name not in new_meta.field_map:
                     raise AttributeError('Key field `{0}` is not exist on this resource.'.format(field_name))
+
+        # Give fields an opportunity to do additional operations after the
+        # resource is full populated and ready.
+        for field in new_meta.all_fields:
+            if hasattr(field, 'on_resource_ready'):
+                field.on_resource_ready()
 
         if abstract:
             return new_class
@@ -626,7 +635,7 @@ def build_object_graph(d, resource=None, full_clean=True, copy_dict=True, defaul
     return d
 
 
-class ResourceIterable(object):
+class ResourceIterable(bases.ResourceIterable):
     """
     Iterable that yields resources.
     """

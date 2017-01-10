@@ -1,3 +1,24 @@
+0.10b9
+======
+- Added support for MultiPartField field type. A virtual field that allows for the easy generation of key values
+  composed of several other fields.
+- Documentation updates and some initial type hints added (using :type... style) 
+- Allow a virtual field to be identified as a key
+- Introduce a common base class for ALL field types, this allows them to be identified separatly via hash (for sorting and keys)
+- Tweaked the new string.empty option so by default it behaves in the same way as it was previously defined (eg null assumes empty)
+
+0.10b
+=====
+- Possible breaking change with date and time serializers, they no longer apply a timezone as this is expected to be
+  managed by date and time fields.
+- Added getmeta tool for getting meta data.
+- Changes to Resource/Meta options to allow for them to be overridden.
+- Fixes regarding ResourceBase/Resource changes
+
+0.9
+===
+- Fixed bug preparing naive date and time values.
+
 0.9a0
 =====
 

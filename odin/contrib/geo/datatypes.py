@@ -96,7 +96,7 @@ class latlng(tuple):
         return self[1]
 
     def __repr__(self):
-        return "latlng<%02.4f, %03.4f>" % self
+        return "latlng(%02.4f, %03.4f)" % self
 
     def __unicode__(self):
         return u"(%s, %s)" % self
@@ -136,7 +136,7 @@ class point(tuple):
         return len(self) == 3
 
     def __repr__(self):
-        return ("point<%f, %f, %f>" if self.is_3d else "point<%f, %f>") % self
+        return ("point(%f, %f, %f)" if self.is_3d else "point(%f, %f)") % self
 
     def __str__(self):
         return ("(%f, %f, %f)" if self.is_3d else "(%f, %f)") % self

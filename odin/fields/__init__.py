@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import copy
 import datetime
 import six
+
 from odin import exceptions, datetimeutil, registration
-from odin.utils import value_in_choices
+from odin.utils import value_in_choices, getmeta
 from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url
+from .base import BaseField
 
 __all__ = (
     'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField',
@@ -21,13 +25,10 @@ class NOT_PROVIDED:
     pass
 
 
-class Field(object):
+class Field(BaseField):
     """
     Base class for fields.
     """
-    # These track each time a Field instance is created. Used to retain order.
-    creation_counter = 0
-
     default_validators = []
     default_error_messages = {
         'invalid_choice': 'Value %r is not a valid choice.',
@@ -58,17 +59,13 @@ class Field(object):
         :param key: Mark this field as a key field (used to generated a unique identifier).
 
         """
-        self.verbose_name, self.verbose_name_plural = verbose_name, verbose_name_plural
-        self.name = name
+        super(Field, self).__init__(verbose_name, verbose_name_plural, name, doc_text or help_text)
+
         self.null, self.choices = null, choices
         self.default, self.use_default_if_not_provided = default, use_default_if_not_provided
-        self.doc_text = doc_text or help_text
         self.validators = self.default_validators + (validators or [])
         self.is_attribute = is_attribute
         self.key = key
-
-        self.creation_counter = Field.creation_counter
-        Field.creation_counter += 1
 
         messages = {}
         for c in reversed(self.__class__.__mro__):
@@ -86,32 +83,10 @@ class Field(object):
         memodict[id(self)] = obj
         return obj
 
-    def __hash__(self):
-        return self.creation_counter
-
-    def __repr__(self):
-        """
-        Displays the module, class and name of the field.
-        """
-        path = '%s.%s' % (self.__class__.__module__, self.__class__.__name__)
-        name = getattr(self, 'name', None)
-        if name is not None:
-            return '<%s: %s>' % (path, name)
-        return '<%s>' % path
-
-    def set_attributes_from_name(self, attname):
-        if not self.name:
-            self.name = attname
-        self.attname = attname
-        if self.verbose_name is None and self.name:
-            self.verbose_name = self.name.replace('_', ' ')
-        if self.verbose_name_plural is None and self.verbose_name:
-            self.verbose_name_plural = "%ss" % self.verbose_name
-
     def contribute_to_class(self, cls, name):
         self.set_attributes_from_name(name)
         self.resource = cls
-        cls._meta.add_field(self)
+        getmeta(cls).add_field(self)
 
     def to_python(self, value):
         """
@@ -140,7 +115,7 @@ class Field(object):
             msg = self.error_messages['invalid_choice'] % value
             raise exceptions.ValidationError(msg)
 
-        if value is None and not self.null:
+        if not self.null and value is None:
             raise exceptions.ValidationError(self.error_messages['null'])
 
     def clean(self, value):
@@ -216,11 +191,29 @@ class BooleanField(Field):
 
 
 class StringField(Field):
+    """
+    A string.
+
+    StringField has two extra arguments:
+
+    :py:attr:`StringField.empty`
+        The string can be empty. This is similar to None but captures an empty string in addition to ``None``.
+        The default state of this flag is ``False``.
+
+    :py:attr:`StringField.max_length`
+        The maximum length (in characters) of the field. The ``max_length`` value is enforced Odin’s validation.
+    """
     data_type_name = "String"
 
-    def __init__(self, max_length=None, **options):
+    def __init__(self, max_length=None, empty=None, **options):
         super(StringField, self).__init__(**options)
         self.max_length = max_length
+
+        # Mirror null is not explicitly defined
+        if empty is None:
+            empty = options.get('null', False)
+        self.empty = empty
+
         if max_length is not None:
             self.validators.append(MaxLengthValidator(max_length))
 
@@ -228,6 +221,12 @@ class StringField(Field):
         if isinstance(value, six.string_types) or value is None:
             return value
         return str(value)
+
+    def validate(self, value):
+        if not self.empty and value == '':
+            raise exceptions.ValidationError(self.error_messages['null'])
+
+        super(StringField, self).validate(value)
 
 
 class UrlField(StringField):
@@ -685,7 +684,7 @@ class TypedDictField(DictField):
         value_errors = {}
         for key, value in value.items():
             try:
-                key = self.key_field.validate(key)
+                self.key_field.validate(key)
             except exceptions.ValidationError as ve:
                 key_errors += ve.error_messages
 

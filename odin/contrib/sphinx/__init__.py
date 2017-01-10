@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-from sphinx.ext.autodoc import Documenter, ModuleLevelDocumenter, bool_option
 import odin
+
+from odin.resources import ResourceBase
 from odin.utils import field_iter, getmeta
+from sphinx.ext.autodoc import Documenter, ModuleLevelDocumenter, bool_option
 
 
 def reference_to(obj):
@@ -39,7 +41,7 @@ class ResourceDocumenter(ModuleLevelDocumenter):
 
     @classmethod
     def can_document_member(cls, member, *_):
-        return isinstance(member, odin.Resource)
+        return isinstance(member, ResourceBase)
 
     def add_directive_header(self, _):
         meta = getmeta(self.object)

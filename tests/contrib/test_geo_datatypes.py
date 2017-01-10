@@ -103,7 +103,7 @@ class TestDataTypes(object):
 
     def test_latlng_str(self):
         ll = datatypes.latlng(27.3375, -27.3375)
-        assert "latlng<27.3375, -27.3375>" == repr(ll)
+        assert "latlng(27.3375, -27.3375)" == repr(ll)
         assert u"(27°20'15.000000\"N, 027°20'15.000000\"W)" == six.text_type(ll)
 
     def test_latlng_properties(self):
@@ -128,11 +128,11 @@ class TestDataTypes(object):
 
     def test_point_str(self):
         p = datatypes.point(1, 2)
-        assert "point<1.000000, 2.000000>" == repr(p)
+        assert "point(1.000000, 2.000000)" == repr(p)
         assert "(1.000000, 2.000000)" == str(p)
 
         p = datatypes.point(1, 2, 3)
-        assert "point<1.000000, 2.000000, 3.000000>" == repr(p)
+        assert "point(1.000000, 2.000000, 3.000000)" == repr(p)
         assert "(1.000000, 2.000000, 3.000000)" == str(p)
 
     def test_point_properties(self):

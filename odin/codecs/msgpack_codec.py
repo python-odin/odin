@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
+
 try:
     import msgpack
 except ImportError:
     raise ImportError("odin.codecs.msgpack_codec requires the 'msgpack-python' package.")  # noqa
 
 import datetime
-from odin import serializers, resources, mapping, ResourceAdapter
+
+from odin import bases
+from odin import serializers, resources, ResourceAdapter
 
 
 TYPE_SERIALIZERS = {
@@ -26,11 +29,11 @@ class OdinPacker(msgpack.Packer):
         self.include_virtual_fields = include_virtual_fields
 
     def default(self, o):
-        if isinstance(o, (resources.Resource, ResourceAdapter)):
+        if isinstance(o, (resources.ResourceBase, ResourceAdapter)):
             obj = o.to_dict(self.include_virtual_fields)
             obj[o._meta.type_field] = o._meta.resource_name
             return obj
-        elif isinstance(o, mapping.MappingResult):
+        elif isinstance(o, bases.ResourceIterable):
             return list(o)
         elif o.__class__ in TYPE_SERIALIZERS:
             return TYPE_SERIALIZERS[o.__class__](o)

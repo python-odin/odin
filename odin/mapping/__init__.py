@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import collections
 import six
+from odin import bases
 from odin import registration
 from odin.fields import NOT_PROVIDED
-from odin.resources import Resource, ResourceIterable
+from odin.resources import Resource
 from odin.fields.composite import ListOf, DictAs
 from odin.exceptions import MappingSetupError, MappingExecutionError
 from odin.mapping.helpers import MapListOf, MapDictAs, NoOpMapper
@@ -309,12 +310,13 @@ class MappingMeta(type):
         return mapper
 
 
-class MappingResult(ResourceIterable):
+class MappingResult(bases.TypedResourceIterable):
     """
     Iterator used lazily return a sequence from a mapping operation (used by ``Mapping.apply``).
     """
     def __init__(self, sequence, mapping, context=None, *mapping_options):
-        super(MappingResult, self).__init__(sequence)
+        super(MappingResult, self).__init__(mapping.to_obj)
+        self.sequence = sequence
         self.mapping = mapping
         self.context = context or {}
         self.context.setdefault('_loop_idx', [])
@@ -328,15 +330,18 @@ class MappingResult(ResourceIterable):
         self.context['_loop_idx'].pop()
 
 
-class ImmediateResult(ResourceIterable):
+class ImmediateResult(bases.ResourceIterable):
     """
     Immediately performs the mapping operation rather than delay.
 
     This is useful if context is volatile.
     """
     def __init__(self, *args, **kwargs):
-        results = list(MappingResult(*args, **kwargs))
-        super(ImmediateResult, self).__init__(results)
+        self.sequence = list(MappingResult(*args, **kwargs))
+
+    def __iter__(self):
+        for item in self.sequence:
+            yield item
 
 
 class CachingMappingResult(MappingResult):
@@ -663,6 +668,7 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=Tru
     :param exclude_fields: Fields to exclude from auto-generated mappings
     :param reverse_exclude_fields: Fields to exclude from auto-generated reverse mappings.
     :return: if generate_reverse is True a tuple(forward_mapping, reverse_mapping); else just the forward_mapping.
+    :rtype: Mapping
 
     """
     forward_mapping = type(

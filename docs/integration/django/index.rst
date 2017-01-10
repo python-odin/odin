@@ -2,7 +2,7 @@
 Integration with Django
 #######################
 
-Integration with `Django <https://www.djangoproject.com>`_ is via `baldr <https://github.com/timsavage/baldr>`_.
+Integration with `Django <https://www.djangoproject.com>`_ is via `baldr <https://github.com/python-odin/baldr>`_.
 
 Baldr includes:
 

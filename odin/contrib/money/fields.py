@@ -38,7 +38,7 @@ class AmountField(ScalarField):
         super(AmountField, self).validate(value)
         if self.allowed_currencies and value not in EMPTY_VALUES:
             if value.currency not in self.allowed_currencies:
-                msg = self.error_messages['invalid_currency'] % value.currency
+                msg = self.error_messages['invalid_currency'] % str(value.currency)
                 raise exceptions.ValidationError(msg)
 
     def prepare(self, value):

@@ -2,6 +2,7 @@
 import six
 import csv
 
+from odin import bases
 from odin.fields import NOT_PROVIDED
 from odin.resources import create_resource_from_iter, create_resource_from_dict
 from odin.mapping import MappingResult
@@ -10,15 +11,16 @@ from odin.utils import getmeta
 CONTENT_TYPE = 'text/csv'
 
 
-def reader(f, resource, includes_header=False, csv_module=csv, *args, **kwargs):
+def reader(f, resource, includes_header=False, csv_module=csv, full_clean=True, *args, **kwargs):
     """
-    Reader that returns resources.
+    CSV reader that returns resource objects
 
     :param f: file like object
     :param resource:
     :param includes_header: File includes a header that should be used to map columns
     :param csv_module: Specify an alternate csv module (eg unicodecsv); defaults to the builtin csv as this module
         is implemented in C.
+    :param full_clean: Perform a full clean on each object
     :return: Iterable reader object
 
     """
@@ -37,11 +39,16 @@ def reader(f, resource, includes_header=False, csv_module=csv, *args, **kwargs):
 
         # Iterate CSV and process input
         for row in csv_reader:
-            yield create_resource_from_iter((NOT_PROVIDED if s is None else row[s] for s in mapping), resource)
+            yield create_resource_from_iter(
+                (NOT_PROVIDED if s is None else row[s] for s in mapping), resource, full_clean
+            )
+
     else:
         # Iterate CSV and process input
         for row in csv_reader:
-            yield create_resource_from_iter((NOT_PROVIDED if col is None else col for col in row), resource)
+            yield create_resource_from_iter(
+                (NOT_PROVIDED if col is None else col for col in row), resource, full_clean
+            )
 
 
 class ResourceReader(csv.DictReader):
@@ -67,9 +74,11 @@ def value_fields(resource):
 
 
 def _get_resource_type(resources, resource_type):
-    if isinstance(resources, MappingResult):
+    if isinstance(resources, bases.TypedResourceIterable):
         # Use first resource to obtain field list
-        return resource_type or resources.mapping.to_obj
+        return resource_type or resources.resource_type
+    elif isinstance(resources, bases.ResourceIterable) and resource_type:
+        return resource_type
     elif isinstance(resources, (list, tuple)):
         if not len(resources):
             return

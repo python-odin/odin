@@ -251,33 +251,50 @@ class TestFields(object):
 
     # StringField #############################################################
 
-    def test_stringfield_1(self):
+    @pytest.mark.parametrize(('field', 'value', 'actual'), (
+        (StringField(), '1', '1'),
+        (StringField(), 'eek', 'eek'),
+        (StringField(null=True), '1', '1'),
+        (StringField(null=True), None, None),
+        (StringField(null=True), '', ''),
+        (StringField(null=True, empty=True), '', ''),
+        (StringField(empty=True), '', ''),
+        (StringField(max_length=10), '123456', '123456'),
+    ))
+    def test_string_success(self, field, value, actual):
+        assert field.clean(value) == actual
+
+    @pytest.mark.parametrize(('field', 'value'), (
+        (StringField(), None),
+        (StringField(), ''),
+        (StringField(null=True, empty=False), ''),
+        (StringField(empty=False), ''),
+        (StringField(max_length=10), '1234567890a'),
+    ))
+    def test_string_failure(self, field, value):
+        with pytest.raises(ValidationError):
+            field.clean(value)
+
+    def test_stringfield(self):
         f = StringField()
-        assert '1' == f.clean('1')
-        assert 'eek' == f.clean('eek')
-        pytest.raises(ValidationError, f.clean, None)
-        assert '[1, 2, 3]', f.clean([1, 2 == 3])
-        assert f.max_length == None
+        assert f.max_length is None
         self.assertValidatorNotIn(MaxLengthValidator, f.validators)
 
-    def test_stringfield_2(self):
-        f = StringField(null=True)
-        assert '1' == f.clean('1')
-        assert 'eek' == f.clean('eek')
-        assert None == f.clean(None)
-        assert '[1, 2, 3]', f.clean([1, 2 == 3])
-        assert f.max_length == None
-        self.assertValidatorNotIn(MaxLengthValidator, f.validators)
-
-    def test_stringfield_3(self):
-        f = StringField(null=True, max_length=10)
-        assert None == f.clean(None)
-        assert '' == f.clean('')
-        assert '12345' == f.clean('12345')
-        assert '1234567890' == f.clean('1234567890')
-        pytest.raises(ValidationError, f.clean, '1234567890a')
+        f = StringField(max_length=10)
         assert f.max_length == 10
         self.assertValidatorIn(MaxLengthValidator, f.validators)
+
+    @pytest.mark.parametrize(('field', 'empty_value'), (
+        (StringField(), False),
+        (StringField(null=True), True),
+        (StringField(null=False), False),
+        (StringField(null=True, empty=True), True),
+        (StringField(null=False, empty=True), True),
+        (StringField(null=True, empty=False), False),
+        (StringField(null=False, empty=False), False),
+    ))
+    def test_stringfield__handling_of_null_empty(self, field, empty_value):
+        assert field.empty == empty_value
 
     # URLField ################################################################
 

@@ -55,7 +55,7 @@ class TraversalPath(object):
     def __eq__(self, other):
         if isinstance(other, TraversalPath):
             return hash(self) == hash(other)
-        return False
+        return NotImplemented
 
     def __add__(self, other):
         if isinstance(other, TraversalPath):
