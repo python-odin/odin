@@ -329,7 +329,7 @@ def to_http_datetime_string(dt, default_timezone=local):
     dt = get_tz_aware_dt(dt, default_timezone).astimezone(utc)
     timeval = time.mktime(dt.timetuple())
     now = time.localtime(timeval)
-    return '{}, {:02d} {} {:04d} {:02d}:{:02d}:{:02d} {}'.format(
+    return '{0}, {1:02d} {2} {3:04d} {4:02d}:{5:02d}:{6:02d} {7}'.format(
         ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][now[6]],
         now[2],
         ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
