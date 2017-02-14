@@ -41,7 +41,6 @@ Highlights
 * Class based declarative style
 * Fields for building composite resources
 * Field and Resource level validation
-* Mapping between resources or extended to other object types (eg Django Models)
 * Easy extension to support custom fields
 * Python 2.6 :sup:`1`, Python 2.7+, Python 3.3+ and PyPy :sup:`1` supported
 * Integration with Django (see `baldr <https://github.com/python-odin/baldr>`_)
@@ -50,6 +49,13 @@ Highlights
 
 :sup:`1` certain contrib items are not supported. Pint is not installable with PyPy.
 
+Use cases
+*********
+* Design, document and validate complex (and simple!) data structures
+* Convert structures to and from different formats such as JSON, YAML, MsgPack or CSV
+* Validate API inputs
+* Define message formats for communications protocols, like an RPC
+* Map API requests to ORM objects
 
 Quick links
 ***********
