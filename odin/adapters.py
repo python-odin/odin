@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odin.utils import cached_property, field_iter_items
+from odin.utils import cached_property, field_iter_items, getmeta
 
 __all__ = ('ResourceAdapter',)
 
@@ -96,10 +96,10 @@ class ResourceAdapter(object):
         meta_objects = {}
         for resource in sources:
             try:
-                meta = meta_objects[resource._meta.resource_name]
+                meta = meta_objects[getmeta(resource).resource_name]
             except KeyError:
-                meta = cls._create_options_adapter(resource._meta, include, exclude)
-                meta_objects[resource._meta.resource_name] = meta
+                meta = cls._create_options_adapter(getmeta(resource), include, exclude)
+                meta_objects[getmeta(resource).resource_name] = meta
             yield cls(resource, meta=meta, **kwargs)
 
     @classmethod
@@ -132,7 +132,7 @@ class ResourceAdapter(object):
         self.__dict__['_source'] = source
 
         if not meta:
-            meta = self._create_options_adapter(source._meta, include, exclude)
+            meta = self._create_options_adapter(getmeta(source), include, exclude)
         self._meta = meta
 
     def __getattr__(self, item):

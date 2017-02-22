@@ -9,8 +9,7 @@ try:
     import yaml
 except ImportError:
     raise ImportError("odin.codecs.yaml_codec requires the 'pyyaml' package.")  # noqa
-else:
-    from yaml.representer import SafeRepresenter
+
 try:
     from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
 except ImportError:
