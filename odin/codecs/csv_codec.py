@@ -34,7 +34,7 @@ def reader(f, resource, includes_header=False, csv_module=csv, full_clean=True,
         fields = getmeta(resource).fields
 
         # Pre-generate field mapping
-        header = csv_reader.next()
+        header = next(csv_reader)
 
         # Make header case-less
         if ignore_header_case:
