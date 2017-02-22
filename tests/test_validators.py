@@ -102,3 +102,110 @@ class TestSimpleValidator(object):
 
         pytest.raises(ValidationError, reflect_validator, False)
         reflect_validator(True)
+
+
+@pytest.mark.parametrize('value', (
+    '192.168.0.1',
+    '1.1.1.1',
+    '255.255.255.255',
+))
+def test_ipv4_address_valid(value):
+    validators.validate_ipv4_address(value)
+
+
+@pytest.mark.parametrize('value', (
+    '.2.3.4',
+    '1.2.3',
+    '1.2.3.4.5',
+    '300.0.0.1',
+    'ff.ff.ff.ff',
+    'abcd',
+    '',
+    '::ff:ff:ff:ff'
+))
+def test_ipv4_address_invalid(value):
+    with pytest.raises(ValidationError):
+        validators.validate_ipv4_address(value)
+
+
+@pytest.mark.parametrize('value', (
+    '::',  # Localhost
+    '::1',  # Default unicast
+    '::ffff:0:0',  # IPv4 Mapped address
+    '2002::',  # 6to4
+    '2001::',  # Teredo tunneling
+    'fc00::',  # Unique local address
+    'ffff::192.168.0.1',
+    '1:2:3:4:5:6:7:8',
+    'dead:beef:dead:beef:dead:beef:dead:beef'
+))
+def test_ipv6_address_valid(value):
+    validators.validate_ipv6_address(value)
+
+
+@pytest.mark.parametrize('value', (
+    '192.168.0.1',
+    '1:2:3:4:5:6:7:8:9',
+    '1234:5678:9abc:defg::',
+    '2001::12345',
+    '::ffff::',
+    'ff:::0',
+    ':2:3:4:5:6:7:8',
+    '1:2:3:4:5:6:7:',
+    ':2:3:4:5:6:7:',
+    '1:2:3:4:5:192.168.0',
+    '1:2:3:4:256.256.256.256',
+    '192.168.0.1::ff',
+    'zzzz::0',
+))
+def test_ipv6_address_invalid(value):
+    with pytest.raises(ValidationError):
+        validators.validate_ipv6_address(value)
+
+
+@pytest.mark.parametrize('value', (
+    '192.168.0.1',
+    '1:2:3:4:5:6:7:8',
+))
+def test_validate_ipv46_address_valid(value):
+    validators.validate_ipv46_address(value)
+
+
+@pytest.mark.parametrize('value', (
+    '192.168.0.',
+    '1:2:3:4:5:6:7:8:9',
+))
+def test_validate_ipv46_address_invalid(value):
+    with pytest.raises(ValidationError):
+        validators.validate_ipv46_address(value)
+
+
+@pytest.mark.parametrize('value kwargs'.split(), (
+    ('foo@bar.com', None),
+    ('FOO@BAR.COM', None),
+    ('foo@localhost', None),
+    # New release domain names
+    ('foo@example.company', None),
+    # IPv4 based email
+    ('foo@127.0.0.1', None),
+    # IPv6 based email
+    ('foo@::1', None),
+    ('foo@[::1]', None),
+))
+def test_validate_email_valid(value, kwargs):
+    kwargs = kwargs or dict()
+    validators.EmailValidator(**kwargs)(value)
+
+
+@pytest.mark.parametrize('value kwargs'.split(), (
+    ('foo', None),
+    ('.foo@bar.com', None),
+    ('foo@corpau', None),
+    ('foo@localhost', {'whitelist': ''}),
+    ('foo@{}.com'.format('a' * 64), None),
+    ('foo@[::ff::0]', None),
+))
+def test_validate_email_valid(value, kwargs):
+    kwargs = kwargs or dict()
+    with pytest.raises(ValidationError):
+        validators.EmailValidator(**kwargs)(value)

@@ -747,3 +747,18 @@ class TestFields(object):
             TestDynamicTypeNameField(),
         )
         assert "Dict<Foo, Foo>" == f.data_type_name(f)
+
+    @pytest.mark.parametrize('field value actual'.split(), (
+        (EmailField(), u'foo@example.company', u'foo@example.company'),
+
+        (IPv4Field(), u'127.0.0.1', u'127.0.0.1'),
+
+        (IPv6Field(), u'::1', u'::1'),
+        (IPv6Field(), u'1:2:3:4:5:6:7:8', u'1:2:3:4:5:6:7:8'),
+
+        (IPv46Field(), u'127.0.0.1', u'127.0.0.1'),
+        (IPv46Field(), u'::1', u'::1'),
+        (IPv46Field(), u'1:2:3:4:5:6:7:8', u'1:2:3:4:5:6:7:8'),
+    ))
+    def test_valid_values(self, field, value, actual):
+        assert field.clean(value) == actual
