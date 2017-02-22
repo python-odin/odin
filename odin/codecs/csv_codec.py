@@ -3,15 +3,18 @@ import six
 import csv
 
 from odin import bases
+from odin.datastructures import CaseLessStringList
 from odin.fields import NOT_PROVIDED
 from odin.resources import create_resource_from_iter, create_resource_from_dict
 from odin.mapping import MappingResult
 from odin.utils import getmeta
+from odin.exceptions import CodecDecodeError
 
 CONTENT_TYPE = 'text/csv'
 
 
-def reader(f, resource, includes_header=False, csv_module=csv, full_clean=True, *args, **kwargs):
+def reader(f, resource, includes_header=False, csv_module=csv, full_clean=True,
+           ignore_header_case=False, strict_fields=False, *args, **kwargs):
     """
     CSV reader that returns resource objects
 
@@ -21,6 +24,8 @@ def reader(f, resource, includes_header=False, csv_module=csv, full_clean=True, 
     :param csv_module: Specify an alternate csv module (eg unicodecsv); defaults to the builtin csv as this module
         is implemented in C.
     :param full_clean: Perform a full clean on each object
+    :param ignore_header_case: Ignore the letter case on header
+    :param strict_fields: Extra fields cannot be provided.
     :return: Iterable reader object
 
     """
@@ -29,13 +34,33 @@ def reader(f, resource, includes_header=False, csv_module=csv, full_clean=True, 
         fields = getmeta(resource).fields
 
         # Pre-generate field mapping
-        header = csv_reader.next()
+        header = next(csv_reader)
+
+        # Make header case-less
+        if ignore_header_case:
+            header = CaseLessStringList(header)
+            field_names = CaseLessStringList(field.name for field in fields)
+        else:
+            field_names = [field.name for field in fields]
+
+        # Check for extra fields
+        extra_fields = [field for field in header if field not in field_names]
+
+        # Handle strict fields
+        if strict_fields and extra_fields:
+                raise CodecDecodeError("Extra unknown fields: {0}".format(','.join(extra_fields)))
+
         mapping = []
+        # Add expected fields
         for field in fields:
             if field.name in header:
                 mapping.append(header.index(field.name))
             else:
                 mapping.append(None)
+
+        # Append any extra fields
+        for field in extra_fields:
+            mapping.append(header.index(field))
 
         # Iterate CSV and process input
         for row in csv_reader:

@@ -499,8 +499,8 @@ def create_resource_from_iter(i, resource, full_clean=True, default_to_not_provi
     if len(i) < len(fields):
         i += [NOT_PROVIDED] * (len(fields) - len(i))
     elif len(i) > len(fields):
-        i = i[:len(fields)]
         extra = i[len(fields):]
+        i = i[:len(fields)]
 
     attrs = []
     errors = {}
