@@ -121,4 +121,4 @@ class MultiPartField(VirtualField):
         try:
             self._fields = tuple(meta.field_map[name] for name in self.field_names)
         except KeyError as ex:
-            raise AttributeError("Attribute {0} not found on {0!r}".format(ex, self.resource))
+            raise AttributeError("Attribute {0} not found on {1!r}".format(ex, self.resource))

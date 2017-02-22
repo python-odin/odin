@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from odin.utils import getmeta
 
 logger = logging.Logger('odin.registration')
 
@@ -30,9 +31,10 @@ class ResourceCache(object):
 
         """
         for resource in resources:
-            resource_name = resource._meta.resource_name.lower()
+            meta = getmeta(resource)
+            resource_name = meta.resource_name.lower()
             self.resources[resource_name] = resource
-            class_name = resource._meta.class_name.lower()
+            class_name = meta.class_name.lower()
             if resource_name != class_name:
                 self.resources[class_name] = resource
 

@@ -1,6 +1,8 @@
 from __future__ import absolute_import, print_function
-from humanfriendly import tables
 import six
+
+from humanfriendly import tables
+
 from .base import SummaryBase, resource_reference
 
 
@@ -23,7 +25,7 @@ class MappingSummary(SummaryBase):
         # Build mapping summary
         data = []
         column_names = ('From', 'Action', 'To')
-        for from_fields, action, to_fields, to_list, bind, skip_if_none in mapping._mapping_rules:
+        for from_fields, action, to_fields, to_list, _, skip_if_none in mapping._mapping_rules:
             # Dereference
             from_fields = from_fields or ['*Assigned*']
             to_fields = to_fields or list()

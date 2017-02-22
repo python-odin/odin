@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
 
+from odin.utils import getmeta
+
 from odin import bases
 from odin import serializers, resources, ResourceAdapter
 from odin.exceptions import CodecDecodeError, CodecEncodeError
@@ -29,9 +31,10 @@ class OdinEncoder(json.JSONEncoder):
 
     def default(self, o):
         if isinstance(o, (resources.ResourceBase, ResourceAdapter)):
+            meta = getmeta(o)
             obj = o.to_dict(self.include_virtual_fields)
             if self.include_type_field:
-                obj[o._meta.type_field] = o._meta.resource_name
+                obj[meta.type_field] = meta.resource_name
             return obj
         elif isinstance(o, bases.ResourceIterable):
             return list(o)

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from odin.utils import getmeta
 
 try:
     import msgpack
@@ -30,8 +31,9 @@ class OdinPacker(msgpack.Packer):
 
     def default(self, o):
         if isinstance(o, (resources.ResourceBase, ResourceAdapter)):
+            meta = getmeta(o)
             obj = o.to_dict(self.include_virtual_fields)
-            obj[o._meta.type_field] = o._meta.resource_name
+            obj[meta.type_field] = meta.resource_name
             return obj
         elif isinstance(o, bases.ResourceIterable):
             return list(o)
@@ -47,6 +49,7 @@ def load(fp, resource=None, encoding='UTF8', full_clean=True, default_to_not_sup
 
     :param fp: a file pointer to read MessagePack data from.
     :param resource: A resource instance or a resource name to use as the base for creating a resource.
+    :param encoding: Encoding to use when loading file
     :param full_clean: Do a full clean of the object as part of the loading process.
     :returns: A resource object or object graph of resources loaded from file.
     """
@@ -66,6 +69,7 @@ def loads(s, resource=None, encoding='UTF8', full_clean=True, default_to_not_sup
     :param s: String to load and parse.
     :param resource: A resource instance or a resource name to use as the base for creating a resource.
     :param full_clean: Do a full clean of the object as part of the loading process.
+    :param encoding: Encoding to use when loading file
     :returns: A resource object or object graph of resources parsed from supplied string.
     """
     return resources.build_object_graph(msgpack.loads(s, encoding=encoding), resource, full_clean, False,

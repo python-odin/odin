@@ -6,7 +6,6 @@ from odin import bases
 from odin.datastructures import CaseLessStringList
 from odin.fields import NOT_PROVIDED
 from odin.resources import create_resource_from_iter, create_resource_from_dict
-from odin.mapping import MappingResult
 from odin.utils import getmeta
 from odin.exceptions import CodecDecodeError
 

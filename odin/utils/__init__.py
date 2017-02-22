@@ -155,7 +155,7 @@ def attribute_field_iter_items(resource):
         This iterator is designed for codecs that have a distinction between attribute and element fields (eg XML).
 
     """
-    return field_iter_items(resource, resource._meta.attribute_fields)
+    return field_iter_items(resource, getmeta(resource).attribute_fields)
 
 
 def element_field_iter_items(resource):
@@ -169,7 +169,7 @@ def element_field_iter_items(resource):
         This iterator is designed for codecs that have a distinction between attribute and element fields (eg XML).
 
     """
-    return field_iter_items(resource, resource._meta.element_fields)
+    return field_iter_items(resource, getmeta(resource).element_fields)
 
 
 def extract_fields_from_dict(d, resource):

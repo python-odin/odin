@@ -4,18 +4,15 @@ Tools for generating Swagger Specification from resources.
 from odin.utils import getmeta
 from odin import fields
 
-"""
-Mapping of fields to Swagger types.
-"""
 SWAGGER_SPEC_TYPE_MAPPING = {
     fields.IntegerField: 'integer',
     fields.FloatField: 'number',
     fields.BooleanField: 'boolean',
 }
+"""
+Mapping of fields to Swagger types.
+"""
 
-"""
-Mapping of fields to Swagger formats.
-"""
 SWAGGER_SPEC_FORMAT_MAPPING = {
     fields.StringField: '',
     fields.IntegerField: 'int64',
@@ -25,6 +22,9 @@ SWAGGER_SPEC_FORMAT_MAPPING = {
     fields.DateTimeField: 'date-time',
     fields.NaiveTimeField: 'date-time',
 }
+"""
+Mapping of fields to Swagger formats.
+"""
 
 
 def generate_definition(resource):

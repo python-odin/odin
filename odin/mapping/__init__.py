@@ -8,7 +8,7 @@ from odin.resources import Resource
 from odin.fields.composite import ListOf, DictAs
 from odin.exceptions import MappingSetupError, MappingExecutionError
 from odin.mapping.helpers import MapListOf, MapDictAs, NoOpMapper
-from odin.utils import cached_property
+from odin.utils import cached_property, getmeta
 
 __all__ = ('Mapping', 'map_field', 'map_list_field', 'assign_field', 'define', 'assign')
 
@@ -119,7 +119,7 @@ class ResourceFieldResolver(FieldResolverBase):
     """Field resolver for Odin resource objects."""
     def get_field_dict(self):
         """Return a dictionary of fields along with their names."""
-        return self.obj._meta.field_map
+        return getmeta(self.obj).field_map
 
 registration.register_field_resolver(ResourceFieldResolver, Resource)
 

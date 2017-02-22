@@ -3,6 +3,9 @@
 Documentation generation from resources.
 """
 import os
+
+from odin.utils import getmeta
+
 try:
     from jinja2 import Environment, FileSystemLoader
 except ImportError:
@@ -24,7 +27,7 @@ class ResourceDocumentation(object):
     """
     def __init__(self, resource):
         self.resource = resource
-        self._meta = resource._meta
+        self._meta = getmeta(resource)
         self._fields = None
 
     @property
@@ -58,7 +61,7 @@ class ResourceDocumentation(object):
 
 def _auto_escape(template_name):
     if template_name:
-        root, ext = os.path.splitext(template_name)
+        _, ext = os.path.splitext(template_name)
         return ext in ('.html', '.xhtml', '.htm', '.xml')
     return False
 
@@ -98,6 +101,6 @@ def dumps(fmt=FORMAT_TEMPLATE_RST, exclude=None, template_path=None):
     template = env.get_template(fmt)
 
     # Build resources list
-    resources = [ResourceDocumentation(r) for r in registration.cache if r._meta.resource_name not in exclude]
+    resources = [ResourceDocumentation(r) for r in registration.cache if getmeta(r).resource_name not in exclude]
 
     return template.render(resources=resources)

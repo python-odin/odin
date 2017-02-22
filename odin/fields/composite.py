@@ -4,7 +4,7 @@ from odin import bases
 from odin import exceptions
 from odin.resources import create_resource_from_dict
 from odin.fields import Field
-from odin.utils import value_in_choices
+from odin.utils import value_in_choices, getmeta
 from odin.validators import EMPTY_VALUES
 
 __all__ = ('CompositeField', 'DictAs', 'ObjectAs', 'ListOf', 'ArrayOf', 'DictOf')
@@ -25,9 +25,7 @@ class CompositeField(Field):
         :param options: Additional options passed to :py:class:`odin.fields.Field` super class.
 
         """
-        try:
-            resource._meta
-        except AttributeError:
+        if not hasattr(resource, '_meta'):
             raise TypeError("``%r`` is not a valid type for a related field." % resource)
         self.of = resource
         self.use_container = use_container
@@ -43,7 +41,7 @@ class CompositeField(Field):
         if isinstance(value, self.of):
             return value
         if isinstance(value, dict):
-            return create_resource_from_dict(value, self.of._meta.resource_name)
+            return create_resource_from_dict(value, getmeta(self.of).resource_name)
         msg = self.error_messages['invalid'] % self.of
         raise exceptions.ValidationError(msg)
 

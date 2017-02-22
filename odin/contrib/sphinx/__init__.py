@@ -8,7 +8,7 @@ from sphinx.ext.autodoc import Documenter, ModuleLevelDocumenter, bool_option
 
 def reference_to(obj):
     if hasattr(obj, '_meta'):
-        return ":py:class:`%s`" % obj._meta.name
+        return ":py:class:`%s`" % getmeta(obj).name
     return obj
 
 

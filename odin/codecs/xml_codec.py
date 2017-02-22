@@ -7,7 +7,7 @@ from xml.sax import saxutils
 from odin import serializers
 from odin import fields
 from odin.fields import composite
-from odin.utils import attribute_field_iter_items, element_field_iter_items
+from odin.utils import attribute_field_iter_items, element_field_iter_items, getmeta
 
 XML_TYPES = {
     datetime.date: serializers.date_iso_format,
@@ -96,7 +96,7 @@ def dump(fp, resource, line_ending=''):
     :param resource: Resource to dump
     :param line_ending:
     """
-    meta = resource._meta
+    meta = getmeta(resource)
 
     # Write container and any attributes
     attributes = ''.join(
