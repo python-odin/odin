@@ -48,7 +48,7 @@ def reader(f, resource, includes_header=False, csv_module=csv, full_clean=True,
 
         # Handle strict fields
         if strict_fields and extra_fields:
-                raise CodecDecodeError("Extra unknown fields: {}".format(','.join(extra_fields)))
+                raise CodecDecodeError("Extra unknown fields: {0}".format(','.join(extra_fields)))
 
         mapping = []
         # Add expected fields
