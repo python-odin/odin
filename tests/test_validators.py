@@ -202,7 +202,7 @@ def test_validate_email_valid(value, kwargs):
     ('.foo@bar.com', None),
     ('foo@corpau', None),
     ('foo@localhost', {'whitelist': ''}),
-    ('foo@{}.com'.format('a' * 64), None),
+    ('foo@{0}.com'.format('a' * 64), None),
     ('foo@[::ff::0]', None),
 ))
 def test_validate_email_valid(value, kwargs):
