@@ -7,12 +7,14 @@ import six
 
 from odin import exceptions, datetimeutil, registration
 from odin.utils import value_in_choices, getmeta
-from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url
+from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url, \
+    validate_ipv4_address, validate_ipv6_address, validate_ipv46_address, validate_email_address
 from .base import BaseField
 
 __all__ = (
     'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField',
     'TimeField', 'NaiveTimeField', 'DateTimeField', 'NaiveDateTimeField', 'HttpDateTimeField', 'TimeStampField',
+    'EmailField', 'IPv4Field', 'IPv6Field', 'IPv46Field',
     'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField', 'TypedListField', 'TypedDictField', 'TypedObjectField'
 )
 
@@ -747,3 +749,59 @@ class TypedDictField(DictField):
             raise exceptions.ValidationError(value_errors)
 
 TypedObjectField = TypedDictField
+
+
+class EmailField(StringField):
+    """
+    An Email address.
+
+    Validates that a string represents a valid Email address.
+
+    """
+    data_type_name = "Email"
+
+    def __init__(self, **options):
+        options.setdefault('validators', []).append(validate_email_address)
+        super(EmailField, self).__init__(**options)
+
+
+class IPv4Field(StringField):
+    """
+    An IPv4 address.
+
+    Validates that a string represents a valid IPv4 address format.
+
+    """
+    data_type_name = "IPv4"
+
+    def __init__(self, **options):
+        options.setdefault('validators', []).append(validate_ipv4_address)
+        super(IPv4Field, self).__init__(**options)
+
+
+class IPv6Field(StringField):
+    """
+    An IPv6 address.
+
+    Validates that a string represents a valid IPv6 address format.
+
+    """
+    data_type_name = "IPv6"
+
+    def __init__(self, **options):
+        options.setdefault('validators', []).append(validate_ipv6_address)
+        super(IPv6Field, self).__init__(**options)
+
+
+class IPv46Field(StringField):
+    """
+    An IPv4 or IPv6 address.
+
+    Validates that a string represents a valid IPv4 or IPv6 address format.
+
+    """
+    data_type_name = "IPv46"
+
+    def __init__(self, **options):
+        options.setdefault('validators', []).append(validate_ipv46_address)
+        super(IPv46Field, self).__init__(**options)
