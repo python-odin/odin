@@ -14,6 +14,8 @@ class CaseLessStringList(list):
     Like a standard list this structure makes a copy of the existing data, while converting all entries to upper case
     strings.
 
+    .. note:: All items added to this list are converted to upper case
+
     """
     def __init__(self, iterable):
         super(CaseLessStringList, self).__init__(str(i).upper() for i in iterable)
