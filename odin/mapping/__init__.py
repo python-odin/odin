@@ -124,39 +124,6 @@ class ResourceFieldResolver(FieldResolverBase):
 registration.register_field_resolver(ResourceFieldResolver, Resource)
 
 
-def _generate_auto_mapping(name, from_fields, to_fields):
-    """
-    Generate the auto mapping between two fields.
-    """
-    from_field = from_fields[name]
-    to_field = to_fields[name]
-    name = force_tuple(name)
-
-    # Handle ListOf fields
-    if isinstance(from_field, ListOf) and isinstance(to_field, ListOf):
-        try:
-            mapping = registration.get_mapping(from_field.of, to_field.of)
-            return FieldMapping(name, MapListOf(mapping), name, to_list=False, bind=True, skip_if_none=False)
-        except KeyError:
-            # If both items are from and to fields refer to the same object automatically use a mapper that just
-            # produces a clone.
-            if from_field.of is to_field.of:
-                return FieldMapping(name, MapListOf(NoOpMapper), name, to_list=False, bind=True, skip_if_none=False)
-
-    # Handle DictAs fields
-    elif isinstance(from_field, DictAs) and isinstance(to_field, DictAs):
-        try:
-            mapping = registration.get_mapping(from_field.of, to_field.of)
-            return define(name, MapDictAs(mapping), name, bind=True)
-        except KeyError:
-            # If both items are from and to fields refer to the same object automatically use a mapper that just
-            # produces a clone.
-            if from_field.of is to_field.of:
-                return define(name, MapDictAs(NoOpMapper), name, bind=True)
-
-    return define(name, None, name)
-
-
 class MappingMeta(type):
     """
     Meta-class for all Mappings
@@ -184,12 +151,14 @@ class MappingMeta(type):
         to_obj = attrs.setdefault('to_obj', attrs.get('to_resource'))
         if to_obj is None:
             raise MappingSetupError('`to_obj` is not defined.')
+        register_mapping = attrs.pop('register_mapping', True)
 
         # Check if we have already created this mapping
-        try:
-            return registration.get_mapping(from_obj, to_obj)
-        except KeyError:
-            pass  # Not registered
+        if register_mapping:
+            try:
+                return registration.get_mapping(from_obj, to_obj)
+            except KeyError:
+                pass  # Not registered
 
         # Get field resolver objects
         try:
@@ -294,20 +263,67 @@ class MappingMeta(type):
         # Add auto mapped fields that are yet to be mapped.
         for field in unmapped_fields:
             if field in to_fields:
-                mapping_rules.append(_generate_auto_mapping(field, from_fields, to_fields))
+                mapping_rules.append(mcs.generate_auto_mapping(field, from_fields, to_fields))
 
         # Update attributes
         attrs['_mapping_rules'] = mapping_rules
         attrs['_subs'] = {}
 
-        registration.register_mapping(super_new(mcs, name, bases, attrs))
-        mapper = registration.get_mapping(from_obj, to_obj)
+        # Create mapper instance
+        mapper = super_new(mcs, name, bases, attrs)
+        if register_mapping:
+            registration.register_mapping(mapper)
+            mapper = registration.get_mapping(from_obj, to_obj)
 
-        # Register mapping with parents mapping objects as a sub class.
-        for parent in base_parents:
-            parent._subs[from_obj] = mapper
+            # Register mapping with parents mapping objects as a sub class.
+            for parent in base_parents:
+                parent._subs[from_obj] = mapper
 
         return mapper
+
+    @classmethod
+    def generate_auto_mapping(mcs, name, from_fields, to_fields):
+        """
+        Generate the auto mapping between two fields.
+        """
+        from_field = from_fields[name]
+        to_field = to_fields[name]
+        name = force_tuple(name)
+
+        # Handle ListOf fields
+        if isinstance(from_field, ListOf) and isinstance(to_field, ListOf):
+            return mcs.generate_list_to_list_mapping(name, from_field, to_field)
+
+        # Handle DictAs fields
+        elif isinstance(from_field, DictAs) and isinstance(to_field, DictAs):
+            return mcs.generate_dict_to_dict_mapping(name, from_field, to_field)
+
+        return define(name, 'default_action', name)
+
+    @classmethod
+    def generate_list_to_list_mapping(mcs, name, from_field, to_field):
+        """
+        Generate a mapping of list to list objects.
+        """
+        try:
+            mapping = registration.get_mapping(from_field.of, to_field.of)
+            return FieldMapping(name, MapListOf(mapping), name, to_list=False, bind=True, skip_if_none=False)
+        except KeyError:
+            # If both items are from and to fields refer to the same object automatically use a mapper that just
+            # produces a clone.
+            if from_field.of is to_field.of:
+                return FieldMapping(name, MapListOf(NoOpMapper), name, to_list=False, bind=True, skip_if_none=False)
+
+    @classmethod
+    def generate_dict_to_dict_mapping(mcs, name, from_field, to_field):
+        try:
+            mapping = registration.get_mapping(from_field.of, to_field.of)
+            return define(name, MapDictAs(mapping), name, bind=True)
+        except KeyError:
+            # If both items are from and to fields refer to the same object automatically use a mapper that just
+            # produces a clone.
+            if from_field.of is to_field.of:
+                return define(name, MapDictAs(NoOpMapper), name, bind=True)
 
 
 class MappingResult(bases.TypedResourceIterable):
@@ -388,6 +404,10 @@ class MappingBase(object):
     # Default mapping result object to use
     default_mapping_result = CachingMappingResult
 
+    # Register mapping with global registry, if the same resource pair
+    # is mapped in different ways then this might want to be set to False
+    register_mapping = True
+
     _mapping_rules = None
 
     @classmethod
@@ -464,6 +484,12 @@ class MappingBase(object):
         Is this mapping currently in a loop?
         """
         return bool(self.context.setdefault('_loop_idx', []))
+
+    def default_action(self, *from_values):
+        """
+        The default action that is applied for automatic mappings.
+        """
+        return from_values
 
     def _apply_rule(self, mapping_rule):
         # Unpack mapping definition and fetch from values

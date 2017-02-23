@@ -54,10 +54,10 @@ class TestMappingBase(object):
             FieldMapping(('not_auto_c5',), 'not_auto_c5', ('not_auto_c5',), False, False, False),
             FieldMapping(('comma_separated_string',), 'comma_separated_string', ('array_string',), True, False, False),
             FieldMapping(None, 'assigned_field', ('assigned_field',), False, False, False),
-            FieldMapping(('count',), None, ('count',), False, False, False),
+            FieldMapping(('count',), 'default_action', ('count',), False, False, False),
             FieldMapping(('child',), MapDictAs(NoOpMapper), ('child',), False, True, False),
             FieldMapping(('children',), MapListOf(NoOpMapper), ('children',), False, True, False),
-            FieldMapping(('title',), None, ('title',), False, False, False),
+            FieldMapping(('title',), 'default_action', ('title',), False, False, False),
         ], FromToMapping._mapping_rules)
 
     def test_map(self):
@@ -435,7 +435,7 @@ class TestSubClassMapping(object):
     def test_abstract_mapping_definitions(self):
         assertMappingEquivalent([
             FieldMapping(('foo',), 'foo', ('foo',), False, False, False),
-            FieldMapping(('bar',), None, ('bar',), False, False, False),
+            FieldMapping(('bar',), 'default_action', ('bar',), False, False, False),
         ], ResourceBToResourceY._mapping_rules)
 
         assertMappingEquivalent([
