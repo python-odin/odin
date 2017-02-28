@@ -15,7 +15,7 @@ Odin also comes with built in serialisation tools for importing and exporting da
 .. image:: https://img.shields.io/pypi/v/odin.svg?style=flat
     :target: https://pypi.python.org/pypi/odin/
 
-.. image:: https://img.shields.io/travis/python-odin/odin.svg?style=flat
+.. image:: https://img.shields.io/travis/python-odin/odin/master.svg?style=flat
     :target: https://travis-ci.org/python-odin/odin
     :alt: Travis CI Status
 
