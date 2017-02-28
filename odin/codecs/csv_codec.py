@@ -93,7 +93,7 @@ def value_fields(resource):
     """
     Iterator to get non-composite (eg value) fields for export
     """
-    meta = resource._meta  # noqa - Accessing a "protected" field is required in this case
+    meta = getmeta(resource)
     return [f for f in meta.all_fields if f not in meta.composite_fields]
 
 
