@@ -207,8 +207,6 @@ else:
         return total_seconds((dt - UNIX_EPOCH))
 
 
-ISO8601_DATE_STRING_RE = re.compile(
-    r"^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})$")
 ISO8601_TIME_STRING_RE = re.compile(
     r"^(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})(\.(?P<microseconds>\d+))?"
     r"(?P<timezone>Z|((?P<tz_sign>[-+])(?P<tz_hour>\d{2})(:(?P<tz_minute>\d{2}))?))?$")
@@ -225,16 +223,10 @@ def parse_iso_date_string(date_string):
     if not isinstance(date_string, six.string_types):
         raise ValueError("Expected string")
 
-    matches = ISO8601_DATE_STRING_RE.match(date_string)
-    if not matches:
+    try:
+        return datetime.datetime.strptime(date_string, '%Y-%m-%d').date()
+    except ValueError:
         raise ValueError("Expected ISO 8601 formatted date string.")
-
-    groups = matches.groupdict()
-    return datetime.date(
-        int(groups['year']),
-        int(groups['month']),
-        int(groups['day']),
-    )
 
 
 def parse_iso_time_string(time_string, default_timezone=utc):

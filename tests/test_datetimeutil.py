@@ -33,11 +33,14 @@ class TestTimezones(object):
 
 
 class TestParseIsoDateString(object):
-    def test_valid_values(self):
-        assert datetime.date(2014, 1, 13) == datetimeutil.parse_iso_date_string('2014-01-13')
+    @pytest.mark.parametrize('value', (
+        '2014-01-13', '2014-1-13'
+    ))
+    def test_valid_values(self, value):
+        assert datetime.date(2014, 1, 13) == datetimeutil.parse_iso_date_string(value)
 
     @pytest.mark.parametrize('value', (
-        123, '2014-1-13', '2014/01/13'
+        123, '2014/01/13'
     ))
     def test_invalid_values(self, value):
         pytest.raises(ValueError, datetimeutil.parse_iso_date_string, value)
