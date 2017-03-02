@@ -11,7 +11,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 setup(
     name='odin',
 
-    version='1.0b1',
+    version='1.0b2',
 
     description='Data-structure definition/validation/traversal, mapping and serialisation toolkit for Python',
     long_description=long_description,
