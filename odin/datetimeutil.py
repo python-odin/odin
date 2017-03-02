@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-import calendar
 import datetime
 import re
 import time
 import six
 import sys
-from email.utils import parsedate_tz as parse_http_datetime, formatdate as format_http_datetime
+from email.utils import parsedate_tz as parse_http_datetime
+from email.utils import formatdate as format_http_datetime  # noqa
 
 
 class IgnoreTimezone(object):
@@ -295,7 +295,7 @@ def to_ecma_datetime_string(dt, default_timezone=local):
 
     dt = get_tz_aware_dt(dt, default_timezone).astimezone(utc)
     return "%4i-%02i-%02iT%02i:%02i:%02i.%03iZ" % (
-        dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond/1000)
+        dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond / 1000)
 
 
 def parse_http_datetime_string(datetime_string):

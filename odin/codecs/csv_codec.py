@@ -99,7 +99,7 @@ class Reader(bases.TypedResourceIterable):
                     error_count += 1
 
                     # Add one to index as row "0" will be the header
-                    self.handle_validation_error(ve, idx+1)
+                    self.handle_validation_error(ve, idx + 1)
 
             self.error_count = error_count
 
