@@ -541,6 +541,8 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True,
 
     """
     assert isinstance(d, dict)
+    
+    d = d.copy()
 
     if copy_dict:
         d = d.copy()
