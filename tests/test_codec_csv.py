@@ -102,10 +102,7 @@ class TestReader(object):
 
     def test_headers_not_strict(self):
         with self.open_fixture('library-header-alt-order.csv') as f:
-            target = csv_codec.reader(f, Book, includes_header=True,
-                                      strict_fields=True)
-
             with pytest.raises(odin.exceptions.CodecDecodeError) as result:
-                list(target)
+                csv_codec.reader(f, Book, includes_header=True, strict_fields=True)
 
             assert str(result.value) == 'Extra unknown fields: Else'
