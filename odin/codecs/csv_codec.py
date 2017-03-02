@@ -6,7 +6,7 @@ from odin import bases
 from odin.datastructures import CaseLessStringList
 from odin.fields import NOT_PROVIDED
 from odin.resources import create_resource_from_iter, create_resource_from_dict
-from odin.utils import getmeta
+from odin.utils import getmeta, lazy_property
 from odin.exceptions import CodecDecodeError
 
 CONTENT_TYPE = 'text/csv'
@@ -73,6 +73,49 @@ def reader(f, resource, includes_header=False, csv_module=csv, full_clean=True,
             yield create_resource_from_iter(
                 (NOT_PROVIDED if col is None else col for col in row), resource, full_clean
             )
+
+
+class Reader(bases.TypedResourceIterable):
+    """
+    Customisable reader object.
+    """
+    csv_reader = csv.reader
+
+    includes_header = True
+    ignore_header_case = False
+    strict_fields = False
+
+    def __init__(self, f, resource_type, full_clean=True, **reader_kwargs):
+        """
+        Initialise a reader
+
+        :param f: Input file (or file like) object to read
+        :param resource_type: Resource type to use as field template.
+        :param full_clean: Perform a full clean on objects
+        :param reader_kwargs: kwargs to pass to the csv_reader
+
+        """
+        super(Reader, self).__init__(resource_type)
+        self.full_clean = full_clean
+
+        # Create reader instance
+        self._reader = self.csv_reader(f, **reader_kwargs)
+
+    def __iter__(self):
+        pass
+
+    @lazy_property
+    def header(self):
+        return None
+
+    def handle_validation_error(self, validation_error):
+        """
+        Method for handling of validation errors
+
+        :param validation_error:
+
+        """
+        raise validation_error
 
 
 class ResourceReader(csv.DictReader):
