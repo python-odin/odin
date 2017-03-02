@@ -1,3 +1,8 @@
+1.0b2
+=====
+- Added a redesigned CSV codec Reader to address issues with handling row-by-row processing and handling of row-level errors.
+- Removed filter-query (moved to feature branch)
+
 0.10b9
 ======
 - Added support for MultiPartField field type. A virtual field that allows for the easy generation of key values
