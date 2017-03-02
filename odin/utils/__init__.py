@@ -87,6 +87,22 @@ class cached_property(object):
         return value
 
 
+class lazy_property(object):
+    """
+    The bottle cached property, requires a alternate name so as not to
+    clash with existing cached_property behaviour
+    """
+    def __init__(self, func):
+        self.func = func
+        self.__doc__ = func.__doc__
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        value = instance.__dict__[self.func.__name__] = self.func(instance)
+        return value
+
+
 def getmeta(resource_or_instance):
     """
     Get meta object from a resource or resource instance.
