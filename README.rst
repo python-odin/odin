@@ -42,7 +42,7 @@ Highlights
 * Fields for building composite resources
 * Field and Resource level validation
 * Easy extension to support custom fields
-* Python 2.6 :sup:`1`, Python 2.7+, Python 3.3+ and PyPy :sup:`1` supported
+* Python 2.7 :sup:`1`, Python 2.7+, Python 3.4+ and PyPy :sup:`1` supported
 * Integration with Django (see `baldr <https://github.com/python-odin/baldr>`_)
 * Support for documenting resources with `Sphinx <http://sphinx-doc.org/>`_
 * Minimal dependencies (base functionality only requires *six*)
