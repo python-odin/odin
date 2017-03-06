@@ -85,7 +85,7 @@ class Reader(bases.TypedResourceIterable):
 
         if self.includes_header:
             mapping = self.field_mapping
-            error_count = 0
+            self.error_count = 0
 
             for idx, row in enumerate(self._reader):
                 # Check if row is less than mapping (as this will causes errors)!
@@ -96,12 +96,10 @@ class Reader(bases.TypedResourceIterable):
                 except ValidationError as ve:
                     # Don't raise these through yield as will cause a StopIteration
                     # even if validation error can be handled safely.
-                    error_count += 1
+                    self.error_count += 1
 
                     # Add one to index as row "0" will be the header
                     self.handle_validation_error(ve, idx + 1)
-
-            self.error_count = error_count
 
         else:
             for idx, row in enumerate(self._reader):
