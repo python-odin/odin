@@ -14,7 +14,7 @@ class ObjectValue(object):
     pass
 
 
-class TestValidator(object):
+class ValidatorTest(object):
     message = 'Default message'
     code = 'test_code'
 
@@ -32,7 +32,7 @@ class FieldTest(Field):
         return value
 
 
-class TestDynamicTypeNameField(IntegerField):
+class DynamicTypeNameFieldTest(IntegerField):
     @staticmethod
     def data_type_name(instance):
         return "Foo"
@@ -138,7 +138,7 @@ class TestField(object):
         assert field.name == target_copy.name
 
     def test_run_validators_and_override_validator_message(self):
-        target = FieldTest(error_messages={'test_code': 'Override message'}, validators=[TestValidator(True)])
+        target = FieldTest(error_messages={'test_code': 'Override message'}, validators=[ValidatorTest(True)])
 
         try:
             target.run_validators("Placeholder")
@@ -149,7 +149,7 @@ class TestField(object):
 
     def test_run_validators_and_override_validator_message_with_params(self):
         target = FieldTest(error_messages={'test_code': 'Override message: %s'},
-                           validators=[TestValidator(True, "123")])
+                           validators=[ValidatorTest(True, "123")])
 
         try:
             target.run_validators("Placeholder")
@@ -240,10 +240,12 @@ class TestFields(object):
             (BooleanField(), 'true', True),
             (BooleanField(), 'T', True),
             (BooleanField(), '1', True),
+            (BooleanField(), 'TRUE', True),
             (BooleanField(), False, False),
             (BooleanField(), 0, False),
             (BooleanField(), 'No', False),
             (BooleanField(), 'false', False),
+            (BooleanField(), 'FALSE', False),
             (BooleanField(), 'F', False),
             (BooleanField(), '0', False),
     ))
@@ -688,7 +690,7 @@ class TestFields(object):
         assert [1, 2, 3], f.clean([1, 2 == 3])
 
     def test_typed_list_field_dynamic_type_name(self):
-        f = TypedListField(TestDynamicTypeNameField(), null=True)
+        f = TypedListField(DynamicTypeNameFieldTest(), null=True)
         assert "List<Foo>" == f.data_type_name(f)
 
     # TypedDictField ##########################################################
@@ -743,8 +745,8 @@ class TestFields(object):
 
     def test_typed_dict_field_dynamic_type_name(self):
         f = TypedDictField(
-            TestDynamicTypeNameField(),
-            TestDynamicTypeNameField(),
+            DynamicTypeNameFieldTest(),
+            DynamicTypeNameFieldTest(),
         )
         assert "Dict<Foo, Foo>" == f.data_type_name(f)
 
