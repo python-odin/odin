@@ -35,6 +35,7 @@ class ResourceDocumenter(ModuleLevelDocumenter):
     option_spec = dict(
         include_virtual=bool_option,
         include_validators=bool_option,
+        api_documentation=bool_option,
         hide_choices=bool_option,
         **Documenter.option_spec
     )
@@ -44,11 +45,20 @@ class ResourceDocumenter(ModuleLevelDocumenter):
         return isinstance(member, ResourceBase)
 
     def add_directive_header(self, _):
-        meta = getmeta(self.object)
-        self.add_line(".. py:currentmodule:: %s" % meta.name_space, '<odin_sphinx>')
-        self.add_line(".. py:class:: %s" % meta.name, '<odin_sphinx>')
+        domain = getattr(self, 'domain', 'py')
+        directive = getattr(self, 'directivetype', self.objtype)
+        source_name = self.get_sourcename()
+
+        if self.options.get('api_documentation'):
+            meta = getmeta(self.object)
+            name = meta.resource_name
+        else:
+            name = self.format_name()
+
+        self.add_line(u'.. %s:%s:: %s' % (domain, directive, name), source_name)
+
         if self.options.noindex:
-            self.add_line('   :noindex:', '<odin_sphinx>')
+            self.add_line(u'   :noindex:', source_name)
 
     def build_field_triple(self, field):
         """
@@ -63,17 +73,17 @@ class ResourceDocumenter(ModuleLevelDocumenter):
             details.append(field.doc_text)
 
         if field.has_default():
-            details.append("\n\nDefault value: %s\n" % reference_to(field.get_default()))
+            details.append(u"\n\nDefault value: %s\n" % reference_to(field.get_default()))
 
-        if not self.options.hide_choices and field.choices:
-            details.append("\n\nChoices:\n")
+        if not self.options.get('hide_choices') and field.choices:
+            details.append(u"\n\nChoices:\n")
             for value, label in field.choices:
                 details.append("* %s - %s" % (value, label))
 
-        if self.options.include_validators and field.validators:
-            details.append("\n\nValidation rules:\n")
+        if self.options.get('include_validators') and field.validators:
+            details.append(u"\n\nValidation rules:\n")
             for validator in field.validators:
-                details.append("* %s" % validator)
+                details.append(u"* %s" % validator)
 
         # Generate the name of the type this field represents
         type_name = field.data_type_name

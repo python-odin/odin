@@ -212,7 +212,7 @@ class StringField(Field):
             self.validators.append(MaxLengthValidator(max_length))
 
     def to_python(self, value):
-        if isinstance(value, six.string_types) or value is None:
+        if value is None or isinstance(value, six.string_types):
             return value
         return str(value)
 

@@ -1,16 +1,11 @@
 language: python
 sudo: false
 python:
-  - "2.6"
   - "2.7"
   - "3.4"
   - "3.5"
+  - "3.6"
   - "pypy"
-
-branches:
-  only:
-    - master
-    - development
 
 install:
   - travis_retry pip install -r requirements.txt "jinja2>=2.7" msgpack-python pyyaml pytest pytest-cov

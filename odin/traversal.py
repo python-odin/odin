@@ -99,7 +99,8 @@ class TraversalPath(object):
                     result = result.values()
                 results = tuple(r for r in result if getattr(r, key) == value)
                 if len(results) == 0:
-                    raise NoMatchError(self, "Filter matched no values; `{0}` == `{1}` in {2}.".format(key, value, field))
+                    raise NoMatchError(
+                        self, "Filter matched no values; `{0}` == `{1}` in {2}.".format(key, value, field))
                 elif len(results) > 1:
                     raise MultipleMatchesError(
                         self, "Filter matched multiple values; `{0}` == `{1}`.".format(key, value))

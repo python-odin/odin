@@ -15,7 +15,7 @@ Odin also comes with built in serialisation tools for importing and exporting da
 .. image:: https://img.shields.io/pypi/v/odin.svg?style=flat
     :target: https://pypi.python.org/pypi/odin/
 
-.. image:: https://img.shields.io/travis/python-odin/odin.svg?style=flat
+.. image:: https://img.shields.io/travis/python-odin/odin/master.svg?style=flat
     :target: https://travis-ci.org/python-odin/odin
     :alt: Travis CI Status
 
@@ -42,7 +42,7 @@ Highlights
 * Fields for building composite resources
 * Field and Resource level validation
 * Easy extension to support custom fields
-* Python 2.6 :sup:`1`, Python 2.7+, Python 3.3+ and PyPy :sup:`1` supported
+* Python 2.7 :sup:`1`, Python 2.7+, Python 3.4+ and PyPy :sup:`1` supported
 * Integration with Django (see `baldr <https://github.com/python-odin/baldr>`_)
 * Support for documenting resources with `Sphinx <http://sphinx-doc.org/>`_
 * Minimal dependencies (base functionality only requires *six*)

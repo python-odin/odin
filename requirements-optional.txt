@@ -3,3 +3,4 @@ pint
 msgpack-python
 ply
 humanfriendly
+pyyaml
