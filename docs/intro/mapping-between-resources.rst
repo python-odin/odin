@@ -28,7 +28,7 @@ A mapping can be defined to map from a basic ``Event`` to the ``EventFrom``::
 
         # Simple mappings (From Field, Transformation, To Field)
         mappings = (
-            ('start_date', None, 'event_date'),
+            odin.define(from_field='start_date', to_field='event_date'),
         )
 
         # Mapping to multiple fields
