@@ -604,6 +604,12 @@ class Mapping(six.with_metaclass(MappingMeta, MappingBase)):
     mappings = []
 
 
+class DynamicMapping(MappingBase):
+    """
+    A mapping that is dynamically generated at run time.
+    """
+
+
 class ImmediateMapping(six.with_metaclass(MappingMeta, MappingBase)):
     """
     Definition of a mapping between two Objects.
@@ -675,9 +681,11 @@ def assign_field(func=None, to_field=None, to_list=False):
     return inner(func) if func else inner
 
 
-def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=True,
+def mapping_factory(from_obj, to_obj, base_mapping=Mapping,
+                    generate_reverse=True,
                     mappings=None, reverse_mappings=None,
-                    exclude_fields=None, reverse_exclude_fields=None):
+                    exclude_fields=None, reverse_exclude_fields=None,
+                    register_mappings=True):
     """
     Factory method for generating simple mappings between objects.
 
@@ -693,8 +701,9 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=Tru
         used if ``generate_reverse`` is True.
     :param exclude_fields: Fields to exclude from auto-generated mappings
     :param reverse_exclude_fields: Fields to exclude from auto-generated reverse mappings.
+    :param register_mappings: Register mapping in mapping lookup cache.
     :return: if generate_reverse is True a tuple(forward_mapping, reverse_mapping); else just the forward_mapping.
-    :rtype: Mapping
+    :rtype: Mapping | (Mapping, Mapping)
 
     """
     forward_mapping = type(
@@ -707,7 +716,8 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=Tru
             from_obj=from_obj,
             to_obj=to_obj,
             exclude_fields=exclude_fields or list(),
-            mappings=mappings or dict()
+            mappings=mappings or dict(),
+            register_mapping=register_mappings
         )
     )
 
@@ -722,7 +732,8 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=Tru
                 from_obj=to_obj,
                 to_obj=from_obj,
                 exclude_fields=reverse_exclude_fields or list(),
-                mappings=reverse_mappings or dict()
+                mappings=reverse_mappings or dict(),
+                register_mapping=register_mappings
             )
         )
 
@@ -744,3 +755,27 @@ def forward_mapping_factory(from_obj, to_obj, base_mapping=Mapping, mappings=Non
 
     """
     return mapping_factory(from_obj, to_obj, base_mapping, False, mappings, None, exclude_fields, None)
+
+
+def dynamic_mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=False,
+                            mappings=None, reverse_mappings=None,
+                            exclude_fields=None, reverse_exclude_fields=None):
+    """
+    Factory method for generating a dynamic mapping. That is generated dynamically at run time (eg from
+    configuration the results of which are not registered for later use.
+    
+    :param from_obj: Object to map from.
+    :param to_obj: Object to map to.
+    :param base_mapping: Base mapping class; default is ``odin.Mapping``.
+    :param generate_reverse: Generate the reverse of the mapping ie swap from_obj and to_obj.
+    :param mappings: User provided mappings (this is equivalent ot ``odin.Mapping.mappings``)
+    :param reverse_mappings: User provided reverse mappings (this is equivalent ot ``odin.Mapping.mappings``). Only
+        used if ``generate_reverse`` is True.
+    :param exclude_fields: Fields to exclude from auto-generated mappings
+    :param reverse_exclude_fields: Fields to exclude from auto-generated reverse mappings.
+    :return: if generate_reverse is True a tuple(forward_mapping, reverse_mapping); else just the forward_mapping.
+    :rtype: Mapping | (Mapping, Mapping)
+    
+    """
+    return mapping_factory(from_obj, to_obj, base_mapping, generate_reverse, mappings, reverse_mappings,
+                           exclude_fields, reverse_exclude_fields, False)
