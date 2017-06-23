@@ -41,6 +41,11 @@ class Reader(bases.TypedResourceIterable):
     CSV Dialect to use; defaults to the CSV libraries default value of *excel*.
     """
 
+    default_empty_value = ''
+    """
+    The default value to use if a field is empty. This can be used to default to *None*.
+    """
+
     def __init__(self, f, resource_type, full_clean=True, error_callback=None, **reader_kwargs):
         """
         Initialise a reader
@@ -81,7 +86,11 @@ class Reader(bases.TypedResourceIterable):
         # Local vars
         resource = self.resource_type
         full_clean = self.full_clean
+        default_empty_value = self.default_empty_value
         idx = -1
+
+        def filter_empty(values):
+            return (default_empty_value if v == '' else v for v in values)
 
         if self.includes_header:
             mapping = self.field_mapping
@@ -91,7 +100,7 @@ class Reader(bases.TypedResourceIterable):
                 # Check if row is less than mapping (as this will causes errors)!
                 try:
                     yield create_resource_from_iter(
-                        (NOT_PROVIDED if s is None else row[s] for s in mapping), resource, full_clean
+                        filter_empty(s if s is NOT_PROVIDED else row[s] for s in mapping), resource, full_clean
                     )
                 except ValidationError as ve:
                     # Don't raise these through yield as will cause a StopIteration
@@ -104,7 +113,7 @@ class Reader(bases.TypedResourceIterable):
         else:
             for idx, row in enumerate(self._reader):
                 yield create_resource_from_iter(
-                    (NOT_PROVIDED if col is None else col for col in row), resource, full_clean
+                    filter_empty(row), resource, full_clean
                 )
 
         self.row_count = idx + 1  # Add one to get a count from the last index
@@ -160,7 +169,7 @@ class Reader(bases.TypedResourceIterable):
             if name in header:
                 mapping.append(header.index(name))
             else:
-                mapping.append(None)
+                mapping.append(NOT_PROVIDED)
 
         # Append any extra fields
         for name in self.extra_field_names:

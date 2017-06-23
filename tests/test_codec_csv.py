@@ -19,6 +19,7 @@ class Book(odin.Resource):
     ), null=True)
     author = odin.StringField(name="Author")
     publisher = odin.StringField(name="Publisher")
+    language = odin.StringField(name="Language", null=True)
 
     def extra_attrs(self, attrs):
         self.extras = attrs
@@ -92,6 +93,9 @@ class TestReader(object):
             'Macmillan',
             'Corgi Books',
         ]
+        assert [book.language for book in library] == [
+            'English', '', 'English', '', 'English', 'English'
+        ]
 
     def test_extra_fields(self):
         with self.open_fixture('library-header-alt-order.csv') as f:
@@ -106,3 +110,13 @@ class TestReader(object):
                 csv_codec.reader(f, Book, includes_header=True, strict_fields=True)
 
             assert str(result.value) == 'Extra unknown fields: Else'
+
+    def test_default_empty_value_is_none(self):
+        with self.open_fixture('library-valid.csv') as f:
+            target = csv_codec.reader(f, Book, includes_header=True)
+            target.default_empty_value = None
+            library = list(target)
+
+        assert [book.language for book in library] == [
+            'English', None, 'English', None, 'English', 'English'
+        ]
