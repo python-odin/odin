@@ -120,3 +120,31 @@ class TestReader(object):
         assert [book.language for book in library] == [
             'English', None, 'English', None, 'English', 'English'
         ]
+
+    def test_error(self):
+        with self.open_fixture('library-invalid.csv') as f:
+            target = csv_codec.reader(f, Book, includes_header=True)
+
+            with pytest.raises(odin.exceptions.ValidationError):
+                list(target)
+
+    def test_error_handler(self):
+        errors = []
+
+        def error_handler(_, idx):
+            errors.append(idx)
+
+        with self.open_fixture('library-invalid.csv') as f:
+            target = csv_codec.reader(f, Book, includes_header=True, error_callback=error_handler)
+            library = list(target)
+
+        assert len(library) == 4
+        assert len(errors) == 2
+        assert errors == [3, 5]
+
+    def test_error_handler_returns_false(self):
+        with self.open_fixture('library-invalid.csv') as f:
+            target = csv_codec.reader(f, Book, includes_header=True, error_callback=lambda v, i: False)
+
+            with pytest.raises(odin.exceptions.ValidationError):
+                list(target)

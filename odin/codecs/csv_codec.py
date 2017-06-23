@@ -83,38 +83,48 @@ class Reader(bases.TypedResourceIterable):
         self.error_count = None
 
     def __iter__(self):
+        # Reset error count
+        self.error_count = 0
+
         # Local vars
         resource = self.resource_type
         full_clean = self.full_clean
         default_empty_value = self.default_empty_value
+        handle_validation_error = getattr(self, 'handle_validation_error', None)
         idx = -1
 
-        def filter_empty(values):
-            return (default_empty_value if v == '' else v for v in values)
+        def create_resource(values, i):
+            try:
+                return create_resource_from_iter(
+                    # Handle empty values
+                    (default_empty_value if v == '' else v for v in values),
+                    resource, full_clean
+                )
+            except ValidationError as ve:
+                # Don't raise these through yield as will cause a StopIteration
+                # even if validation error can be handled safely.
+                self.error_count += 1
+                if not handle_validation_error:
+                    raise
+                # If handle error explicitly returns False raise exception
+                if handle_validation_error(ve, i) is False:
+                    raise
 
         if self.includes_header:
             mapping = self.field_mapping
-            self.error_count = 0
 
             for idx, row in enumerate(self._reader):
                 # Check if row is less than mapping (as this will causes errors)!
-                try:
-                    yield create_resource_from_iter(
-                        filter_empty(s if s is NOT_PROVIDED else row[s] for s in mapping), resource, full_clean
-                    )
-                except ValidationError as ve:
-                    # Don't raise these through yield as will cause a StopIteration
-                    # even if validation error can be handled safely.
-                    self.error_count += 1
-
-                    # Add one to index as row "0" will be the header
-                    self.handle_validation_error(ve, idx + 1)
-
+                res = create_resource(
+                    (s if s is NOT_PROVIDED else row[s] for s in mapping),
+                    idx + 1)  # Add one to index as row "0" will be the header
+                if res:
+                    yield res
         else:
             for idx, row in enumerate(self._reader):
-                yield create_resource_from_iter(
-                    filter_empty(row), resource, full_clean
-                )
+                res = create_resource(row, idx)
+                if res:
+                    yield res
 
         self.row_count = idx + 1  # Add one to get a count from the last index
 
@@ -176,16 +186,6 @@ class Reader(bases.TypedResourceIterable):
             mapping.append(header.index(name))
 
         return tuple(mapping)
-
-    def handle_validation_error(self, validation_error, row_index):
-        """
-        Method for handling of validation errors
-
-        :param validation_error: Validation error raised during processing.
-        :param row_index: Index number of the row.
-
-        """
-        raise validation_error
 
 
 def reader(f, resource, includes_header=False, csv_module=csv, full_clean=True,
