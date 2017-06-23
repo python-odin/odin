@@ -61,6 +61,7 @@ def validation_error_handler(exception, field, errors):
         errors.append(message)
     else:
         errors.extend(exception.messages)
+
 registration.register_validation_error_handler(ValidationError, validation_error_handler)
 
 
