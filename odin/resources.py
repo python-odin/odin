@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import copy
 import six
-from odin import bases
 
+from odin import bases
 from odin import exceptions, registration
 from odin.exceptions import ValidationError
 from odin.fields import NOT_PROVIDED
@@ -14,7 +14,7 @@ DEFAULT_TYPE_FIELD = '$'
 class ResourceOptions(object):
     META_OPTION_NAMES = (
         'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group',
-        'type_field', 'key_field_name', 'key_field_names', 'sort_parent_fields'
+        'type_field', 'key_field_name', 'key_field_names', 'field_sorting'
     )
 
     def __init__(self, meta):
@@ -33,7 +33,7 @@ class ResourceOptions(object):
         self.doc_group = None
         self.type_field = DEFAULT_TYPE_FIELD
         self.key_field_names = None
-        self.sort_parent_fields = False
+        self.field_sorting = False
 
         self._cache = {}
 
@@ -249,7 +249,7 @@ class ResourceType(type):
             new_class.add_to_class(obj_name, obj)
 
         # Sort the fields
-        if not new_meta.sort_parent_fields:
+        if not new_meta.field_sorting:
             new_meta.fields = sorted(new_meta.fields, key=hash)
 
         # All the fields of any type declared on this model
@@ -282,8 +282,11 @@ class ResourceType(type):
             new_meta.parents.append(base)
 
         # Sort the fields
-        if new_meta.sort_parent_fields:
-            new_meta.fields = sorted(new_meta.fields, key=hash)
+        if new_meta.field_sorting:
+            if callable(new_meta.field_sorting):
+                new_meta.fields = new_meta.field_sorting(new_meta.fields)
+            else:
+                new_meta.fields = sorted(new_meta.fields, key=hash)
 
         # If a key_field is defined ensure it exists
         if new_meta.key_field_names:
