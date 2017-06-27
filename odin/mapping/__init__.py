@@ -367,7 +367,7 @@ class CachingMappingResult(MappingResult):
     """
     def __init__(self, *args, **kwargs):
         super(CachingMappingResult, self).__init__(*args, **kwargs)
-        self._cache = None
+        self._cache = None  # type: list
 
     def __iter__(self):
         if self._cache is None:
@@ -382,6 +382,7 @@ class CachingMappingResult(MappingResult):
 
     @property
     def items(self):
+        # type: () -> list
         if self._cache is None:
             list(iter(self))
         return self._cache
@@ -394,8 +395,8 @@ class CachingMappingResult(MappingResult):
 
 
 class MappingBase(object):
-    from_obj = None
-    to_obj = None
+    from_obj = None  # type: type
+    to_obj = None  # type: type
 
     # Pending deprecation, move to from_obj and to_obj terminology
     from_resource = None
