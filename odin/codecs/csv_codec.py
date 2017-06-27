@@ -1,8 +1,25 @@
 # -*- coding: utf-8 -*-
+"""
+CSV Codec
+~~~~~~~~~
+
+Codec for iterating a CSV file and parsing into a Resource.
+
+The CSV codec is codec that yields multiple resources rather than a single document.
+The CSV codec does not support nesting of resources.
+
+Reading data from a CSV file::
+
+    with open("my_file.csv") as f:
+        with resource in csv_codec.reader(f, MyResource):
+            ...
+
+"""
 import six
 import csv
 
 from odin import bases
+from odin.compatibility import deprecated
 from odin.datastructures import CaseLessStringList
 from odin.fields import NOT_PROVIDED
 from odin.resources import create_resource_from_iter, create_resource_from_dict
@@ -202,6 +219,7 @@ def reader(f, resource, includes_header=False, csv_module=csv, full_clean=True,
     :param ignore_header_case: Ignore the letter case on header
     :param strict_fields: Extra fields cannot be provided.
     :return: Iterable reader object
+    :rtype: Reader
 
     """
     return Reader(f, resource, full_clean,
@@ -212,6 +230,7 @@ def reader(f, resource, includes_header=False, csv_module=csv, full_clean=True,
                   **kwargs)
 
 
+@deprecated("This class will be removed in 1.1 migrate to the `reader` method.")
 class ResourceReader(csv.DictReader):
     def __init__(self, f, resource, *args, **kwargs):
         self.resource = resource

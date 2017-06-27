@@ -207,47 +207,6 @@ This would produce a JSON document of::
         ]
     }
 
-Meta options
-============
-
-Give your resource metadata by using an inner ``class Meta``, like so::
-
-    class Book(odin.Resource):
-        title = odin.StringField()
-
-        class Meta:
-            name_space = "library"
-            verbose_name_plural = "Books"
-
-Resource metadata is “anything that’s not a field”, module_name and human-readable plural names (verbose_name and
-verbose_name_plural). None are required, and adding class Meta to a resource is completely optional.
-
-``name``
-    Override the name of a resource. This is the name used to represent the resource in a JSON document. The default
-    name is the name of the class used to define the resource.
-
-``name_space``
-    The name space is an optional string value that is used to group a set of common resources. Typically a namespace
-    should be in the form of dot-atoms eg: *university.library* or *org.poweredbypenguins*. The default is no namespace.
-
-``verbose_name``
-    A long version of the name for used when displaying a resource or in generated documentation. The default
-    *verbose_name* is a *name* attribute that has been converted to lower case and spaces put before each upper case
-    character eg: ``LibraryBook`` -> "*library book*"
-
-``verbose_name_plural``
-    A pluralised version of the *verbose_name*. The default is to use the verbose name and append an 's' character. In
-    the case of many words this does not work correctly so this attribute allows for the default behaviour to be
-    overridden.
-
-``abstract``
-    Marks the current resource as an **abstract** resource. See the section :ref:`resources-abstract` for more detail of
-    the abstract attribute. The default value for *abstract* is :const:`False`.
-
-``doc_group``
-    A grouping for documentation purposes. This is purely optional but is useful for grouping common elements together.
-    The default value for *doc_group* is :class:`None`.
-
 
 Resource inheritance
 ====================
