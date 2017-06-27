@@ -14,7 +14,7 @@ DEFAULT_TYPE_FIELD = '$'
 class ResourceOptions(object):
     META_OPTION_NAMES = (
         'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'abstract', 'doc_group',
-        'type_field', 'key_field_name', 'key_field_names'
+        'type_field', 'key_field_name', 'key_field_names', 'sort_parent_fields'
     )
 
     def __init__(self, meta):
@@ -33,6 +33,7 @@ class ResourceOptions(object):
         self.doc_group = None
         self.type_field = DEFAULT_TYPE_FIELD
         self.key_field_names = None
+        self.sort_parent_fields = False
 
         self._cache = {}
 
@@ -248,7 +249,8 @@ class ResourceType(type):
             new_class.add_to_class(obj_name, obj)
 
         # Sort the fields
-        new_meta.fields = sorted(new_meta.fields, key=hash)
+        if not new_meta.sort_parent_fields:
+            new_meta.fields = sorted(new_meta.fields, key=hash)
 
         # All the fields of any type declared on this model
         local_field_attnames = set([f.attname for f in new_meta.fields])
@@ -278,6 +280,10 @@ class ResourceType(type):
 
             new_meta.parents += base_meta.parents
             new_meta.parents.append(base)
+
+        # Sort the fields
+        if new_meta.sort_parent_fields:
+            new_meta.fields = sorted(new_meta.fields, key=hash)
 
         # If a key_field is defined ensure it exists
         if new_meta.key_field_names:

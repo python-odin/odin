@@ -31,18 +31,25 @@ class ResourceA(odin.Resource):
         abstract = True
         namespace = "example"
 
+    a = odin.StringField()
+
 
 class ResourceB(ResourceA):
     class Meta:
         abstract = True
 
+    b = odin.StringField()
+
 
 class ResourceC(ResourceB):
-    pass
+    c = odin.StringField()
 
 
 class ResourceD(ResourceC):
-    pass
+    class Meta:
+        sort_parent_fields = True
+
+    d = odin.StringField()
 
 
 class TestResource(object):
@@ -143,6 +150,12 @@ class TestResource(object):
         assert [ResourceA] == ResourceB._meta.parents
         assert [ResourceA, ResourceB] == ResourceC._meta.parents
         assert [ResourceA, ResourceB, ResourceC] == ResourceD._meta.parents
+
+    def test_inherited_field_order(self):
+        assert ['c', 'b', 'a'] == [f.name for f in ResourceC._meta.fields]
+
+    def test_inherited_field_order__sort_parent_fields(self):
+        assert ['a', 'b', 'c', 'd'] == [f.name for f in ResourceD._meta.fields]
 
 
 class TestMetaOptions(object):
