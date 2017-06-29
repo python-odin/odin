@@ -24,9 +24,9 @@ A simple example of a customised :class:`csv.Dialect` and
         """
         Custom CSV dialect
         """
-        delimiter = '\t'  # Tab delimited
-        quotechar = '"'   # Double quotes for quoting
-        lineterminator = '\n'  # Unix line termination
+        delimiter = '\t'       # Tab delimited
+        quotechar = '"'        # Double quotes for quoting
+        lineterminator = '\n'  # UNIX style line termination
 
 
     class MyFileReader(csv_codec.Reader):
