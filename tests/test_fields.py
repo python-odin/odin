@@ -248,6 +248,7 @@ class TestFields(object):
             (BooleanField(), 'FALSE', False),
             (BooleanField(), 'F', False),
             (BooleanField(), '0', False),
+            (BooleanField(null=True), None, None),
     ))
     def test_booleanfield_success(self, field, value, actual):
         assert field.clean(value) == actual
