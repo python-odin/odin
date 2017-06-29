@@ -8,3 +8,4 @@ Examples of odin usage to get you started.
    :maxdepth: 2
 
    adapters
+   csv_codec
