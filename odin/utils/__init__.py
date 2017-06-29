@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import typing
 
 _CAMEL_CASE_RE = re.compile(r'[A-Z]')
 _LOWER_UNDERSCORE_CASE_RE = re.compile(r'_([a-z])')
@@ -104,6 +105,7 @@ class lazy_property(object):
 
 
 def getmeta(resource_or_instance):
+    # type: (typing.Type[odin.resources.ResourceType]) -> odin.resources.ResourceOptions
     """
     Get meta object from a resource or resource instance.
 
@@ -238,21 +240,24 @@ def force_tuple(value):
 
 def chunk(iterable, n):
     """
-    Return list of n items from an iterable.
+    Return iterable of n items from an iterable.
 
     :param iterable: Iterable of items
     :param n: Size of iterable chunks to return.
     :type n: int
-    :return: List containing n items.
-    :rtype: list[T]
+    :return: Iterable chunk of input iterable
+    :rtype: iter[T]
 
     """
-    items = []
-    for item in iterable:
-        items.append(item)
-        if len(items) == n:
-            yield items
-            items = []
+    iterable = iter(iterable)
+    state = {'continue': True}
 
-    if items:
-        yield items
+    def inner():
+        for _ in range(n):
+            try:
+                yield next(iterable)
+            except StopIteration:
+                state['continue'] = False
+
+    while state['continue']:
+        yield inner()

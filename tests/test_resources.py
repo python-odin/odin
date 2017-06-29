@@ -31,18 +31,36 @@ class ResourceA(odin.Resource):
         abstract = True
         namespace = "example"
 
+    a = odin.StringField()
+
 
 class ResourceB(ResourceA):
     class Meta:
         abstract = True
 
+    b = odin.StringField()
+
 
 class ResourceC(ResourceB):
-    pass
+    c = odin.StringField()
 
 
 class ResourceD(ResourceC):
-    pass
+    class Meta:
+        field_sorting = True
+
+    d = odin.StringField()
+
+
+def sort_by_name(fields):
+    return sorted(fields, key=lambda f: f.name)
+
+
+class ResourceE(ResourceD):
+    class Meta:
+        field_sorting = sort_by_name
+
+    aa = odin.StringField()
 
 
 class TestResource(object):
@@ -143,6 +161,15 @@ class TestResource(object):
         assert [ResourceA] == ResourceB._meta.parents
         assert [ResourceA, ResourceB] == ResourceC._meta.parents
         assert [ResourceA, ResourceB, ResourceC] == ResourceD._meta.parents
+
+    def test_field_sorting(self):
+        assert ['c', 'b', 'a'] == [f.name for f in ResourceC._meta.fields]
+
+    def test_field_sorting__enabled(self):
+        assert ['a', 'b', 'c', 'd'] == [f.name for f in ResourceD._meta.fields]
+
+    def test_field_sorting__callable(self):
+        assert ['a', 'aa', 'b', 'c', 'd'] == [f.name for f in ResourceE._meta.fields]
 
 
 class TestMetaOptions(object):

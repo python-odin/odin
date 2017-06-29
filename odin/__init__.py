@@ -1,7 +1,7 @@
 __authors__ = "Tim Savage"
 __author_email__ = "tim@savage.company"
 __copyright__ = "Copyright (C) 2014 Tim Savage"
-__version__ = "1.0b3"
+__version__ = "1.0"
 
 # Disable logging if an explicit handler is not added
 try:

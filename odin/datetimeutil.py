@@ -22,13 +22,13 @@ class UTC(datetime.tzinfo):
     """
     UTC timezone.
     """
-    def utcoffset(self, dt):
+    def utcoffset(self, _):
         return ZERO
 
-    def tzname(self, dt):
+    def tzname(self, _):
         return "UTC"
 
-    def dst(self, dt):
+    def dst(self, _):
         return ZERO
 
     def __str__(self):
@@ -125,13 +125,13 @@ class FixedTimezone(datetime.tzinfo):
         self.offset = offset or ZERO
         self.name = name or ''
 
-    def utcoffset(self, dt):
+    def utcoffset(self, _):
         return self.offset
 
-    def dst(self, dt):
+    def dst(self, _):
         return ZERO
 
-    def tzname(self, dt):
+    def tzname(self, _):
         return self.name
 
     def __str__(self):

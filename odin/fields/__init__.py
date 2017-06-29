@@ -163,7 +163,7 @@ class BooleanField(Field):
     default_error_messages = {
         'invalid': "'%s' value must be either True or False."
     }
-    true_strings = ('t', 'true', 'y', 'yes', 'on', '1')
+    true_strings = ('t', 'true', 'y', 'yes', 'on', '1', '✓')
     false_strings = ('f', 'false', 'n', 'no', 'off', '0')
     data_type_name = "Boolean"
 
