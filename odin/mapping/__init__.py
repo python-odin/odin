@@ -772,7 +772,7 @@ def dynamic_mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_rev
     """
     Factory method for generating a dynamic mapping. That is generated dynamically at run time (eg from
     configuration the results of which are not registered for later use.
-    
+
     :param from_obj: Object to map from.
     :param to_obj: Object to map to.
     :param base_mapping: Base mapping class; default is ``odin.Mapping``.
@@ -784,7 +784,7 @@ def dynamic_mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_rev
     :param reverse_exclude_fields: Fields to exclude from auto-generated reverse mappings.
     :return: if generate_reverse is True a tuple(forward_mapping, reverse_mapping); else just the forward_mapping.
     :rtype: Mapping | (Mapping, Mapping)
-    
+
     """
     return mapping_factory(from_obj, to_obj, base_mapping, generate_reverse, mappings, reverse_mappings,
                            exclude_fields, reverse_exclude_fields, False)
