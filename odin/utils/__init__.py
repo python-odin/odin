@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import typing
 
 _CAMEL_CASE_RE = re.compile(r'[A-Z]')
 _LOWER_UNDERSCORE_CASE_RE = re.compile(r'_([a-z])')
@@ -104,6 +105,7 @@ class lazy_property(object):
 
 
 def getmeta(resource_or_instance):
+    # type: (typing.Type[odin.resources.ResourceType]) -> odin.resources.ResourceOptions
     """
     Get meta object from a resource or resource instance.
 
