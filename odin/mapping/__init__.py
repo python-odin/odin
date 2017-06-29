@@ -298,7 +298,7 @@ class MappingMeta(type):
         elif isinstance(from_field, DictAs) and isinstance(to_field, DictAs):
             return mcs.generate_dict_to_dict_mapping(name, from_field, to_field)
 
-        return define(name, 'default_action', name)
+        return define(name, 'default_action')
 
     @classmethod
     def generate_list_to_list_mapping(mcs, name, from_field, to_field):
@@ -486,11 +486,19 @@ class MappingBase(object):
         """
         return bool(self.context.setdefault('_loop_idx', []))
 
-    def default_action(self, *from_values):
+    def default_action(self, value):
+        """
+        The default action used when mapping. This is a bit of a special case in that it defaults to being bound
+        and makes use of of :func:`functools.partial` to bind the from and to fields.
+
+        :param value: The value to be mapped.
+        :return: Mapped value.
+
+        """
         """
         The default action that is applied for automatic mappings.
         """
-        return from_values
+        return value
 
     def _apply_rule(self, mapping_rule):
         # Unpack mapping definition and fetch from values
