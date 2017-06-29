@@ -55,11 +55,11 @@ This can then be used with::
 Handling errors
 ===============
 
-As resources are generated while reading the validation errors also need to be
-handled as they are generated. The default behavior is for a validation error
-to be raised when a invalid row is encountered effectively stopping processing,
-however it may be valid to skip bad rows or a report of bad rows may need to be
-generated and stopping processing is not a good solution.
+As resources are generated as each CSV row is read any validation errors raised
+also need to be handled. The default behavior is for a validation error to be
+raised when a invalid row is encountered effectively stopping processing.
+However, it may be valid to skip bad rows or, a report of bad rows can be
+generated and processing continued.
 
 There are two approaches that can be used:
 
@@ -67,8 +67,8 @@ There are two approaches that can be used:
 2. Sub-class the :class:`odin.codecs.csv_codec.Reader` class and implement a
     custom ``handle_validation_error`` method to process errors.
 
-.. note:
-    Providing an ``error_callback`` will overwrite a custom
+.. note::
+    Providing an ``error_callback`` will overwrite any custom
     ``handle_validation_error`` method.
 
 The ``error_callback`` option is the simplest::
