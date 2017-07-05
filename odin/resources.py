@@ -549,7 +549,8 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True,
         to support merging an updated value.
 
     """
-    assert isinstance(d, dict)
+    if not isinstance(d, dict):
+        raise TypeError('`d` must be a dict instance.')
 
     if copy_dict:
         d = d.copy()

@@ -58,8 +58,11 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
 
     """
     # try:
-    return resources.build_object_graph(yaml.load(fp, SafeLoader), resource, full_clean, False,
-                                        default_to_not_supplied)
+    return resources.build_object_graph(
+        #  The SafeLoader is used here, this is to allow for CSafeLoader to be used.
+        yaml.load(fp, SafeLoader),  # nosec - B506:yaml_load
+        resource, full_clean, False, default_to_not_supplied
+    )
     # except (ValueError, TypeError) as ex:
     #     raise CodecDecodeError(str(ex))
 

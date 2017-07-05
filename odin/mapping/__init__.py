@@ -555,8 +555,6 @@ class MappingBase(object):
         :param field_values: Initial field values (or fields not provided by source object);
 
         """
-        assert hasattr(self, '_mapping_rules')
-
         values = field_values
 
         for mapping_rule in self._mapping_rules:
@@ -573,8 +571,6 @@ class MappingBase(object):
         :param fields: Collection of fields that should be mapped.
 
         """
-        assert hasattr(self, '_mapping_rules')
-
         ignore_fields = ignore_fields or []
 
         for mapping_rule in self._mapping_rules:
@@ -595,8 +591,6 @@ class MappingBase(object):
         :return: set of fields that vary.
 
         """
-        assert hasattr(self, '_mapping_rules')
-
         diff_fields = set()
         for mapping_rule in self._mapping_rules:
             for name, value in self._apply_rule(mapping_rule).items():
