@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import six
 import datetime
 
 from odin.utils import getmeta
@@ -11,6 +12,12 @@ try:
     import simplejson as json
 except ImportError:
     import json
+
+LIST_TYPES = [bases.ResourceIterable]
+if six.PY3:
+    import typing
+    LIST_TYPES += [typing.ValuesView, typing.KeysView]
+LIST_TYPES = tuple(LIST_TYPES)
 
 JSON_TYPES = {
     datetime.date: serializers.date_iso_format,
@@ -36,11 +43,11 @@ class OdinEncoder(json.JSONEncoder):
             if self.include_type_field:
                 obj[meta.type_field] = meta.resource_name
             return obj
-        elif isinstance(o, bases.ResourceIterable):
+        elif isinstance(o, LIST_TYPES):
             return list(o)
         elif o.__class__ in JSON_TYPES:
             return JSON_TYPES[o.__class__](o)
-        return super(OdinEncoder, self)
+        return super(OdinEncoder, self).default(o)
 
 
 def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
