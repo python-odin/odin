@@ -4,6 +4,23 @@ from odin.fields import NOT_PROVIDED
 from odin.utils import getmeta
 
 
+class FieldProxyDescriptor(object):
+    """
+    Descriptor to proxy field to underlying resource.
+    """
+    __slots__ = ('resource', 'name')
+
+    def __init__(self, resource, name):
+        self.resource = resource
+        self.name = name
+
+    def __get__(self, instance, owner):
+        return getattr(self.resource, self.name)
+
+    def __set__(self, instance, value):
+        return setattr(self.resource, self.name, value)
+
+
 class ResourceProxyOptions(object):
     META_OPTION_NAMES = (
         'resource', 'include', 'exclude', 'readonly',
@@ -94,16 +111,19 @@ class ResourceProxyType(type):
 
         base_meta = getmeta(meta.resource)
 
-        # Use sets to determine items
+        # Determine which fields are included
         fields = set(base_meta.field_map)
         include = set(new_meta.include)
-        exclude = set(new_meta.exclude)
-        readonly = set(new_meta.readonly)
-
         if include:
             fields.intersection_update(include)
+        exclude = set(new_meta.exclude)
         if exclude:
             fields.difference_update(exclude)
+
+        # Identify readonly fields
+        readonly = set(new_meta.readonly)
+        if readonly:
+            readonly.intersection_update(fields)
 
         new_meta.fields = fields
 
@@ -117,14 +137,13 @@ class ResourceProxyType(type):
 
 
 class ResourceProxyBase(object):
-    def __init__(self, resource):
-        self.resource = resource
+    @classmethod
+    def proxy(cls, resource, *args, **kwargs):
+        kwargs['__resource'] = resource
+        return cls(*args, **kwargs)
 
-    def __getattr__(self, item):
-        pass
-
-    def __setattr__(self, item, value):
-        pass
+    def __init__(self, *args, **kwargs):
+        self.resource = kwargs.pop('__resource', None)
 
 
 class ResourceProxy(six.with_metaclass(ResourceProxyType, ResourceProxyBase)):
