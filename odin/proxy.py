@@ -96,7 +96,7 @@ class ResourceProxyOptions(object):
                 del meta_attrs[name]
 
         # Get the required resource object
-        self.resource = meta_attrs.get('resource', None)
+        self.resource = meta_attrs.pop('resource', None)
         if not self.resource:
             raise AttributeError('`resource` has not been defined.')
         self.shadow = shadow = getmeta(self.resource)
