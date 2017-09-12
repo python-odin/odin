@@ -37,6 +37,9 @@ class ResourceOptions(object):
 
         self._cache = {}
 
+    def __repr__(self):
+        return '<Options for %s>' % self.resource_name
+
     def contribute_to_class(self, cls, _):
         cls._meta = self
         self.name = cls.__name__
@@ -47,6 +50,7 @@ class ResourceOptions(object):
             for name in self.meta.__dict__:
                 if name.startswith('_'):
                     del meta_attrs[name]
+
             for attr_name in self.META_OPTION_NAMES:
                 if attr_name in meta_attrs:
                     # Allow meta to be defined as namespace
@@ -185,9 +189,6 @@ class ResourceOptions(object):
         Run checks on meta data to ensure correctness
         """
         pass
-
-    def __repr__(self):
-        return '<Options for %s>' % self.resource_name
 
 
 class ResourceType(type):
