@@ -1,6 +1,11 @@
 import six
 
+# Typing includes
+from typing import List, Dict, Tuple  # noqa
+from odin.fields import Field  # noqa
+
 from odin.fields import NOT_PROVIDED
+from odin.resources import ResourceBase, DEFAULT_TYPE_FIELD
 from odin.utils import getmeta
 
 
@@ -8,69 +13,108 @@ class FieldProxyDescriptor(object):
     """
     Descriptor to proxy field to underlying resource.
     """
-    __slots__ = ('resource', 'name')
+    __slots__ = ('field', 'attname')
 
-    def __init__(self, resource, name):
-        self.resource = resource
-        self.name = name
+    def __init__(self, field):
+        self.field = field
+        self.attname = field.attname
 
     def __get__(self, instance, owner):
-        return getattr(self.resource, self.name)
+        return getattr(instance._shadow, self.attname)
 
     def __set__(self, instance, value):
-        return setattr(self.resource, self.name, value)
+        return setattr(instance._shadow, self.attname, value)
+
+
+def filter_fields(field_map, include=None, exclude=None, readonly=None):
+    # type: (Dict[str, Field], List[str], List[str], List[str]) -> Tuple[List[Field], List[Field]]
+    """
+    Filter a field list using the include/exclude options
+    """
+    fields = set(field_map)
+
+    include = set(include)
+    if include:
+        fields.intersection_update(include)
+
+    exclude = set(exclude)
+    if exclude:
+        fields.difference_update(exclude)
+
+    readonly = set(readonly)
+    if readonly:
+        readonly.intersection_update(fields)
+
+    return (
+        sorted(field_map[f] for f in fields),
+        sorted(field_map[f] for f in readonly)
+    )
 
 
 class ResourceProxyOptions(object):
     META_OPTION_NAMES = (
-        'resource', 'include', 'exclude', 'readonly',
+        'include', 'exclude', 'readonly',
         # Overrides
         'name', 'namespace', 'name_space', 'verbose_name', 'verbose_name_plural', 'doc_group',
-        'field_sorting',
+        'type_field', 'key_field_name', 'key_field_names', 'field_sorting'
     )
 
     def __init__(self, meta):
         self.meta = meta
         self.resource = None
-        self.fields = []
+        self.shadow = None
         self.include = []
         self.exclude = []
         self.readonly = []
 
+        self.fields = []
+        self._key_fields = []
+        self.virtual_fields = []
+
         self.name = None
+        self.class_name = None
         self.name_space = NOT_PROVIDED
         self.verbose_name = None
         self.verbose_name_plural = None
         self.doc_group = None
+        self.type_field = DEFAULT_TYPE_FIELD
+        self.key_field_names = None
         self.field_sorting = False
 
     def __repr__(self):
-        return '<ProxyOptions for {}>'.format()
+        return '<Proxy of {!r}>'.format(getmeta(self.resource))
 
     def contribute_to_class(self, cls, _):
         cls._meta = self
         self.name = cls.__name__
         self.class_name = "{}.{}".format(cls.__module__, cls.__name__)
 
-        if self.meta:
-            meta_attrs = self.meta.__dict__.copy()
-            for name in self.meta.__dict__:
-                if name.startswith('_'):
-                    del meta_attrs[name]
+        # Get and filter meta attributes
+        meta_attrs = self.meta.__dict__.copy()
+        for name in self.meta.__dict__:
+            if name.startswith('_'):
+                del meta_attrs[name]
 
-            for attr_name in self.META_OPTION_NAMES:
-                if attr_name in meta_attrs:
-                    # Allow meta to be defined as namespace
-                    if attr_name == 'namespace':
-                        setattr(self, 'name_space', meta_attrs.pop(attr_name))
-                    else:
-                        setattr(self, attr_name, meta_attrs.pop(attr_name))
-                elif hasattr(self.meta, attr_name):
-                    setattr(self, attr_name, getattr(self.meta, attr_name))
+        # Get the required resource object
+        self.resource = meta_attrs.get('resource', None)
+        if not self.resource:
+            raise AttributeError('`resource` has not been defined.')
+        self.shadow = shadow = getmeta(self.resource)
 
-            # Any leftover attributes must be invalid.
-            if meta_attrs != {}:
-                raise TypeError("'class Meta' got invalid attribute(s): %s" % ','.join(meta_attrs.keys()))
+        # Extract all meta options and fetch from shadow if not defined
+        for attr_name in self.META_OPTION_NAMES:
+            if attr_name in meta_attrs:
+                # Allow meta to be defined as namespace
+                if attr_name == 'namespace':
+                    setattr(self, 'name_space', meta_attrs.pop(attr_name))
+                else:
+                    setattr(self, attr_name, meta_attrs.pop(attr_name))
+            elif hasattr(self.meta, attr_name):
+                setattr(self, attr_name, getattr(self.meta, attr_name))
+
+        # Any leftover attributes must be invalid.
+        if meta_attrs != {}:
+            raise TypeError("'class Meta' got invalid attribute(s): %s" % ','.join(meta_attrs.keys()))
         del self.meta
 
 
@@ -109,21 +153,18 @@ class ResourceProxyType(type):
         if not new_meta.resource:
             raise AttributeError("'resource' meta option not defined.")
 
+        # Determine which fields will be shadowed.
         base_meta = getmeta(meta.resource)
+        fields, readonly = filter_fields(
+            base_meta.field_map,
+            new_meta.include,
+            new_meta.exclude,
+            new_meta.readonly
+        )
 
-        # Determine which fields are included
-        fields = set(base_meta.field_map)
-        include = set(new_meta.include)
-        if include:
-            fields.intersection_update(include)
-        exclude = set(new_meta.exclude)
-        if exclude:
-            fields.difference_update(exclude)
-
-        # Identify readonly fields
-        readonly = set(new_meta.readonly)
-        if readonly:
-            readonly.intersection_update(fields)
+        # Generate field descriptors
+        for field in fields:
+            setattr(new_class, field.attname, FieldProxyDescriptor(field))
 
         new_meta.fields = fields
 
@@ -136,18 +177,35 @@ class ResourceProxyType(type):
             setattr(cls, name, value)
 
 
-class ResourceProxyBase(object):
+class ResourceProxyBase(ResourceBase):
+    """
+    Base proxy class
+    """
     @classmethod
-    def proxy(cls, resource, *args, **kwargs):
-        kwargs['__resource'] = resource
-        return cls(*args, **kwargs)
+    def proxy(cls, resource):
+        return cls(__resource=resource)
 
     def __init__(self, *args, **kwargs):
-        self.resource = kwargs.pop('__resource', None)
+        meta = getmeta(self)
+
+        # Get shadowed resource if supplied
+        shadow = kwargs.pop('__resource', None)
+        if shadow is None:
+            # Create a new instance
+            self._shadow = meta.resource()
+            super(ResourceProxyBase, self).__init__(*args, **kwargs)
+        else:
+            self._shadow = shadow
+
+    def get_shadow(self):
+        return self._shadow
 
 
 class ResourceProxy(six.with_metaclass(ResourceProxyType, ResourceProxyBase)):
-    pass
+    """
+    Proxy for a Resources that allow a filtered set of fields to be made
+    available and updated.
+    """
 
 
 if __name__ == '__main__':
@@ -163,5 +221,15 @@ if __name__ == '__main__':
         class Meta:
             resource = Sample
             exclude = ['name']
+
+    item = SampleProxy()
+    item.name = "Monkey"
+    item.year = 123
+
+    sample = item.get_shadow()
+    pass
+
+    sample = Sample("Foo", 42)
+    item = SampleProxy.proxy(sample)
 
     pass
