@@ -53,8 +53,8 @@ def filter_fields(field_map, include=None, exclude=None, readonly=None):
         readonly.intersection_update(fields)
 
     return (
-        sorted(field_map[f] for f in fields),
-        sorted(field_map[f] for f in readonly)
+        sorted((field_map[f] for f in fields), key=hash),
+        sorted((field_map[f] for f in readonly), key=hash)
     )
 
 
