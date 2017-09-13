@@ -8,22 +8,29 @@ from odin.fields import NOT_PROVIDED
 from odin.resources import ResourceBase, DEFAULT_TYPE_FIELD
 from odin.utils import getmeta
 
+EMPTY = tuple()
+
 
 class FieldProxyDescriptor(object):
     """
     Descriptor to proxy field to underlying resource.
     """
-    __slots__ = ('field', 'attname')
+    __slots__ = ('attname',)
 
-    def __init__(self, field):
-        self.field = field
-        self.attname = field.attname
+    def __init__(self):
+        self.attname = None  # type: str
 
     def __get__(self, instance, owner):
-        return getattr(instance._shadow, self.attname)
+        shadow = getattr(instance, '_shadow')
+        return getattr(shadow, self.attname)
 
     def __set__(self, instance, value):
-        return setattr(instance._shadow, self.attname, value)
+        shadow = getattr(instance, '_shadow')
+        return setattr(shadow, self.attname, value)
+
+    def contribute_to_class(self, cls, name):
+        self.attname = name
+        setattr(cls, name, self)
 
 
 def filter_fields(field_map, include=None, exclude=None, readonly=None):
@@ -33,15 +40,15 @@ def filter_fields(field_map, include=None, exclude=None, readonly=None):
     """
     fields = set(field_map)
 
-    include = set(include)
+    include = set(include or EMPTY)
     if include:
         fields.intersection_update(include)
 
-    exclude = set(exclude)
+    exclude = set(exclude or EMPTY)
     if exclude:
         fields.difference_update(exclude)
 
-    readonly = set(readonly)
+    readonly = set(readonly or EMPTY)
     if readonly:
         readonly.intersection_update(fields)
 
@@ -164,7 +171,7 @@ class ResourceProxyType(type):
 
         # Generate field descriptors
         for field in fields:
-            setattr(new_class, field.attname, FieldProxyDescriptor(field))
+            new_class.add_to_class(field.attname, FieldProxyDescriptor())
 
         new_meta.fields = fields
 
