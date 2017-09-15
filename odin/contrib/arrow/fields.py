@@ -50,5 +50,10 @@ class ArrowField(Field):
             return arrow.Arrow.fromdatetime(datetimeutil.parse_iso_datetime_string(value, default_timezone))
         except ValueError:
             pass
+
+        try:
+            return arrow.Arrow.fromdate(datetimeutil.parse_iso_date_string(value))
+        except ValueError:
+            pass
         msg = self.error_messages['invalid']
         raise exceptions.ValidationError(msg)
