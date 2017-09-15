@@ -213,30 +213,3 @@ class ResourceProxy(six.with_metaclass(ResourceProxyType, ResourceProxyBase)):
     Proxy for a Resources that allow a filtered set of fields to be made
     available and updated.
     """
-
-
-if __name__ == '__main__':
-    import odin
-
-
-    class Sample(odin.Resource):
-        name = odin.StringField()
-        year = odin.IntegerField()
-
-
-    class SampleProxy(ResourceProxy):
-        class Meta:
-            resource = Sample
-            exclude = ['name']
-
-    item = SampleProxy()
-    item.name = "Monkey"
-    item.year = 123
-
-    sample = item.get_shadow()
-    pass
-
-    sample = Sample("Foo", 42)
-    item = SampleProxy.proxy(sample)
-
-    pass
