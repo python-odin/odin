@@ -116,8 +116,8 @@ class ResourceProxyOptions(object):
                     setattr(self, 'name_space', meta_attrs.pop(attr_name))
                 else:
                     setattr(self, attr_name, meta_attrs.pop(attr_name))
-            elif hasattr(self.meta, attr_name):
-                setattr(self, attr_name, getattr(self.meta, attr_name))
+            elif hasattr(shadow, attr_name):
+                setattr(self, attr_name, getattr(shadow, attr_name))
 
         # Any leftover attributes must be invalid.
         if meta_attrs != {}:
@@ -147,8 +147,8 @@ class ResourceProxyType(type):
         # Create the class.
         module = attrs.pop('__module__')
         new_class = super_new(mcs, name, bases, {'__module__': module})
-        attr_meta = attrs.pop('Meta', None)
 
+        attr_meta = attrs.pop('Meta', None)
         if not attr_meta:
             meta = getattr(new_class, 'Meta', None)
         else:
@@ -156,9 +156,6 @@ class ResourceProxyType(type):
 
         new_meta = mcs.meta_options(meta)
         new_class.add_to_class('_meta', new_meta)
-
-        if not new_meta.resource:
-            raise AttributeError("'resource' meta option not defined.")
 
         # Determine which fields will be shadowed.
         base_meta = getmeta(meta.resource)
