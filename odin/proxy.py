@@ -1,3 +1,13 @@
+"""
+Resource Proxy
+~~~~~~~~~~~~~~
+
+The resource proxy is an object that provides an alternate interface to a shadowed Resource.
+
+This could be as a means of providing a summary object, or for adding additional properties.
+
+"""
+
 import six
 
 # Typing includes
