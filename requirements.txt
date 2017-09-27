@@ -1,2 +1,2 @@
 six
-typing  ; python_version=='2.7'
+typing  ;python_version == '2.7'
