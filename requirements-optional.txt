@@ -4,3 +4,4 @@ msgpack-python
 ply
 humanfriendly
 pyyaml
+arrow
