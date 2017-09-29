@@ -103,7 +103,7 @@ class TestResourceProxyOptions(object):
                     eek = 'boo!'
 
     @pytest.mark.parametrize('attr, actual', (
-        ('key_field_name', 'isbn'),
+        ('key_field_names', ('isbn',)),
         ('verbose_name', 'Book Summary'),
         ('verbose_name_plural', 'Book Summarys'),
         ('include', ('title', 'isbn', 'num_pages', 'rrp')),
@@ -111,7 +111,6 @@ class TestResourceProxyOptions(object):
     ))
     def test_options(self, attr, actual):
         target = getmeta(BookProxy)
-
         assert actual == getattr(target, attr)
 
 
