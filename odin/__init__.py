@@ -13,3 +13,4 @@ from odin.fields.virtual import *  # noqa
 from odin.mapping import *  # noqa
 from odin.resources import Resource  # noqa
 from odin.adapters import ResourceAdapter  # noqa
+from odin.proxy import ResourceProxy  # noqa
