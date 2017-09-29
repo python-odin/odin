@@ -20,6 +20,7 @@ class ResourceOptions(object):
     def __init__(self, meta):
         self.meta = meta
         self.parents = []
+
         self.fields = []
         self._key_fields = []
         self.virtual_fields = []
@@ -53,14 +54,19 @@ class ResourceOptions(object):
 
             for attr_name in self.META_OPTION_NAMES:
                 if attr_name in meta_attrs:
+                    value = meta_attrs.pop(attr_name)
+
                     # Allow meta to be defined as namespace
                     if attr_name == 'namespace':
-                        setattr(self, 'name_space', meta_attrs.pop(attr_name))
+                        attr_name = 'name_space'
+
                     # Allow key_field_names to be defined as key_field_name
                     elif attr_name == 'key_field_name':
-                        setattr(self, 'key_field_names', meta_attrs.pop(attr_name))
-                    else:
-                        setattr(self, attr_name, meta_attrs.pop(attr_name))
+                        attr_name = 'key_field_names'
+                        value = [value]
+
+                    setattr(self, attr_name, value)
+
                 elif hasattr(self.meta, attr_name):
                     setattr(self, attr_name, getattr(self.meta, attr_name))
 
@@ -183,6 +189,13 @@ class ResourceOptions(object):
                     fields.append(field)
 
         return fields
+
+    @cached_property
+    def readonly_fields(self):
+        """
+        Fields that can only be read from.
+        """
+        return self.virtual_fields
 
     def check(self):
         """
