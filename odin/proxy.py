@@ -12,6 +12,8 @@ import six
 
 # Typing includes
 from typing import List, Dict, Tuple, Union  # noqa
+
+from odin import registration
 from odin.fields import Field  # noqa
 
 from odin.bases import TypedResourceIterable
@@ -214,7 +216,14 @@ class ResourceProxyType(type):
                 if field_name not in new_meta.field_map:
                     raise AttributeError('Key field `{0}` is not exist on this resource.'.format(field_name))
 
-        return new_class
+        # Register resource
+        registration.register_resources(new_class)
+
+        # Because of the way imports happen (recursively), we may or may not be
+        # the first time this model tries to register with the framework. There
+        # should only be one class for each model, so we always return the
+        # registered version.
+        return registration.get_resource(new_meta.resource_name)
 
     def add_to_class(cls, name, value):
         if hasattr(value, 'contribute_to_class'):
