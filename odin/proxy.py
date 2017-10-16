@@ -18,7 +18,7 @@ from odin.fields import Field  # noqa
 
 from odin.bases import TypedResourceIterable
 from odin.resources import ResourceOptions, ResourceBase
-from odin.utils import getmeta, cached_property
+from odin.utils import getmeta, cached_property, filter_fields
 
 EMPTY = tuple()
 
@@ -46,31 +46,6 @@ class FieldProxyDescriptor(object):
     def contribute_to_class(self, cls, name):
         self.attname = name
         setattr(cls, name, self)
-
-
-def filter_fields(field_map, include=None, exclude=None, readonly=None):
-    # type: (Dict[str, Field], List[str], List[str], List[str]) -> Tuple[List[Field], List[Field]]
-    """
-    Filter a field list using the include/exclude options
-    """
-    fields = set(field_map)
-
-    include = set(include or EMPTY)
-    if include:
-        fields.intersection_update(include)
-
-    exclude = set(exclude or EMPTY)
-    if exclude:
-        fields.difference_update(exclude)
-
-    readonly = set(readonly or EMPTY)
-    if readonly:
-        readonly.intersection_update(fields)
-
-    return (
-        sorted((field_map[f] for f in fields), key=hash),
-        sorted((field_map[f] for f in readonly), key=hash)
-    )
 
 
 class ResourceProxyOptions(ResourceOptions):
@@ -191,17 +166,15 @@ class ResourceProxyType(type):
             new_class.add_to_class(obj_name, obj)
 
         # Determine which fields will be shadowed.
-        fields, readonly = filter_fields(
+        field_names, readonly = filter_fields(
             new_meta.shadow.field_map,
             new_meta.include,
             new_meta.exclude,
             new_meta.readonly
         )
-        new_meta.fields = fields
 
-        # Generate field descriptors
-        for field in fields:
-            new_class.add_to_class(field.attname, FieldProxyDescriptor(field in readonly))
+        # Map field names
+        new_meta.fields = [f for f in new_meta.shadow.fields if f.attname in field_names]
 
         # Sort the fields
         if new_meta.field_sorting:
@@ -209,6 +182,10 @@ class ResourceProxyType(type):
                 new_meta.fields = new_meta.field_sorting(new_meta.fields)
             else:
                 new_meta.fields = sorted(new_meta.fields, key=hash)
+
+        # Generate field descriptors
+        for field in new_meta.fields:
+            new_class.add_to_class(field.attname, FieldProxyDescriptor(field in readonly))
 
         # If a key_field is defined ensure it exists
         if new_meta.key_field_names:
