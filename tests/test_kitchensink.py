@@ -5,6 +5,7 @@ Do load/dump tests on known valid and invalid documents.
 import os
 import datetime
 import pytest
+
 from odin.codecs import json_codec
 from odin import exceptions
 from odin.datetimeutil import utc
@@ -69,7 +70,7 @@ class TestKitchenSink(object):
     def test_load_valid_data(self):
         library = json_codec.load(open(os.path.join(FIXTURE_PATH_ROOT, "book-valid.json")))
 
-        assert  "Consider Phlebas" == library.books[0].title
+        assert "Consider Phlebas" == library.books[0].title
 
     def test_load_invalid_data(self):
         with pytest.raises(exceptions.ValidationError):

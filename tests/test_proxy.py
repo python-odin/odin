@@ -3,7 +3,7 @@ import pytest
 from odin.utils import getmeta
 from odin import proxy
 
-from .resources import Book
+from .resources import Book, BookProxy
 
 
 class MockObject(object):
@@ -39,18 +39,6 @@ class TestFieldProxyDescriptor(object):
 
         assert shadow.foo == '321'
         assert shadow.bar == '654'
-
-
-class BookProxy(proxy.ResourceProxy):
-    class Meta:
-        resource = Book
-        include = ('title', 'isbn', 'num_pages', 'rrp')
-        verbose_name = 'Book Summary'
-        namespace = 'the.other.library'
-
-    @property
-    def expensive(self):
-        return self.rrp > 200
 
 
 class TestResourceProxyMeta(object):
