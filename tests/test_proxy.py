@@ -20,6 +20,7 @@ class TestFieldProxyDescriptor(object):
 
         proxy.FieldProxyDescriptor().contribute_to_class(Target, 'foo')
         proxy.FieldProxyDescriptor().contribute_to_class(Target, 'bar')
+        proxy.FieldProxyDescriptor(readonly=True).contribute_to_class(Target, 'eek')
 
         return Target
 
@@ -40,6 +41,15 @@ class TestFieldProxyDescriptor(object):
         assert shadow.foo == '321'
         assert shadow.bar == '654'
 
+    def test_set__readonly(self, proxy_obj):
+        shadow = MockObject(foo='123', eek='789')
+        target = proxy_obj(shadow)
+
+        with pytest.raises(AttributeError):
+            target.eek = 321
+
+        assert '789' == shadow.eek
+
 
 class TestResourceProxyMeta(object):
     def test_no_meta(self):
@@ -52,6 +62,13 @@ class TestResourceProxyMeta(object):
             class SampleProxy(proxy.ResourceProxy):
                 class Meta:
                     pass
+
+    def test_repr(self):
+        class SampleProxy(proxy.ResourceProxy):
+            class Meta:
+                resource = Book
+
+        assert '<Proxy of <Options for library.Book>>' == repr(getmeta(SampleProxy))
 
     def test_field_sorting(self):
         class SampleProxy(proxy.ResourceProxy):
