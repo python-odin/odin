@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-import logging
-
 from odin.utils import getmeta
-
-logger = logging.Logger('odin.registration')
 
 
 def generate_mapping_cache_name(from_obj, to_obj):
@@ -38,8 +34,6 @@ class ResourceCache(object):
             if resource_name != class_name:
                 self.resources[class_name] = resource
 
-            logger.debug("Registered resource <%s>", class_name)
-
     def get_resource(self, resource_name):
         """
         Get a resource by name.
@@ -60,8 +54,6 @@ class ResourceCache(object):
         """
         mapping_name = generate_mapping_cache_name(mapping.from_obj, mapping.to_obj)
         self.mappings[mapping_name] = mapping
-
-        logger.debug("Registered mapping <%s>", mapping_name)
 
     def get_mapping(self, from_obj, to_obj):
         """
@@ -87,8 +79,6 @@ class ResourceCache(object):
 
         """
         self.field_resolvers.add((base_type, resolver))
-
-        logger.info("Registered field resolver <%s>", resolver)
 
     def get_field_resolver(self, obj_type):
         """
