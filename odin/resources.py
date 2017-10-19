@@ -34,7 +34,7 @@ class ResourceOptions(object):
         self.doc_group = None
         self.type_field = DEFAULT_TYPE_FIELD
         self.key_field_names = None
-        self.field_sorting = False
+        self.field_sorting = NOT_PROVIDED
 
         self._cache = {}
 
@@ -250,18 +250,21 @@ class ResourceType(type):
         new_meta = mcs.meta_options(meta)
         new_class.add_to_class('_meta', new_meta)
 
-        # Generate a namespace if one is not provided
-        if new_meta.name_space is NOT_PROVIDED and base_meta:
-            # Namespace is inherited
-            if (not new_meta.name_space) or (new_meta.name_space is NOT_PROVIDED):
-                new_meta.name_space = base_meta.name_space
+        # Namespace is inherited
+        if base_meta and new_meta.name_space is NOT_PROVIDED:
+            new_meta.name_space = base_meta.name_space
 
+        # Generate a namespace if one is not provided
         if new_meta.name_space is NOT_PROVIDED:
             new_meta.name_space = module
 
         # Key field is inherited
-        if base_meta and (not new_meta.key_field_names) or (new_meta.key_field_names is NOT_PROVIDED):
+        if base_meta and new_meta.key_field_names is None:
             new_meta.key_field_names = base_meta.key_field_names
+
+        # Field sorting is inherited
+        if new_meta.field_sorting is NOT_PROVIDED:
+            new_meta.field_sorting = base_meta.field_sorting if base_meta else False
 
         # Bail out early if we have already created this class.
         r = registration.get_resource(new_meta.resource_name)
