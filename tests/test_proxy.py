@@ -53,6 +53,25 @@ class TestResourceProxyMeta(object):
                 class Meta:
                     pass
 
+    def test_field_sorting(self):
+        class SampleProxy(proxy.ResourceProxy):
+            class Meta:
+                field_sorting = True
+                resource = Book
+
+        assert [f.attname for f in getmeta(SampleProxy).fields] == [
+            'title', 'isbn', 'num_pages', 'rrp', 'fiction', 'genre', 'published', 'authors', 'publisher']
+
+    def test_field_sorting__custom(self):
+        class SampleProxy(proxy.ResourceProxy):
+            class Meta:
+                def field_sorting(fields):
+                    return sorted(fields, key=lambda f: f.attname)
+                resource = Book
+
+        assert [f.attname for f in getmeta(SampleProxy).fields] == [
+            'authors', 'fiction', 'genre', 'isbn', 'num_pages', 'published', 'publisher', 'rrp', 'title']
+
 
 class TestResourceProxyOptions(object):
     def test_options_type(self):
@@ -91,6 +110,17 @@ class TestResourceProxy(object):
 
         assert target.title == '1984'
         assert actual is target.get_shadow()
+
+    def test_proxy__iterable(self):
+        actual = [Book(title='1984'), Book(title='1985 - The man strikes back'), Book(title='1986 - Return of the man')]
+        target = BookProxy.proxy(actual)
+
+        assert isinstance(target, proxy.ResourceProxyIter)
+        assert ['1984', '1985 - The man strikes back', '1986 - Return of the man'] == [t.title for t in target]
+
+    def test_proxy__unknown(self):
+        with pytest.raises(TypeError):
+            BookProxy.proxy(123)
 
     def test_extra_property(self):
         book = Book(rrp=256)
