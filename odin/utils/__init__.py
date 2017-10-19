@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 import re
 
+# Typing imports
+from typing import Iterable, Tuple, Union, Set, T  # noqa
+
 _CAMEL_CASE_RE = re.compile(r'[A-Z]')
 _LOWER_UNDERSCORE_CASE_RE = re.compile(r'_([a-z])')
 _LOWER_DASH_CASE_RE = re.compile(r'-([a-z])')
 
 
 def camel_to_lower_separated(s, sep):
+    # type: (str, str) -> str
     """
     Convert camel case representation into lower separated case ie:
 
@@ -19,15 +23,18 @@ def camel_to_lower_separated(s, sep):
 
 
 def camel_to_lower_underscore(s):
+    # type: (str) -> str
     """
     Convert camel case to lower underscore case.
 
         backgroundColor -> background_color
+
     """
     return camel_to_lower_separated(s, '_')
 
 
 def camel_to_lower_dash(s):
+    # type: (str) -> str
     """
     Convert camel case to lower dash case.
 
@@ -37,10 +44,12 @@ def camel_to_lower_dash(s):
 
 
 def lower_underscore_to_camel(value):
+    # type: (str) -> str
     """
     Convert lower underscore case to camel case
 
       background_color -> backgroundColor
+
     """
     return _LOWER_UNDERSCORE_CASE_RE.sub(
         lambda m: m.group(1).upper(),
@@ -49,10 +58,12 @@ def lower_underscore_to_camel(value):
 
 
 def lower_dash_to_camel(value):
+    # type: (str) -> str
     """
     Convert lower dash case to camel case
 
       background-color -> backgroundColor
+
     """
     return _LOWER_DASH_CASE_RE.sub(
         lambda m: m.group(1).upper(),
@@ -60,7 +71,7 @@ def lower_dash_to_camel(value):
     )
 
 
-class cached_property(object):
+class cached_property(object):  # noqa - Made to match property builtin
     """
     Acts like a standard class `property` except return values cached.
     """
@@ -87,7 +98,7 @@ class cached_property(object):
         return value
 
 
-class lazy_property(object):
+class lazy_property(object):  # noqa - Made to match the property builtin
     """
     The bottle cached property, requires a alternate name so as not to
     clash with existing cached_property behaviour
@@ -101,6 +112,39 @@ class lazy_property(object):
             return self
         value = instance.__dict__[self.func.__name__] = self.func(instance)
         return value
+
+
+EMPTY = []
+
+
+def filter_fields(field_names, include=None, exclude=None, readonly=None):
+    # type: (Iterable[str], Iterable[str], Iterable[str], Iterable[str]) -> Tuple[Set[str], Set[str]]
+    """
+    Filter a field iterable using the include/exclude/readonly options
+
+    :param field_names: Iterable of field names as the source list
+    :param include: Iterable of field names to be included
+    :param exclude: Iterable of field names to be excluded
+    :param readonly: Iterable of field names to be treated as read-only.
+    :returns: A pair of sets of field names, the first is the set that have been selected,
+        the second item is a set that have been selected and indicated to as read-only.
+    
+    """
+    field_names = set(field_names)
+
+    include = set(include or EMPTY)
+    if include:
+        field_names.intersection_update(include)
+
+    exclude = set(exclude or EMPTY)
+    if exclude:
+        field_names.difference_update(exclude)
+
+    readonly = set(readonly or EMPTY)
+    if readonly:
+        readonly.intersection_update(field_names)
+
+    return field_names, readonly
 
 
 def getmeta(resource_or_instance):
@@ -217,14 +261,21 @@ def value_in_choices(value, choices):
     return False
 
 
+def iter_to_choices(i):
+    # type: (Iterable[T]) -> tuple(Tuple[T, str])
+    """
+    Convert an iterator of strings (or types that can be converted to strings) and convert these into choice value
+    pairs.
+    """
+    return tuple((v, str(v).title()) for v in i)
+
+
 def force_tuple(value):
+    # type: (Union[T, tuple(T), list(T)]) -> tuple(T)
     """
     Forces a value to be a tuple.
 
     Either by converting into a tuple (if is a list) or changing value to be a tuple.
-
-    :type value: T | tuple[T] | list[T]
-    :rtype: tuple[T]
 
     """
     if value is None:
@@ -237,14 +288,13 @@ def force_tuple(value):
 
 
 def chunk(iterable, n):
+    # type: (Iterable[T], int) -> Iterable[Iterable[T]]
     """
     Return iterable of n items from an iterable.
 
     :param iterable: Iterable of items
     :param n: Size of iterable chunks to return.
-    :type n: int
     :return: Iterable chunk of input iterable
-    :rtype: iter[T]
 
     """
     iterable = iter(iterable)

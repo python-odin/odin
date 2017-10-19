@@ -1,4 +1,5 @@
 import pytest
+
 import odin
 from odin import traversal
 from odin.exceptions import NoMatchError, InvalidPathError, MultipleMatchesError
@@ -62,9 +63,9 @@ TEST_LIST_STRUCTURE = [
 ]
 
 
-class TestResourceTraversalIterator(traversal.ResourceTraversalIterator):
+class ResourceTraversalIteratorTest(traversal.ResourceTraversalIterator):
     def __init__(self, resource):
-        super(TestResourceTraversalIterator, self).__init__(resource)
+        super(ResourceTraversalIteratorTest, self).__init__(resource)
         self.events = []
 
     def on_pre_enter(self):
@@ -81,7 +82,7 @@ class TestTraversal(object):
     def test_structure(self):
         TEST_STRUCTURE.full_clean()
 
-        resource_iter = TestResourceTraversalIterator(TEST_STRUCTURE)
+        resource_iter = ResourceTraversalIteratorTest(TEST_STRUCTURE)
         resources = ["%s %s %s" % (r, r.name, resource_iter.depth) for r in resource_iter]
 
         assert [
@@ -117,7 +118,7 @@ class TestTraversal(object):
     def test_list_structure(self):
         TEST_STRUCTURE.full_clean()
 
-        resource_iter = TestResourceTraversalIterator(TEST_LIST_STRUCTURE)
+        resource_iter = ResourceTraversalIteratorTest(TEST_LIST_STRUCTURE)
         resources = ["%s %s %s" % (r, r.name, resource_iter.depth) for r in resource_iter]
 
         assert [

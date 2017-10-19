@@ -50,6 +50,19 @@ class Book(LibraryBook):
         return False
 
 
+class BookProxy(odin.ResourceProxy):
+    class Meta:
+        resource = Book
+        include = ('title', 'isbn', 'num_pages', 'rrp')
+        readonly = ('rrp',)
+        verbose_name = 'Book Summary'
+        namespace = 'the.other.library'
+
+    @property
+    def expensive(self):
+        return self.rrp > 200
+
+
 class Subscriber(odin.Resource):
     name = odin.StringField()
     address = odin.StringField()

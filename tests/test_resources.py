@@ -3,9 +3,9 @@ from __future__ import absolute_import
 import pytest
 import odin
 from odin.fields import NOT_PROVIDED
-from odin.resources import ResourceOptions, build_object_graph
+from odin.resources import ResourceOptions, build_object_graph, create_resource_from_dict
 from odin.exceptions import ValidationError
-from .resources import Book, Library, Subscriber
+from .resources import Book, BookProxy, Library, Subscriber
 
 
 class Author(odin.Resource):
@@ -52,15 +52,16 @@ class ResourceD(ResourceC):
     d = odin.StringField()
 
 
-def sort_by_name(fields):
-    return sorted(fields, key=lambda f: f.name)
-
-
 class ResourceE(ResourceD):
     class Meta:
-        field_sorting = sort_by_name
+        def field_sorting(fields):
+            return sorted(fields, key=lambda f: f.name)
 
     aa = odin.StringField()
+
+
+class ResourceF(ResourceE):
+    aaa = odin.StringField()
 
 
 class TestResource(object):
@@ -171,6 +172,9 @@ class TestResource(object):
     def test_field_sorting__callable(self):
         assert ['a', 'aa', 'b', 'c', 'd'] == [f.name for f in ResourceE._meta.fields]
 
+    def test_field_sorting__inherited(self):
+        assert ['a', 'aa', 'aaa', 'b', 'c', 'd'] == [f.name for f in ResourceF._meta.fields]
+
 
 class TestMetaOptions(object):
     def test_invalid_options(self):
@@ -277,10 +281,10 @@ class TestConstructionMethods(object):
         assert actual == expected
 
     def test_create_resource_from_dict_with_default_to_not_supplied(self):
-        book = build_object_graph({
+        book = create_resource_from_dict({
             "title": "Foo",
             "num_pages": 42
-        }, Book, full_clean=False, default_to_not_supplied=True)
+        }, Book, full_clean=False, default_to_not_provided=True)
 
         assert dict(
             title="Foo",
@@ -292,4 +296,19 @@ class TestConstructionMethods(object):
             published=NOT_PROVIDED,
             authors=NOT_PROVIDED,
             publisher=NOT_PROVIDED
+        ) == book.to_dict()
+
+    def test_create_resource_from_dict__with_proxy(self):
+        book = create_resource_from_dict({
+            "title": "Foo",
+            "num_pages": 42,
+            "rrp": 10000.99,
+            "fiction": True
+        }, BookProxy, full_clean=False, default_to_not_provided=True)
+
+        assert dict(
+            title="Foo",
+            isbn=NOT_PROVIDED,
+            num_pages=42,
+            rrp=20.4,
         ) == book.to_dict()

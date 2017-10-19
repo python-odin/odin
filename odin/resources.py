@@ -6,7 +6,7 @@ from odin import bases
 from odin import exceptions, registration
 from odin.exceptions import ValidationError
 from odin.fields import NOT_PROVIDED
-from odin.utils import cached_property, field_iter_items, force_tuple, getmeta
+from odin.utils import lazy_property, cached_property, field_iter_items, force_tuple, getmeta
 
 DEFAULT_TYPE_FIELD = '$'
 
@@ -20,6 +20,7 @@ class ResourceOptions(object):
     def __init__(self, meta):
         self.meta = meta
         self.parents = []
+
         self.fields = []
         self._key_fields = []
         self.virtual_fields = []
@@ -33,9 +34,12 @@ class ResourceOptions(object):
         self.doc_group = None
         self.type_field = DEFAULT_TYPE_FIELD
         self.key_field_names = None
-        self.field_sorting = False
+        self.field_sorting = NOT_PROVIDED
 
         self._cache = {}
+
+    def __repr__(self):
+        return '<Options for %s>' % self.resource_name
 
     def contribute_to_class(self, cls, _):
         cls._meta = self
@@ -47,16 +51,22 @@ class ResourceOptions(object):
             for name in self.meta.__dict__:
                 if name.startswith('_'):
                     del meta_attrs[name]
+
             for attr_name in self.META_OPTION_NAMES:
                 if attr_name in meta_attrs:
+                    value = meta_attrs.pop(attr_name)
+
                     # Allow meta to be defined as namespace
                     if attr_name == 'namespace':
-                        setattr(self, 'name_space', meta_attrs.pop(attr_name))
+                        attr_name = 'name_space'
+
                     # Allow key_field_names to be defined as key_field_name
                     elif attr_name == 'key_field_name':
-                        setattr(self, 'key_field_names', meta_attrs.pop(attr_name))
-                    else:
-                        setattr(self, attr_name, meta_attrs.pop(attr_name))
+                        attr_name = 'key_field_names'
+                        value = [value]
+
+                    setattr(self, attr_name, value)
+
                 elif hasattr(self.meta, attr_name):
                     setattr(self, attr_name, getattr(self.meta, attr_name))
 
@@ -77,12 +87,18 @@ class ResourceOptions(object):
         self._key_fields.append(field)
 
     def add_field(self, field):
+        """
+        Dynamically add a field.
+        """
         self.fields.append(field)
         if field.key:
             self._add_key_field(field)
         cached_property.clear_caches(self)
 
     def add_virtual_field(self, field):
+        """
+        Dynamically add a virtual field.
+        """
         self.virtual_fields.append(field)
         if field.key:
             self._add_key_field(field)
@@ -98,22 +114,29 @@ class ResourceOptions(object):
         else:
             return self.name
 
-    @cached_property
+    @lazy_property
     def all_fields(self):
         """
         All fields both standard and virtual.
         """
-        return self.fields + self.virtual_fields
+        return tuple(self.fields + self.virtual_fields)
 
-    @cached_property
+    @lazy_property
+    def init_fields(self):
+        """
+        Fields used in the resource init
+        """
+        return self.fields
+
+    @lazy_property
     def composite_fields(self):
         """
         All composite fields.
         """
         # Not the nicest solution but is a fairly safe way of detecting a composite field.
-        return [f for f in self.fields if (hasattr(f, 'of') and issubclass(f.of, Resource))]
+        return tuple(f for f in self.fields if (hasattr(f, 'of') and issubclass(f.of, Resource)))
 
-    @cached_property
+    @lazy_property
     def container_fields(self):
         """
         All composite fields with the container flag.
@@ -121,38 +144,38 @@ class ResourceOptions(object):
         Used by XML like codecs.
 
         """
-        return [f for f in self.composite_fields if getattr(f, 'use_container', False)]
+        return tuple(f for f in self.composite_fields if getattr(f, 'use_container', False))
 
-    @cached_property
+    @lazy_property
     def field_map(self):
         return dict((f.attname, f) for f in self.fields)
 
-    @cached_property
+    @lazy_property
     def parent_resource_names(self):
         """
         List of parent resource names.
         """
-        return [getmeta(p).resource_name for p in self.parents]
+        return tuple(getmeta(p).resource_name for p in self.parents)
 
-    @cached_property
+    @lazy_property
     def attribute_fields(self):
         """
         List of fields where is_attribute is True.
         """
-        return [f for f in self.fields if f.is_attribute]
+        return tuple(f for f in self.fields if f.is_attribute)
 
-    @cached_property
+    @lazy_property
     def element_fields(self):
         """
         List of fields where is_attribute is False.
         """
-        return [f for f in self.fields if not f.is_attribute]
+        return tuple(f for f in self.fields if not f.is_attribute)
 
-    @cached_property
+    @lazy_property
     def element_field_map(self):
         return dict((f.attname, f) for f in self.element_fields)
 
-    @cached_property
+    @lazy_property
     def key_field(self):
         """
         Field specified as the key field
@@ -160,34 +183,35 @@ class ResourceOptions(object):
         if self.key_fields:
             return self.key_fields[0]
 
-    @cached_property
+    @lazy_property
     def key_fields(self):
         """
         Tuple of fields specified as the key fields
         """
-        fields = []
+        field_names = set()
 
         # Key fields named in meta go first
         if self.key_field_names:
-            for field_name in self.key_field_names:
-                fields.append(self.field_map[field_name])
+            field_names.update(self.key_field_names)
 
         # Move over any fields defined as keys
         if self._key_fields:
-            for field in sorted(self._key_fields, key=hash):
-                if field.attname not in self.key_field_names:
-                    fields.append(field)
+            field_names.update(f.attname for f in self._key_fields)
 
-        return fields
+        return tuple(sorted((self.field_map[f] for f in field_names), key=hash))
+
+    @lazy_property
+    def readonly_fields(self):
+        """
+        Fields that can only be read from.
+        """
+        return self.virtual_fields
 
     def check(self):
         """
         Run checks on meta data to ensure correctness
         """
         pass
-
-    def __repr__(self):
-        return '<Options for %s>' % self.resource_name
 
 
 class ResourceType(type):
@@ -226,18 +250,21 @@ class ResourceType(type):
         new_meta = mcs.meta_options(meta)
         new_class.add_to_class('_meta', new_meta)
 
-        # Generate a namespace if one is not provided
-        if new_meta.name_space is NOT_PROVIDED and base_meta:
-            # Namespace is inherited
-            if (not new_meta.name_space) or (new_meta.name_space is NOT_PROVIDED):
-                new_meta.name_space = base_meta.name_space
+        # Namespace is inherited
+        if base_meta and new_meta.name_space is NOT_PROVIDED:
+            new_meta.name_space = base_meta.name_space
 
+        # Generate a namespace if one is not provided
         if new_meta.name_space is NOT_PROVIDED:
             new_meta.name_space = module
 
         # Key field is inherited
-        if base_meta and (not new_meta.key_field_names) or (new_meta.key_field_names is NOT_PROVIDED):
+        if base_meta and new_meta.key_field_names is None:
             new_meta.key_field_names = base_meta.key_field_names
+
+        # Field sorting is inherited
+        if new_meta.field_sorting is NOT_PROVIDED:
+            new_meta.field_sorting = base_meta.field_sorting if base_meta else False
 
         # Bail out early if we have already created this class.
         r = registration.get_resource(new_meta.resource_name)
@@ -323,15 +350,15 @@ class ResourceBase(object):
     def __init__(self, *args, **kwargs):
         args_len = len(args)
         meta = getmeta(self)
-        if args_len > len(meta.fields):
+        if args_len > len(meta.init_fields):
             raise TypeError('This resource takes %s positional arguments but %s where given.' % (
-                len(meta.fields), args_len))
+                len(meta.init_fields), args_len))
 
         # The ordering of the zip calls matter - zip throws StopIteration
         # when an iter throws it. So if the first iter throws it, the second
         # is *not* consumed. We rely on this, so don't change the order
         # without changing the logic.
-        fields_iter = iter(meta.fields)
+        fields_iter = iter(meta.init_fields)
         if args_len:
             if not kwargs:
                 for val, field in zip(args, fields_iter):
@@ -598,7 +625,8 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True,
 
     attrs = []
     errors = {}
-    for f in getmeta(resource_type).fields:
+    meta = getmeta(resource_type)
+    for f in meta.init_fields:
         value = d.pop(f.name, NOT_PROVIDED)
         if value is NOT_PROVIDED:
             if not default_to_not_provided:
