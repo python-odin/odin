@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytest
+from odin.utils import getmeta
+
 from odin import utils
 from .resources import Book
 
@@ -39,6 +41,27 @@ class TestIterator(object):
                    'fiction': True,
                    'published': ['no_validation_for_type'],
                } == utils.extract_fields_from_dict(source_dict, Book)
+
+
+class TestFilterFields(object):
+    @pytest.fixture
+    def field_map(self):
+        return getmeta(Book).field_map
+
+    @pytest.mark.parametrize('kwargs, expected_fields, expected_readonly', (
+        ({}, {'title', 'isbn', 'num_pages', 'rrp', 'fiction', 'genre', 'published', 'authors', 'publisher'}, set()),
+        ({'include': ['title', 'isbn']}, {'title', 'isbn'}, set()),
+        ({'exclude': ['rrp', 'fiction', 'genre', 'publisher', 'authors']}, {'title', 'isbn', 'num_pages', 'published'}, set()),
+        ({'include': ['title', 'isbn'], 'exclude': ['isbn', 'rrp', 'fiction', 'genre']}, {'title'}, set()),
+        ({'include': ['title', 'isbn'], 'readonly': ['isbn']}, {'title', 'isbn'}, {'isbn'}),
+        ({'include': ['title', 'isbn'], 'readonly': ['isbn', 'rrp']}, {'title', 'isbn'}, {'isbn'}),
+        ({'include': ['title', 'isbn', 'rrp'], 'exclude': ['rrp'], 'readonly': ['isbn', 'rrp']}, {'title', 'isbn'}, {'isbn'}),
+    ))
+    def test_filtering(self, field_map, kwargs, expected_fields, expected_readonly):
+        fields, readonly = utils.filter_fields(field_map, **kwargs)
+
+        assert fields == expected_fields
+        assert readonly == expected_readonly
 
 
 class TestValueInChoice(object):

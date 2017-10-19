@@ -41,30 +41,6 @@ class TestFieldProxyDescriptor(object):
         assert shadow.bar == '654'
 
 
-class TestFilterFields(object):
-    @pytest.fixture
-    def field_map(self):
-        return getmeta(Book).field_map
-
-    @pytest.mark.parametrize('kwargs, expected_fields, expected_readonly', (
-        ({}, ['title', 'isbn', 'num_pages', 'rrp', 'fiction', 'genre', 'published', 'authors', 'publisher'], []),
-        ({'include': ['title', 'isbn']}, ['title', 'isbn'], []),
-        ({'exclude': ['rrp', 'fiction', 'genre', 'publisher', 'authors']}, ['title', 'isbn', 'num_pages', 'published'], []),
-        ({'include': ['title', 'isbn'], 'exclude': ['isbn', 'rrp', 'fiction', 'genre']}, ['title'], []),
-        ({'include': ['title', 'isbn'], 'readonly': ['isbn']}, ['title', 'isbn'], ['isbn']),
-        ({'include': ['title', 'isbn'], 'readonly': ['isbn', 'rrp']}, ['title', 'isbn'], ['isbn']),
-        ({'include': ['title', 'isbn', 'rrp'], 'exclude': ['rrp'], 'readonly': ['isbn', 'rrp']}, ['title', 'isbn'], ['isbn']),
-    ))
-    def test_filtering(self, field_map, kwargs, expected_fields, expected_readonly):
-        fields, readonly = proxy.filter_fields(field_map, **kwargs)
-
-        fields = [field.attname for field in fields]
-        readonly = [field.attname for field in readonly]
-
-        assert fields == expected_fields
-        assert readonly == expected_readonly
-
-
 class BookProxy(proxy.ResourceProxy):
     class Meta:
         resource = Book
