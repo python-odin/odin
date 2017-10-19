@@ -11,14 +11,13 @@ This could be as a means of providing a summary object, or for adding additional
 import six
 
 # Typing includes
-from typing import List, Dict, Tuple, Union  # noqa
+from typing import List, Union  # noqa
 
 from odin import registration
-from odin.fields import Field  # noqa
 
 from odin.bases import TypedResourceIterable
 from odin.resources import ResourceOptions, ResourceBase
-from odin.utils import getmeta, cached_property, filter_fields
+from odin.utils import getmeta, filter_fields, lazy_property
 
 EMPTY = tuple()
 
@@ -122,12 +121,19 @@ class ResourceProxyOptions(ResourceOptions):
         for attr_name, value in proxy_attrs.items():
             setattr(self, attr_name, value)
 
-    @cached_property
+    @lazy_property
     def readonly_fields(self):
         """
         Fields that can only be read from.
         """
-        return set(f for f in self.fields if f.attname in self.readonly)
+        return tuple(f for f in self.fields if f.attname in self.readonly)
+
+    @lazy_property
+    def init_fields(self):
+        """
+        Fields used in the resource init
+        """
+        return tuple(f for f in self.fields if f.attname not in self.readonly)
 
 
 class ResourceProxyType(type):
@@ -185,7 +191,7 @@ class ResourceProxyType(type):
 
         # Generate field descriptors
         for field in new_meta.fields:
-            new_class.add_to_class(field.attname, FieldProxyDescriptor(field in readonly))
+            new_class.add_to_class(field.attname, FieldProxyDescriptor(field in new_meta.readonly_fields))
 
         # If a key_field is defined ensure it exists
         if new_meta.key_field_names:
