@@ -62,7 +62,7 @@ class ConstantField(VirtualField):
 
 class CalculatedField(VirtualField):
     """
-    A field whose that is calculated by an expression.
+    A field whose value is calculated by an expression.
 
     The expression should accept a single "self" parameter that is a Resource instance.
     """
@@ -80,6 +80,10 @@ def calculated_field(method=None, **kwargs):
     Converts an instance method into a calculated field.
     """
     def inner(expr):
+        if method.__doc__ is not None:
+            help_text = method.__doc__.strip()
+            if help_text:
+                kwargs.setdefault('help_text', help_text)
         return CalculatedField(expr, **kwargs)
     return inner if method is None else inner(method)
 
