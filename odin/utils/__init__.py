@@ -2,7 +2,7 @@
 import re
 
 # Typing imports
-from typing import TypeVar, Iterable, Tuple, Union, List, Set  # noqa
+from typing import Iterable, Tuple, Union, Set, T  # noqa
 
 _CAMEL_CASE_RE = re.compile(r'[A-Z]')
 _LOWER_UNDERSCORE_CASE_RE = re.compile(r'_([a-z])')
@@ -259,9 +259,6 @@ def value_in_choices(value, choices):
         if value == choice[0]:
             return True
     return False
-
-
-T = TypeVar()
 
 
 def iter_to_choices(i):
