@@ -1,5 +1,6 @@
 import pytest
 
+from odin.resources import create_resource_from_dict
 from odin.utils import getmeta
 from odin import proxy
 
@@ -144,3 +145,8 @@ class TestResourceProxy(object):
         target = BookProxy.proxy(book)
 
         assert target.expensive
+
+    def test_create_resource_from_dict(self):
+        actual = create_resource_from_dict({'title': '1984', 'isbn': '1234567', 'num_pages': 1}, BookProxy)
+
+        assert actual.title == '1984'
