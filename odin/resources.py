@@ -2,6 +2,9 @@
 import copy
 import six
 
+# Typing imports
+from typing import TypeVar, Dict, Any  # noqa
+
 from odin import bases
 from odin import exceptions, registration
 from odin.exceptions import ValidationError
@@ -470,8 +473,9 @@ class ResourceBase(object):
 
     def clean_fields(self, exclude=None):
         errors = {}
+        meta = getmeta(self)
 
-        for f in getmeta(self).fields:
+        for f in meta.fields:
             if exclude and f.name in exclude:
                 continue
 
@@ -493,7 +497,8 @@ class ResourceBase(object):
                 except ValidationError as e:
                     errors.setdefault(f.name, []).extend(e.messages)
 
-            setattr(self, f.attname, raw_value)
+            if f not in meta.readonly_fields:
+                setattr(self, f.attname, raw_value)
 
         if errors:
             raise ValidationError(errors)
@@ -562,7 +567,11 @@ def create_resource_from_iter(i, resource, full_clean=True, default_to_not_provi
     return new_resource
 
 
+R = TypeVar("R")
+
+
 def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True, default_to_not_provided=False):
+    # type: (Dict[str, Any], R, bool, bool, bool) -> Instance[R]
     """
     Create a resource from a dict.
 
