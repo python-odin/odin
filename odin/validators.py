@@ -6,6 +6,7 @@
 # exception within Odin.
 import re
 import six
+import uuid
 
 from odin import exceptions
 from odin.utils.ipv6 import is_valid_ipv6_address
@@ -249,3 +250,33 @@ class EmailValidator(object):
                 pass
 
 validate_email_address = EmailValidator()
+
+
+class UUIDValidator(object):
+    def __call__(self, value):
+        if isinstance(value, uuid.UUID):
+            return True
+        elif isinstance(value, bytes):
+            if len(value) == 16:
+                try:
+                    uuid.UUID(bytes=value)
+                except ValueError as e:
+                    raise exceptions.ValidationError(e.args[0], code='invalid')
+
+                return True
+            try:
+                value = value.decode('utf-8')
+            except UnicodeDecodeError as e:
+                raise exceptions.ValidationError(e.args[0], code='invalid')
+        elif not isinstance(value, str):
+            value = str(value)
+
+        try:
+            uuid.UUID(value)
+        except ValueError as e:
+            raise exceptions.ValidationError(e.args[0], code='invalid')
+
+        return True
+
+
+validate_uuid = UUIDValidator()

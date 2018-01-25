@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import uuid
+
+
 import pytest
 from odin import validators
 from odin.exceptions import ValidationError
@@ -34,7 +37,7 @@ class TestValidator(object):
         validators.validate_url('ftp://example.com/')
         validators.validate_url('ftps://example.com/')
         validators.validate_url('http://savage.company/')
-    
+
         pytest.raises(ValidationError, validators.validate_url, 'foo')
         pytest.raises(ValidationError, validators.validate_url, 'http://')
         pytest.raises(ValidationError, validators.validate_url, 'http://example')
@@ -209,3 +212,30 @@ def test_validate_email_valid(value, kwargs):
     kwargs = kwargs or dict()
     with pytest.raises(ValidationError):
         validators.EmailValidator(**kwargs)(value)
+
+
+@pytest.mark.parametrize('value', (
+    uuid.uuid1(),
+    uuid.uuid3(uuid.uuid4(), 'name'),
+    uuid.uuid4(),
+    uuid.uuid5(uuid.uuid4(), 'name'),
+    'b29770d0-f8bd-48f1-a4e0-3497f2b66ee4',
+    b'b29770d0-f8bd-48f1-a4e0-3497f2b66ee4',
+    b'\xb2\x97p\xd0\xf8\xbdH\xf1\xa4\xe04\x97\xf2\xb6n\xe4',
+))
+def test_validate_uuid_valid(value):
+    validators.UUIDValidator()(value)
+
+
+@pytest.mark.parametrize('value', (
+    '1',
+    1,
+    5.5,
+    'b29770d0-f8bd-48f1-a4e0-3497f2b66ee',
+    'b29770d0f8bd48f1a4e0-3497f2b66ee',
+    '',
+    b'\xAD',
+))
+def test_validate_uuid_invalid(value):
+    with pytest.raises(ValidationError):
+        validators.UUIDValidator()(value)
