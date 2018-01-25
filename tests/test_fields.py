@@ -2,6 +2,7 @@
 from copy import deepcopy
 import pytest
 import datetime
+import uuid
 from odin.fields import *
 from odin.fields import Field, TimeStampField, NOT_PROVIDED
 from odin.datetimeutil import utc, FixedTimezone
@@ -765,3 +766,49 @@ class TestFields(object):
     ))
     def test_valid_values(self, field, value, actual):
         assert field.clean(value) == actual
+
+    # UUIDField ################################################################
+
+    @pytest.mark.parametrize('value', (
+        uuid.uuid1(),
+        uuid.uuid3(uuid.uuid4(), 'name'),
+        uuid.uuid4(),
+        uuid.uuid5(uuid.uuid4(), 'name'),
+    ))
+    def test_uuid_field_with_uuid_objects(self, value):
+        f = UUIDField()
+
+        assert f.clean(value) == value
+
+    @pytest.mark.parametrize('value', (
+        uuid.uuid1().bytes,
+        uuid.uuid3(uuid.uuid4(), 'name').bytes,
+        uuid.uuid4().bytes,
+        uuid.uuid5(uuid.uuid4(), 'name').bytes,
+    ))
+    def test_uuid_field_with_16_bytes_sequence(self, value):
+        f = UUIDField()
+
+        assert f.clean(value) == uuid.UUID(bytes=value)
+
+    @pytest.mark.parametrize('value', (
+        str(uuid.uuid1()).encode('utf-8'),
+        str(uuid.uuid3(uuid.uuid4(), 'name')).encode('utf-8'),
+        str(uuid.uuid4()).encode('utf-8'),
+        str(uuid.uuid5(uuid.uuid4(), 'name')).encode('utf-8'),
+    ))
+    def test_uuid_field_with_bytes(self, value):
+        f = UUIDField()
+
+        assert f.clean(value) == uuid.UUID(value.decode('utf-8'))
+
+    @pytest.mark.parametrize('value', (
+        str(uuid.uuid1()),
+        str(uuid.uuid3(uuid.uuid4(), 'name')),
+        str(uuid.uuid4()),
+        str(uuid.uuid5(uuid.uuid4(), 'name')),
+    ))
+    def test_uuid_field_with_string(self, value):
+        f = UUIDField()
+
+        assert f.clean(value) == uuid.UUID(value)

@@ -4,17 +4,18 @@ from __future__ import absolute_import
 import copy
 import datetime
 import six
+import uuid
 
 from odin import exceptions, datetimeutil, registration
 from odin.utils import value_in_choices, getmeta
 from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url, \
-    validate_ipv4_address, validate_ipv6_address, validate_ipv46_address, validate_email_address
+    validate_ipv4_address, validate_ipv6_address, validate_ipv46_address, validate_email_address, validate_uuid
 from .base import BaseField
 
 __all__ = (
     'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField',
     'TimeField', 'NaiveTimeField', 'DateTimeField', 'NaiveDateTimeField', 'HttpDateTimeField', 'TimeStampField',
-    'EmailField', 'IPv4Field', 'IPv6Field', 'IPv46Field',
+    'EmailField', 'IPv4Field', 'IPv6Field', 'IPv46Field', 'UUIDField',
     'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField', 'TypedListField', 'TypedDictField', 'TypedObjectField'
 )
 
@@ -805,3 +806,29 @@ class IPv46Field(StringField):
     def __init__(self, **options):
         options.setdefault('validators', []).append(validate_ipv46_address)
         super(IPv46Field, self).__init__(**options)
+
+
+class UUIDField(StringField):
+    """
+    An universally unique identifier.
+
+    Validates that the string represents a universally unique identifier.
+    """
+    data_type_name = "UUID"
+
+    def __init__(self, **options):
+        options.setdefault('validators', []).append(validate_uuid)
+        super(UUIDField, self).__init__(**options)
+
+    def to_python(self, value):
+        if isinstance(value, uuid.UUID):
+            return value
+        elif isinstance(value, bytes):
+            if len(value) == 16:
+                return uuid.UUID(bytes=value)
+            else:
+                value = value.decode('utf-8')
+        elif not isinstance(value, str):
+            value = str(value)
+
+        return uuid.UUID(value)
