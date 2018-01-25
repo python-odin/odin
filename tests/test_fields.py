@@ -812,3 +812,9 @@ class TestFields(object):
         f = UUIDField()
 
         assert f.clean(value) == uuid.UUID(value)
+
+    @pytest.mark.parametrize('value', range(4))
+    def test_uuid_field_with_int(self, value):
+        f = UUIDField()
+
+        assert f.clean(value) == uuid.UUID(int=value)

@@ -268,6 +268,20 @@ class UUIDValidator(object):
                 value = value.decode('utf-8')
             except UnicodeDecodeError as e:
                 raise exceptions.ValidationError(e.args[0], code='invalid')
+        elif isinstance(value, int):
+            try:
+                uuid.UUID(int=value)
+            except ValueError as e:
+                raise exceptions.ValidationError(e.args[0], code='invalid')
+
+            return True
+        elif isinstance(value, (tuple, list)):
+            try:
+                uuid.UUID(fields=value)
+            except ValueError as e:
+                raise exceptions.ValidationError(e.args[0], code='invalid')
+
+            return True
         elif not isinstance(value, str):
             value = str(value)
 

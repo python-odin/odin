@@ -222,6 +222,10 @@ def test_validate_email_valid(value, kwargs):
     'b29770d0-f8bd-48f1-a4e0-3497f2b66ee4',
     b'b29770d0-f8bd-48f1-a4e0-3497f2b66ee4',
     b'\xb2\x97p\xd0\xf8\xbdH\xf1\xa4\xe04\x97\xf2\xb6n\xe4',
+    (0x12345678, 0x1234, 0x5678, 0x12, 0x34, 0x567812345678),
+    [0x12345678, 0x1234, 0x5678, 0x12, 0x34, 0x567812345678],
+    0x12345678123456781234567812345678,
+    1
 ))
 def test_validate_uuid_valid(value):
     validators.UUIDValidator()(value)
@@ -229,12 +233,13 @@ def test_validate_uuid_valid(value):
 
 @pytest.mark.parametrize('value', (
     '1',
-    1,
     5.5,
     'b29770d0-f8bd-48f1-a4e0-3497f2b66ee',
     'b29770d0f8bd48f1a4e0-3497f2b66ee',
     '',
     b'\xAD',
+    (0x12345678, 0x1234, 0x5678, 0x12, 0x34),
+    [0x12345678, 0x1234, 0x5678, 0x12, 0x34, 1, 1],
 ))
 def test_validate_uuid_invalid(value):
     with pytest.raises(ValidationError):

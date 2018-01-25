@@ -828,6 +828,10 @@ class UUIDField(StringField):
                 return uuid.UUID(bytes=value)
             else:
                 value = value.decode('utf-8')
+        elif isinstance(value, int):
+            return uuid.UUID(int=value)
+        elif isinstance(value, (tuple, list)):
+                return uuid.UUID(fields=value)
         elif not isinstance(value, str):
             value = str(value)
 
