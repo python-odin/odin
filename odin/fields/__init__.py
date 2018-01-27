@@ -823,16 +823,16 @@ class UUIDField(StringField):
     def to_python(self, value):
         if isinstance(value, uuid.UUID):
             return value
-        elif isinstance(value, bytes):
+        elif isinstance(value, six.binary_type):
             if len(value) == 16:
                 return uuid.UUID(bytes=value)
             else:
                 value = value.decode('utf-8')
-        elif isinstance(value, int):
+        elif isinstance(value, six.integer_types):
             return uuid.UUID(int=value)
         elif isinstance(value, (tuple, list)):
             return uuid.UUID(fields=value)
-        elif not isinstance(value, str):
-            value = str(value)
+        elif not isinstance(value, six.text_type):
+            value = six.text_type(value)
 
         return uuid.UUID(value)

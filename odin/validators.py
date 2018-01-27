@@ -256,7 +256,7 @@ class UUIDValidator(object):
     def __call__(self, value):
         if isinstance(value, uuid.UUID):
             return True
-        elif isinstance(value, bytes):
+        elif isinstance(value, six.binary_type):
             if len(value) == 16:
                 try:
                     uuid.UUID(bytes=value)
@@ -268,7 +268,7 @@ class UUIDValidator(object):
                 value = value.decode('utf-8')
             except UnicodeDecodeError as e:
                 raise exceptions.ValidationError(e.args[0], code='invalid')
-        elif isinstance(value, int):
+        elif isinstance(value, six.integer_types):
             try:
                 uuid.UUID(int=value)
             except ValueError as e:
@@ -282,8 +282,8 @@ class UUIDValidator(object):
                 raise exceptions.ValidationError(e.args[0], code='invalid')
 
             return True
-        elif not isinstance(value, str):
-            value = str(value)
+        elif not isinstance(value, six.text_type):
+            value = six.text_type(value)
 
         try:
             uuid.UUID(value)
