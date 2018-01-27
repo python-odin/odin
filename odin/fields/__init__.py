@@ -831,7 +831,7 @@ class UUIDField(StringField):
         elif isinstance(value, int):
             return uuid.UUID(int=value)
         elif isinstance(value, (tuple, list)):
-                return uuid.UUID(fields=value)
+            return uuid.UUID(fields=value)
         elif not isinstance(value, str):
             value = str(value)
 
