@@ -785,7 +785,7 @@ class TestFields(object):
         uuid.uuid3(uuid.uuid4(), 'name').bytes,
         uuid.uuid4().bytes,
         uuid.uuid5(uuid.uuid4(), 'name').bytes,
-    ))
+    ), ids=('bytes-uuid1', 'bytes-uuid3', 'bytes-uuid4', 'bytes-uuid5',))
     def test_uuid_field_with_16_bytes_sequence(self, value):
         f = UUIDField()
 
