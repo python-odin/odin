@@ -205,7 +205,7 @@ def test_validate_email_valid(value, kwargs):
     ('foo@{0}.com'.format('a' * 64), None),
     ('foo@[::ff::0]', None),
 ))
-def test_validate_email_valid(value, kwargs):
+def test_validate_email_invalid(value, kwargs):
     kwargs = kwargs or dict()
     with pytest.raises(ValidationError):
         validators.EmailValidator(**kwargs)(value)
