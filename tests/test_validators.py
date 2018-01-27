@@ -187,9 +187,8 @@ def test_validate_ipv46_address_invalid(value):
     # New release domain names
     ('foo@example.company', None),
     # IPv4 based email
-    ('foo@127.0.0.1', None),
+    ('foo@[127.0.0.1]', None),
     # IPv6 based email
-    ('foo@::1', None),
     ('foo@[::1]', None),
 ))
 def test_validate_email_valid(value, kwargs):
