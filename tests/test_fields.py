@@ -858,3 +858,24 @@ class TestFields(object):
         f = UUIDField()
         with pytest.raises(ValidationError):
             assert f.clean(value) == uuid.UUID(int=value)
+
+    def test_uuid_field_non_str_value(self):
+        some_uuid = uuid.uuid4()
+
+        class SomeObject(object):
+            def __str__(self):
+                return str(some_uuid)
+
+        f = UUIDField()
+
+        assert f.clean(SomeObject()) == some_uuid
+
+    def test_uuid_field_invalid_non_str_value(self):
+        class SomeObject(object):
+            def __str__(self):
+                return "sometext"
+
+        f = UUIDField()
+
+        with pytest.raises(ValidationError):
+            f.clean(SomeObject())
