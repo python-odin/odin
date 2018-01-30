@@ -574,13 +574,14 @@ class MappingBase(object):
 
         return self.create_object(**values)
 
-    def update(self, destination_obj, ignore_fields=None, fields=None):
+    def update(self, destination_obj, ignore_fields=None, fields=None, ignore_not_provided=False):
         """
         Update an existing object with fields from the provided source object.
 
         :param destination_obj: The existing destination object.
         :param ignore_fields: A list of fields that should be ignored eg ID fields
         :param fields: Collection of fields that should be mapped.
+        :param ignore_not_provided: Ignore field values that are `NotDefined`
 
         """
         assert hasattr(self, '_mapping_rules')
@@ -589,19 +590,23 @@ class MappingBase(object):
 
         for mapping_rule in self._mapping_rules:
             for name, value in self._apply_rule(mapping_rule).items():
-                if name in ignore_fields or (fields and name not in fields):
-                    continue
-                setattr(destination_obj, name, value)
+                if not (
+                    (name in ignore_fields) or
+                    (fields and name not in fields) or
+                    (ignore_not_provided and value is NotProvided)
+                ):
+                    setattr(destination_obj, name, value)
 
         return destination_obj
 
-    def diff(self, destination_obj):
+    def diff(self, destination_obj, ignore_not_provided=False):
         """
         Return all fields that are different.
 
         :note: a full mapping operation is performed during the diffing process.
 
         :param destination_obj: The existing destination object.
+        :param ignore_not_provided: Ignore field values that are `NotDefined`
         :return: set of fields that vary.
 
         """
@@ -610,7 +615,10 @@ class MappingBase(object):
         diff_fields = set()
         for mapping_rule in self._mapping_rules:
             for name, value in self._apply_rule(mapping_rule).items():
-                if value != getattr(destination_obj, name):
+                if not (
+                    (value == getattr(destination_obj, name)) and
+                    (ignore_not_provided and value is NotProvided)
+                ):
                     diff_fields.add(name)
         return diff_fields
 

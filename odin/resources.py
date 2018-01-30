@@ -425,7 +425,7 @@ class ResourceBase(object):
         self.full_clean(ignore_fields)
         return mapping(self, context).convert(**field_values)
 
-    def update_existing(self, dest_obj, context=None, ignore_fields=None):
+    def update_existing(self, dest_obj, context=None, ignore_fields=None, fields=None, ignore_not_provided=False):
         """
         Update the fields on an existing destination object.
 
@@ -433,9 +433,9 @@ class ResourceBase(object):
         raised.
 
         """
-        self.full_clean(ignore_fields)
+        self.full_clean(ignore_fields, ignore_not_provided)
         mapping = registration.get_mapping(self.__class__, dest_obj.__class__)
-        return mapping(self, context).update(dest_obj, ignore_fields)
+        return mapping(self, context).update(dest_obj, ignore_fields, fields, ignore_not_provided)
 
     def extra_attrs(self, attrs):
         """
@@ -451,7 +451,7 @@ class ResourceBase(object):
         """
         pass
 
-    def full_clean(self, exclude=None):
+    def full_clean(self, exclude=None, ignore_not_provided=False):
         """
         Calls clean_fields, clean on the resource and raises ``ValidationError``
         for any errors that occurred.
@@ -459,7 +459,7 @@ class ResourceBase(object):
         errors = {}
 
         try:
-            self.clean_fields(exclude)
+            self.clean_fields(exclude, ignore_not_provided)
         except ValidationError as e:
             errors = e.update_error_dict(errors)
 
@@ -471,7 +471,7 @@ class ResourceBase(object):
         if errors:
             raise ValidationError(errors)
 
-    def clean_fields(self, exclude=None):
+    def clean_fields(self, exclude=None, ignore_not_provided=False):
         errors = {}
         meta = getmeta(self)
 
@@ -481,7 +481,7 @@ class ResourceBase(object):
 
             raw_value = f.value_from_object(self)
 
-            if f.null and raw_value is None:
+            if (f.null and raw_value is None) or (ignore_not_provided and raw_value is NotProvided):
                 continue
 
             try:
