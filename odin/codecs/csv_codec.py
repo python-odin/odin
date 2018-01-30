@@ -332,6 +332,6 @@ def dumps(resources, resource_type=None, cls=csv.writer, **kwargs):
     :param kwargs: Additional parameters to be supplied to the writer instance.
 
     """
-    buf = six.StringIO.StringIO()
-    dump(buf, resources, resource_type, cls, **kwargs)
+    buf = six.StringIO()
+    dump(buf, resources, resource_type=resource_type, cls=cls, **kwargs)
     return buf.getvalue()
