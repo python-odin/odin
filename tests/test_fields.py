@@ -4,7 +4,7 @@ import pytest
 import datetime
 import uuid
 from odin.fields import *
-from odin.fields import Field, TimeStampField, NOT_PROVIDED
+from odin.fields import Field, TimeStampField, NotProvided
 from odin.datetimeutil import utc, FixedTimezone
 from odin.fields.virtual import VirtualField
 from odin.validators import MinValueValidator, MaxValueValidator, MaxLengthValidator, RegexValidator
@@ -165,13 +165,13 @@ class TestField(object):
 
     def test_clean_uses_default_if_value_is_not_provided_is_true(self):
         target = FieldTest(use_default_if_not_provided=True, default='foo')
-        actual = target.clean(NOT_PROVIDED)
+        actual = target.clean(NotProvided)
         assert 'foo' == actual
 
     def test_clean_uses_default_if_value_is_not_provided_is_false(self):
         # Need to allow None as the if use_default_if_not_provided is false NOT_PROVIDED evaluates to None.
         target = FieldTest(use_default_if_not_provided=False, default='foo', null=True)
-        actual = target.clean(NOT_PROVIDED)
+        actual = target.clean(NotProvided)
         assert actual is None
 
 

@@ -16,7 +16,8 @@ __all__ = (
     'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField',
     'TimeField', 'NaiveTimeField', 'DateTimeField', 'NaiveDateTimeField', 'HttpDateTimeField', 'TimeStampField',
     'EmailField', 'IPv4Field', 'IPv6Field', 'IPv46Field', 'UUIDField',
-    'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField', 'TypedListField', 'TypedDictField', 'TypedObjectField'
+    'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField', 'TypedListField', 'TypedDictField', 'TypedObjectField',
+    'NotProvided',
 )
 
 
@@ -24,8 +25,12 @@ if six.PY3:
     long = int
 
 
-class NOT_PROVIDED:
+class NotProvided:
     pass
+
+
+# Backwards compatibility
+NOT_PROVIDED = NotProvided
 
 
 class Field(BaseField):
@@ -41,7 +46,7 @@ class Field(BaseField):
     data_type_name = None
 
     def __init__(self, verbose_name=None, verbose_name_plural=None, name=None, null=False, choices=None,
-                 use_default_if_not_provided=False, default=NOT_PROVIDED, help_text='', validators=None,
+                 use_default_if_not_provided=False, default=NotProvided, help_text='', validators=None,
                  error_messages=None, is_attribute=False, doc_text='', key=False):
         """
         Initialisation of a Field.
@@ -126,7 +131,7 @@ class Field(BaseField):
         from to_python and validate are propagated. The correct value is
         returned if no error is raised.
         """
-        if value is NOT_PROVIDED:
+        if value is NotProvided:
             value = self.get_default() if self.use_default_if_not_provided else None
         value = self.to_python(value)
         self.validate(value)
@@ -137,7 +142,7 @@ class Field(BaseField):
         """
         Returns a boolean of whether this field has a default value.
         """
-        return self.default is not NOT_PROVIDED
+        return self.default is not NotProvided
 
     def get_default(self):
         """
@@ -572,6 +577,7 @@ class DictField(Field):
             msg = self.error_messages['invalid']
             raise exceptions.ValidationError(msg)
 
+
 ObjectField = DictField
 
 
@@ -592,6 +598,7 @@ class ListField(Field):
             return value
         msg = self.error_messages['invalid']
         raise exceptions.ValidationError(msg)
+
 
 ArrayField = ListField
 
@@ -749,6 +756,7 @@ class TypedDictField(DictField):
         if value_errors:
             raise exceptions.ValidationError(value_errors)
 
+
 TypedObjectField = TypedDictField
 
 
@@ -822,23 +830,28 @@ class UUIDField(Field):
     def to_python(self, value):
         if isinstance(value, uuid.UUID):
             return value
+
         elif isinstance(value, six.binary_type):
             if len(value) == 16:
                 return uuid.UUID(bytes=value)
+
             try:
                 value = value.decode('utf-8')
             except UnicodeDecodeError as e:
                 raise exceptions.ValidationError(e.args[0], code='invalid')
+
         elif isinstance(value, six.integer_types):
             try:
                 return uuid.UUID(int=value)
             except ValueError as e:
                 raise exceptions.ValidationError(e.args[0], code='invalid')
+
         elif isinstance(value, (tuple, list)):
             try:
                 return uuid.UUID(fields=value)
             except ValueError as e:
                 raise exceptions.ValidationError(e.args[0], code='invalid')
+
         elif not isinstance(value, six.text_type):
             value = six.text_type(value)
 

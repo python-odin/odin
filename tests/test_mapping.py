@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+
 import pytest
 import datetime
+
 from odin.exceptions import MappingSetupError, MappingExecutionError
+from odin.fields import NotProvided
 from odin.mapping import MappingResult, FieldMapping
 from odin.mapping.helpers import MapDictAs, MapListOf, NoOpMapper
 from .resources import *
@@ -88,7 +91,7 @@ class TestMappingBase(object):
 
         assert 'Foo' == to_resource.title
         assert '42' == to_resource.count
-        assert None == to_resource.excluded1
+        assert None is to_resource.excluded1
         assert 'abc' == to_resource.to_field1
         assert 62 == to_resource.to_field2
         assert 69 == to_resource.to_field3
@@ -327,7 +330,7 @@ class TestResourceMappingHelpers(object):
         assert "Bar" == existing_resource.title
         assert 42 == existing_resource.num_pages
         assert 12.50 == existing_resource.rrp
-        assert False == existing_resource.fiction
+        assert not existing_resource.fiction
         assert "fantasy" == existing_resource.genre
 
     def test_update_filtered_existing(self):
@@ -354,8 +357,35 @@ class TestResourceMappingHelpers(object):
         assert "Bar" == existing_resource.title
         assert 12 == existing_resource.num_pages
         assert 12.50 == existing_resource.rrp
-        assert False == existing_resource.fiction
+        assert not existing_resource.fiction
         assert "fantasy" == existing_resource.genre
+
+    def test_ignore_not_provided(self):
+        resource = OldBook(
+            name="Bar",  # odin.StringField()
+            num_pages=NotProvided,  # odin.IntegerField()
+            price=12.50,  # odin.FloatField()
+            genre=NotProvided,  # odin.StringField()
+            published=datetime.datetime(2015, 2, 26, 22, 7),  # odin.DateTimeField()
+            author=Author(name='123'),  # odin.ObjectAs()
+            publisher=Publisher(name="Eek"),  # odin.ObjectAs()
+        )
+        existing_resource = Book(
+            title="Foo",  # odin.StringField()
+            num_pages=12,  # odin.IntegerField()
+            rrp=12.50,  # odin.FloatField()
+            fiction=False,  # odin.BooleanField()
+            genre="others",  # odin.StringField()
+            published=[datetime.datetime.now()],  # odin.TypedArrayField()
+        )
+
+        resource.update_existing(existing_resource, ignore_not_provided=True)
+
+        assert "Bar" == existing_resource.title
+        assert 12 == existing_resource.num_pages
+        assert 12.50 == existing_resource.rrp
+        assert not existing_resource.fiction
+        assert "others" == existing_resource.genre
 
 
 class ResourceA(odin.Resource):
