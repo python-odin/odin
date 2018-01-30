@@ -824,10 +824,7 @@ class UUIDField(Field):
             return value
         elif isinstance(value, six.binary_type):
             if len(value) == 16:
-                try:
-                    return uuid.UUID(bytes=value)
-                except ValueError as e:
-                    raise exceptions.ValidationError(e.args[0], code='invalid')
+                return uuid.UUID(bytes=value)
             try:
                 value = value.decode('utf-8')
             except UnicodeDecodeError as e:
