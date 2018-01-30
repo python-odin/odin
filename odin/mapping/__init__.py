@@ -3,7 +3,7 @@ import collections
 import six
 from odin import bases
 from odin import registration
-from odin.fields import NOT_PROVIDED
+from odin.fields import NotProvided
 from odin.resources import Resource
 from odin.fields.composite import ListOf, DictAs
 from odin.exceptions import MappingSetupError, MappingExecutionError
@@ -15,6 +15,7 @@ __all__ = ('Mapping', 'map_field', 'map_list_field', 'assign_field', 'define', '
 
 def force_tuple(value):
     return value if isinstance(value, (list, tuple)) else (value,)
+
 
 EMPTY_LIST = tuple()
 
@@ -120,6 +121,7 @@ class ResourceFieldResolver(FieldResolverBase):
     def get_field_dict(self):
         """Return a dictionary of fields along with their names."""
         return getmeta(self.obj).field_map
+
 
 registration.register_field_resolver(ResourceFieldResolver, Resource)
 
@@ -447,12 +449,14 @@ class MappingBase(object):
 
             raise TypeError('`source_resource` parameter must be an instance of %s' % cls.from_obj)
 
-    def __init__(self, source_obj, context=None, allow_subclass=False):
+    def __init__(self, source_obj, context=None, allow_subclass=False, ignore_not_provided=False):
         """
         Initialise instance of mapping.
 
         :param source_obj: The source resource, this must be an instance of :py:attr:`Mapping.from_obj`.
         :param context: An optional context value, this can be any value you want to aid in mapping
+        :param allow_subclass:
+        :param ignore_not_provided: Ignore values that are `NotProvided`.
         """
         if allow_subclass:
             if not isinstance(source_obj, self.from_obj):
@@ -462,6 +466,7 @@ class MappingBase(object):
                 raise TypeError('`source_resource` parameter must be an instance of %s' % self.from_obj)
         self.source = source_obj
         self.context = context or {}
+        self.ignore_not_provided = ignore_not_provided
 
     @property
     def loop_idx(self):
@@ -535,9 +540,14 @@ class MappingBase(object):
                 len(to_fields), len(to_values), mapping_rule))
 
         if skip_if_none:
-            return dict((f, to_values[i]) for i, f in enumerate(to_fields) if to_values[i] is not None)
+            result = {f: to_values[i] for i, f in enumerate(to_fields) if to_values[i] is not None}
         else:
-            return dict((f, to_values[i]) for i, f in enumerate(to_fields))
+            result = {f: to_values[i] for i, f in enumerate(to_fields)}
+
+        if self.ignore_not_provided:
+            return {k: v for k, v in result.items() if v is not NotProvided}
+        else:
+            return result
 
     def create_object(self, **field_values):
         """
@@ -579,7 +589,7 @@ class MappingBase(object):
 
         for mapping_rule in self._mapping_rules:
             for name, value in self._apply_rule(mapping_rule).items():
-                if name in ignore_fields or (fields and name not in fields) or value is NOT_PROVIDED:
+                if name in ignore_fields or (fields and name not in fields):
                     continue
                 setattr(destination_obj, name, value)
 

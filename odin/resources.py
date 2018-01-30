@@ -8,7 +8,7 @@ from typing import TypeVar, Dict, Any  # noqa
 from odin import bases
 from odin import exceptions, registration
 from odin.exceptions import ValidationError
-from odin.fields import NOT_PROVIDED
+from odin.fields import NotProvided
 from odin.utils import lazy_property, cached_property, field_iter_items, force_tuple, getmeta
 
 DEFAULT_TYPE_FIELD = '$'
@@ -30,14 +30,14 @@ class ResourceOptions(object):
 
         self.name = None
         self.class_name = None
-        self.name_space = NOT_PROVIDED
+        self.name_space = NotProvided
         self.verbose_name = None
         self.verbose_name_plural = None
         self.abstract = False
         self.doc_group = None
         self.type_field = DEFAULT_TYPE_FIELD
         self.key_field_names = None
-        self.field_sorting = NOT_PROVIDED
+        self.field_sorting = NotProvided
 
         self._cache = {}
 
@@ -254,11 +254,11 @@ class ResourceType(type):
         new_class.add_to_class('_meta', new_meta)
 
         # Namespace is inherited
-        if base_meta and new_meta.name_space is NOT_PROVIDED:
+        if base_meta and new_meta.name_space is NotProvided:
             new_meta.name_space = base_meta.name_space
 
         # Generate a namespace if one is not provided
-        if new_meta.name_space is NOT_PROVIDED:
+        if new_meta.name_space is NotProvided:
             new_meta.name_space = module
 
         # Key field is inherited
@@ -266,7 +266,7 @@ class ResourceType(type):
             new_meta.key_field_names = base_meta.key_field_names
 
         # Field sorting is inherited
-        if new_meta.field_sorting is NOT_PROVIDED:
+        if new_meta.field_sorting is NotProvided:
             new_meta.field_sorting = base_meta.field_sorting if base_meta else False
 
         # Bail out early if we have already created this class.
@@ -526,7 +526,7 @@ def create_resource_from_iter(i, resource, full_clean=True, default_to_not_provi
         resource.
     :param full_clean: Perform a full clean as part of the creation, this is useful for parsing data with known
         columns (eg CSV data).
-    :param default_to_not_provided: If an value is not supplied keep the value as NOT_PROVIDED. This is used
+    :param default_to_not_provided: If an value is not supplied keep the value as NotProvided. This is used
         to support merging an updated value.
     :return: New instance of resource type specified in the *resource* param.
 
@@ -538,7 +538,7 @@ def create_resource_from_iter(i, resource, full_clean=True, default_to_not_provi
     # Optimisation to allow the assumption that len(fields) == len(i)
     extra = []
     if len(i) < len(fields):
-        i += [NOT_PROVIDED] * (len(fields) - len(i))
+        i += [NotProvided] * (len(fields) - len(i))
     elif len(i) > len(fields):
         extra = i[len(fields):]
         i = i[:len(fields)]
@@ -546,7 +546,7 @@ def create_resource_from_iter(i, resource, full_clean=True, default_to_not_provi
     attrs = []
     errors = {}
     for f, value in zip(fields, i):
-        if value is NOT_PROVIDED:
+        if value is NotProvided:
             if not default_to_not_provided:
                 value = f.get_default() if f.use_default_if_not_provided else None
         else:
@@ -636,8 +636,8 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True,
     errors = {}
     meta = getmeta(resource_type)
     for f in meta.init_fields:
-        value = d.pop(f.name, NOT_PROVIDED)
-        if value is NOT_PROVIDED:
+        value = d.pop(f.name, NotProvided)
+        if value is NotProvided:
             if not default_to_not_provided:
                 value = f.get_default() if f.use_default_if_not_provided else None
         else:

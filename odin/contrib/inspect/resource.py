@@ -1,6 +1,6 @@
 from __future__ import absolute_import, print_function
 from humanfriendly import tables
-from odin.fields import NOT_PROVIDED
+from odin.fields import NotProvided
 from odin.utils import field_iter
 from .base import SummaryBase
 
@@ -20,7 +20,7 @@ class ResourceSummary(SummaryBase):
             data.append([
                 field.name,
                 field.__class__.__name__,
-                '' if field is not NOT_PROVIDED else str(field.default),
+                '' if field is not NotProvided else str(field.default),
                 field.doc_text
             ])
         self.print(tables.format_pretty_table(data, column_names))

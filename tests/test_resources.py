@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 import pytest
 import odin
-from odin.fields import NOT_PROVIDED
+from odin.fields import NotProvided
 from odin.resources import ResourceOptions, build_object_graph, create_resource_from_dict
 from odin.exceptions import ValidationError
 from .resources import Book, BookProxy, Library, Subscriber
@@ -288,14 +288,14 @@ class TestConstructionMethods(object):
 
         assert dict(
             title="Foo",
-            isbn=NOT_PROVIDED,
+            isbn=NotProvided,
             num_pages=42,
-            rrp=NOT_PROVIDED,
-            fiction=NOT_PROVIDED,
-            genre=NOT_PROVIDED,
-            published=NOT_PROVIDED,
-            authors=NOT_PROVIDED,
-            publisher=NOT_PROVIDED
+            rrp=NotProvided,
+            fiction=NotProvided,
+            genre=NotProvided,
+            published=NotProvided,
+            authors=NotProvided,
+            publisher=NotProvided
         ) == book.to_dict()
 
     def test_create_resource_from_dict__with_proxy(self):
@@ -308,7 +308,7 @@ class TestConstructionMethods(object):
 
         assert dict(
             title="Foo",
-            isbn=NOT_PROVIDED,
+            isbn=NotProvided,
             num_pages=42,
             rrp=20.4,
         ) == book.to_dict()
