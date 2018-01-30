@@ -9,7 +9,7 @@ import uuid
 from odin import exceptions, datetimeutil, registration
 from odin.utils import value_in_choices, getmeta
 from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url, \
-    validate_ipv4_address, validate_ipv6_address, validate_ipv46_address, validate_email_address, validate_uuid
+    validate_ipv4_address, validate_ipv6_address, validate_ipv46_address, validate_email_address
 from .base import BaseField
 
 __all__ = (
@@ -808,7 +808,7 @@ class IPv46Field(StringField):
         super(IPv46Field, self).__init__(**options)
 
 
-class UUIDField(StringField):
+class UUIDField(Field):
     """
     An universally unique identifier.
 
@@ -817,7 +817,6 @@ class UUIDField(StringField):
     data_type_name = "UUID"
 
     def __init__(self, **options):
-        options.setdefault('validators', []).append(validate_uuid)
         super(UUIDField, self).__init__(**options)
 
     def to_python(self, value):
@@ -825,14 +824,28 @@ class UUIDField(StringField):
             return value
         elif isinstance(value, six.binary_type):
             if len(value) == 16:
-                return uuid.UUID(bytes=value)
-            else:
+                try:
+                    return uuid.UUID(bytes=value)
+                except ValueError as e:
+                    raise exceptions.ValidationError(e.args[0], code='invalid')
+            try:
                 value = value.decode('utf-8')
+            except UnicodeDecodeError as e:
+                raise exceptions.ValidationError(e.args[0], code='invalid')
         elif isinstance(value, six.integer_types):
-            return uuid.UUID(int=value)
+            try:
+                return uuid.UUID(int=value)
+            except ValueError as e:
+                raise exceptions.ValidationError(e.args[0], code='invalid')
         elif isinstance(value, (tuple, list)):
-            return uuid.UUID(fields=value)
+            try:
+                return uuid.UUID(fields=value)
+            except ValueError as e:
+                raise exceptions.ValidationError(e.args[0], code='invalid')
         elif not isinstance(value, six.text_type):
             value = six.text_type(value)
 
-        return uuid.UUID(value)
+        try:
+            return uuid.UUID(value)
+        except ValueError as e:
+            raise exceptions.ValidationError(e.args[0], code='invalid')
