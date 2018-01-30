@@ -818,3 +818,43 @@ class TestFields(object):
         f = UUIDField()
 
         assert f.clean(value) == uuid.UUID(int=value)
+
+    @pytest.mark.parametrize('value', (
+        -1,
+        -2
+    ))
+    def test_uuid_field_invalid_int(self, value):
+        f = UUIDField()
+        with pytest.raises(ValidationError):
+            assert f.clean(value) == uuid.UUID(int=value)
+
+    @pytest.mark.parametrize('value', (
+        b'\254',
+        b'\255',
+    ))
+    def test_uuid_field_invalid_bytes(self, value):
+        f = UUIDField()
+        with pytest.raises(ValidationError):
+            assert f.clean(value) == uuid.UUID(int=value)
+
+    @pytest.mark.parametrize('value', (
+        (1, 2, 3, 4, 5),
+        [1, 2, 3, 4, 5],
+        (-1, 2, 2, 2, 2, 2),
+        [-1, 2, 2, 2, 2, 2],
+        (2, -1, 2, 2, 2, 2),
+        [2, -1, 2, 2, 2, 2],
+    ))
+    def test_uuid_field_invalid_fields(self, value):
+        f = UUIDField()
+        with pytest.raises(ValidationError):
+            assert f.clean(value) == uuid.UUID(int=value)
+
+    @pytest.mark.parametrize('value', (
+        "sometext",
+        "01010101-0101-0101-0101-01010101010"
+    ))
+    def test_uuid_field_invalid_hex(self, value):
+        f = UUIDField()
+        with pytest.raises(ValidationError):
+            assert f.clean(value) == uuid.UUID(int=value)
