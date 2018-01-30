@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import uuid
+
+
 import pytest
 from odin import validators
 from odin.exceptions import ValidationError
@@ -34,7 +37,7 @@ class TestValidator(object):
         validators.validate_url('ftp://example.com/')
         validators.validate_url('ftps://example.com/')
         validators.validate_url('http://savage.company/')
-    
+
         pytest.raises(ValidationError, validators.validate_url, 'foo')
         pytest.raises(ValidationError, validators.validate_url, 'http://')
         pytest.raises(ValidationError, validators.validate_url, 'http://example')
