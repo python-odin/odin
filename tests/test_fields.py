@@ -2,6 +2,7 @@
 from copy import deepcopy
 import pytest
 import datetime
+import uuid
 from odin.fields import *
 from odin.fields import Field, TimeStampField, NotProvided
 from odin.datetimeutil import utc, FixedTimezone
@@ -765,3 +766,116 @@ class TestFields(object):
     ))
     def test_valid_values(self, field, value, actual):
         assert field.clean(value) == actual
+
+    # UUIDField ################################################################
+
+    @pytest.mark.parametrize('value', (
+        uuid.uuid1(),
+        uuid.uuid3(uuid.uuid4(), 'name'),
+        uuid.uuid4(),
+        uuid.uuid5(uuid.uuid4(), 'name'),
+    ))
+    def test_uuid_field_with_uuid_objects(self, value):
+        f = UUIDField()
+
+        assert f.clean(value) == value
+
+    @pytest.mark.parametrize('value', (
+        uuid.uuid1().bytes,
+        uuid.uuid3(uuid.uuid4(), 'name').bytes,
+        uuid.uuid4().bytes,
+        uuid.uuid5(uuid.uuid4(), 'name').bytes,
+    ), ids=('bytes-uuid1', 'bytes-uuid3', 'bytes-uuid4', 'bytes-uuid5',))
+    def test_uuid_field_with_16_bytes_sequence(self, value):
+        f = UUIDField()
+
+        assert f.clean(value) == uuid.UUID(bytes=value)
+
+    @pytest.mark.parametrize('value', (
+        str(uuid.uuid1()).encode('utf-8'),
+        str(uuid.uuid3(uuid.uuid4(), 'name')).encode('utf-8'),
+        str(uuid.uuid4()).encode('utf-8'),
+        str(uuid.uuid5(uuid.uuid4(), 'name')).encode('utf-8'),
+    ))
+    def test_uuid_field_with_bytes(self, value):
+        f = UUIDField()
+
+        assert f.clean(value) == uuid.UUID(value.decode('utf-8'))
+
+    @pytest.mark.parametrize('value', (
+        str(uuid.uuid1()),
+        str(uuid.uuid3(uuid.uuid4(), 'name')),
+        str(uuid.uuid4()),
+        str(uuid.uuid5(uuid.uuid4(), 'name')),
+    ))
+    def test_uuid_field_with_string(self, value):
+        f = UUIDField()
+
+        assert f.clean(value) == uuid.UUID(value)
+
+    @pytest.mark.parametrize('value', range(4))
+    def test_uuid_field_with_int(self, value):
+        f = UUIDField()
+
+        f.clean(value) == uuid.UUID(int=value)
+
+    @pytest.mark.parametrize('value', (
+        -1,
+        -2
+    ))
+    def test_uuid_field_invalid_int(self, value):
+        f = UUIDField()
+        with pytest.raises(ValidationError):
+            f.clean(value)
+
+    @pytest.mark.parametrize('value', (
+        b'\254',
+        b'\255',
+    ))
+    def test_uuid_field_invalid_bytes(self, value):
+        f = UUIDField()
+        with pytest.raises(ValidationError):
+            f.clean(value)
+
+    @pytest.mark.parametrize('value', (
+        (1, 2, 3, 4, 5),
+        [1, 2, 3, 4, 5],
+        (-1, 2, 2, 2, 2, 2),
+        [-1, 2, 2, 2, 2, 2],
+        (2, -1, 2, 2, 2, 2),
+        [2, -1, 2, 2, 2, 2],
+    ))
+    def test_uuid_field_invalid_fields(self, value):
+        f = UUIDField()
+        with pytest.raises(ValidationError):
+            f.clean(value)
+
+    @pytest.mark.parametrize('value', (
+        "sometext",
+        "01010101-0101-0101-0101-01010101010"
+    ))
+    def test_uuid_field_invalid_hex(self, value):
+        f = UUIDField()
+        with pytest.raises(ValidationError):
+            f.clean(value)
+
+    def test_uuid_field_non_str_value(self):
+        some_uuid = uuid.uuid4()
+
+        class SomeObject(object):
+            def __str__(self):
+                return str(some_uuid)
+
+        f = UUIDField()
+
+        assert f.clean(SomeObject()) == some_uuid
+
+    def test_uuid_field_invalid_non_str_value(self):
+        class SomeObject(object):
+            def __str__(self):
+                return "sometext"
+
+        f = UUIDField()
+
+        with pytest.raises(ValidationError):
+            f.clean(SomeObject())

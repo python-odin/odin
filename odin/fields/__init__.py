@@ -4,6 +4,7 @@ from __future__ import absolute_import
 import copy
 import datetime
 import six
+import uuid
 
 from odin import exceptions, datetimeutil, registration
 from odin.utils import value_in_choices, getmeta
@@ -14,7 +15,7 @@ from .base import BaseField
 __all__ = (
     'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField',
     'TimeField', 'NaiveTimeField', 'DateTimeField', 'NaiveDateTimeField', 'HttpDateTimeField', 'TimeStampField',
-    'EmailField', 'IPv4Field', 'IPv6Field', 'IPv46Field',
+    'EmailField', 'IPv4Field', 'IPv6Field', 'IPv46Field', 'UUIDField',
     'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField', 'TypedListField', 'TypedDictField', 'TypedObjectField',
     'NotProvided',
 )
@@ -576,6 +577,7 @@ class DictField(Field):
             msg = self.error_messages['invalid']
             raise exceptions.ValidationError(msg)
 
+
 ObjectField = DictField
 
 
@@ -596,6 +598,7 @@ class ListField(Field):
             return value
         msg = self.error_messages['invalid']
         raise exceptions.ValidationError(msg)
+
 
 ArrayField = ListField
 
@@ -753,6 +756,7 @@ class TypedDictField(DictField):
         if value_errors:
             raise exceptions.ValidationError(value_errors)
 
+
 TypedObjectField = TypedDictField
 
 
@@ -810,3 +814,48 @@ class IPv46Field(StringField):
     def __init__(self, **options):
         options.setdefault('validators', []).append(validate_ipv46_address)
         super(IPv46Field, self).__init__(**options)
+
+
+class UUIDField(Field):
+    """
+    An universally unique identifier.
+
+    Validates that the string represents a universally unique identifier.
+    """
+    data_type_name = "UUID"
+
+    def __init__(self, **options):
+        super(UUIDField, self).__init__(**options)
+
+    def to_python(self, value):
+        if isinstance(value, uuid.UUID):
+            return value
+
+        elif isinstance(value, six.binary_type):
+            if len(value) == 16:
+                return uuid.UUID(bytes=value)
+
+            try:
+                value = value.decode('utf-8')
+            except UnicodeDecodeError as e:
+                raise exceptions.ValidationError(e.args[0], code='invalid')
+
+        elif isinstance(value, six.integer_types):
+            try:
+                return uuid.UUID(int=value)
+            except ValueError as e:
+                raise exceptions.ValidationError(e.args[0], code='invalid')
+
+        elif isinstance(value, (tuple, list)):
+            try:
+                return uuid.UUID(fields=value)
+            except ValueError as e:
+                raise exceptions.ValidationError(e.args[0], code='invalid')
+
+        elif not isinstance(value, six.text_type):
+            value = six.text_type(value)
+
+        try:
+            return uuid.UUID(value)
+        except ValueError as e:
+            raise exceptions.ValidationError(e.args[0], code='invalid')
