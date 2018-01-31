@@ -7,7 +7,7 @@ python:
   - "pypy"
 
 install:
-  - travis_retry pip install -r requirements.txt "jinja2>=2.7" msgpack-python pyyaml pytest pytest-cov arrow
+  - travis_retry pip install -r requirements.txt "jinja2>=2.7" msgpack-python pyyaml pytest>=3.3.2 pytest-cov arrow
   - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then travis_retry pip install pint coveralls ply; fi
 
 script:
