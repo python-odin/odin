@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import uuid
+
+
 import pytest
 from odin import validators
 from odin.exceptions import ValidationError
@@ -34,7 +37,7 @@ class TestValidator(object):
         validators.validate_url('ftp://example.com/')
         validators.validate_url('ftps://example.com/')
         validators.validate_url('http://savage.company/')
-    
+
         pytest.raises(ValidationError, validators.validate_url, 'foo')
         pytest.raises(ValidationError, validators.validate_url, 'http://')
         pytest.raises(ValidationError, validators.validate_url, 'http://example')
@@ -187,9 +190,8 @@ def test_validate_ipv46_address_invalid(value):
     # New release domain names
     ('foo@example.company', None),
     # IPv4 based email
-    ('foo@127.0.0.1', None),
+    ('foo@[127.0.0.1]', None),
     # IPv6 based email
-    ('foo@::1', None),
     ('foo@[::1]', None),
 ))
 def test_validate_email_valid(value, kwargs):

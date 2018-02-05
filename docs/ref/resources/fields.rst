@@ -277,6 +277,15 @@ HttpDateTimeField
 
 A :py:class:`datetime` field or date encoded in ISO-1123 or HTTP datetime string format.
 
+.. _field-uuid_field:
+
+UUIDField
+=========
+
+A :py:class:`UUID` field.
+
+This field supports most accepted values for initializing a UUID except bytes_le.
+
 .. _field-array_field:
 
 ArrayField

@@ -21,7 +21,7 @@ import csv
 from odin import bases
 from odin.compatibility import deprecated
 from odin.datastructures import CaseLessStringList
-from odin.fields import NOT_PROVIDED
+from odin.fields import NotProvided
 from odin.resources import create_resource_from_iter, create_resource_from_dict
 from odin.utils import getmeta, lazy_property
 from odin.exceptions import CodecDecodeError, ValidationError
@@ -133,7 +133,7 @@ class Reader(bases.TypedResourceIterable):
             for idx, row in enumerate(self._reader):
                 # Check if row is less than mapping (as this will causes errors)!
                 res = create_resource(
-                    (s if s is NOT_PROVIDED else row[s] for s in mapping),
+                    (s if s is NotProvided else row[s] for s in mapping),
                     idx + 1)  # Add one to index as row "0" will be the header
                 if res:
                     yield res
@@ -196,7 +196,7 @@ class Reader(bases.TypedResourceIterable):
             if name in header:
                 mapping.append(header.index(name))
             else:
-                mapping.append(NOT_PROVIDED)
+                mapping.append(NotProvided)
 
         # Append any extra fields
         for name in self.extra_field_names:
@@ -332,6 +332,6 @@ def dumps(resources, resource_type=None, cls=csv.writer, **kwargs):
     :param kwargs: Additional parameters to be supplied to the writer instance.
 
     """
-    buf = six.StringIO.StringIO()
-    dump(buf, resources, resource_type, cls, **kwargs)
+    buf = six.StringIO()
+    dump(buf, resources, resource_type=resource_type, cls=cls, **kwargs)
     return buf.getvalue()

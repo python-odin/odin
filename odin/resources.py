@@ -8,7 +8,7 @@ from typing import TypeVar, Dict, Any  # noqa
 from odin import bases
 from odin import exceptions, registration
 from odin.exceptions import ValidationError
-from odin.fields import NOT_PROVIDED
+from odin.fields import NotProvided
 from odin.utils import lazy_property, cached_property, field_iter_items, force_tuple, getmeta
 
 DEFAULT_TYPE_FIELD = '$'
@@ -30,14 +30,14 @@ class ResourceOptions(object):
 
         self.name = None
         self.class_name = None
-        self.name_space = NOT_PROVIDED
+        self.name_space = NotProvided
         self.verbose_name = None
         self.verbose_name_plural = None
         self.abstract = False
         self.doc_group = None
         self.type_field = DEFAULT_TYPE_FIELD
         self.key_field_names = None
-        self.field_sorting = NOT_PROVIDED
+        self.field_sorting = NotProvided
 
         self._cache = {}
 
@@ -254,11 +254,11 @@ class ResourceType(type):
         new_class.add_to_class('_meta', new_meta)
 
         # Namespace is inherited
-        if base_meta and new_meta.name_space is NOT_PROVIDED:
+        if base_meta and new_meta.name_space is NotProvided:
             new_meta.name_space = base_meta.name_space
 
         # Generate a namespace if one is not provided
-        if new_meta.name_space is NOT_PROVIDED:
+        if new_meta.name_space is NotProvided:
             new_meta.name_space = module
 
         # Key field is inherited
@@ -266,7 +266,7 @@ class ResourceType(type):
             new_meta.key_field_names = base_meta.key_field_names
 
         # Field sorting is inherited
-        if new_meta.field_sorting is NOT_PROVIDED:
+        if new_meta.field_sorting is NotProvided:
             new_meta.field_sorting = base_meta.field_sorting if base_meta else False
 
         # Bail out early if we have already created this class.
@@ -425,7 +425,7 @@ class ResourceBase(object):
         self.full_clean(ignore_fields)
         return mapping(self, context).convert(**field_values)
 
-    def update_existing(self, dest_obj, context=None, ignore_fields=None):
+    def update_existing(self, dest_obj, context=None, ignore_fields=None, fields=None, ignore_not_provided=False):
         """
         Update the fields on an existing destination object.
 
@@ -433,9 +433,9 @@ class ResourceBase(object):
         raised.
 
         """
-        self.full_clean(ignore_fields)
+        self.full_clean(ignore_fields, ignore_not_provided)
         mapping = registration.get_mapping(self.__class__, dest_obj.__class__)
-        return mapping(self, context).update(dest_obj, ignore_fields)
+        return mapping(self, context).update(dest_obj, ignore_fields, fields, ignore_not_provided)
 
     def extra_attrs(self, attrs):
         """
@@ -451,7 +451,7 @@ class ResourceBase(object):
         """
         pass
 
-    def full_clean(self, exclude=None):
+    def full_clean(self, exclude=None, ignore_not_provided=False):
         """
         Calls clean_fields, clean on the resource and raises ``ValidationError``
         for any errors that occurred.
@@ -459,7 +459,7 @@ class ResourceBase(object):
         errors = {}
 
         try:
-            self.clean_fields(exclude)
+            self.clean_fields(exclude, ignore_not_provided)
         except ValidationError as e:
             errors = e.update_error_dict(errors)
 
@@ -471,7 +471,7 @@ class ResourceBase(object):
         if errors:
             raise ValidationError(errors)
 
-    def clean_fields(self, exclude=None):
+    def clean_fields(self, exclude=None, ignore_not_provided=False):
         errors = {}
         meta = getmeta(self)
 
@@ -481,7 +481,7 @@ class ResourceBase(object):
 
             raw_value = f.value_from_object(self)
 
-            if f.null and raw_value is None:
+            if (f.null and raw_value is None) or (ignore_not_provided and raw_value is NotProvided):
                 continue
 
             try:
@@ -526,7 +526,7 @@ def create_resource_from_iter(i, resource, full_clean=True, default_to_not_provi
         resource.
     :param full_clean: Perform a full clean as part of the creation, this is useful for parsing data with known
         columns (eg CSV data).
-    :param default_to_not_provided: If an value is not supplied keep the value as NOT_PROVIDED. This is used
+    :param default_to_not_provided: If an value is not supplied keep the value as NotProvided. This is used
         to support merging an updated value.
     :return: New instance of resource type specified in the *resource* param.
 
@@ -538,7 +538,7 @@ def create_resource_from_iter(i, resource, full_clean=True, default_to_not_provi
     # Optimisation to allow the assumption that len(fields) == len(i)
     extra = []
     if len(i) < len(fields):
-        i += [NOT_PROVIDED] * (len(fields) - len(i))
+        i += [NotProvided] * (len(fields) - len(i))
     elif len(i) > len(fields):
         extra = i[len(fields):]
         i = i[:len(fields)]
@@ -546,7 +546,7 @@ def create_resource_from_iter(i, resource, full_clean=True, default_to_not_provi
     attrs = []
     errors = {}
     for f, value in zip(fields, i):
-        if value is NOT_PROVIDED:
+        if value is NotProvided:
             if not default_to_not_provided:
                 value = f.get_default() if f.use_default_if_not_provided else None
         else:
@@ -636,8 +636,8 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True,
     errors = {}
     meta = getmeta(resource_type)
     for f in meta.init_fields:
-        value = d.pop(f.name, NOT_PROVIDED)
-        if value is NOT_PROVIDED:
+        value = d.pop(f.name, NotProvided)
+        if value is NotProvided:
             if not default_to_not_provided:
                 value = f.get_default() if f.use_default_if_not_provided else None
         else:

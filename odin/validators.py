@@ -6,6 +6,7 @@
 # exception within Odin.
 import re
 import six
+import uuid
 
 from odin import exceptions
 from odin.utils.ipv6 import is_valid_ipv6_address
@@ -48,6 +49,7 @@ class URLValidator(RegexValidator):
         r'(?::\d+)?'  # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
     message = "Enter a valid URL value."
+
 
 validate_url = URLValidator()
 
@@ -163,6 +165,7 @@ class IPv4Address(RegexValidator):
     regex = r'^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]?[0-9])){3}\Z'
     message = 'Enter a valid IPv4 address.'
 
+
 validate_ipv4_address = IPv4Address()
 
 
@@ -247,5 +250,6 @@ class EmailValidator(object):
                 return True
             except exceptions.ValidationError:
                 pass
+
 
 validate_email_address = EmailValidator()

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import six
 import pytest
 import odin
 import odin.exceptions
@@ -23,6 +24,18 @@ class Book(odin.Resource):
 
     def extra_attrs(self, attrs):
         self.extras = attrs
+
+    def __eq__(self, other):
+        return (self.title == other.title
+                and self.num_pages == other.num_pages
+                and self.rrp == other.rrp
+                and (self.genre == other.genre
+                     or (not self.genre and not other.genre)
+                     )
+                and self.author == other.author
+                and self.publisher == other.publisher
+                and (self.language == other.language
+                     or (not self.language and not other.language)))
 
 
 class TestCsvResourceReader(object):
@@ -148,3 +161,29 @@ class TestReader(object):
 
             with pytest.raises(odin.exceptions.ValidationError):
                 list(target)
+
+    def test_dumps(self):
+        with self.open_fixture('library-header-alt-order.csv') as f:
+            target = csv_codec.reader(f, Book, includes_header=True)
+            expected_library = list(target)
+
+        actual_csv = six.StringIO(csv_codec.dumps(expected_library, include_header=True))
+
+        actual_library = list(csv_codec.reader(actual_csv, Book, includes_header=True))
+
+        assert sorted(actual_library, key=lambda x: x.num_pages) == sorted(expected_library, key=lambda x: x.num_pages)
+
+    def test_dump(self,
+                  tmpdir):
+        with self.open_fixture('library-header-alt-order.csv') as f:
+            target = csv_codec.reader(f, Book, includes_header=True)
+            expected_library = list(target)
+
+        temp_csv = os.path.join(str(tmpdir), 'dump_test.csv')
+        with open(temp_csv, 'w') as f:
+            csv_codec.dump(f, expected_library, include_header=True)
+
+        with open(temp_csv, 'r') as f:
+            actual_library = list(csv_codec.reader(f, Book, includes_header=True))
+
+        assert sorted(actual_library, key=lambda x: x.num_pages) == sorted(expected_library, key=lambda x: x.num_pages)
