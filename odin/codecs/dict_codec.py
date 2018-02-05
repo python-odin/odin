@@ -1,8 +1,8 @@
 import six
-from odin.utils import getmeta
 
 from odin import bases
 from odin import resources, ResourceAdapter
+from odin.utils import getmeta
 
 
 TYPE_SERIALIZERS = {}
