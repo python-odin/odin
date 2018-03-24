@@ -191,11 +191,8 @@ class ResourceOptions(object):
         """
         Tuple of fields specified as the key fields
         """
-        field_names = set()
-
-        # Key fields named in meta go first
-        if self.key_field_names:
-            field_names.update(self.key_field_names)
+        # Key fields names in meta go first
+        field_names = set(self.key_field_names) if self.key_field_names else set()
 
         # Move over any fields defined as keys
         if self._key_fields:
