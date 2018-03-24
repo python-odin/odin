@@ -282,7 +282,7 @@ class ResourceType(type):
             new_meta.fields = sorted(new_meta.fields, key=hash)
 
         # All the fields of any type declared on this model
-        local_field_attnames = set([f.attname for f in new_meta.fields])
+        local_field_attnames = {f.attname for f in new_meta.fields}
         field_attnames = set(local_field_attnames)
 
         for base in parents:
