@@ -530,12 +530,14 @@ def create_resource_from_iter(i, resource, full_clean=True, default_to_not_provi
     fields = getmeta(resource_type).fields
 
     # Optimisation to allow the assumption that len(fields) == len(i)
+    len_fields = len(fields)
+    len_i = len(i)
     extra = []
-    if len(i) < len(fields):
-        i += [NotProvided] * (len(fields) - len(i))
-    elif len(i) > len(fields):
-        extra = i[len(fields):]
-        i = i[:len(fields)]
+    if len_i < len_fields:
+        i += [NotProvided] * (len_fields - len_i)
+    elif len_i > len_fields:
+        extra = i[len_fields:]
+        i = i[:len_fields]
 
     attrs = []
     errors = {}
