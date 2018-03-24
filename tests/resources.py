@@ -50,6 +50,10 @@ class Book(LibraryBook):
         return False
 
 
+class IdentifiableBook(Book):
+    id = odin.UUIDField()
+
+
 class BookProxy(odin.ResourceProxy):
     class Meta:
         resource = Book
