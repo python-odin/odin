@@ -6,7 +6,6 @@
 # exception within Odin.
 import re
 import six
-import uuid
 
 from odin import exceptions
 from odin.utils.ipv6 import is_valid_ipv6_address

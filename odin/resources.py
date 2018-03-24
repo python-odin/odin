@@ -214,7 +214,6 @@ class ResourceOptions(object):
         """
         Run checks on meta data to ensure correctness
         """
-        pass
 
 
 class ResourceType(type):
@@ -443,13 +442,11 @@ class ResourceBase(object):
 
         This allows the resource to decide how to handle these fields. By default they are ignored.
         """
-        pass
 
     def clean(self):
         """
         Chance to do more in depth validation.
         """
-        pass
 
     def full_clean(self, exclude=None, ignore_not_provided=False):
         """
