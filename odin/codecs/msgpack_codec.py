@@ -18,7 +18,7 @@ TYPE_SERIALIZERS = {
     datetime.date: serializers.date_iso_format,
     datetime.time: serializers.time_iso_format,
     datetime.datetime: serializers.datetime_iso_format,
-    uuid.UUID, str
+    uuid.UUID: str
 }
 CONTENT_TYPE = 'application/x-msgpack'
 
