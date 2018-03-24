@@ -28,14 +28,16 @@ class MappingSummary(SummaryBase):
         for from_fields, action, to_fields, to_list, bind, skip_if_none in mapping._mapping_rules:
             # Dereference
             from_fields = from_fields or ['*Assigned*']
-            to_fields = to_fields or list()
-            row_count = max(len(from_fields), len(to_fields))
+            to_fields = to_fields or []
+            from_fields_len = len(from_fields)
+            to_fields_len = len(to_fields)
+            row_count = max(from_fields_len, to_fields_len)
 
             # Normalise
             if len(from_fields) < row_count:
-                from_fields += ['' for _ in range(row_count - len(from_fields))]
+                from_fields += ['' for _ in range(row_count - from_fields_len)]
             if len(to_fields) < row_count:
-                to_fields += ['' for _ in range(row_count - len(to_fields))]
+                to_fields += ['' for _ in range(row_count - to_fields_len)]
 
             if action:
                 if not isinstance(action, six.string_types):

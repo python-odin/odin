@@ -17,7 +17,7 @@ def force_tuple(value):
     return value if isinstance(value, (list, tuple)) else (value,)
 
 
-EMPTY_LIST = tuple()
+EMPTY_LIST = ()
 
 FieldMapping = collections.namedtuple('FieldMapping', ('from_field', 'action', 'to_field',
                                                        'to_list', 'bind', 'skip_if_none'))
@@ -219,7 +219,7 @@ class MappingMeta(type):
             return FieldMapping(map_from, action, map_to, to_list, bind, skip_if_none)
 
         # Determine what fields need to have mappings generated
-        exclude_fields = attrs.get('exclude_fields') or tuple()
+        exclude_fields = attrs.get('exclude_fields') or ()
         unmapped_fields = [attname for attname in from_fields if attname not in exclude_fields]
 
         def remove_from_unmapped_fields(rule):
@@ -739,13 +739,13 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping,
             to_obj.__class__.__name__, to_obj.__name__
         ),
         (base_mapping, ),
-        dict(
-            from_obj=from_obj,
-            to_obj=to_obj,
-            exclude_fields=exclude_fields or list(),
-            mappings=mappings or dict(),
-            register_mapping=register_mappings
-        )
+        {
+            'from_obj': from_obj,
+            'to_obj': to_obj,
+            'exclude_fields': exclude_fields or [],
+            'mappings': mappings or {},
+            'register_mapping': register_mappings
+        }
     )
 
     if generate_reverse:
@@ -755,13 +755,13 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping,
                 from_obj.__class__.__name__, from_obj.__name__,
             ),
             (base_mapping, ),
-            dict(
-                from_obj=to_obj,
-                to_obj=from_obj,
-                exclude_fields=reverse_exclude_fields or list(),
-                mappings=reverse_mappings or dict(),
-                register_mapping=register_mappings
-            )
+            {
+                'from_obj': to_obj,
+                'to_obj': from_obj,
+                'exclude_fields': reverse_exclude_fields or [],
+                'mappings': reverse_mappings or {},
+                'register_mapping': register_mappings
+            }
         )
 
         return forward_mapping, reverse_mapping
