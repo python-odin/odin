@@ -287,7 +287,7 @@ class ResourceType(type):
 
         for base in parents:
             try:
-                base_meta = getattr(base, '_meta')
+                base_meta = base._meta
             except AttributeError:
                 # Things without _meta aren't functional models, so they're
                 # uninteresting parents.
