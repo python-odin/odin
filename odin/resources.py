@@ -50,10 +50,10 @@ class ResourceOptions(object):
         self.class_name = "%s.%s" % (cls.__module__, cls.__name__)
 
         if self.meta:
-            meta_attrs = self.meta.__dict__.copy()
-            for name in self.meta.__dict__:
-                if name.startswith('_'):
-                    del meta_attrs[name]
+            meta_attrs = {
+                name: value for name, value in self.meta.__dict__.copy().items()
+                if not name.startswith('_')
+            }
 
             for attr_name in self.META_OPTION_NAMES:
                 if attr_name in meta_attrs:
