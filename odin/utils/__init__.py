@@ -282,7 +282,7 @@ def force_tuple(value):
 
     """
     if value is None:
-        return tuple()
+        return ()
     if isinstance(value, tuple):
         return value
     if isinstance(value, list):

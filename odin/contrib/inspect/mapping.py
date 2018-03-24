@@ -28,7 +28,7 @@ class MappingSummary(SummaryBase):
         for from_fields, action, to_fields, to_list, bind, skip_if_none in mapping._mapping_rules:
             # Dereference
             from_fields = from_fields or ['*Assigned*']
-            to_fields = to_fields or list()
+            to_fields = to_fields or []
             row_count = max(len(from_fields), len(to_fields))
 
             # Normalise
