@@ -151,7 +151,7 @@ class ResourceOptions(object):
 
     @lazy_property
     def field_map(self):
-        return dict((f.attname, f) for f in self.fields)
+        return {f.attname: f for f in self.fields}
 
     @lazy_property
     def parent_resource_names(self):
@@ -176,7 +176,7 @@ class ResourceOptions(object):
 
     @lazy_property
     def element_field_map(self):
-        return dict((f.attname, f) for f in self.element_fields)
+        return {f.attname: f for f in self.element_fields}
 
     @lazy_property
     def key_field(self):
@@ -410,7 +410,7 @@ class ResourceBase(object):
         """
         meta = getmeta(self)
         fields = meta.all_fields if include_virtual else meta.fields
-        return dict((f.name, v) for f, v in field_iter_items(self, fields))
+        return {f.name: v for f, v in field_iter_items(self, fields)}
 
     def convert_to(self, to_resource, context=None, ignore_fields=None, **field_values):
         """

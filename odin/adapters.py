@@ -52,7 +52,7 @@ class ResourceOptionsAdapter(object):
 
     @cached_property
     def field_map(self):
-        return dict((f.attname, f) for f in self.fields)
+        return {f.attname: f for f in self.fields}
 
     @property
     def attribute_fields(self):
@@ -152,4 +152,4 @@ class ResourceAdapter(object):
         Convert this resource into a dict
         """
         fields = self._meta.all_fields if include_virtual else self._meta.fields
-        return dict((f.name, v) for f, v in field_iter_items(self, fields))
+        return {f.name: v for f, v in field_iter_items(self, fields)}

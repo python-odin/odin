@@ -67,7 +67,7 @@ def _make_encoder(_default):
         return [_encode(o) for o in lst]
 
     def _encode_dict(dct):
-        return dict((k, _encode(o)) for k, o in six.iteritems(dct))
+        return {k: _encode(o) for k, o in six.iteritems(dct)}
 
     def _encode(o):
         if isinstance(o, (list, tuple)):

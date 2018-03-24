@@ -128,7 +128,7 @@ def filter_fields(field_names, include=None, exclude=None, readonly=None):
     :param readonly: Iterable of field names to be treated as read-only.
     :returns: A pair of sets of field names, the first is the set that have been selected,
         the second item is a set that have been selected and indicated to as read-only.
-    
+
     """
     field_names = set(field_names)
 
@@ -243,7 +243,10 @@ def extract_fields_from_dict(d, resource):
     :returns: a dictionary of the resource fields that where found in the dict.
 
     """
-    return dict((f.name, d[f.name]) for f in field_iter(resource) if f.name in d)
+    return {
+        f.name: d[f.name] for f in field_iter(resource)
+        if f.name in d
+    }
 
 
 def value_in_choices(value, choices):
