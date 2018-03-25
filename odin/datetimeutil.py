@@ -157,14 +157,13 @@ class FixedTimezone(datetime.tzinfo):
 
 
 def get_tz_aware_dt(dt, assumed_tz=local):
+    # type: (datetime.datetime, datetime.tzinfo) -> datetime.datetime
     """
     Get a time zone aware date time from a supplied date time.
 
     If dt is already timezone aware it will be returned unchanged.
     If dt is not aware it will be assumed that dt is in local time.
     """
-    assert isinstance(dt, datetime.datetime)
-
     if dt.tzinfo:
         return dt
     else:
@@ -283,6 +282,7 @@ def parse_iso_datetime_string(datetime_string, default_timezone=utc):
 
 
 def to_ecma_datetime_string(dt, default_timezone=local):
+    # type: (datetime.datetime, datetime.tzinfo) -> str
     """
     Convert a python datetime into the string format defined by ECMA-262.
 
@@ -291,8 +291,6 @@ def to_ecma_datetime_string(dt, default_timezone=local):
     ``assume_local_time`` if true will assume the date time is in local time if the object is a naive date time object;
         else assumes the time value is utc.
     """
-    assert isinstance(dt, datetime.datetime)
-
     dt = get_tz_aware_dt(dt, default_timezone).astimezone(utc)
     return "%4i-%02i-%02iT%02i:%02i:%02i.%03iZ" % (
         dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond / 1000)
@@ -313,11 +311,10 @@ def parse_http_datetime_string(datetime_string):
 
 
 def to_http_datetime_string(dt, default_timezone=local):
+    # type: (datetime.datetime, datetime.tzinfo) -> str
     """
     Convert a python datetime into the string format defined by ISO-1123 (or HTTP date time).
     """
-    assert isinstance(dt, datetime.datetime)
-
     dt = get_tz_aware_dt(dt, default_timezone).astimezone(utc)
     timeval = time.mktime(dt.timetuple())
     now = time.localtime(timeval)
