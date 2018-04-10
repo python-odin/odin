@@ -39,13 +39,13 @@ class ArrowField(Field):
             return value
 
         default_timezone = datetimeutil.local if self.assume_local else datetimeutil.utc
-        
+
         if isinstance(value, datetime.datetime):
             if value.tzinfo:
                 return arrow.Arrow.fromdatetime(value)
             else:
                 return arrow.Arrow.fromdatetime(value, default_timezone)
-        
+
         try:
             return arrow.Arrow.fromdatetime(datetimeutil.parse_iso_datetime_string(value, default_timezone))
         except ValueError:
