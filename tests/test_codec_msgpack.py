@@ -15,6 +15,7 @@ class TestMsgPackCodec(object):
     def test_dumps_and_loads(self):
         in_resource = IdentifiableBook(
             id=uuid.uuid4(),
+            purchased_from=From.Ebay,
             title='Consider Phlebas',
             isbn='0-333-45430-8',
             num_pages=471,
@@ -29,6 +30,7 @@ class TestMsgPackCodec(object):
         out_resource = msgpack_codec.loads(data)
 
         assert out_resource.id == in_resource.id
+        assert out_resource.purchased_from == in_resource.purchased_from
         assert out_resource.title == in_resource.title
         assert out_resource.isbn == in_resource.isbn
         assert out_resource.num_pages == in_resource.num_pages
@@ -41,6 +43,7 @@ class TestMsgPackCodec(object):
     def test_dump_and_load_(self):
         in_resource = IdentifiableBook(
             id=uuid.uuid4(),
+            purchased_from=From.Shop,
             title='Consider Phlebas',
             isbn='0-333-45430-8',
             num_pages=471,
@@ -59,6 +62,7 @@ class TestMsgPackCodec(object):
         out_resource = msgpack_codec.load(fp)
 
         assert out_resource.id == in_resource.id
+        assert out_resource.purchased_from == in_resource.purchased_from
         assert out_resource.title == in_resource.title
         assert out_resource.isbn == in_resource.isbn
         assert out_resource.num_pages == in_resource.num_pages
