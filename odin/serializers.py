@@ -19,10 +19,10 @@ def register_string_type(data_type, serialise_method):
 
 
 def date_iso_format(value):
+    # type: (datetime.date) -> str
     """
     Serialise a datetime.date to ISO string format.
     """
-    assert isinstance(value, datetime.date)
     return value.isoformat()
 
 
@@ -36,7 +36,7 @@ class DatetimeIsoFormat(object):
         self.default_timezone = default_timezone
 
     def __call__(self, value):
-        assert isinstance(value, (datetime.time, datetime.datetime))
+        # type: (datetime.time | datetime.datetime) -> str
         if value.tzinfo is None:
             value = value.replace(tzinfo=self.default_timezone)
         return value.isoformat()
@@ -48,7 +48,7 @@ def datetime_iso_format(value):
     """
     Serialise a datetime.datetime to ISO string format.
     """
-    assert isinstance(value, datetime.datetime)
+    # type: (datetime.datetime) -> str
     return value.isoformat()
 
 
@@ -56,7 +56,7 @@ def time_iso_format(value):
     """
     Serialise a datetime.time to ISO string format.
     """
-    assert isinstance(value, datetime.time)
+    # type: (datetime.time) -> str
     return value.isoformat()
 
 
@@ -72,7 +72,6 @@ class DatetimeEcmaFormat(object):
         self.default_timezone = datetimeutil.local if assume_local else default_timezone
 
     def __call__(self, value):
-        assert isinstance(value, self.input_type)
         return datetimeutil.to_ecma_datetime_string(value, self.default_timezone)
 
 datetime_ecma_format = DatetimeEcmaFormat()

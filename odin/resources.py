@@ -50,10 +50,10 @@ class ResourceOptions(object):
         self.class_name = "%s.%s" % (cls.__module__, cls.__name__)
 
         if self.meta:
-            meta_attrs = self.meta.__dict__.copy()
-            for name in self.meta.__dict__:
-                if name.startswith('_'):
-                    del meta_attrs[name]
+            meta_attrs = {
+                name: value for name, value in self.meta.__dict__.copy().items()
+                if not name.startswith('_')
+            }
 
             for attr_name in self.META_OPTION_NAMES:
                 if attr_name in meta_attrs:
@@ -151,7 +151,7 @@ class ResourceOptions(object):
 
     @lazy_property
     def field_map(self):
-        return dict((f.attname, f) for f in self.fields)
+        return {f.attname: f for f in self.fields}
 
     @lazy_property
     def parent_resource_names(self):
@@ -176,7 +176,7 @@ class ResourceOptions(object):
 
     @lazy_property
     def element_field_map(self):
-        return dict((f.attname, f) for f in self.element_fields)
+        return {f.attname: f for f in self.element_fields}
 
     @lazy_property
     def key_field(self):
@@ -191,11 +191,8 @@ class ResourceOptions(object):
         """
         Tuple of fields specified as the key fields
         """
-        field_names = set()
-
-        # Key fields named in meta go first
-        if self.key_field_names:
-            field_names.update(self.key_field_names)
+        # Key fields names in meta go first
+        field_names = set(self.key_field_names) if self.key_field_names else set()
 
         # Move over any fields defined as keys
         if self._key_fields:
@@ -214,7 +211,6 @@ class ResourceOptions(object):
         """
         Run checks on meta data to ensure correctness
         """
-        pass
 
 
 class ResourceType(type):
@@ -283,12 +279,12 @@ class ResourceType(type):
             new_meta.fields = sorted(new_meta.fields, key=hash)
 
         # All the fields of any type declared on this model
-        local_field_attnames = set([f.attname for f in new_meta.fields])
+        local_field_attnames = {f.attname for f in new_meta.fields}
         field_attnames = set(local_field_attnames)
 
         for base in parents:
             try:
-                base_meta = getattr(base, '_meta')
+                base_meta = base._meta
             except AttributeError:
                 # Things without _meta aren't functional models, so they're
                 # uninteresting parents.
@@ -322,7 +318,7 @@ class ResourceType(type):
         if new_meta.key_field_names:
             for field_name in new_meta.key_field_names:
                 if field_name not in new_meta.field_map:
-                    raise AttributeError('Key field `{0}` is not exist on this resource.'.format(field_name))
+                    raise AttributeError('Key field `{0}` does not exist on this resource.'.format(field_name))
 
         # Give fields an opportunity to do additional operations after the
         # resource is full populated and ready.
@@ -410,7 +406,7 @@ class ResourceBase(object):
         """
         meta = getmeta(self)
         fields = meta.all_fields if include_virtual else meta.fields
-        return dict((f.name, v) for f, v in field_iter_items(self, fields))
+        return {f.name: v for f, v in field_iter_items(self, fields)}
 
     def convert_to(self, to_resource, context=None, ignore_fields=None, **field_values):
         """
@@ -443,13 +439,11 @@ class ResourceBase(object):
 
         This allows the resource to decide how to handle these fields. By default they are ignored.
         """
-        pass
 
     def clean(self):
         """
         Chance to do more in depth validation.
         """
-        pass
 
     def full_clean(self, exclude=None, ignore_not_provided=False):
         """
@@ -536,12 +530,14 @@ def create_resource_from_iter(i, resource, full_clean=True, default_to_not_provi
     fields = getmeta(resource_type).fields
 
     # Optimisation to allow the assumption that len(fields) == len(i)
-    extra = []
-    if len(i) < len(fields):
-        i += [NotProvided] * (len(fields) - len(i))
-    elif len(i) > len(fields):
-        extra = i[len(fields):]
-        i = i[:len(fields)]
+    len_fields = len(fields)
+    len_i = len(i)
+    extra = None
+    if len_i < len_fields:
+        i += [NotProvided] * (len_fields - len_i)
+    elif len_i > len_fields:
+        extra = i[len_fields:]
+        i = i[:len_fields]
 
     attrs = []
     errors = {}
@@ -585,7 +581,8 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True,
         to support merging an updated value.
 
     """
-    assert isinstance(d, dict)
+    if not isinstance(d, dict):
+        raise TypeError('`d` must be a dict instance.')
 
     if copy_dict:
         d = d.copy()

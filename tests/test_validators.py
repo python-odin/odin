@@ -195,7 +195,7 @@ def test_validate_ipv46_address_invalid(value):
     ('foo@[::1]', None),
 ))
 def test_validate_email_valid(value, kwargs):
-    kwargs = kwargs or dict()
+    kwargs = kwargs or {}
     validators.EmailValidator(**kwargs)(value)
 
 
@@ -208,6 +208,6 @@ def test_validate_email_valid(value, kwargs):
     ('foo@[::ff::0]', None),
 ))
 def test_validate_email_invalid(value, kwargs):
-    kwargs = kwargs or dict()
+    kwargs = kwargs or {}
     with pytest.raises(ValidationError):
         validators.EmailValidator(**kwargs)(value)

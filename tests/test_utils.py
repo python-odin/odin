@@ -91,7 +91,7 @@ class TestForceTuple(object):
     """
 
     @pytest.mark.parametrize(('value', 'expected'), (
-            (None, tuple()),
+            (None, ()),
             ('', ('',)),
             (0, (0,)),
             (False, (False,)),
