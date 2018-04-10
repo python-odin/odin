@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import odin
+import enum
+
 from odin.fields.virtual import CalculatedField
 from odin.mapping.helpers import sum_fields
 
@@ -50,8 +52,15 @@ class Book(LibraryBook):
         return False
 
 
+class From(enum.Enum):
+    Dumpster = 'dumpster'
+    Shop = 'shop'
+    Ebay = 'ebay'
+
+
 class IdentifiableBook(Book):
     id = odin.UUIDField()
+    purchased_from = odin.EnumField(From)
 
 
 class BookProxy(odin.ResourceProxy):
