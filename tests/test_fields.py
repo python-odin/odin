@@ -817,7 +817,7 @@ class TestFields(object):
     def test_uuid_field_with_int(self, value):
         f = UUIDField()
 
-        f.clean(value) == uuid.UUID(int=value)
+        assert f.clean(value) == uuid.UUID(int=value)
 
     @pytest.mark.parametrize('value', (
         -1,
@@ -879,3 +879,14 @@ class TestFields(object):
 
         with pytest.raises(ValidationError):
             f.clean(SomeObject())
+
+    def test_uuid_field__none(self):
+        f = UUIDField(null=True)
+
+        assert f.clean(None) is None
+
+    def test_uuid_field__not_none(self):
+        f = UUIDField()
+
+        with pytest.raises(ValidationError):
+            f.clean(None)
