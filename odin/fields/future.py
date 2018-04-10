@@ -6,7 +6,7 @@ from odin.exceptions import ValidationError
 from . import Field
 
 try:
-    from enum import Enum, EnumMeta
+    from enum import Enum
 except ImportError:
     Enum = None
 
@@ -21,23 +21,19 @@ if Enum:
         """
         Field for handling Python enums.
 
-        This field requires Python >= 3.5 or the enum35 package.
+        This field requires Python >= 3.4 or the enum34 package.
 
         """
         def __init__(self, enum, **options):
-            # type: (Type[ET]) -> None
+            # type: (Type[Enum]) -> None
             options['choices'] = None
             super(EnumField, self).__init__(**options)
-            self.enum = enum  # type: Type[Enum]
+            self.enum = enum
 
         def to_python(self, value):
             # type: (Any) -> Optional[ET]
             if value is None:
                 return
-
-            # Is the value in the enum
-            if value in self.enum:
-                return value
 
             # Attempt to convert
             try:
