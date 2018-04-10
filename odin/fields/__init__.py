@@ -828,6 +828,9 @@ class UUIDField(Field):
         super(UUIDField, self).__init__(**options)
 
     def to_python(self, value):
+        if value is None:
+            return
+
         if isinstance(value, uuid.UUID):
             return value
 
