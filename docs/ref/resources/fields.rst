@@ -291,7 +291,7 @@ This field supports most accepted values for initializing a UUID except bytes_le
 
 EnumField
 =========
-``class UUIDField(enum, [**options])``
+``class EnumField(enum, [**options])``
 
 .. note:: This field requires Python >=3.4 or the *enum34* package.
 
