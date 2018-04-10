@@ -281,10 +281,25 @@ A :py:class:`datetime` field or date encoded in ISO-1123 or HTTP datetime string
 
 UUIDField
 =========
+``class UUIDField([**options])``
 
 A :py:class:`UUID` field.
 
 This field supports most accepted values for initializing a UUID except bytes_le.
+
+.. _field-enum_field:
+
+EnumField
+=========
+``class UUIDField(enum, [**options])``
+
+.. note:: This field requires Python >=3.4 or the *enum34* package.
+
+A :py:class:`enum.Enum` field that will convert to and from an enum and it's native type.
+
+Ensure that the enum value is compatible with the codec being used.
+
+The :py:class:`enum.IntEnum` variant is also supported.
 
 .. _field-array_field:
 
