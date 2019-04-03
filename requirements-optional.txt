@@ -1,5 +1,5 @@
 jinja2>=2.7
-pint
+pint==0.9
 msgpack-python
 ply
 humanfriendly
