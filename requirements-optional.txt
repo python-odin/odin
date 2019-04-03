@@ -1,7 +1,7 @@
 jinja2>=2.7
 pint==0.9
 msgpack-python==0.5.6
-ply
+ply==3.11
 humanfriendly
 pyyaml
 arrow
