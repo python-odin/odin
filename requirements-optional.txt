@@ -1,6 +1,6 @@
 jinja2>=2.7
 pint
-msgpack-python
+msgpack
 ply
 humanfriendly
 pyyaml
