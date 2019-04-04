@@ -1,5 +1,5 @@
 -r requirements.txt
 -r requirements-optional.txt
-tox
-pytest
-coverage
+tox==3.8.4
+pytest==4.4.0
+coverage==4.5.3
