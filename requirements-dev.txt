@@ -1,5 +1,5 @@
 -r requirements.txt
 -r requirements-optional.txt
-tox==3.8.6
+tox==3.9.0
 pytest==4.4.0
 coverage==4.5.3
