@@ -19,6 +19,12 @@ else:
         Blue = 'blue'
 
 
+    class Options(enum.Enum):
+        Undefined = ""
+        Yes = "True"
+        No = "False"
+
+
     class Number(enum.IntEnum):
         Thirteen = 13
         FortyTwo = 42
@@ -31,6 +37,8 @@ else:
             (EnumField(Colour), 'green', Colour.Green),
             (EnumField(Colour), Colour.Blue, Colour.Blue),
             (EnumField(Colour, null=True), None, None),
+            (EnumField(Colour, null=True), "", None),
+            (EnumField(Options), "", Options.Undefined),
             (EnumField(Number), 13, Number.Thirteen),
             (EnumField(Number), 42, Number.FortyTwo),
             (EnumField(Number), Number.SixtyNine, Number.SixtyNine),
@@ -43,6 +51,7 @@ else:
             (EnumField(Colour), 'pink'),
             (EnumField(Colour), True),
             (EnumField(Colour), None),
+            (EnumField(Colour), ""),
             (EnumField(Colour), Number.Thirteen),
             (EnumField(Number), '13'),
             (EnumField(Number), 14),

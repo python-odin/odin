@@ -1,50 +1,47 @@
 from __future__ import absolute_import
 
-from typing import TypeVar, Type, Optional, Any  # noqa
+from typing import TypeVar, Optional, Any  # noqa
 
 from odin.exceptions import ValidationError
 from . import Field
+from enum import Enum
 
-try:
-    from enum import Enum
-except ImportError:
-    Enum = None
+__all__ = ("EnumField", )
 
-_all_fields = []
 
-if Enum:
-    _all_fields.append('EnumField')
+ET = TypeVar('ET', Enum, Enum)
 
-    ET = TypeVar('ET', Enum, Enum)
 
-    class EnumField(Field):
-        """
-        Field for handling Python enums.
+class EnumField(Field):
+    """
+    Field for handling Python enums.
 
-        This field requires Python >= 3.4 or the enum34 package.
+    This field requires Python >= 3.4 or the enum34 package.
 
-        """
-        def __init__(self, enum, **options):
-            # type: (Type[Enum]) -> None
-            options['choices'] = None
-            super(EnumField, self).__init__(**options)
-            self.enum = enum
+    """
+    def __init__(self, enum, **options):
+        # type: (ET, **Any) -> None
+        options['choices'] = None
+        super(EnumField, self).__init__(**options)
+        self.enum = enum
 
-        def to_python(self, value):
-            # type: (Any) -> Optional[ET]
-            if value is None:
+    def to_python(self, value):
+        # type: (Any) -> Optional[ET]
+        if value is None:
+            return
+
+        # Attempt to convert
+        try:
+            return self.enum(value)
+        except ValueError:
+            # If value is an empty string return None
+            # Do this check here to support enums that define an option using
+            # an empty string.
+            if value is "":
                 return
+            raise ValidationError(self.error_messages['invalid_choice'] % value)
 
-            # Attempt to convert
-            try:
-                return self.enum(value)
-            except ValueError:
-                raise ValidationError(self.error_messages['invalid_choice'] % value)
-
-        def prepare(self, value):
-            # type: (Optional[Enum]) -> str
-            if value in self.enum:
-                return value.value
-
-
-__all__ = tuple(_all_fields)
+    def prepare(self, value):
+        # type: (Optional[ET]) -> Any
+        if value in self.enum:
+            return value.value
