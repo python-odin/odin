@@ -19,6 +19,9 @@ class EnumField(Field):
     This field requires Python >= 3.4 or the enum34 package.
 
     """
+
+    data_type_name = "Enum"
+
     def __init__(self, enum, **options):
         # type: (ET, **Any) -> None
         options['choices'] = None
