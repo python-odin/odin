@@ -7,7 +7,7 @@ import six
 import uuid
 
 from odin import exceptions, datetimeutil, registration
-from odin.utils import value_in_choices, getmeta
+from odin.utils import value_in_choices, getmeta, lazy_property
 from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url, \
     validate_ipv4_address, validate_ipv6_address, validate_ipv46_address, validate_email_address
 from .base import BaseField
@@ -90,6 +90,11 @@ class Field(BaseField):
         memodict[id(self)] = obj
         return obj
 
+    @lazy_property
+    def choice_values(self):
+        if self.choices is not None:
+            return
+
     def contribute_to_class(self, cls, name):
         self.set_attributes_from_name(name)
         self.resource = cls
@@ -118,7 +123,7 @@ class Field(BaseField):
             raise exceptions.ValidationError(errors)
 
     def validate(self, value):
-        if self.choices and value not in EMPTY_VALUES and not value_in_choices(value, self.choices):
+        if self.choices and (value not in EMPTY_VALUES) and (value not in self.choice_values):
             msg = self.error_messages['invalid_choice'] % value
             raise exceptions.ValidationError(msg)
 

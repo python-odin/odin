@@ -15,16 +15,17 @@ ET = TypeVar('ET', Enum, Enum)
 class EnumField(Field):
     """
     Field for handling Python enums.
-
-    This field requires Python >= 3.4 or the enum34 package.
-
     """
 
     data_type_name = "Enum"
 
     def __init__(self, enum, **options):
         # type: (ET, **Any) -> None
-        options['choices'] = None
+        
+        # Generate choices if not defined)
+        if "choices" not in options:
+            options["choices"] = tuple((e, e.name) for e in enum)
+
         super(EnumField, self).__init__(**options)
         self.enum = enum
 
