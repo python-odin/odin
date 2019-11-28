@@ -264,16 +264,6 @@ def value_in_choices(value, choices):
     return False
 
 
-def choice_values(choices):
-    """
-    Extract values from choices to enable faster checking
-
-    :param choices:
-    :returns: Tuple of choice values
-    """
-    return tuple(choice[0] for choice in choices)
-
-
 def iter_to_choices(i):
     # type: (Iterable[T]) -> tuple(Tuple[T, str])
     """
