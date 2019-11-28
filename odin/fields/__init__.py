@@ -6,8 +6,10 @@ import datetime
 import six
 import uuid
 
+from typing import Sequence, Tuple
+
 from odin import exceptions, datetimeutil, registration
-from odin.utils import value_in_choices, getmeta, lazy_property
+from odin.utils import getmeta, lazy_property
 from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url, \
     validate_ipv4_address, validate_ipv6_address, validate_ipv46_address, validate_email_address
 from .base import BaseField
@@ -99,7 +101,8 @@ class Field(BaseField):
             return tuple(c[0] for c in self.choices)
 
     @property
-    def choice_doc_text(self):
+    def choices_doc_text(self):
+        # type: () -> Sequence[Tuple[str, str]]
         """
         Choices converted for documentation purposes.
         """
@@ -172,10 +175,6 @@ class Field(BaseField):
     def value_to_object(self, obj, data):
         """
         Assign a value to an object
-
-        :param obj:
-        :param data:
-
         """
         setattr(obj, self.attname, data)
 
