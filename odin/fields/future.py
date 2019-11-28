@@ -1,10 +1,9 @@
 from __future__ import absolute_import
 
-from enum import Enum, IntEnum
+from enum import Enum
 from typing import TypeVar, Optional, Any  # noqa
 
 from odin.exceptions import ValidationError
-from odin.utils import lazy_property
 from . import Field
 
 __all__ = ("EnumField", )
@@ -23,18 +22,15 @@ class EnumField(Field):
     def __init__(self, enum, **options):
         # type: (ET, **Any) -> None
         
-        # Generate choices if not defined)
-        if "choices" not in options:
-            options["choices"] = tuple((e, e.name) for e in enum)
+        # Generate choices structure from choices
+        choices = options.pop("choices", None)
+        options["choices"] = tuple((e, e.name) for e in choices or enum)
 
         super(EnumField, self).__init__(**options)
         self.enum = enum
 
-        if isinstance(enum, IntEnum):
-            self.data_type_name = "Integer Enum"
-
     @property
-    def choice_doc_text(self):
+    def choices_doc_text(self):
         """
         Choices converted for documentation purposes.
         """
