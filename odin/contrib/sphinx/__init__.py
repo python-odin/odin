@@ -77,7 +77,7 @@ class ResourceDocumenter(ModuleLevelDocumenter):
 
         if not self.options.get('hide_choices') and field.choices:
             details.append(u"\n\nChoices:\n")
-            for value, label in field.choices:
+            for value, label in field.choice_doc_text:
                 details.append("* %s - %s" % (value, label))
 
         if self.options.get('include_validators') and field.validators:

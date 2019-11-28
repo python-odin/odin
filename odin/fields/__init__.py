@@ -92,8 +92,18 @@ class Field(BaseField):
 
     @lazy_property
     def choice_values(self):
+        """
+        Choice values to allow choices to simplify checking if a choice is valid.
+        """
         if self.choices is not None:
-            return
+            return tuple(c[0] for c in self.choices)
+
+    @property
+    def choice_doc_text(self):
+        """
+        Choices converted for documentation purposes.
+        """
+        return self.choices
 
     def contribute_to_class(self, cls, name):
         self.set_attributes_from_name(name)
@@ -123,7 +133,7 @@ class Field(BaseField):
             raise exceptions.ValidationError(errors)
 
     def validate(self, value):
-        if self.choices and (value not in EMPTY_VALUES) and (value not in self.choice_values):
+        if self.choice_values and (value not in EMPTY_VALUES) and (value not in self.choice_values):
             msg = self.error_messages['invalid_choice'] % value
             raise exceptions.ValidationError(msg)
 

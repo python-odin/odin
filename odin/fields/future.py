@@ -1,10 +1,11 @@
 from __future__ import absolute_import
 
+from enum import Enum, IntEnum
 from typing import TypeVar, Optional, Any  # noqa
 
 from odin.exceptions import ValidationError
+from odin.utils import lazy_property
 from . import Field
-from enum import Enum
 
 __all__ = ("EnumField", )
 
@@ -28,6 +29,16 @@ class EnumField(Field):
 
         super(EnumField, self).__init__(**options)
         self.enum = enum
+
+        if isinstance(enum, IntEnum):
+            self.data_type_name = "Integer Enum"
+
+    @property
+    def choice_doc_text(self):
+        """
+        Choices converted for documentation purposes.
+        """
+        return tuple((v.value, n) for v, n in self.choices)
 
     def to_python(self, value):
         # type: (Any) -> Optional[ET]
