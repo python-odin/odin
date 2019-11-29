@@ -81,9 +81,9 @@ def calculated_field(method=None, **kwargs):
     """
     def inner(expr):
         if method.__doc__ is not None:
-            help_text = method.__doc__.strip()
-            if help_text:
-                kwargs.setdefault('help_text', help_text)
+            doc_text = method.__doc__.strip()
+            if doc_text:
+                kwargs.setdefault('doc_text', doc_text)
         return CalculatedField(expr, **kwargs)
     return inner if method is None else inner(method)
 

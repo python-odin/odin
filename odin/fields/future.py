@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
+from enum import Enum
 from typing import TypeVar, Optional, Any  # noqa
 
 from odin.exceptions import ValidationError
 from . import Field
-from enum import Enum
 
 __all__ = ("EnumField", )
 
@@ -15,18 +15,26 @@ ET = TypeVar('ET', Enum, Enum)
 class EnumField(Field):
     """
     Field for handling Python enums.
-
-    This field requires Python >= 3.4 or the enum34 package.
-
     """
 
     data_type_name = "Enum"
 
     def __init__(self, enum, **options):
         # type: (ET, **Any) -> None
-        options['choices'] = None
+        
+        # Generate choices structure from choices
+        choices = options.pop("choices", None)
+        options["choices"] = tuple((e, e.name) for e in choices or enum)
+
         super(EnumField, self).__init__(**options)
         self.enum = enum
+
+    @property
+    def choices_doc_text(self):
+        """
+        Choices converted for documentation purposes.
+        """
+        return tuple((v.value, n) for v, n in self.choices)
 
     def to_python(self, value):
         # type: (Any) -> Optional[ET]

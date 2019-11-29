@@ -6,8 +6,10 @@ import datetime
 import six
 import uuid
 
+from typing import Sequence, Tuple
+
 from odin import exceptions, datetimeutil, registration
-from odin.utils import value_in_choices, getmeta
+from odin.utils import getmeta, lazy_property
 from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url, \
     validate_ipv4_address, validate_ipv6_address, validate_ipv46_address, validate_email_address
 from .base import BaseField
@@ -90,6 +92,22 @@ class Field(BaseField):
         memodict[id(self)] = obj
         return obj
 
+    @lazy_property
+    def choice_values(self):
+        """
+        Choice values to allow choices to simplify checking if a choice is valid.
+        """
+        if self.choices is not None:
+            return tuple(c[0] for c in self.choices)
+
+    @property
+    def choices_doc_text(self):
+        # type: () -> Sequence[Tuple[str, str]]
+        """
+        Choices converted for documentation purposes.
+        """
+        return self.choices
+
     def contribute_to_class(self, cls, name):
         self.set_attributes_from_name(name)
         self.resource = cls
@@ -118,7 +136,7 @@ class Field(BaseField):
             raise exceptions.ValidationError(errors)
 
     def validate(self, value):
-        if self.choices and value not in EMPTY_VALUES and not value_in_choices(value, self.choices):
+        if self.choice_values and (value not in EMPTY_VALUES) and (value not in self.choice_values):
             msg = self.error_messages['invalid_choice'] % value
             raise exceptions.ValidationError(msg)
 
@@ -157,10 +175,6 @@ class Field(BaseField):
     def value_to_object(self, obj, data):
         """
         Assign a value to an object
-
-        :param obj:
-        :param data:
-
         """
         setattr(obj, self.attname, data)
 
