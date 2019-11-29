@@ -301,6 +301,10 @@ Ensure that the enum value is compatible with the codec being used.
 
 The :py:class:`enum.IntEnum` variant is also supported.
 
+.. versionchanged:: 3.4.0
+    Choices can be used with EnumField to specify a subset of options. A sequence
+    of enum values should be used that will be converted to choice tuples by Odin.
+
 .. _field-array_field:
 
 ArrayField
