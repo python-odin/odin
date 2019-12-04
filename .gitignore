@@ -2,6 +2,7 @@
 *.py[o|c]
 *.coverage
 .cache
+.eggs
 
 # UNIX ignores
 *~
