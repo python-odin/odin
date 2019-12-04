@@ -19,7 +19,6 @@ class TestTimezones(object):
         assert '10:30' == target.tzname(datetime.datetime.now())
         assert datetime.timedelta(0) == target.dst(datetime.datetime.now())
         assert '10:30' == str(target)
-        assert "<timezone '10:30' datetime.timedelta(0, 37800)>" == repr(target)
 
     def test_fixed_timezone_pickling(self):
         import pickle

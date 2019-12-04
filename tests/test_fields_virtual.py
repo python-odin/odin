@@ -22,3 +22,17 @@ class TestFields(object):
                 two_parts = odin.MultiPartField(('id', 'code'), separator=':')
 
         assert str(result.value).startswith("Attribute 'code' not found")
+
+
+def test_calculated_field():
+    @odin.calculated_field
+    def sample_field(instance):
+        """
+        My doc text
+        """
+        return 42
+
+    assert isinstance(sample_field, odin.CalculatedField)
+    assert sample_field.doc_text == "My doc text"
+    assert sample_field.__get__(None, None) == 42
+

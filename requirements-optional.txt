@@ -1,7 +1,7 @@
 jinja2>=2.7
-pint
-msgpack-python
-ply
-humanfriendly
-pyyaml
-arrow
+pint==0.9
+msgpack==0.6.1
+ply==3.11
+humanfriendly==4.18
+pyyaml==5.1.1
+arrow==0.14.2

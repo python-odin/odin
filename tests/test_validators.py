@@ -106,6 +106,23 @@ class TestSimpleValidator(object):
         pytest.raises(ValidationError, reflect_validator, False)
         reflect_validator(True)
 
+    def test_str__no_doc_text(self):
+        @validators.simple_validator()
+        def reflect_validator(v):
+            return v
+
+        assert str(reflect_validator) == "reflect_validator"
+
+    def test_str__doc_text(self):
+        @validators.simple_validator()
+        def reflect_validator(v):
+            """
+            Reflect Validator
+            """
+            return v
+
+        assert str(reflect_validator) == "Reflect Validator"
+
 
 @pytest.mark.parametrize('value', (
     '192.168.0.1',
