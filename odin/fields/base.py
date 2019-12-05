@@ -1,3 +1,5 @@
+from typing import Any, Optional
+
 
 class BaseField(object):
     # These track each time an instance is created. Used to retain order.
@@ -38,19 +40,13 @@ class BaseField(object):
     def prepare(self, value):
         """
         Prepare a value for serialisation.
-
-        :param value:
-        :return:
         """
         return value
 
     def as_string(self, value):
+        # type: (Any) -> Optional[str]
         """
         Generate a string representation of a field.
-
-        :param value:
-        :rtype: str
-
         """
         if value is not None:
             return str(value)

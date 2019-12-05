@@ -291,7 +291,7 @@ This field supports most accepted values for initializing a UUID except bytes_le
 
 EnumField
 =========
-``class UUIDField(enum, [**options])``
+``class EnumField(enum, [**options])``
 
 .. note:: This field requires Python >=3.4 or the *enum34* package.
 
@@ -300,6 +300,10 @@ A :py:class:`enum.Enum` field that will convert to and from an enum and it's nat
 Ensure that the enum value is compatible with the codec being used.
 
 The :py:class:`enum.IntEnum` variant is also supported.
+
+.. versionchanged:: 1.5.0
+    Choices can be used with EnumField to specify a subset of options. A sequence
+    of enum values should be used that will be converted to choice tuples by Odin.
 
 .. _field-array_field:
 

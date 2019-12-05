@@ -4,6 +4,7 @@
 # A note: to use validators from the Django project install the baldr package. Baldr is an integration between Odin and
 # the Django framework, the integration includes support for handling the Django version of the ValidationError
 # exception within Odin.
+import functools
 import re
 import six
 
@@ -36,6 +37,12 @@ class RegexValidator(object):
         """
         if not self.regex.search(value):
             raise exceptions.ValidationError(self.message, code=self.code)
+
+    def __str__(self):
+        """
+        Generate str (used by sphinx for documentation)
+        """
+        return self.__doc__ or "{}({})".format(type(self).__name__, self.regex.pattern)
 
 
 class URLValidator(RegexValidator):
@@ -125,6 +132,22 @@ class MinLengthValidator(LengthValidator):
         return a < b
 
 
+class SimpleValidator(object):
+    def __init__(self, assertion, message, code):
+        self.assertion = assertion
+        self.message = message
+        self.code = code
+
+    def __call__(self, value):
+        params = {'show_value': value}
+        if not self.assertion(value):
+            raise exceptions.ValidationError(self.message % params, code=self.code, params=params)
+
+    def __str__(self):
+        func = self.assertion
+        return (func.__doc__ or func.__name__).strip()
+
+
 def simple_validator(assertion=None, message='The supplied value is invalid', code='invalid'):
     """
     Create a simple validator.
@@ -145,11 +168,7 @@ def simple_validator(assertion=None, message='The supplied value is invalid', co
             return v is not None
     """
     def inner(func):
-        def wrapper(value):
-            params = {'show_value': value}
-            if not func(value):
-                raise exceptions.ValidationError(message % params, code=code, params=params)
-        return wrapper
+        return SimpleValidator(func, message, code)
 
     if assertion:
         return inner(assertion)
@@ -191,7 +210,7 @@ def validate_ipv46_address(value):
 
 class EmailValidator(object):
     """
-    Validate an Email address.
+    Validate is a valid email address format.
     """
     message = 'Enter a valid email address.'
     code = 'invalid'

@@ -1,3 +1,8 @@
+1.5
+===
+- Improvements to sphinx autodoc generation
+- Improvements to enum support
+
 1.0b2
 =====
 - Added a redesigned CSV codec Reader to address issues with handling row-by-row processing and handling of row-level errors.

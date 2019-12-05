@@ -89,6 +89,31 @@ class TestField(object):
         assert "init Verbose Name" == target.verbose_name
         assert "init Verbose Names" == target.verbose_name_plural
 
+    @pytest.mark.parametrize("value, expected",(
+            (None, None),
+            ("", ""),
+            ("abc", "abc"),
+            (1, "1"),
+            (True, "True"),
+            (False, "False"),
+    ))
+    def test_as_string(self, value, expected):
+        target = FieldTest()
+
+        actual = target.as_string(value)
+
+        assert actual == expected
+
+    def test_choice_doc_test(self):
+        target = FieldTest(choices=(
+            ("a", "A Value"),
+            ("b", "B Value"),
+            ("c", "C Value"),
+            ("d", "D Value"),
+        ))
+
+        assert target.choices_doc_text == target.choices
+
     def test_has_default(self):
         target = FieldTest()
 
@@ -599,6 +624,13 @@ class TestFields(object):
         assert datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=utc) == f.clean('Wed Aug 29 17:12:58 +0000 2012')
         assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
             datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
+
+    def test_httpdate_time_field__as_string(self):
+        target = HttpDateTimeField()
+
+        actual = target.as_string(datetime.datetime(2019, 6, 29, 8, 45, 23, tzinfo=utc))
+
+        assert actual == "Sat, 29 Jun 2019 08:45:23 GMT"
 
     # TimeStampField ##########################################################
 
