@@ -628,9 +628,9 @@ class TestFields(object):
     def test_httpdate_time_field__as_string(self):
         target = HttpDateTimeField()
 
-        actual = target.as_string(datetime.datetime(2019, 11, 29, 8, 45, 23, tzinfo=utc))
+        actual = target.as_string(datetime.datetime(2019, 6, 29, 8, 45, 23, tzinfo=utc))
 
-        assert actual == "Fri, 29 Nov 2019 09:45:23 GMT"
+        assert actual == "Sat, 29 Jun 2019 08:45:23 GMT"
 
     # TimeStampField ##########################################################
 
