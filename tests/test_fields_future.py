@@ -72,13 +72,33 @@ class TestEnumField(object):
         (EnumField(Number), ((Number.Thirteen, "Thirteen"), (Number.FortyTwo, "FortyTwo"), (Number.SixtyNine, "SixtyNine"))),
         (EnumField(Colour, choices=(Colour.Red, Colour.Blue)), ((Colour.Red, "Red"), (Colour.Blue, "Blue"))),
     ))
+    @pytest.mark.skipif("sys.version_info.major < 3")
     def test_choices(self, field, expected):
         assert field.choices == expected
+
+    @pytest.mark.parametrize("field, expected", (
+        (EnumField(Colour), {(Colour.Red, "Red"), (Colour.Green, "Green"), (Colour.Blue, "Blue")}),
+        (EnumField(Number), {(Number.Thirteen, "Thirteen"), (Number.FortyTwo, "FortyTwo"), (Number.SixtyNine, "SixtyNine")}),
+        (EnumField(Colour, choices=(Colour.Red, Colour.Blue)), {(Colour.Red, "Red"), (Colour.Blue, "Blue")}),
+    ))
+    def test_choices__with_set(self, field, expected):
+        """Use sets to handle random ordering in earlier Python releases"""
+        assert set(field.choices) == expected
 
     @pytest.mark.parametrize("field, expected", (
         (EnumField(Colour), (("red", "Red"), ("green", "Green"), ("blue", "Blue"))),
         (EnumField(Number), ((13, "Thirteen"), (42, "FortyTwo"), (69, "SixtyNine"))),
         (EnumField(Colour, choices=(Colour.Red, Colour.Blue)), (("red", "Red"), ("blue", "Blue"))),
     ))
+    @pytest.mark.skipif("sys.version_info.major < 3")
     def test_choices_doc_text(self, field, expected):
         assert field.choices_doc_text == expected
+
+    @pytest.mark.parametrize("field, expected", (
+        (EnumField(Colour), {("red", "Red"), ("green", "Green"), ("blue", "Blue")}),
+        (EnumField(Number), {(13, "Thirteen"), (42, "FortyTwo"), (69, "SixtyNine")}),
+        (EnumField(Colour, choices=(Colour.Red, Colour.Blue)), {("red", "Red"), ("blue", "Blue")}),
+    ))
+    def test_choices_doc_text__with_sets(self, field, expected):
+        """Use sets to handle random ordering in earlier Python releases"""
+        assert set(field.choices_doc_text) == expected
