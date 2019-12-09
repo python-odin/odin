@@ -1,4 +1,4 @@
-jinja2~=2.7
+jinja2==2.10.3
 pint~=0.9
 msgpack~=0.6.1
 ply~=3.11
