@@ -1,6 +1,6 @@
 jinja2==2.10.3
 pint~=0.9
-msgpack~=0.6.1
+msgpack==0.6.2
 ply~=3.11
 humanfriendly~=4.18
 pyyaml~=5.2
