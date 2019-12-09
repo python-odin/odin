@@ -4,4 +4,4 @@ msgpack==0.6.2
 ply~=3.11
 humanfriendly~=4.18
 pyyaml~=5.2
-arrow~=0.15
+arrow==0.15.4
