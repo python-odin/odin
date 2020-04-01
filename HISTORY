@@ -1,3 +1,7 @@
+1.5.1
+=====
+- Relax overly tight dependency specification. Removed pyup.io it is not suitable for packages.
+
 1.5
 ===
 - Improvements to sphinx autodoc generation
