@@ -1,4 +1,4 @@
-1.5.1
+1.5.2
 =====
 - Relax overly tight dependency specification. Removed pyup.io it is not suitable for packages.
 
