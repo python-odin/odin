@@ -605,7 +605,7 @@ def create_resource_from_dict(d, resource=None, full_clean=True, copy_dict=True,
                 resource_type = registration.get_resource(resource_name)
 
             if not resource_type:
-                raise exceptions.ResourceException("Resource `%s` is not registered." % document_resource_name)
+                raise exceptions.ResourceException("Resource `%s` is not registered." % document_resource_name or resource_name)
 
             if document_resource_name:
                 # Check resource types match or are inherited types
