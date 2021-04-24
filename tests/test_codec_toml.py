@@ -12,6 +12,11 @@ from .resources import *
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
+class CustomString(object):
+    def __init__(self, s):
+        self.wrapped = s
+
+
 class TestTomlCodec(object):
     def test_dumps_and_loads(self):
         in_resource = Book(
@@ -87,3 +92,23 @@ class TestTomlCodec(object):
         with pytest.raises(ValidationError):
             with open(os.path.join(FIXTURE_PATH_ROOT, "book-invalid.toml")) as f:
                 toml_codec.load(f)
+
+    def test_custom_type(self, monkeypatch):
+        monkeypatch.setattr(toml_codec, "TOML_TYPES", {CustomString: lambda x: x.wrapped})
+
+        in_resource = Book(
+            title=CustomString("Consider Phlebas"),
+            isbn="0-333-45430-8",
+            num_pages=471,
+            rrp=19.50,
+            fiction=True,
+            genre="sci-fi",
+            authors=[Author(name="Iain M. Banks")],
+            publisher=Publisher(name="Macmillan"),
+            published=[datetime.datetime(1987, 1, 1)],
+        )
+
+        data = toml_codec.dumps(in_resource)
+        out_resource = toml_codec.loads(data)
+
+        assert out_resource.title == in_resource.title.wrapped

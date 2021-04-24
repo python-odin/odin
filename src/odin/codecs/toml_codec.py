@@ -94,6 +94,8 @@ class OdinEncoder(toml.TomlEncoder):
         if isinstance(v, (Resource, ResourceAdapter)):
             resource_dict = self.resource_to_dict(v)
             return self.dump_inline_table(resource_dict)
+        if type(v) in TOML_TYPES:
+            v = TOML_TYPES[type(v)](v)
         return super(OdinEncoder, self).dump_value(v)
 
 
