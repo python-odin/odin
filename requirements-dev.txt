@@ -1,6 +1,0 @@
--r requirements.txt
--r requirements-optional.txt
-tox~=3.14
-pytest~=4.6.0;python_version < '3.0'
-pytest~=5.3.0;python_version >= '3.0'
-coverage~=4.5.3
