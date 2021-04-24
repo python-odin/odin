@@ -2,14 +2,17 @@
 from __future__ import absolute_import
 import datetime
 import os
+
+import pytest
 from six import StringIO
-from odin.codecs import yaml_codec
+from odin.codecs import toml_codec
+from odin.exceptions import CodecDecodeError, ValidationError
 from .resources import *
 
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
-class TestYAMLCodec(object):
+class TestTomlCodec(object):
     def test_dumps_and_loads(self):
         in_resource = Book(
             title="Consider Phlebas",
@@ -22,8 +25,8 @@ class TestYAMLCodec(object):
             publisher=Publisher(name="Macmillan"),
         )
 
-        data = yaml_codec.dumps(in_resource)
-        out_resource = yaml_codec.loads(data)
+        data = toml_codec.dumps(in_resource)
+        out_resource = toml_codec.loads(data)
 
         assert out_resource.title == in_resource.title
         assert out_resource.isbn == in_resource.isbn
@@ -48,10 +51,10 @@ class TestYAMLCodec(object):
         )
 
         fp = StringIO()
-        yaml_codec.dump(in_resource, fp)
+        toml_codec.dump(in_resource, fp)
 
         fp.seek(0)
-        out_resource = yaml_codec.load(fp)
+        out_resource = toml_codec.load(fp)
 
         assert out_resource.title == in_resource.title
         assert out_resource.isbn == in_resource.isbn
@@ -62,3 +65,25 @@ class TestYAMLCodec(object):
         assert out_resource.authors[0].name == in_resource.authors[0].name
         assert out_resource.publisher.name == in_resource.publisher.name
         assert out_resource.published[0] == in_resource.published[0]
+
+    def test_load__where_file_is_valid(self):
+        with open(os.path.join(FIXTURE_PATH_ROOT, "book-valid.toml")) as f:
+            data = toml_codec.load(f)
+
+        assert data.books[0].isbn == "1-85723-394-8"
+
+    def test_load__where_file_is_incorrect(self):
+        """
+        TOML is not formatted correctly
+        """
+        with pytest.raises(CodecDecodeError):
+            with open(os.path.join(FIXTURE_PATH_ROOT, "book-incorrect.toml")) as f:
+                toml_codec.load(f)
+
+    def test_load__where_file_is_invalid(self):
+        """
+        TOML contains invalid field(s)
+        """
+        with pytest.raises(ValidationError):
+            with open(os.path.join(FIXTURE_PATH_ROOT, "book-invalid.toml")) as f:
+                toml_codec.load(f)
