@@ -48,11 +48,11 @@ class EnumField(Field):
             # If value is an empty string return None
             # Do this check here to support enums that define an option using
             # an empty string.
-            if value is "":
+            if value == "":
                 return
             raise ValidationError(self.error_messages["invalid_choice"] % value)
 
     def prepare(self, value):
         # type: (Optional[ET]) -> Any
-        if value in self.enum:
+        if (value is not None) and (value in self.enum):
             return value.value
