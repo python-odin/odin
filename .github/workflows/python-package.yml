@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip poetry
-        poetry install -E toml -E yaml -E arrow -E msgpack
+        poetry install -E toml -E yaml -E arrow -E msgpack --no-root
     - name: Test with pytest
       run: |
         poetry run pytest
