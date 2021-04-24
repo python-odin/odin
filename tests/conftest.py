@@ -1,11 +1,12 @@
 import os
 import sys
 import datetime
-import odin.datetimeutil
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 SRC = os.path.normpath(os.path.join(HERE, "..", "src"))
 sys.path.insert(0, SRC)
+
+import odin.datetimeutil
 
 ARE_YOU_EXPERIENCED = datetime.date(1967, 5, 12)
 MWT = odin.datetimeutil.FixedTimezone(-6, "Mountain War Time")
