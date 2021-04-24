@@ -1,4 +1,4 @@
-1.5.3
+1.6.0
 =====
 
 - Remove encoding option for msgpack (this has been removed from msgpack itself)
@@ -6,6 +6,7 @@
 - Package is now managed by poetry
 - Migrate to GitHub Actions
 - Static analysis and Coverage reporting now handled by SonarCloud.
+- Toml Codec
 
 1.5.2
 =====
