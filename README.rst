@@ -62,7 +62,7 @@ Highlights
 Use cases
 *********
 * Design, document and validate complex (and simple!) data structures
-* Convert structures to and from different formats such as JSON, YAML, MsgPack or CSV
+* Convert structures to and from different formats such as JSON, YAML, MsgPack, CSV, TOML
 * Validate API inputs
 * Define message formats for communications protocols, like an RPC
 * Map API requests to ORM objects
@@ -83,7 +83,6 @@ Upcoming features
 * XML Codec (export completed)
 * Complete documentation coverage
 * Improvements for CSV Codec (writing, reading multi resource CSV's)
-* RESTful interface with support for Flask and Django
 * Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms)
 * Integration with SQLAlchemy
 
@@ -98,6 +97,7 @@ Requires
 * simplejson - Odin will use simplejson if it is available or fallback to the builtin json library
 * msgpack-python - To enable use of the msgpack codec
 * pyyaml - To enable use of the YAML codec
+* toml - To enable use of the TOML codec
 
 **Contrib**
 
