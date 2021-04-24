@@ -8,6 +8,40 @@ that make up the resources and mapping between objects (either a resource, or ot
 
 Odin also comes with built in serialisation tools for importing and exporting data from resources.
 
++---------+-------------------------------------------------------------------------------------------------------------+
+| Docs    | .. image:: https://readthedocs.org/projects/odin/badge/?version=latest                                      |
+|         |    :target: https://odin.readthedocs.org/                                                                   |
+|         |    :alt: ReadTheDocs                                                                                        |
++---------+-------------------------------------------------------------------------------------------------------------+
+| Build   | .. image:: https://api.dependabot.com/badges/status?host=github&repo=python-odin/odin                       |
+|         |    :target: https://dependabot.com                                                                          |
+|         |    :alt: Dependabot Status                                                                                  |
++---------+-------------------------------------------------------------------------------------------------------------+
+| Quality | .. image:: https://sonarcloud.io/api/project_badges/measure?project=python-odin_odin&metric=sqale_rating    |
+|         |    :target: https://sonarcloud.io/dashboard?id=python-odin/odin                                             |
+|         |    :alt: Maintainability                                                                                    |
+|         | .. image:: https://sonarcloud.io/api/project_badges/measure?project=python-odin_odin&metric=security_rating |
+|         |    :target: https://sonarcloud.io/project/security_hotspots                                                 |
+|         |    :alt: Security                                                                                           |
+|         | .. image:: https://sonarcloud.io/api/project_badges/measure?project=python-odin_odin&metric=coverage        |
+|         |    :target: https://sonarcloud.io/code?id=python-odin_odin                                                  |
+|         |    :alt: Test Coverage                                                                                      |
+|         | .. image:: https://img.shields.io/badge/code%20style-black-000000.svg                                       |
+|         |    :target: https://github.com/ambv/black                                                                   |
+|         |    :alt: Once you go Black...                                                                               |
++---------+-------------------------------------------------------------------------------------------------------------+
+| Package | .. image:: https://img.shields.io/pypi/v/odin                                                               |
+|         |    :target: https://pypi.io/pypi/odin/                                                                      |
+|         |    :alt: Latest Version                                                                                     |
+|         | .. image:: https://img.shields.io/pypi/pyversions/odin                                                      |
+|         |    :target: https://pypi.io/pypi/odin/                                                                      |
+|         | .. image:: https://img.shields.io/pypi/l/odin                                                               |
+|         |    :target: https://pypi.io/pypi/odin/                                                                      |
+|         | .. image:: https://img.shields.io/pypi/wheel/odin                                                           |
+|         |    :alt: PyPI - Wheel                                                                                       |
+|         |    :target: https://pypi.io/pypi/odin/                                                                      |
++---------+-------------------------------------------------------------------------------------------------------------+
+
 .. image:: https://img.shields.io/pypi/l/odin.svg?style=flat
     :target: https://pypi.python.org/pypi/odin/
     :alt: License
