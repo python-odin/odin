@@ -6,7 +6,9 @@ from odin.utils import getmeta
 try:
     import msgpack
 except ImportError:
-    raise ImportError("odin.codecs.msgpack_codec requires the 'msgpack-python' package.")  # noqa
+    raise ImportError(
+        "odin.codecs.msgpack_codec requires the 'msgpack-python' package."
+    )  # noqa
 
 import datetime
 
@@ -18,17 +20,18 @@ TYPE_SERIALIZERS = {
     datetime.date: serializers.date_iso_format,
     datetime.time: serializers.time_iso_format,
     datetime.datetime: serializers.datetime_iso_format,
-    uuid.UUID: str
+    uuid.UUID: str,
 }
-CONTENT_TYPE = 'application/x-msgpack'
+CONTENT_TYPE = "application/x-msgpack"
 
 
 class OdinPacker(msgpack.Packer):
     """
     Encoder for Odin resources.
     """
+
     def __init__(self, include_virtual_fields=True, *args, **kwargs):
-        kwargs.setdefault('default', self.default)
+        kwargs.setdefault("default", self.default)
         super(OdinPacker, self).__init__(*args, **kwargs)
         self.include_virtual_fields = include_virtual_fields
 
@@ -44,7 +47,7 @@ class OdinPacker(msgpack.Packer):
             return TYPE_SERIALIZERS[o.__class__](o)
 
 
-def load(fp, resource=None, encoding='UTF8', full_clean=True, default_to_not_supplied=False):
+def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
     """
     Load a from a MessagePack encoded file.
 
@@ -52,15 +55,15 @@ def load(fp, resource=None, encoding='UTF8', full_clean=True, default_to_not_sup
 
     :param fp: a file pointer to read MessagePack data from.
     :param resource: A resource instance or a resource name to use as the base for creating a resource.
-    :param encoding: Encoding to use when loading file
     :param full_clean: Do a full clean of the object as part of the loading process.
     :returns: A resource object or object graph of resources loaded from file.
     """
-    return resources.build_object_graph(msgpack.load(fp, encoding=encoding), resource, full_clean,
-                                        default_to_not_supplied)
+    return resources.build_object_graph(
+        msgpack.load(fp), resource, full_clean, default_to_not_supplied
+    )
 
 
-def loads(s, resource=None, encoding='UTF8', full_clean=True, default_to_not_supplied=False):
+def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
     """
     Load from a MessagePack encoded string/bytes.
 
@@ -72,11 +75,11 @@ def loads(s, resource=None, encoding='UTF8', full_clean=True, default_to_not_sup
     :param s: String to load and parse.
     :param resource: A resource instance or a resource name to use as the base for creating a resource.
     :param full_clean: Do a full clean of the object as part of the loading process.
-    :param encoding: Encoding to use when loading file
     :returns: A resource object or object graph of resources parsed from supplied string.
     """
-    return resources.build_object_graph(msgpack.loads(s, encoding=encoding), resource, full_clean, False,
-                                        default_to_not_supplied)
+    return resources.build_object_graph(
+        msgpack.loads(s), resource, full_clean, False, default_to_not_supplied
+    )
 
 
 def dump(resource, fp, cls=OdinPacker, include_virtual_fields=True, **kwargs):
