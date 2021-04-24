@@ -16,7 +16,10 @@ Odin also comes with built in serialisation tools for importing and exporting da
 |         |    :target: https://gitter.im/timsavage/odin                                                                |
 |         |    :alt: Gitter.im                                                                                          |
 +---------+-------------------------------------------------------------------------------------------------------------+
-| Build   | .. image:: https://api.dependabot.com/badges/status?host=github&repo=python-odin/odin                       |
+| Build   | .. image:: https://github.com/python-odin/odin/actions/workflows/python-package.yml/badge.svg               |
+|         |    :target: https://github.com/python-odin/odin/actions/workflows/python-package.yml                        |
+|         |    :alt: Python package                                                                                     |
+|         | .. image:: https://api.dependabot.com/badges/status?host=github&repo=python-odin/odin                       |
 |         |    :target: https://dependabot.com                                                                          |
 |         |    :alt: Dependabot Status                                                                                  |
 +---------+-------------------------------------------------------------------------------------------------------------+
