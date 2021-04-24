@@ -1,7 +1,0 @@
-jinja2~=2.7
-pint~=0.11
-msgpack~=0.6.1
-ply~=3.11
-humanfriendly~=4.18
-pyyaml~=5.2
-arrow~=0.15
