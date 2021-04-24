@@ -9,7 +9,7 @@ from odin.utils import getmeta
 
 try:
     import toml
-except ImportError:
+except ImportError:  # pragma: no cover
     raise ImportError(  # pragma: no cover
         "odin.codecs.toml_codec requires the 'toml' package."
     )
@@ -121,7 +121,7 @@ def dump(resource, fp, encoder=None, include_virtual_fields=True, **kwargs):
     if isinstance(resource, (Resource, ResourceAdapter)):
         resource = encoder.resource_to_dict(resource)
 
-    toml.dump(resource, fp, encoder=encoder)
+    toml.dump(resource, fp, encoder)
 
 
 def dumps(resource, encoder=None, include_virtual_fields=True, **kwargs):
@@ -143,4 +143,4 @@ def dumps(resource, encoder=None, include_virtual_fields=True, **kwargs):
     if isinstance(resource, (Resource, ResourceAdapter)):
         resource = encoder.resource_to_dict(resource)
 
-    return toml.dumps(resource, encoder=encoder)
+    return toml.dumps(resource, encoder)
