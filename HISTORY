@@ -1,6 +1,14 @@
+1.5.3
+=====
+
+- Remove encoding option for msgpack (this has been removed from msgpack itself)
+- Correct some typing inconsistencies (EnumField was the most obvious fix)
+- Package is now managed by poetry
+- Migrate to GitHub Actions
+- Static analysis and Coverage reporting now handled by SonarCloud.
+
 1.5.2
 =====
-- Remove encoding option for msgpack (this has been removed from msgpack itself)
 - Relax overly tight dependency specification. Removed pyup.io it is not suitable for packages.
 
 1.5
