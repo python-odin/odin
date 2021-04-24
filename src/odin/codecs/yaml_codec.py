@@ -8,20 +8,29 @@ from odin.utils import getmeta
 try:
     import yaml
 except ImportError:
-    raise ImportError("odin.codecs.yaml_codec requires the 'pyyaml' package.")  # noqa
+    raise ImportError(  # pragma: no cover
+        "odin.codecs.yaml_codec requires the 'pyyaml' package."
+    )
 
 try:
     from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
 except ImportError:
-    from yaml import SafeLoader, SafeDumper
+    from yaml import SafeLoader, SafeDumper  # pragma: no cover
 
 
 YAML_TYPES = {}
-CONTENT_TYPE = 'application/x-yaml'
+CONTENT_TYPE = "application/x-yaml"
 
 
 class OdinDumper(SafeDumper):
-    def __init__(self, stream, include_virtual_fields=True, include_type_field=True, *args, **kwargs):
+    def __init__(
+        self,
+        stream,
+        include_virtual_fields=True,
+        include_type_field=True,
+        *args,
+        **kwargs
+    ):
         SafeDumper.__init__(self, stream, *args, **kwargs)
         self.include_virtual_fields = include_virtual_fields
         self.include_type_field = include_type_field
@@ -41,14 +50,14 @@ OdinDumper.add_multi_representer(bases.ResourceIterable, OdinDumper.represent_li
 
 def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
     """
-    Load a from a YAML encoded file.
+    Load a resource from a YAML encoded file.
 
     If a ``resource`` value is supplied it is used as the base resource for the supplied YAML. I one is not supplied a
     resource type field ``$`` is used to obtain the type represented by the dictionary. A ``ValidationError`` will be
     raised if either of these values are supplied and not compatible. It is valid for a type to be supplied in the file
     to be a child object from within the inheritance tree.
 
-    :param fp: a file pointer to read YAML data from.
+    :param fp: a file pointer to read YAML data fromat.
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
         resource. If a list is supplied the first item will be used if a resource type is not supplied.
     :param full_clean: Do a full clean of the object as part of the loading process.
@@ -61,19 +70,23 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
     return resources.build_object_graph(
         #  The SafeLoader is used here, this is to allow for CSafeLoader to be used.
         yaml.load(fp, SafeLoader),  # nosec - B506:yaml_load
-        resource, full_clean, False, default_to_not_supplied
+        resource,
+        full_clean,
+        False,
+        default_to_not_supplied,
     )
     # except (ValueError, TypeError) as ex:
     #     raise CodecDecodeError(str(ex))
+
 
 loads = load
 
 
 def dump(resource, fp, dumper=OdinDumper, **kwargs):
     """
-    Dump to a JSON encoded file.
+    Dump to a YAML encoded file.
 
-    :param resource: The root resource to dump to a JSON encoded file.
+    :param resource: The root resource to dump to a YAML encoded file.
     :param dumper: Dumper to use serializing to a string; default is the :py:class:`OdinDumper`.
     :param fp: The file pointer that represents the output file.
 
@@ -86,9 +99,9 @@ def dump(resource, fp, dumper=OdinDumper, **kwargs):
 
 def dumps(resource, dumper=OdinDumper, **kwargs):
     """
-    Dump to a JSON encoded string.
+    Dump to a YAML encoded string.
 
-    :param resource: The root resource to dump to a JSON encoded file.
+    :param resource: The root resource to dump to a YAML encoded file.
     :param dumper: Dumper to use serializing to a string; default is the :py:class:`OdinDumper`.
     :returns: YAML encoded string.
 

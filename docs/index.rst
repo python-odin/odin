@@ -19,7 +19,7 @@ Working with resources
 Resources are the basic building block of Odin.
 
 * Resources: :doc:`ref/resources/fields` | :doc:`ref/resources/options`
-* Loading and Saving: :doc:`ref/codecs/json_codec` | :doc:`ref/codecs/yaml_codec` | :doc:`ref/codecs/csv_codec` | :doc:`ref/codecs/msgpack_codec`
+* Loading and Saving: :doc:`ref/codecs/json_codec` | :doc:`ref/codecs/toml_codec` | :doc:`ref/codecs/yaml_codec` | :doc:`ref/codecs/csv_codec` | :doc:`ref/codecs/msgpack_codec`
 * Mapping: :doc:`ref/mapping/classes`
 * Adapters: :doc:`ref/adapters`
 * Documenting: :doc:`ref/contrib/sphinx/index`

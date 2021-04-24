@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "odin"
-version = "1.5.3"
+version = "1.6.0"
 description = "Data-structure definition/validation/traversal, mapping and serialisation toolkit for Python"
 authors = ["Tim Savage <tim@savage.company>"]
 license = "BSD-3-Clause"
