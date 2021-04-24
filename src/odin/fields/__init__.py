@@ -10,16 +10,45 @@ from typing import Sequence, Tuple
 
 from odin import exceptions, datetimeutil, registration
 from odin.utils import getmeta, lazy_property
-from odin.validators import EMPTY_VALUES, MaxLengthValidator, MinValueValidator, MaxValueValidator, validate_url, \
-    validate_ipv4_address, validate_ipv6_address, validate_ipv46_address, validate_email_address
+from odin.validators import (
+    EMPTY_VALUES,
+    MaxLengthValidator,
+    MinValueValidator,
+    MaxValueValidator,
+    validate_url,
+    validate_ipv4_address,
+    validate_ipv6_address,
+    validate_ipv46_address,
+    validate_email_address,
+)
 from .base import BaseField
 
 __all__ = (
-    'BooleanField', 'StringField', 'UrlField', 'IntegerField', 'FloatField', 'DateField',
-    'TimeField', 'NaiveTimeField', 'DateTimeField', 'NaiveDateTimeField', 'HttpDateTimeField', 'TimeStampField',
-    'EmailField', 'IPv4Field', 'IPv6Field', 'IPv46Field', 'UUIDField',
-    'DictField', 'ObjectField', 'ArrayField', 'TypedArrayField', 'TypedListField', 'TypedDictField', 'TypedObjectField',
-    'NotProvided',
+    "BooleanField",
+    "StringField",
+    "UrlField",
+    "IntegerField",
+    "FloatField",
+    "DateField",
+    "TimeField",
+    "NaiveTimeField",
+    "DateTimeField",
+    "NaiveDateTimeField",
+    "HttpDateTimeField",
+    "TimeStampField",
+    "EmailField",
+    "IPv4Field",
+    "IPv6Field",
+    "IPv46Field",
+    "UUIDField",
+    "DictField",
+    "ObjectField",
+    "ArrayField",
+    "TypedArrayField",
+    "TypedListField",
+    "TypedDictField",
+    "TypedObjectField",
+    "NotProvided",
 )
 
 
@@ -39,17 +68,31 @@ class Field(BaseField):
     """
     Base class for fields.
     """
+
     default_validators = []
     default_error_messages = {
-        'invalid_choice': 'Value %r is not a valid choice.',
-        'null': 'This field cannot be null.',
-        'required': 'This field is required.',
+        "invalid_choice": "Value %r is not a valid choice.",
+        "null": "This field cannot be null.",
+        "required": "This field is required.",
     }
     data_type_name = None
 
-    def __init__(self, verbose_name=None, verbose_name_plural=None, name=None, null=False, choices=None,
-                 use_default_if_not_provided=False, default=NotProvided, help_text='', validators=None,
-                 error_messages=None, is_attribute=False, doc_text='', key=False):
+    def __init__(
+        self,
+        verbose_name=None,
+        verbose_name_plural=None,
+        name=None,
+        null=False,
+        choices=None,
+        use_default_if_not_provided=False,
+        default=NotProvided,
+        help_text="",
+        validators=None,
+        error_messages=None,
+        is_attribute=False,
+        doc_text="",
+        key=False,
+    ):
         """
         Initialisation of a Field.
 
@@ -69,17 +112,22 @@ class Field(BaseField):
         :param key: Mark this field as a key field (used to generated a unique identifier).
 
         """
-        super(Field, self).__init__(verbose_name, verbose_name_plural, name, doc_text or help_text)
+        super(Field, self).__init__(
+            verbose_name, verbose_name_plural, name, doc_text or help_text
+        )
 
         self.null, self.choices = null, choices
-        self.default, self.use_default_if_not_provided = default, use_default_if_not_provided
+        self.default, self.use_default_if_not_provided = (
+            default,
+            use_default_if_not_provided,
+        )
         self.validators = self.default_validators + (validators or [])
         self.is_attribute = is_attribute
         self.key = key
 
         messages = {}
         for c in reversed(self.__class__.__mro__):
-            messages.update(getattr(c, 'default_error_messages', {}))
+            messages.update(getattr(c, "default_error_messages", {}))
         messages.update(error_messages or {})
         self.error_messages = messages
 
@@ -136,12 +184,16 @@ class Field(BaseField):
             raise exceptions.ValidationError(errors)
 
     def validate(self, value):
-        if self.choice_values and (value not in EMPTY_VALUES) and (value not in self.choice_values):
-            msg = self.error_messages['invalid_choice'] % value
+        if (
+            self.choice_values
+            and (value not in EMPTY_VALUES)
+            and (value not in self.choice_values)
+        ):
+            msg = self.error_messages["invalid_choice"] % value
             raise exceptions.ValidationError(msg)
 
         if not self.null and value is None:
-            raise exceptions.ValidationError(self.error_messages['null'])
+            raise exceptions.ValidationError(self.error_messages["null"])
 
     def clean(self, value):
         """
@@ -180,11 +232,9 @@ class Field(BaseField):
 
 
 class BooleanField(Field):
-    default_error_messages = {
-        'invalid': "'%s' value must be either True or False."
-    }
-    true_strings = ('t', 'true', 'y', 'yes', 'on', '1', '✓')
-    false_strings = ('f', 'false', 'n', 'no', 'off', '0')
+    default_error_messages = {"invalid": "'%s' value must be either True or False."}
+    true_strings = ("t", "true", "y", "yes", "on", "1", "✓")
+    false_strings = ("f", "false", "n", "no", "off", "0")
     data_type_name = "Boolean"
 
     def to_python(self, value):
@@ -200,7 +250,7 @@ class BooleanField(Field):
                 return True
             if lvalue in self.false_strings:
                 return False
-        msg = self.error_messages['invalid'] % str(value)
+        msg = self.error_messages["invalid"] % str(value)
         raise exceptions.ValidationError(msg)
 
 
@@ -217,6 +267,7 @@ class StringField(Field):
     :py:attr:`StringField.max_length`
         The maximum length (in characters) of the field. The ``max_length`` value is enforced Odin’s validation.
     """
+
     data_type_name = "String"
 
     def __init__(self, max_length=None, empty=None, **options):
@@ -225,7 +276,7 @@ class StringField(Field):
 
         # Mirror null is not explicitly defined
         if empty is None:
-            empty = options.get('null', False)
+            empty = options.get("null", False)
         self.empty = empty
 
         if max_length is not None:
@@ -237,8 +288,8 @@ class StringField(Field):
         return str(value)
 
     def validate(self, value):
-        if not self.empty and value == '':
-            raise exceptions.ValidationError(self.error_messages['null'])
+        if not self.empty and value == "":
+            raise exceptions.ValidationError(self.error_messages["null"])
 
         super(StringField, self).validate(value)
 
@@ -247,7 +298,7 @@ class UrlField(StringField):
     data_type_name = "URL"
 
     def __init__(self, **options):
-        options.setdefault('validators', []).append(validate_url)
+        options.setdefault("validators", []).append(validate_url)
         super(UrlField, self).__init__(**options)
 
 
@@ -269,20 +320,20 @@ class ScalarField(Field):
         try:
             return self.scalar_type(value)
         except (TypeError, ValueError):
-            msg = self.error_messages['invalid'] % value
+            msg = self.error_messages["invalid"] % value
             raise exceptions.ValidationError(msg)
 
 
 class IntegerField(ScalarField):
     default_error_messages = {
-        'invalid': "'%s' value must be a integer.",
+        "invalid": "'%s' value must be a integer.",
     }
     data_type_name = "Integer"
 
 
 class FloatField(ScalarField):
     default_error_messages = {
-        'invalid': "'%s' value must be a float.",
+        "invalid": "'%s' value must be a float.",
     }
     data_type_name = "Float"
     scalar_type = float
@@ -308,8 +359,9 @@ class DateField(_IsoFormatMixin, Field):
     The format of the string is that defined by ISO-8601.
 
     """
+
     default_error_messages = {
-        'invalid': "Not a valid date string.",
+        "invalid": "Not a valid date string.",
     }
     data_type_name = "ISO-8601 Date"
 
@@ -324,7 +376,7 @@ class DateField(_IsoFormatMixin, Field):
             return datetimeutil.parse_iso_date_string(value)
         except ValueError:
             pass
-        msg = self.error_messages['invalid']
+        msg = self.error_messages["invalid"]
         raise exceptions.ValidationError(msg)
 
 
@@ -340,8 +392,9 @@ class TimeField(_IsoFormatMixin, Field):
     system timezone.
 
     """
+
     default_error_messages = {
-        'invalid': "Not a valid time string.",
+        "invalid": "Not a valid time string.",
     }
     data_type_name = "ISO-8601 Time"
 
@@ -359,7 +412,7 @@ class TimeField(_IsoFormatMixin, Field):
             return datetimeutil.parse_iso_time_string(value, default_timezone)
         except ValueError:
             pass
-        msg = self.error_messages['invalid']
+        msg = self.error_messages["invalid"]
         raise exceptions.ValidationError(msg)
 
 
@@ -376,8 +429,9 @@ class NaiveTimeField(_IsoFormatMixin, Field):
     when decoding the time field.
 
     """
+
     default_error_messages = {
-        'invalid': "Not a valid time string.",
+        "invalid": "Not a valid time string.",
     }
     data_type_name = "Naive ISO-8601 Time"
 
@@ -397,7 +451,7 @@ class NaiveTimeField(_IsoFormatMixin, Field):
             return datetimeutil.parse_iso_time_string(value, default_timezone)
         except ValueError:
             pass
-        msg = self.error_messages['invalid']
+        msg = self.error_messages["invalid"]
         raise exceptions.ValidationError(msg)
 
     def prepare(self, value):
@@ -408,10 +462,9 @@ class NaiveTimeField(_IsoFormatMixin, Field):
         :return:
 
         """
-        if value is not None:
-            if self.ignore_timezone and value.tzinfo is not None:
-                # Strip the timezone
-                value = value.replace(tzinfo=None)
+        if (value is not None) and self.ignore_timezone and (value.tzinfo is not None):
+            # Strip the timezone
+            value = value.replace(tzinfo=None)
         return value
 
 
@@ -427,8 +480,9 @@ class DateTimeField(_IsoFormatMixin, Field):
     system timezone.
 
     """
+
     default_error_messages = {
-        'invalid': "Not a valid datetime string.",
+        "invalid": "Not a valid datetime string.",
     }
     data_type_name = "ISO-8601 DateTime"
 
@@ -446,7 +500,7 @@ class DateTimeField(_IsoFormatMixin, Field):
             return datetimeutil.parse_iso_datetime_string(value, default_timezone)
         except ValueError:
             pass
-        msg = self.error_messages['invalid']
+        msg = self.error_messages["invalid"]
         raise exceptions.ValidationError(msg)
 
 
@@ -463,8 +517,9 @@ class NaiveDateTimeField(_IsoFormatMixin, Field):
     when decoding the time field.
 
     """
+
     default_error_messages = {
-        'invalid': "Not a valid datetime string.",
+        "invalid": "Not a valid datetime string.",
     }
     data_type_name = "Naive ISO-8601 DateTime"
 
@@ -484,7 +539,7 @@ class NaiveDateTimeField(_IsoFormatMixin, Field):
             return datetimeutil.parse_iso_datetime_string(value, default_timezone)
         except ValueError:
             pass
-        msg = self.error_messages['invalid']
+        msg = self.error_messages["invalid"]
         raise exceptions.ValidationError(msg)
 
     def prepare(self, value):
@@ -495,10 +550,9 @@ class NaiveDateTimeField(_IsoFormatMixin, Field):
         :return:
 
         """
-        if value is not None:
-            if self.ignore_timezone and value.tzinfo is not None:
-                # Strip the timezone
-                value = value.replace(tzinfo=None)
+        if (value is not None) and self.ignore_timezone and (value.tzinfo is not None):
+            # Strip the timezone
+            value = value.replace(tzinfo=None)
         return value
 
 
@@ -509,8 +563,9 @@ class HttpDateTimeField(Field):
     The format of the string is that defined by ISO-1123.
 
     """
+
     default_error_messages = {
-        'invalid': "Not a valid HTTP datetime string.",
+        "invalid": "Not a valid HTTP datetime string.",
     }
     data_type_name = "ISO-1123 DateTime"
 
@@ -523,7 +578,7 @@ class HttpDateTimeField(Field):
             return datetimeutil.parse_http_datetime_string(value)
         except ValueError:
             pass
-        msg = self.error_messages['invalid']
+        msg = self.error_messages["invalid"]
         raise exceptions.ValidationError(msg)
 
     def as_string(self, value):
@@ -545,8 +600,9 @@ class TimeStampField(Field):
     A UNIX timestamp should always be calculated relative to UTC.
 
     """
+
     default_error_messages = {
-        'invalid': "Not a valid UNIX timestamp.",
+        "invalid": "Not a valid UNIX timestamp.",
     }
     data_type_name = "Integer"
 
@@ -559,7 +615,7 @@ class TimeStampField(Field):
             return datetime.datetime.fromtimestamp(long(value), tz=datetimeutil.utc)
         except ValueError:
             pass
-        msg = self.error_messages['invalid']
+        msg = self.error_messages["invalid"]
         raise exceptions.ValidationError(msg)
 
     def prepare(self, value):
@@ -573,7 +629,7 @@ class TimeStampField(Field):
 
 class DictField(Field):
     default_error_messages = {
-        'invalid': "Must be a dict.",
+        "invalid": "Must be a dict.",
     }
     data_type_name = "Dict"
 
@@ -588,7 +644,7 @@ class DictField(Field):
             val = dict(value)
             return val
         except (TypeError, ValueError):
-            msg = self.error_messages['invalid']
+            msg = self.error_messages["invalid"]
             raise exceptions.ValidationError(msg)
 
 
@@ -597,7 +653,7 @@ ObjectField = DictField
 
 class ListField(Field):
     default_error_messages = {
-        'invalid': "Must be an array.",
+        "invalid": "Must be an array.",
     }
     data_type_name = "List"
 
@@ -610,7 +666,7 @@ class ListField(Field):
             return value
         if isinstance(value, (list, tuple)):
             return value
-        msg = self.error_messages['invalid']
+        msg = self.error_messages["invalid"]
         raise exceptions.ValidationError(msg)
 
 
@@ -667,6 +723,7 @@ class TypedDictField(DictField):
         TypedDictField(key_field=StringField(), value_field=StringField())
 
     """
+
     @staticmethod
     def data_type_name(instance):
         key_type_name = instance.key_field.data_type_name
@@ -781,10 +838,11 @@ class EmailField(StringField):
     Validates that a string represents a valid Email address.
 
     """
+
     data_type_name = "Email"
 
     def __init__(self, **options):
-        options.setdefault('validators', []).append(validate_email_address)
+        options.setdefault("validators", []).append(validate_email_address)
         super(EmailField, self).__init__(**options)
 
 
@@ -795,10 +853,11 @@ class IPv4Field(StringField):
     Validates that a string represents a valid IPv4 address format.
 
     """
+
     data_type_name = "IPv4"
 
     def __init__(self, **options):
-        options.setdefault('validators', []).append(validate_ipv4_address)
+        options.setdefault("validators", []).append(validate_ipv4_address)
         super(IPv4Field, self).__init__(**options)
 
 
@@ -809,10 +868,11 @@ class IPv6Field(StringField):
     Validates that a string represents a valid IPv6 address format.
 
     """
+
     data_type_name = "IPv6"
 
     def __init__(self, **options):
-        options.setdefault('validators', []).append(validate_ipv6_address)
+        options.setdefault("validators", []).append(validate_ipv6_address)
         super(IPv6Field, self).__init__(**options)
 
 
@@ -823,10 +883,11 @@ class IPv46Field(StringField):
     Validates that a string represents a valid IPv4 or IPv6 address format.
 
     """
+
     data_type_name = "IPv46"
 
     def __init__(self, **options):
-        options.setdefault('validators', []).append(validate_ipv46_address)
+        options.setdefault("validators", []).append(validate_ipv46_address)
         super(IPv46Field, self).__init__(**options)
 
 
@@ -836,6 +897,7 @@ class UUIDField(Field):
 
     Validates that the string represents a universally unique identifier.
     """
+
     data_type_name = "UUID"
 
     def __init__(self, **options):
@@ -853,21 +915,21 @@ class UUIDField(Field):
                 return uuid.UUID(bytes=value)
 
             try:
-                value = value.decode('utf-8')
+                value = value.decode("utf-8")
             except UnicodeDecodeError as e:
-                raise exceptions.ValidationError(e.args[0], code='invalid')
+                raise exceptions.ValidationError(e.args[0], code="invalid")
 
         elif isinstance(value, six.integer_types):
             try:
                 return uuid.UUID(int=value)
             except ValueError as e:
-                raise exceptions.ValidationError(e.args[0], code='invalid')
+                raise exceptions.ValidationError(e.args[0], code="invalid")
 
         elif isinstance(value, (tuple, list)):
             try:
                 return uuid.UUID(fields=value)
             except ValueError as e:
-                raise exceptions.ValidationError(e.args[0], code='invalid')
+                raise exceptions.ValidationError(e.args[0], code="invalid")
 
         elif not isinstance(value, six.text_type):
             value = six.text_type(value)
@@ -875,4 +937,4 @@ class UUIDField(Field):
         try:
             return uuid.UUID(value)
         except ValueError as e:
-            raise exceptions.ValidationError(e.args[0], code='invalid')
+            raise exceptions.ValidationError(e.args[0], code="invalid")
