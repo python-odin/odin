@@ -12,9 +12,9 @@ Odin also comes with built in serialisation tools for importing and exporting da
 | Docs/   | .. image:: https://readthedocs.org/projects/odin/badge/?version=latest                                      |
 | Help    |    :target: https://odin.readthedocs.org/                                                                   |
 |         |    :alt: ReadTheDocs                                                                                        |
-|         | .. image:: https://img.shields.io/badge/gitterim-timsavage.odin-brightgreen.svg?style=flat
-|         |    :target: https://gitter.im/timsavage/odin
-|         |    :alt: Gitter.im
+|         | .. image:: https://img.shields.io/badge/gitterim-timsavage.odin-brightgreen.svg?style=flat                  |
+|         |    :target: https://gitter.im/timsavage/odin                                                                |
+|         |    :alt: Gitter.im                                                                                          |
 +---------+-------------------------------------------------------------------------------------------------------------+
 | Build   | .. image:: https://api.dependabot.com/badges/status?host=github&repo=python-odin/odin                       |
 |         |    :target: https://dependabot.com                                                                          |
