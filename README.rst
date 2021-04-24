@@ -9,9 +9,12 @@ that make up the resources and mapping between objects (either a resource, or ot
 Odin also comes with built in serialisation tools for importing and exporting data from resources.
 
 +---------+-------------------------------------------------------------------------------------------------------------+
-| Docs    | .. image:: https://readthedocs.org/projects/odin/badge/?version=latest                                      |
-|         |    :target: https://odin.readthedocs.org/                                                                   |
+| Docs/   | .. image:: https://readthedocs.org/projects/odin/badge/?version=latest                                      |
+| Help    |    :target: https://odin.readthedocs.org/                                                                   |
 |         |    :alt: ReadTheDocs                                                                                        |
+|         | .. image:: https://img.shields.io/badge/gitterim-timsavage.odin-brightgreen.svg?style=flat
+|         |    :target: https://gitter.im/timsavage/odin
+|         |    :alt: Gitter.im
 +---------+-------------------------------------------------------------------------------------------------------------+
 | Build   | .. image:: https://api.dependabot.com/badges/status?host=github&repo=python-odin/odin                       |
 |         |    :target: https://dependabot.com                                                                          |
@@ -42,32 +45,6 @@ Odin also comes with built in serialisation tools for importing and exporting da
 |         |    :target: https://pypi.io/pypi/odin/                                                                      |
 +---------+-------------------------------------------------------------------------------------------------------------+
 
-.. image:: https://img.shields.io/pypi/l/odin.svg?style=flat
-    :target: https://pypi.python.org/pypi/odin/
-    :alt: License
-
-.. image:: https://img.shields.io/pypi/v/odin.svg?style=flat
-    :target: https://pypi.python.org/pypi/odin/
-
-.. image:: https://img.shields.io/travis/python-odin/odin/master.svg?style=flat
-    :target: https://travis-ci.org/python-odin/odin
-    :alt: Travis CI Status
-
-.. image:: https://codecov.io/gh/python-odin/odin/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/python-odin/odin
-    :alt: Code cov
-
-.. image:: https://landscape.io/github/python-odin/odin/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/python-odin/odin/master
-   :alt: Code Health
-   
-.. image:: https://img.shields.io/requires/github/timsavage/odin.svg?style=flat
-    :target: https://requires.io/github/timsavage/odin/requirements/?branch=master
-    :alt: Requirements Status
-
-.. image:: https://img.shields.io/badge/gitterim-timsavage.odin-brightgreen.svg?style=flat
-    :target: https://gitter.im/timsavage/odin
-    :alt: Gitter.im
 
 Highlights
 **********
@@ -76,8 +53,7 @@ Highlights
 * Fields for building composite resources
 * Field and Resource level validation
 * Easy extension to support custom fields
-* Python 2.7 :sup:`1`, Python 2.7+, Python 3.5+ and PyPy :sup:`1` supported
-* Integration with Django (see `baldr <https://github.com/python-odin/baldr>`_)
+* Python 2.7 :sup:`1`, Python 2.7+, Python 3.6+ and PyPy :sup:`1` supported
 * Support for documenting resources with `Sphinx <http://sphinx-doc.org/>`_
 * Minimal dependencies (base functionality only requires *six*)
 
