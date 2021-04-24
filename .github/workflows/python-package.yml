@@ -2,7 +2,7 @@ name: Python package
 
 on:
   push:
-    branches: [ development, feature/* ]
+    branches: [ development, feature/*, bugfix/*, release/* ]
 
 jobs:
   build:
@@ -29,3 +29,9 @@ jobs:
     - name: Test with pytest
       run: |
         poetry run pytest --junit-xml=reports/xunit-result-${{ matrix.python-version }}.xml --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml tests
+
+    - name: Analyze with SonarCloud
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
