@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "odin"
-version = "1.6.0"
+version = "1.6.1"
 description = "Data-structure definition/validation/traversal, mapping and serialisation toolkit for Python"
 authors = ["Tim Savage <tim@savage.company>"]
 license = "BSD-3-Clause"
@@ -31,7 +31,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^2.7"
+python = "~2.7 || >=3.6 <3.10"
 six = "*"
 typing = {version="~=3.7.4", python = "~2.7" }
 enum34 = {version="*", python = "<3.4" }

@@ -1,3 +1,8 @@
+1.6.1
+=====
+
+- Fix poetry config error that restricted Python versions > 3!
+
 1.6.0
 =====
 

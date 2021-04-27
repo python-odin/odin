@@ -54,5 +54,5 @@ class EnumField(Field):
 
     def prepare(self, value):
         # type: (Optional[ET]) -> Any
-        if (value is not None) and (value in self.enum):
+        if (value is not None) and isinstance(value, self.enum):
             return value.value
