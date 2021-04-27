@@ -166,6 +166,14 @@ python-versions = "*"
 six = ">=1.0.0,<2.0.0"
 
 [[package]]
+name = "more-itertools"
+version = "8.7.0"
+description = "More routines for operating on iterables, beyond itertools"
+category = "dev"
+optional = false
+python-versions = ">=3.5"
+
+[[package]]
 name = "msgpack"
 version = "1.0.2"
 description = "MessagePack (de)serializer."
@@ -384,8 +392,8 @@ yaml = ["pyyaml"]
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^2.7"
-content-hash = "e1b102ba9fc2d64916ea57e1c5bb323fb8a956175387a78f52c3c62cff512528"
+python-versions = "~2.7 || >=3.6 <3.10"
+content-hash = "56b650128254ab6dc5a8567e5f189cc915e65ab38801176b1184e8469a13bd65"
 
 [metadata.files]
 arrow = [
@@ -498,6 +506,8 @@ more-itertools = [
     {file = "more-itertools-5.0.0.tar.gz", hash = "sha256:38a936c0a6d98a38bcc2d03fdaaedaba9f412879461dd2ceff8d37564d6522e4"},
     {file = "more_itertools-5.0.0-py2-none-any.whl", hash = "sha256:c0a5785b1109a6bd7fac76d6837fd1feca158e54e521ccd2ae8bfe393cc9d4fc"},
     {file = "more_itertools-5.0.0-py3-none-any.whl", hash = "sha256:fe7a7cae1ccb57d33952113ff4fa1bc5f879963600ed74918f1236e212ee50b9"},
+    {file = "more-itertools-8.7.0.tar.gz", hash = "sha256:c5d6da9ca3ff65220c3bfd2a8db06d698f05d4d2b9be57e1deb2be5a45019713"},
+    {file = "more_itertools-8.7.0-py3-none-any.whl", hash = "sha256:5652a9ac72209ed7df8d9c15daf4e1aa0e3d2ccd3c87f8265a0673cd9cbc9ced"},
 ]
 msgpack = [
     {file = "msgpack-1.0.2-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:b6d9e2dae081aa35c44af9c4298de4ee72991305503442a5c74656d82b581fe9"},
