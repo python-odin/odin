@@ -8,32 +8,46 @@ that make up the resources and mapping between objects (either a resource, or ot
 
 Odin also comes with built in serialisation tools for importing and exporting data from resources.
 
-.. image:: https://img.shields.io/pypi/l/odin.svg?style=flat
-    :target: https://pypi.python.org/pypi/odin/
-    :alt: License
++---------+-------------------------------------------------------------------------------------------------------------+
+| Docs/   | .. image:: https://readthedocs.org/projects/odin/badge/?version=latest                                      |
+| Help    |    :target: https://odin.readthedocs.org/                                                                   |
+|         |    :alt: ReadTheDocs                                                                                        |
+|         | .. image:: https://img.shields.io/badge/gitterim-timsavage.odin-brightgreen.svg?style=flat                  |
+|         |    :target: https://gitter.im/timsavage/odin                                                                |
+|         |    :alt: Gitter.im                                                                                          |
++---------+-------------------------------------------------------------------------------------------------------------+
+| Build   | .. image:: https://github.com/python-odin/odin/actions/workflows/python-package.yml/badge.svg               |
+|         |    :target: https://github.com/python-odin/odin/actions/workflows/python-package.yml                        |
+|         |    :alt: Python package                                                                                     |
+|         | .. image:: https://api.dependabot.com/badges/status?host=github&repo=python-odin/odin                       |
+|         |    :target: https://dependabot.com                                                                          |
+|         |    :alt: Dependabot Status                                                                                  |
++---------+-------------------------------------------------------------------------------------------------------------+
+| Quality | .. image:: https://sonarcloud.io/api/project_badges/measure?project=python-odin_odin&metric=sqale_rating    |
+|         |    :target: https://sonarcloud.io/dashboard?id=python-odin/odin                                             |
+|         |    :alt: Maintainability                                                                                    |
+|         | .. image:: https://sonarcloud.io/api/project_badges/measure?project=python-odin_odin&metric=security_rating |
+|         |    :target: https://sonarcloud.io/project/security_hotspots                                                 |
+|         |    :alt: Security                                                                                           |
+|         | .. image:: https://sonarcloud.io/api/project_badges/measure?project=python-odin_odin&metric=coverage        |
+|         |    :target: https://sonarcloud.io/code?id=python-odin_odin                                                  |
+|         |    :alt: Test Coverage                                                                                      |
+|         | .. image:: https://img.shields.io/badge/code%20style-black-000000.svg                                       |
+|         |    :target: https://github.com/ambv/black                                                                   |
+|         |    :alt: Once you go Black...                                                                               |
++---------+-------------------------------------------------------------------------------------------------------------+
+| Package | .. image:: https://img.shields.io/pypi/v/odin                                                               |
+|         |    :target: https://pypi.io/pypi/odin/                                                                      |
+|         |    :alt: Latest Version                                                                                     |
+|         | .. image:: https://img.shields.io/pypi/pyversions/odin                                                      |
+|         |    :target: https://pypi.io/pypi/odin/                                                                      |
+|         | .. image:: https://img.shields.io/pypi/l/odin                                                               |
+|         |    :target: https://pypi.io/pypi/odin/                                                                      |
+|         | .. image:: https://img.shields.io/pypi/wheel/odin                                                           |
+|         |    :alt: PyPI - Wheel                                                                                       |
+|         |    :target: https://pypi.io/pypi/odin/                                                                      |
++---------+-------------------------------------------------------------------------------------------------------------+
 
-.. image:: https://img.shields.io/pypi/v/odin.svg?style=flat
-    :target: https://pypi.python.org/pypi/odin/
-
-.. image:: https://img.shields.io/travis/python-odin/odin/master.svg?style=flat
-    :target: https://travis-ci.org/python-odin/odin
-    :alt: Travis CI Status
-
-.. image:: https://codecov.io/gh/python-odin/odin/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/python-odin/odin
-    :alt: Code cov
-
-.. image:: https://landscape.io/github/python-odin/odin/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/python-odin/odin/master
-   :alt: Code Health
-   
-.. image:: https://img.shields.io/requires/github/timsavage/odin.svg?style=flat
-    :target: https://requires.io/github/timsavage/odin/requirements/?branch=master
-    :alt: Requirements Status
-
-.. image:: https://img.shields.io/badge/gitterim-timsavage.odin-brightgreen.svg?style=flat
-    :target: https://gitter.im/timsavage/odin
-    :alt: Gitter.im
 
 Highlights
 **********
@@ -42,8 +56,7 @@ Highlights
 * Fields for building composite resources
 * Field and Resource level validation
 * Easy extension to support custom fields
-* Python 2.7 :sup:`1`, Python 2.7+, Python 3.5+ and PyPy :sup:`1` supported
-* Integration with Django (see `baldr <https://github.com/python-odin/baldr>`_)
+* Python 2.7 :sup:`1`, Python 2.7+, Python 3.6+ and PyPy :sup:`1` supported
 * Support for documenting resources with `Sphinx <http://sphinx-doc.org/>`_
 * Minimal dependencies (base functionality only requires *six*)
 
@@ -52,7 +65,7 @@ Highlights
 Use cases
 *********
 * Design, document and validate complex (and simple!) data structures
-* Convert structures to and from different formats such as JSON, YAML, MsgPack or CSV
+* Convert structures to and from different formats such as JSON, YAML, MsgPack, CSV, TOML
 * Validate API inputs
 * Define message formats for communications protocols, like an RPC
 * Map API requests to ORM objects
@@ -73,7 +86,6 @@ Upcoming features
 * XML Codec (export completed)
 * Complete documentation coverage
 * Improvements for CSV Codec (writing, reading multi resource CSV's)
-* RESTful interface with support for Flask and Django
 * Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms)
 * Integration with SQLAlchemy
 
@@ -88,6 +100,7 @@ Requires
 * simplejson - Odin will use simplejson if it is available or fallback to the builtin json library
 * msgpack-python - To enable use of the msgpack codec
 * pyyaml - To enable use of the YAML codec
+* toml - To enable use of the TOML codec
 
 **Contrib**
 

@@ -1,15 +1,15 @@
 from __future__ import absolute_import
 
 from enum import Enum
-from typing import TypeVar, Optional, Any  # noqa
+from typing import TypeVar, Optional, Any, Type  # noqa
 
 from odin.exceptions import ValidationError
 from . import Field
 
-__all__ = ("EnumField", )
+__all__ = ("EnumField",)
 
 
-ET = TypeVar('ET', Enum, Enum)
+ET = TypeVar("ET", Enum, Enum)
 
 
 class EnumField(Field):
@@ -20,8 +20,8 @@ class EnumField(Field):
     data_type_name = "Enum"
 
     def __init__(self, enum, **options):
-        # type: (ET, **Any) -> None
-        
+        # type: (Type[ET], **Any) -> None
+
         # Generate choices structure from choices
         choices = options.pop("choices", None)
         options["choices"] = tuple((e, e.name) for e in choices or enum)
@@ -48,11 +48,11 @@ class EnumField(Field):
             # If value is an empty string return None
             # Do this check here to support enums that define an option using
             # an empty string.
-            if value is "":
+            if value == "":
                 return
-            raise ValidationError(self.error_messages['invalid_choice'] % value)
+            raise ValidationError(self.error_messages["invalid_choice"] % value)
 
     def prepare(self, value):
         # type: (Optional[ET]) -> Any
-        if value in self.enum:
+        if (value is not None) and (value in self.enum):
             return value.value

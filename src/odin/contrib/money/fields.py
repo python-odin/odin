@@ -5,16 +5,17 @@ from odin.fields import ScalarField
 from odin.validators import EMPTY_VALUES
 from .datatypes import Amount
 
-__all__ = ('AmountField', )
+__all__ = ("AmountField",)
 
 
 class AmountField(ScalarField):
     """
     Field that contains a monetary amount (with an optional currency).
     """
+
     default_error_messages = {
-        'invalid': "'%s' value must be a (amount, currency).",
-        'invalid_currency': "'%s' currency is not supported.",
+        "invalid": "'%s' value must be a (amount, currency).",
+        "invalid_currency": "'%s' currency is not supported.",
     }
     data_type_name = "Amount"
 
@@ -31,15 +32,18 @@ class AmountField(ScalarField):
         try:
             return Amount(value)
         except (ValueError, TypeError):
-            msg = self.error_messages['invalid'] % value
+            msg = self.error_messages["invalid"] % value
             raise exceptions.ValidationError(msg)
 
     def validate(self, value):
         super(AmountField, self).validate(value)
-        if self.allowed_currencies and value not in EMPTY_VALUES:
-            if value.currency not in self.allowed_currencies:
-                msg = self.error_messages['invalid_currency'] % str(value.currency)
-                raise exceptions.ValidationError(msg)
+        if (
+            self.allowed_currencies
+            and (value not in EMPTY_VALUES)
+            and (value.currency not in self.allowed_currencies)
+        ):
+            msg = self.error_messages["invalid_currency"] % str(value.currency)
+            raise exceptions.ValidationError(msg)
 
     def prepare(self, value):
         if value in EMPTY_VALUES:
