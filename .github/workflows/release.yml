@@ -4,11 +4,7 @@ name: Release
 on:
   push:
     branches:
-      - release/*
-    tags:
-      # Matches 1.2.3 and 1.2.3.4
-      - "[0-9]+.[0-9]+.[0-9]+"
-      - "[0-9]+.[0-9]+.[0-9].+[0-9]+"
+      - master
       
 jobs:
   release:
@@ -36,36 +32,36 @@ jobs:
           echo "::set-output name=wheel::$(ls *.whl)"
           echo "::set-output name=version::$(poetry version -s)"
       
-#       - name: Create a Release
-#         id: create_release
-#         uses: actions/create-release@v1
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           tag_name: ${{ steps.build_package.outputs.version }}
-#           release_name: Release ${{ steps.build_package.outputs.version }}
-#           prerelease: false
+      - name: Create a Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.build_package.outputs.version }}
+          release_name: Release ${{ steps.build_package.outputs.version }}
+          prerelease: false
 
-#       - name: Attach Release Wheel
-#         uses: actions/upload-release-asset@v1
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           upload_url: ${{ steps.create_release.outputs.upload_url }}
-#           asset_path: ./dist/${{ steps.build_package.outputs.wheel }}
-#           asset_name: ${{ steps.build_package.outputs.wheel }}
-#           asset_content_type: application/x-pywheel+zip
+      - name: Attach Release Wheel
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/${{ steps.build_package.outputs.wheel }}
+          asset_name: ${{ steps.build_package.outputs.wheel }}
+          asset_content_type: application/x-pywheel+zip
 
-#       - name: Attach Release Source
-#         uses: actions/upload-release-asset@v1
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           upload_url: ${{ steps.create_release.outputs.upload_url }}
-#           asset_path: ./dist/${{ steps.build_package.outputs.source }}
-#           asset_name: ${{ steps.build_package.outputs.source }}
-#           asset_content_type: application/x-tar+gzip
+      - name: Attach Release Source
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/${{ steps.build_package.outputs.source }}
+          asset_name: ${{ steps.build_package.outputs.source }}
+          asset_content_type: application/x-tar+gzip
 
-#       - name: Upload to PyPI
-#         id: upload_to_pypi
-#         run: poetry publish
+      - name: Upload to PyPI
+        id: upload_to_pypi
+        run: poetry publish
