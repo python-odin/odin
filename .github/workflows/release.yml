@@ -64,4 +64,4 @@ jobs:
 
       - name: Upload to PyPI
         id: upload_to_pypi
-        run: poetry publish
+        run: poetry publish --username __token__ --password ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
