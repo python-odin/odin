@@ -322,7 +322,13 @@ def to_ecma_datetime_string(dt, default_timezone=local):
     """
     dt = get_tz_aware_dt(dt, default_timezone).astimezone(utc)
     return "{:4d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}.{:03d}Z".format(
-        dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond / 1000,
+        dt.year,
+        dt.month,
+        dt.day,
+        dt.hour,
+        dt.minute,
+        dt.second,
+        dt.microsecond // 1000,
     )
 
 
