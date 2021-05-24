@@ -10,12 +10,12 @@ class NotSupplied(object):
 
 
 def _split_atom(atom):
-    if '[' in atom:
-        field, _, idx = atom.rstrip(']').partition('[')
+    if "[" in atom:
+        field, _, idx = atom.rstrip("]").partition("[")
         return idx, NotSupplied, field
-    elif '{' in atom:
-        field, _, kv = atom.rstrip('}').partition('{')
-        key, _, value = kv.partition('=')
+    elif "{" in atom:
+        field, _, kv = atom.rstrip("}").partition("{")
+        key, _, value = kv.partition("=")
         return value, key, field
     else:
         return NotSupplied, NotSupplied, atom
@@ -25,18 +25,19 @@ class TraversalPath(object):
     """
     A path through a resource structure.
     """
+
     @classmethod
     def parse(cls, path):
         if isinstance(path, TraversalPath):
             return path
         if isinstance(path, six.string_types):
-            return cls(*[_split_atom(a) for a in path.split('.')])
+            return cls(*[_split_atom(a) for a in path.split(".")])
 
     def __init__(self, *path):
         self._path = path
 
     def __repr__(self):
-        return "<TraversalPath: {0}>".format(self)
+        return "<TraversalPath: {}>".format(self)
 
     def __str__(self):
         atoms = []
@@ -44,10 +45,10 @@ class TraversalPath(object):
             if value is NotSupplied:
                 atoms.append(field)
             elif key is NotSupplied:
-                atoms.append("{0}[{1}]".format(field, value))
+                atoms.append("{}[{}]".format(field, value))
             else:
-                atoms.append("{0}{{{1}={2}}}".format(field, key, value))
-        return '.'.join(atoms)
+                atoms.append("{}{{{}={}}}".format(field, key, value))
+        return ".".join(atoms)
 
     def __hash__(self):
         return hash(self._path)
@@ -63,9 +64,11 @@ class TraversalPath(object):
 
         # Assume appending a field
         if isinstance(other, six.string_types):
-            return TraversalPath(*(self._path + tuple([(NotSupplied, NotSupplied, other)])))
+            return TraversalPath(
+                *(self._path + tuple([(NotSupplied, NotSupplied, other)]))
+            )
 
-        raise TypeError("Cannot add '%s' to a path." % other)
+        raise TypeError("Cannot add '{}' to a path.".format(other))
 
     def __iter__(self):
         return iter(self._path)
@@ -80,7 +83,7 @@ class TraversalPath(object):
             try:
                 field = meta.field_map[attr]
             except KeyError:
-                raise InvalidPathError(self, "Unknown field `{0}`".format(attr))
+                raise InvalidPathError(self, "Unknown field {!r}".format(attr))
 
             result = field.value_from_object(result)
             if value is NotSupplied:
@@ -92,7 +95,9 @@ class TraversalPath(object):
                 try:
                     result = result[value]
                 except (KeyError, IndexError):
-                    raise NoMatchError(self, "Could not find index `{0}` in {1}.".format(value, field))
+                    raise NoMatchError(
+                        self, "Could not find index {!r} in {}.".format(value, field)
+                    )
             else:
                 # Filter elements
                 if isinstance(result, dict):
@@ -100,10 +105,18 @@ class TraversalPath(object):
                 results = tuple(r for r in result if getattr(r, key) == value)
                 if len(results) == 0:
                     raise NoMatchError(
-                        self, "Filter matched no values; `{0}` == `{1}` in {2}.".format(key, value, field))
+                        self,
+                        "Filter matched no values; {!r} == {!r} in {}.".format(
+                            key, value, field
+                        ),
+                    )
                 elif len(results) > 1:
                     raise MultipleMatchesError(
-                        self, "Filter matched multiple values; `{0}` == `{1}`.".format(key, value))
+                        self,
+                        "Filter matched multiple values; {!r} == {!r}.".format(
+                            key, value
+                        ),
+                    )
                 else:
                     result = results[0]
         return result
@@ -120,6 +133,7 @@ class ResourceTraversalIterator(object):
      - *on_exit* - Called after exiting a resource.
 
     """
+
     def __init__(self, resource):
         if isinstance(resource, (list, tuple)):
             # Stack of resource iterators (starts initially with entries from the list)
@@ -144,7 +158,9 @@ class ResourceTraversalIterator(object):
                     # Select the very last field in the field stack.
                     field = self._field_iters[-1][0]
                     # Request a list of resources along with keys from the composite field.
-                    self._resource_iters.append(field.item_iter_from_object(self.current_resource))
+                    self._resource_iters.append(
+                        field.item_iter_from_object(self.current_resource)
+                    )
                     # Update the path
                     self._path.append((NotSupplied, NotSupplied, field.name))
                     self._resource_stack.append(None)
@@ -154,7 +170,7 @@ class ResourceTraversalIterator(object):
                     self._field_iters.pop()
 
             if self.current_resource:
-                if hasattr(self, 'on_exit'):
+                if hasattr(self, "on_exit"):
                     self.on_exit()
 
             try:
@@ -182,7 +198,7 @@ class ResourceTraversalIterator(object):
                 # self.current_resource = next_resource
                 self._resource_stack[-1] = next_resource
 
-                if hasattr(self, 'on_enter'):
+                if hasattr(self, "on_enter"):
                     self.on_enter()
                 return next_resource
         else:

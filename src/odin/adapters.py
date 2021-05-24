@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 from odin.utils import cached_property, field_iter_items, getmeta
 
-__all__ = ('ResourceAdapter',)
+__all__ = ("ResourceAdapter",)
 
 
 class CurriedAdapter(object):
@@ -9,6 +11,7 @@ class CurriedAdapter(object):
     Curry wrapper for a Adapter to allow for pre-config of include/exclude and
     any other user defined arguments provided in kwargs.
     """
+
     def __init__(self, cls, **kwargs):
         self.cls = cls
         self.kwargs = kwargs.copy()
@@ -24,6 +27,7 @@ class ResourceOptionsAdapter(object):
     """
     A lightweight wrapper for the *ResourceOptions* class that filters fields.
     """
+
     def __init__(self, options, include, exclude):
         self._wrapped = options
         self.parents = options.parents
@@ -31,8 +35,16 @@ class ResourceOptionsAdapter(object):
         # Filter available fields
         include = include or [f.attname for f in options.all_fields]
         exclude = exclude or []
-        self.fields = [f for f in options.fields if f.attname in include and f.attname not in exclude]
-        self.virtual_fields = [f for f in options.virtual_fields if f.attname in include and f.attname not in exclude]
+        self.fields = [
+            f
+            for f in options.fields
+            if f.attname in include and f.attname not in exclude
+        ]
+        self.virtual_fields = [
+            f
+            for f in options.virtual_fields
+            if f.attname in include and f.attname not in exclude
+        ]
 
         # Work around so cached properties still work.
         self._cache = {}
@@ -41,7 +53,7 @@ class ResourceOptionsAdapter(object):
         return getattr(self._wrapped, item)
 
     def __repr__(self):
-        return '<Options Adapter for %s>' % self.resource_name
+        return "<Options Adapter for {}>".format(self.resource_name)
 
     @cached_property
     def all_fields(self):
@@ -82,6 +94,7 @@ class ResourceAdapter(object):
     The *ResourceAdapter* can be passed to Odin codecs just like a *Resource*.
 
     """
+
     @classmethod
     def apply_to(cls, sources, include=None, exclude=None, **kwargs):
         """
@@ -104,8 +117,8 @@ class ResourceAdapter(object):
 
     @classmethod
     def _create_options_adapter(cls, options, include=None, exclude=None):
-        include_fields = include if include else getattr(cls, 'include_fields', None)
-        exclude_fields = exclude if exclude else getattr(cls, 'exclude_fields', None)
+        include_fields = include if include else getattr(cls, "include_fields", None)
+        exclude_fields = exclude if exclude else getattr(cls, "exclude_fields", None)
         return ResourceOptionsAdapter(options, include_fields, exclude_fields)
 
     @classmethod
@@ -129,7 +142,7 @@ class ResourceAdapter(object):
         :param exclude: Fields to explicitly exclude on the adapter.
 
         """
-        self.__dict__['_source'] = source
+        self.__dict__["_source"] = source
 
         if not meta:
             meta = self._create_options_adapter(getmeta(source), include, exclude)
@@ -142,10 +155,10 @@ class ResourceAdapter(object):
         setattr(self._source, name, value)
 
     def __repr__(self):
-        return '<%s: %s>' % (self.__class__.__name__, self)
+        return "<{}: {}>".format(self.__class__.__name__, self)
 
     def __str__(self):
-        return '%s resource adapter' % self._meta.resource_name
+        return "{} resource adapter".format(self._meta.resource_name)
 
     def to_dict(self, include_virtual=True):
         """

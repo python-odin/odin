@@ -13,14 +13,17 @@ def deprecated(message, category=DeprecationWarning):
     :param category: Category of warning, defaults to DeprecationWarning
 
     """
+
     def wrap(obj):
         if inspect.isclass(obj):
             old_init = obj.__init__
 
             def wrapped_init(*args, **kwargs):
                 warnings.warn(
-                    "{0} is deprecated and scheduled for removal. {1}".format(obj.__name__, message),
-                    category=category
+                    "{} is deprecated and scheduled for removal. {}".format(
+                        obj.__name__, message
+                    ),
+                    category=category,
                 )
                 return old_init(*args, **kwargs)
 
@@ -28,12 +31,16 @@ def deprecated(message, category=DeprecationWarning):
             return obj
 
         else:
+
             def wrapped_func(*args, **kwargs):
                 warnings.warn(
-                    "{0} is deprecated and scheduled for removal. {1}".format(obj.__name__, message),
-                    category=category
+                    "{} is deprecated and scheduled for removal. {}".format(
+                        obj.__name__, message
+                    ),
+                    category=category,
                 )
                 return obj(*args, **kwargs)
 
             return wrapped_func
+
     return wrap

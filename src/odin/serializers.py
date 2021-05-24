@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, division
+
 import datetime
+from typing import Union
+
 from odin import datetimeutil
 from odin.compatibility import deprecated
 
@@ -26,46 +30,53 @@ def date_iso_format(value):
     return value.isoformat()
 
 
-@deprecated("Defaulting the timezone should be preformed by the fields only, this confuses things. "
-            "Most codecs have already migrated to not use this class.")
+@deprecated(
+    "Defaulting the timezone should be preformed by the fields only, this confuses things. "
+    "Most codecs have already migrated to not use this class."
+)
 class DatetimeIsoFormat(object):
     """
     Serialise a datetime.time or datetime.datetime to ISO string format.
     """
+
     def __init__(self, default_timezone=datetimeutil.local):
         self.default_timezone = default_timezone
 
     def __call__(self, value):
-        # type: (datetime.time | datetime.datetime) -> str
+        # type: (Union[datetime.time, datetime.datetime]) -> str
         if value.tzinfo is None:
             value = value.replace(tzinfo=self.default_timezone)
         return value.isoformat()
+
 
 TimeIsoFormat = DatetimeIsoFormat
 
 
 def datetime_iso_format(value):
+    # type: (datetime.datetime) -> str
     """
     Serialise a datetime.datetime to ISO string format.
     """
-    # type: (datetime.datetime) -> str
     return value.isoformat()
 
 
 def time_iso_format(value):
+    # type: (datetime.time) -> str
     """
     Serialise a datetime.time to ISO string format.
     """
-    # type: (datetime.time) -> str
     return value.isoformat()
 
 
-@deprecated("Defaulting the timezone should be preformed by the fields only, this confuses things. "
-            "Most codecs have already migrated to not use this class.")
+@deprecated(
+    "Defaulting the timezone should be preformed by the fields only, this confuses things. "
+    "Most codecs have already migrated to not use this class."
+)
 class DatetimeEcmaFormat(object):
     """
     Serialize a datetime object into the ECMA defined format.
     """
+
     input_type = datetime.datetime
 
     def __init__(self, assume_local=True, default_timezone=datetimeutil.local):
@@ -73,5 +84,6 @@ class DatetimeEcmaFormat(object):
 
     def __call__(self, value):
         return datetimeutil.to_ecma_datetime_string(value, self.default_timezone)
+
 
 datetime_ecma_format = DatetimeEcmaFormat()

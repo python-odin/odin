@@ -10,7 +10,7 @@ from odin.exceptions import MappingSetupError, MappingExecutionError
 from odin.mapping.helpers import MapListOf, MapDictAs, NoOpMapper
 from odin.utils import cached_property, getmeta
 
-__all__ = ('Mapping', 'map_field', 'map_list_field', 'assign_field', 'define', 'assign')
+__all__ = ("Mapping", "map_field", "map_list_field", "assign_field", "define", "assign")
 
 
 def force_tuple(value):
@@ -19,11 +19,20 @@ def force_tuple(value):
 
 EMPTY_LIST = ()
 
-FieldMapping = collections.namedtuple('FieldMapping', ('from_field', 'action', 'to_field',
-                                                       'to_list', 'bind', 'skip_if_none'))
+FieldMapping = collections.namedtuple(
+    "FieldMapping",
+    ("from_field", "action", "to_field", "to_list", "bind", "skip_if_none"),
+)
 
 
-def define(from_field=None, action=None, to_field=None, to_list=False, bind=False, skip_if_none=False):
+def define(
+    from_field=None,
+    action=None,
+    to_field=None,
+    to_list=False,
+    bind=False,
+    skip_if_none=False,
+):
     """
     Helper method for defining a mapping.
 
@@ -39,7 +48,9 @@ def define(from_field=None, action=None, to_field=None, to_list=False, bind=Fals
     """
     if from_field is None and to_field is None:
         raise MappingSetupError("Either `from_field` or `to_field` must be defined.")
-    return FieldMapping(from_field, action, to_field or from_field, to_list, bind, skip_if_none)
+    return FieldMapping(
+        from_field, action, to_field or from_field, to_list, bind, skip_if_none
+    )
 
 
 def assign(to_field, action, to_list=False, bind=True, skip_if_none=False):
@@ -62,6 +73,7 @@ def assign(to_field, action, to_list=False, bind=True, skip_if_none=False):
 
 class FieldResolverBase(object):
     """Base class for field resolver objects"""
+
     def __init__(self, obj):
         self.obj = obj
 
@@ -118,6 +130,7 @@ class FieldResolverBase(object):
 
 class ResourceFieldResolver(FieldResolverBase):
     """Field resolver for Odin resource objects."""
+
     def get_field_dict(self):
         """Return a dictionary of fields along with their names."""
         return getmeta(self.obj).field_map
@@ -130,30 +143,33 @@ class MappingMeta(type):
     """
     Meta-class for all Mappings
     """
+
     def __new__(mcs, name, bases, attrs):
         super_new = super(MappingMeta, mcs).__new__
 
         # attrs will never be empty for classes declared in the standard way
         # (ie. with the `class` keyword). This is quite robust.
-        if name == 'NewBase' and attrs == {}:
+        if name == "NewBase" and attrs == {}:
             return super_new(mcs, name, bases, attrs)
 
         parents = [
-            b for b in bases
-            if isinstance(b, MappingMeta) and not (b.__name__ == 'NewBase' and b.__mro__ == (b, MappingBase, object))
+            b
+            for b in bases
+            if isinstance(b, MappingMeta)
+            and not (b.__name__ == "NewBase" and b.__mro__ == (b, MappingBase, object))
         ]
         if not parents:
             # If this isn't a subclass of Mapping, don't do anything special.
             return super_new(mcs, name, bases, attrs)
 
         # Backward compatibility from_resource -> from_obj
-        from_obj = attrs.setdefault('from_obj', attrs.get('from_resource'))
+        from_obj = attrs.setdefault("from_obj", attrs.get("from_resource"))
         if from_obj is None:
-            raise MappingSetupError('`from_obj` is not defined.')
-        to_obj = attrs.setdefault('to_obj', attrs.get('to_resource'))
+            raise MappingSetupError("`from_obj` is not defined.")
+        to_obj = attrs.setdefault("to_obj", attrs.get("to_resource"))
         if to_obj is None:
-            raise MappingSetupError('`to_obj` is not defined.')
-        register_mapping = attrs.pop('register_mapping', True)
+            raise MappingSetupError("`to_obj` is not defined.")
+        register_mapping = attrs.pop("register_mapping", True)
 
         # Check if we have already created this mapping
         if register_mapping:
@@ -166,11 +182,19 @@ class MappingMeta(type):
         try:
             from_fields = registration.get_field_resolver(from_obj).from_field_dict
         except KeyError:
-            raise MappingSetupError('`from_obj` %r does not have an attribute resolver defined.' % from_obj)
+            raise MappingSetupError(
+                "`from_obj` {!r} does not have an attribute resolver defined.".format(
+                    from_obj
+                )
+            )
         try:
             to_fields = registration.get_field_resolver(to_obj).to_field_dict
         except KeyError:
-            raise MappingSetupError('`to_obj` %r does not have an attribute resolver defined.' % to_obj)
+            raise MappingSetupError(
+                "`to_obj` {!r} does not have an attribute resolver defined.".format(
+                    to_obj
+                )
+            )
 
         def attr_mapping_to_mapping_rule(m, def_type, ref):
             """ Parse, validate and normalise defined mapping rules so rules can be executed without having to perform
@@ -185,7 +209,11 @@ class MappingMeta(type):
                 try:
                     map_from, action, map_to = m
                 except ValueError:
-                    raise MappingSetupError('Bad mapping definition `%s` in %s `%s`.' % (m, def_type, ref))
+                    raise MappingSetupError(
+                        "Bad mapping definition `{}` in {} `{}`.".format(
+                            m, def_type, ref
+                        )
+                    )
 
             if map_from is None:
                 is_assignment = True
@@ -194,33 +222,55 @@ class MappingMeta(type):
                 map_from = force_tuple(map_from)
                 for f in map_from:
                     if f not in from_fields:
-                        raise MappingSetupError('Field `%s` of %s `%s` not found on from object. ' % (f, def_type, ref))
+                        raise MappingSetupError(
+                            "Field `{}` of {} `{}` not found on from object. ".format(
+                                f, def_type, ref
+                            )
+                        )
 
             if isinstance(action, six.string_types):
                 if action not in attrs:
-                    raise MappingSetupError('Action named %s defined in %s `%s` was not defined on mapping object.' % (
-                        action, def_type, ref))
+                    raise MappingSetupError(
+                        "Action named {} defined in {} `{}` was not defined on mapping object.".format(
+                            action, def_type, ref
+                        )
+                    )
                 if not callable(attrs[action]):
-                    raise MappingSetupError('Action named %s defined in %s `%s` is not callable.' % (
-                        action, def_type, ref))
+                    raise MappingSetupError(
+                        "Action named {} defined in {} `{}` is not callable.".format(
+                            action, def_type, ref
+                        )
+                    )
             elif action is not None and not callable(action):
-                raise MappingSetupError('Action on %s `%s` is not callable.' % (def_type, ref))
+                raise MappingSetupError(
+                    "Action on {} `{}` is not callable.".format(def_type, ref)
+                )
             elif action is None and is_assignment:
-                raise MappingSetupError('No action supplied for `%s` in `%s`.' % (def_type, ref))
+                raise MappingSetupError(
+                    "No action supplied for `{}` in `{}`.".format(def_type, ref)
+                )
 
             map_to = force_tuple(map_to)
             if to_list and len(map_to) != 1:
-                raise MappingSetupError('The %s `%s` specifies a to_list mapping, these can only be applied to a '
-                                        'single target field.' % (def_type, m))
+                raise MappingSetupError(
+                    "The {} `{}` specifies a to_list mapping, these can only be applied to a "
+                    "single target field.".format(def_type, m)
+                )
             for f in map_to:
                 if f not in to_fields:
-                    raise MappingSetupError('Field `%s` of %s `%s` not found on to object. ' % (f, def_type, ref))
+                    raise MappingSetupError(
+                        "Field `{}` of {} `{}` not found on to object. ".format(
+                            f, def_type, ref
+                        )
+                    )
 
             return FieldMapping(map_from, action, map_to, to_list, bind, skip_if_none)
 
         # Determine what fields need to have mappings generated
-        exclude_fields = attrs.get('exclude_fields') or ()
-        unmapped_fields = [attname for attname in from_fields if attname not in exclude_fields]
+        exclude_fields = attrs.get("exclude_fields") or ()
+        unmapped_fields = [
+            attname for attname in from_fields if attname not in exclude_fields
+        ]
 
         def remove_from_unmapped_fields(rule):
             # Remove any fields that are handled by a mapping rule from unmapped_fields list.
@@ -233,12 +283,16 @@ class MappingMeta(type):
 
         # Check that from_obj is a sub_class (or same class) as any `parent.from_obj`. This is important for mapping
         # sub class lists and resolving mappings.
-        base_parents = [p for p in parents if hasattr(p, '_subs')]
+        base_parents = [p for p in parents if hasattr(p, "_subs")]
         for p in base_parents:
             if not issubclass(from_obj, p.from_obj):
-                raise MappingSetupError('`from_obj` must be a subclass of `parent.from_obj`')
+                raise MappingSetupError(
+                    "`from_obj` must be a subclass of `parent.from_obj`"
+                )
             if not issubclass(to_obj, p.to_obj):
-                raise MappingSetupError('`to_obj` must be a subclass of `parent.to_obj`')
+                raise MappingSetupError(
+                    "`to_obj` must be a subclass of `parent.to_obj`"
+                )
 
             # Copy mapping rules
             for mapping_rule in p._mapping_rules:
@@ -246,8 +300,8 @@ class MappingMeta(type):
                 remove_from_unmapped_fields(mapping_rule)
 
         # Add basic mappings
-        for idx, mapping in enumerate(attrs.pop('mappings', [])):
-            mapping_rule = attr_mapping_to_mapping_rule(mapping, 'basic mapping', idx)
+        for idx, mapping in enumerate(attrs.pop("mappings", [])):
+            mapping_rule = attr_mapping_to_mapping_rule(mapping, "basic mapping", idx)
             mapping_rules.append(mapping_rule)
             remove_from_unmapped_fields(mapping_rule)
 
@@ -255,21 +309,25 @@ class MappingMeta(type):
         for attr in attrs.values():
             # Methods with a _mapping attribute have been decorated by either `map_field` or `map_list_field`
             # decorators.
-            if hasattr(attr, '_mapping'):
-                mapping_rule = attr_mapping_to_mapping_rule(getattr(attr, '_mapping'), 'custom mapping', attr)
+            if hasattr(attr, "_mapping"):
+                mapping_rule = attr_mapping_to_mapping_rule(
+                    getattr(attr, "_mapping"), "custom mapping", attr
+                )
                 mapping_rules.append(mapping_rule)
                 remove_from_unmapped_fields(mapping_rule)
                 # Remove mapping
-                delattr(attr, '_mapping')
+                delattr(attr, "_mapping")
 
         # Add auto mapped fields that are yet to be mapped.
         for field in unmapped_fields:
             if field in to_fields:
-                mapping_rules.append(mcs.generate_auto_mapping(field, from_fields, to_fields))
+                mapping_rules.append(
+                    mcs.generate_auto_mapping(field, from_fields, to_fields)
+                )
 
         # Update attributes
-        attrs['_mapping_rules'] = mapping_rules
-        attrs['_subs'] = {}
+        attrs["_mapping_rules"] = mapping_rules
+        attrs["_subs"] = {}
 
         # Create mapper instance
         mapper = super_new(mcs, name, bases, attrs)
@@ -300,7 +358,7 @@ class MappingMeta(type):
         elif isinstance(from_field, DictAs) and isinstance(to_field, DictAs):
             return mcs.generate_dict_to_dict_mapping(name, from_field, to_field)
 
-        return define(name, 'default_action')
+        return define(name, "default_action")
 
     @classmethod
     def generate_list_to_list_mapping(mcs, name, from_field, to_field):
@@ -309,12 +367,26 @@ class MappingMeta(type):
         """
         try:
             mapping = registration.get_mapping(from_field.of, to_field.of)
-            return FieldMapping(name, MapListOf(mapping), name, to_list=False, bind=True, skip_if_none=False)
+            return FieldMapping(
+                name,
+                MapListOf(mapping),
+                name,
+                to_list=False,
+                bind=True,
+                skip_if_none=False,
+            )
         except KeyError:
             # If both items are from and to fields refer to the same object automatically use a mapper that just
             # produces a clone.
             if from_field.of is to_field.of:
-                return FieldMapping(name, MapListOf(NoOpMapper), name, to_list=False, bind=True, skip_if_none=False)
+                return FieldMapping(
+                    name,
+                    MapListOf(NoOpMapper),
+                    name,
+                    to_list=False,
+                    bind=True,
+                    skip_if_none=False,
+                )
 
     @classmethod
     def generate_dict_to_dict_mapping(mcs, name, from_field, to_field):
@@ -332,20 +404,21 @@ class MappingResult(bases.TypedResourceIterable):
     """
     Iterator used lazily return a sequence from a mapping operation (used by ``Mapping.apply``).
     """
+
     def __init__(self, sequence, mapping, context=None, *mapping_options):
         super(MappingResult, self).__init__(mapping.to_obj)
         self.sequence = sequence
         self.mapping = mapping
         self.context = context or {}
-        self.context.setdefault('_loop_idx', [])
+        self.context.setdefault("_loop_idx", [])
         self.mapping_options = mapping_options
 
     def __iter__(self):
-        self.context['_loop_idx'].append(0)
+        self.context["_loop_idx"].append(0)
         for item in self.sequence:
             yield self.mapping.apply(item, self.context, *self.mapping_options)
-            self.context['_loop_idx'][-1] += 1
-        self.context['_loop_idx'].pop()
+            self.context["_loop_idx"][-1] += 1
+        self.context["_loop_idx"].pop()
 
 
 class ImmediateResult(bases.ResourceIterable):
@@ -354,6 +427,7 @@ class ImmediateResult(bases.ResourceIterable):
 
     This is useful if context is volatile.
     """
+
     def __init__(self, *args, **kwargs):
         self.sequence = list(MappingResult(*args, **kwargs))
 
@@ -367,6 +441,7 @@ class CachingMappingResult(MappingResult):
     Extends from the basic MappingResult to cache the results of a mapping operation and also provide methods and
     abilities available to a list (len, indexing). The results are only evaluated when requested.
     """
+
     def __init__(self, *args, **kwargs):
         super(CachingMappingResult, self).__init__(*args, **kwargs)
         self._cache = None  # type: list
@@ -429,9 +504,9 @@ class MappingBase(object):
         """
         context = context or {}
         mapping_result = mapping_result or cls.default_mapping_result
-        context.setdefault('_loop_idx', [])
+        context.setdefault("_loop_idx", [])
 
-        if hasattr(source_obj, '__iter__'):
+        if hasattr(source_obj, "__iter__"):
             return mapping_result(source_obj, cls, context, allow_subclass)
         elif source_obj.__class__ is cls.from_obj:
             return cls(source_obj, context).convert()
@@ -444,12 +519,21 @@ class MappingBase(object):
                 if allow_subclass and isinstance(source_obj, cls.from_obj):
                     return cls(source_obj, context, True).convert()
 
-                raise TypeError('`source_resource` parameter must be an instance (or subclass instance) of %s' %
-                                cls.from_obj)
+                raise TypeError(
+                    "`source_resource` parameter must be an instance (or subclass instance) of {}".format(
+                        cls.from_obj
+                    )
+                )
 
-            raise TypeError('`source_resource` parameter must be an instance of %s' % cls.from_obj)
+            raise TypeError(
+                "`source_resource` parameter must be an instance of {}".format(
+                    cls.from_obj
+                )
+            )
 
-    def __init__(self, source_obj, context=None, allow_subclass=False, ignore_not_provided=False):
+    def __init__(
+        self, source_obj, context=None, allow_subclass=False, ignore_not_provided=False
+    ):
         """
         Initialise instance of mapping.
 
@@ -460,10 +544,18 @@ class MappingBase(object):
         """
         if allow_subclass:
             if not isinstance(source_obj, self.from_obj):
-                raise TypeError('`source_resource` parameter must be an instance of subclass of %s' % self.from_obj)
+                raise TypeError(
+                    "`source_resource` parameter must be an instance of subclass of {}".format(
+                        self.from_obj
+                    )
+                )
         else:
             if source_obj.__class__ is not self.from_obj:
-                raise TypeError('`source_resource` parameter must be an instance of %s' % self.from_obj)
+                raise TypeError(
+                    "`source_resource` parameter must be an instance of {}".format(
+                        self.from_obj
+                    )
+                )
         self.source = source_obj
         self.context = context or {}
         self.ignore_not_provided = ignore_not_provided
@@ -474,7 +566,7 @@ class MappingBase(object):
         Index within a loop of this mapping (note loop might be for a parent object)
         :returns: Index within the loop; or `None` if we are not currently in a loop.
         """
-        loops = self.context.setdefault('_loop_idx', [])
+        loops = self.context.setdefault("_loop_idx", [])
         return loops[-1] if loops else None
 
     @property
@@ -482,14 +574,14 @@ class MappingBase(object):
         """
         How many layers of loops are we in?
         """
-        return len(self.context.setdefault('_loop_idx', []))
+        return len(self.context.setdefault("_loop_idx", []))
 
     @property
     def in_loop(self):
         """
         Is this mapping currently in a loop?
         """
-        return bool(self.context.setdefault('_loop_idx', []))
+        return bool(self.context.setdefault("_loop_idx", []))
 
     def default_action(self, value):
         """
@@ -527,7 +619,9 @@ class MappingBase(object):
                 else:
                     to_values = action(*from_values)
             except TypeError as ex:
-                raise MappingExecutionError('%s applying rule %s' % (ex, mapping_rule))
+                raise MappingExecutionError(
+                    "{} applying rule {}".format(ex, mapping_rule)
+                )
 
         if to_list:
             if isinstance(to_values, collections.Iterable):
@@ -536,11 +630,18 @@ class MappingBase(object):
             to_values = force_tuple(to_values)
 
         if len(to_fields) != len(to_values):
-            raise MappingExecutionError('Rule expects %s fields (%s returned) applying rule %s' % (
-                len(to_fields), len(to_values), mapping_rule))
+            raise MappingExecutionError(
+                "Rule expects {} fields ({} returned) applying rule {}".format(
+                    len(to_fields), len(to_values), mapping_rule
+                )
+            )
 
         if skip_if_none:
-            result = {f: to_values[i] for i, f in enumerate(to_fields) if to_values[i] is not None}
+            result = {
+                f: to_values[i]
+                for i, f in enumerate(to_fields)
+                if to_values[i] is not None
+            }
         else:
             result = {f: to_values[i] for i, f in enumerate(to_fields)}
 
@@ -572,7 +673,13 @@ class MappingBase(object):
 
         return self.create_object(**values)
 
-    def update(self, destination_obj, ignore_fields=None, fields=None, ignore_not_provided=False):
+    def update(
+        self,
+        destination_obj,
+        ignore_fields=None,
+        fields=None,
+        ignore_not_provided=False,
+    ):
         """
         Update an existing object with fields from the provided source object.
 
@@ -587,9 +694,9 @@ class MappingBase(object):
         for mapping_rule in self._mapping_rules:
             for name, value in self._apply_rule(mapping_rule).items():
                 if not (
-                    (name in ignore_fields) or
-                    (fields and name not in fields) or
-                    (ignore_not_provided and value is NotProvided)
+                    (name in ignore_fields)
+                    or (fields and name not in fields)
+                    or (ignore_not_provided and value is NotProvided)
                 ):
                     setattr(destination_obj, name, value)
 
@@ -610,8 +717,8 @@ class MappingBase(object):
         for mapping_rule in self._mapping_rules:
             for name, value in self._apply_rule(mapping_rule).items():
                 if not (
-                    (value == getattr(destination_obj, name)) and
-                    (ignore_not_provided and value is NotProvided)
+                    (value == getattr(destination_obj, name))
+                    and (ignore_not_provided and value is NotProvided)
                 ):
                     diff_fields.add(name)
         return diff_fields
@@ -621,6 +728,7 @@ class Mapping(six.with_metaclass(MappingMeta, MappingBase)):
     """
     Definition of a mapping between two Objects.
     """
+
     exclude_fields = []
     mappings = []
 
@@ -639,6 +747,7 @@ class ImmediateMapping(six.with_metaclass(MappingMeta, MappingBase)):
     a cached result object.
 
     """
+
     exclude_fields = []
     mappings = []
 
@@ -654,12 +763,10 @@ def map_field(func=None, from_field=None, to_field=None, to_list=False):
     :param to_field: Name of the field to map to; default is to use the function name.
     :param to_list: The result is a list (rather than a multi value tuple).
     """
+
     def inner(fun):
         fun._mapping = define(
-            from_field or fun.__name__,
-            fun.__name__,
-            to_field or fun.__name__,
-            to_list
+            from_field or fun.__name__, fun.__name__, to_field or fun.__name__, to_list
         )
         return fun
 
@@ -675,7 +782,7 @@ def map_list_field(*args, **kwargs):
 
     Parameters are identical to the :py:meth:`map_field` method except ``to_list`` which is forced to be True.
     """
-    kwargs['to_list'] = True
+    kwargs["to_list"] = True
     return map_field(*args, **kwargs)
 
 
@@ -690,23 +797,25 @@ def assign_field(func=None, to_field=None, to_list=False):
     :param to_field: Name of the field to assign value to; default is to use the function name.
     :param to_list: The result is a list (rather than a multi value tuple).
     """
+
     def inner(fun):
-        fun._mapping = define(
-            None,
-            fun.__name__,
-            to_field or fun.__name__,
-            to_list
-        )
+        fun._mapping = define(None, fun.__name__, to_field or fun.__name__, to_list)
         return fun
 
     return inner(func) if func else inner
 
 
-def mapping_factory(from_obj, to_obj, base_mapping=Mapping,
-                    generate_reverse=True,
-                    mappings=None, reverse_mappings=None,
-                    exclude_fields=None, reverse_exclude_fields=None,
-                    register_mappings=True):
+def mapping_factory(
+    from_obj,
+    to_obj,
+    base_mapping=Mapping,
+    generate_reverse=True,
+    mappings=None,
+    reverse_mappings=None,
+    exclude_fields=None,
+    reverse_exclude_fields=None,
+    register_mappings=True,
+):
     """
     Factory method for generating simple mappings between objects.
 
@@ -728,34 +837,38 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping,
 
     """
     forward_mapping = type(
-        "%s%sTo%s%s" % (
-            from_obj.__class__.__name__, from_obj.__name__,
-            to_obj.__class__.__name__, to_obj.__name__
+        "{}{}To{}{}".format(
+            from_obj.__class__.__name__,
+            from_obj.__name__,
+            to_obj.__class__.__name__,
+            to_obj.__name__,
         ),
-        (base_mapping, ),
+        (base_mapping,),
         {
-            'from_obj': from_obj,
-            'to_obj': to_obj,
-            'exclude_fields': exclude_fields or [],
-            'mappings': mappings or {},
-            'register_mapping': register_mappings
-        }
+            "from_obj": from_obj,
+            "to_obj": to_obj,
+            "exclude_fields": exclude_fields or [],
+            "mappings": mappings or {},
+            "register_mapping": register_mappings,
+        },
     )
 
     if generate_reverse:
         reverse_mapping = type(
-            "%s%sTo%s%s" % (
-                to_obj.__class__.__name__, to_obj.__name__,
-                from_obj.__class__.__name__, from_obj.__name__,
+            "{}{}To{}{}".format(
+                to_obj.__class__.__name__,
+                to_obj.__name__,
+                from_obj.__class__.__name__,
+                from_obj.__name__,
             ),
-            (base_mapping, ),
+            (base_mapping,),
             {
-                'from_obj': to_obj,
-                'to_obj': from_obj,
-                'exclude_fields': reverse_exclude_fields or [],
-                'mappings': reverse_mappings or {},
-                'register_mapping': register_mappings
-            }
+                "from_obj": to_obj,
+                "to_obj": from_obj,
+                "exclude_fields": reverse_exclude_fields or [],
+                "mappings": reverse_mappings or {},
+                "register_mapping": register_mappings,
+            },
         )
 
         return forward_mapping, reverse_mapping
@@ -763,7 +876,9 @@ def mapping_factory(from_obj, to_obj, base_mapping=Mapping,
     return forward_mapping
 
 
-def forward_mapping_factory(from_obj, to_obj, base_mapping=Mapping, mappings=None, exclude_fields=None):
+def forward_mapping_factory(
+    from_obj, to_obj, base_mapping=Mapping, mappings=None, exclude_fields=None
+):
     """
     Factory method for generating simple forward mappings between objects.
 
@@ -775,12 +890,21 @@ def forward_mapping_factory(from_obj, to_obj, base_mapping=Mapping, mappings=Non
     :return: Forward_mapping object.
 
     """
-    return mapping_factory(from_obj, to_obj, base_mapping, False, mappings, None, exclude_fields, None)
+    return mapping_factory(
+        from_obj, to_obj, base_mapping, False, mappings, None, exclude_fields, None
+    )
 
 
-def dynamic_mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_reverse=False,
-                            mappings=None, reverse_mappings=None,
-                            exclude_fields=None, reverse_exclude_fields=None):
+def dynamic_mapping_factory(
+    from_obj,
+    to_obj,
+    base_mapping=Mapping,
+    generate_reverse=False,
+    mappings=None,
+    reverse_mappings=None,
+    exclude_fields=None,
+    reverse_exclude_fields=None,
+):
     """
     Factory method for generating a dynamic mapping. That is generated dynamically at run time (eg from
     configuration the results of which are not registered for later use.
@@ -798,5 +922,14 @@ def dynamic_mapping_factory(from_obj, to_obj, base_mapping=Mapping, generate_rev
     :rtype: Mapping | (Mapping, Mapping)
 
     """
-    return mapping_factory(from_obj, to_obj, base_mapping, generate_reverse, mappings, reverse_mappings,
-                           exclude_fields, reverse_exclude_fields, False)
+    return mapping_factory(
+        from_obj,
+        to_obj,
+        base_mapping,
+        generate_reverse,
+        mappings,
+        reverse_mappings,
+        exclude_fields,
+        reverse_exclude_fields,
+        False,
+    )
