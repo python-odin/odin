@@ -1,7 +1,9 @@
-1.X.X
+1.6.2
 =====
 
 - Migrate string formatting from % to "".format
+- Apply black code style on all code
+- Improve some type hints
 - Add a Text block to XML Codec
 
 1.6.1
