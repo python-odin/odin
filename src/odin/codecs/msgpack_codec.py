@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+import datetime
 import uuid
-
-from odin.utils import getmeta
+from typing import TextIO
 
 try:
     import msgpack
@@ -10,10 +10,9 @@ except ImportError:
         "odin.codecs.msgpack_codec requires the 'msgpack-python' package."
     )  # noqa
 
-import datetime
-
-from odin import bases
+from odin import bases, Resource
 from odin import serializers, resources, ResourceAdapter
+from odin.utils import getmeta
 
 
 TYPE_SERIALIZERS = {
@@ -56,6 +55,7 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
     :param fp: a file pointer to read MessagePack data from.
     :param resource: A resource instance or a resource name to use as the base for creating a resource.
     :param full_clean: Do a full clean of the object as part of the loading process.
+    :param default_to_not_supplied:
     :returns: A resource object or object graph of resources loaded from file.
     """
     return resources.build_object_graph(
@@ -75,6 +75,7 @@ def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
     :param s: String to load and parse.
     :param resource: A resource instance or a resource name to use as the base for creating a resource.
     :param full_clean: Do a full clean of the object as part of the loading process.
+    :param default_to_not_supplied:
     :returns: A resource object or object graph of resources parsed from supplied string.
     """
     return resources.build_object_graph(
@@ -82,10 +83,17 @@ def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
     )
 
 
-def dump(resource, fp, cls=OdinPacker, include_virtual_fields=True, **kwargs):
+def dump(
+    resource,  # type: Resource
+    fp,  # type: TextIO,
+    cls=OdinPacker,
+    include_virtual_fields=True,  # type: bool
+    **kwargs
+):
     """
     Dump to a MessagePack encoded file.
 
+    :param include_virtual_fields: 
     :param resource: The root resource to dump to a MessagePack encoded file.
     :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :param fp: The file pointer that represents the output file.
@@ -93,10 +101,16 @@ def dump(resource, fp, cls=OdinPacker, include_virtual_fields=True, **kwargs):
     fp.write(cls(include_virtual_fields, **kwargs).pack(resource))
 
 
-def dumps(resource, cls=OdinPacker, include_virtual_fields=True, **kwargs):
+def dumps(
+    resource,  # type: Resource
+    cls=OdinPacker,
+    include_virtual_fields=True,  # type: bool
+    **kwargs
+):
     """
     Dump to a MessagePack encoded string.
 
+    :param include_virtual_fields: 
     :param resource: The root resource to dump to a MessagePack encoded file.
     :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :returns: MessagePack encoded string.

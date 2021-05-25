@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import re
+from typing import Iterable, Tuple, Union, Set, T, Sequence  # noqa
 
-# Typing imports
-from typing import Iterable, Tuple, Union, Set, T  # noqa
-
-_CAMEL_CASE_RE = re.compile(r'[A-Z]')
-_LOWER_UNDERSCORE_CASE_RE = re.compile(r'_([a-z])')
-_LOWER_DASH_CASE_RE = re.compile(r'-([a-z])')
+_CAMEL_CASE_RE = re.compile(r"[A-Z]")
+_LOWER_UNDERSCORE_CASE_RE = re.compile(r"_([a-z])")
+_LOWER_DASH_CASE_RE = re.compile(r"-([a-z])")
 
 
 def camel_to_lower_separated(s, sep):
@@ -30,7 +30,7 @@ def camel_to_lower_underscore(s):
         backgroundColor -> background_color
 
     """
-    return camel_to_lower_separated(s, '_')
+    return camel_to_lower_separated(s, "_")
 
 
 def camel_to_lower_dash(s):
@@ -40,7 +40,7 @@ def camel_to_lower_dash(s):
 
       backgroundColor -> background-color
     """
-    return camel_to_lower_separated(s, '-')
+    return camel_to_lower_separated(s, "-")
 
 
 def lower_underscore_to_camel(value):
@@ -51,10 +51,7 @@ def lower_underscore_to_camel(value):
       background_color -> backgroundColor
 
     """
-    return _LOWER_UNDERSCORE_CASE_RE.sub(
-        lambda m: m.group(1).upper(),
-        value.lower()
-    )
+    return _LOWER_UNDERSCORE_CASE_RE.sub(lambda m: m.group(1).upper(), value.lower())
 
 
 def lower_dash_to_camel(value):
@@ -65,16 +62,14 @@ def lower_dash_to_camel(value):
       background-color -> backgroundColor
 
     """
-    return _LOWER_DASH_CASE_RE.sub(
-        lambda m: m.group(1).upper(),
-        value.lower()
-    )
+    return _LOWER_DASH_CASE_RE.sub(lambda m: m.group(1).upper(), value.lower())
 
 
 class cached_property(object):  # noqa - Made to match property builtin
     """
     Acts like a standard class `property` except return values cached.
     """
+
     @staticmethod
     def clear_caches(instance):
         instance._cache = {}
@@ -103,6 +98,7 @@ class lazy_property(object):  # noqa - Made to match the property builtin
     The bottle cached property, requires a alternate name so as not to
     clash with existing cached_property behaviour
     """
+
     def __init__(self, func):
         self.func = func
         self.__doc__ = func.__doc__
@@ -157,7 +153,7 @@ def getmeta(resource_or_instance):
     :rtype: odin.resources.ResourceOptions
 
     """
-    return getattr(resource_or_instance, '_meta')
+    return getattr(resource_or_instance, "_meta")
 
 
 def field_iter(resource, include_virtual=True):
@@ -243,10 +239,7 @@ def extract_fields_from_dict(d, resource):
     :returns: a dictionary of the resource fields that where found in the dict.
 
     """
-    return {
-        f.name: d[f.name] for f in field_iter(resource)
-        if f.name in d
-    }
+    return {f.name: d[f.name] for f in field_iter(resource) if f.name in d}
 
 
 def value_in_choices(value, choices):
@@ -265,7 +258,7 @@ def value_in_choices(value, choices):
 
 
 def iter_to_choices(i):
-    # type: (Iterable[T]) -> tuple(Tuple[T, str])
+    # type: (Iterable[T]) -> Sequence[Tuple[T, str]]
     """
     Convert an iterator of strings (or types that can be converted to strings) and convert these into choice value
     pairs.
@@ -274,7 +267,7 @@ def iter_to_choices(i):
 
 
 def force_tuple(value):
-    # type: (Union[T, tuple(T), list(T)]) -> tuple(T)
+    # type: (Union[T, Sequence[T]]) -> Sequence[T]
     """
     Forces a value to be a tuple.
 
@@ -287,7 +280,7 @@ def force_tuple(value):
         return value
     if isinstance(value, list):
         return tuple(value)
-    return value,
+    return (value,)
 
 
 def chunk(iterable, n):
@@ -301,14 +294,14 @@ def chunk(iterable, n):
 
     """
     iterable = iter(iterable)
-    state = {'continue': True}
+    state = {"continue": True}
 
     def inner():
         for _ in range(n):
             try:
                 yield next(iterable)
             except StopIteration:
-                state['continue'] = False
+                state["continue"] = False
 
-    while state['continue']:
+    while state["continue"]:
         yield inner()

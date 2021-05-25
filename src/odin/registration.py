@@ -3,17 +3,16 @@ from odin.utils import getmeta
 
 
 def generate_mapping_cache_name(from_obj, to_obj):
-    return "%s.%s > %s.%s" % (from_obj.__module__, from_obj.__name__, to_obj.__module__, to_obj.__name__,)
+    return "{}.{} > {}.{}".format(
+        from_obj.__module__, from_obj.__name__, to_obj.__module__, to_obj.__name__,
+    )
 
 
 class ResourceCache(object):
     # Use the Borg pattern to share state between all instances. Details at
     # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/66531.
     __shared_state = dict(
-        resources={},
-        mappings={},
-        field_resolvers=set(),
-        validation_error_handlers={},
+        resources={}, mappings={}, field_resolvers=set(), validation_error_handlers={},
     )
 
     def __init__(self):
@@ -92,7 +91,7 @@ class ResourceCache(object):
         for base_type, field_resolver in self.field_resolvers:
             if issubclass(obj_type, base_type):
                 return field_resolver(obj_type)
-        raise KeyError('No field resolver could be found for %r' % obj_type)
+        raise KeyError("No field resolver could be found for %r" % obj_type)
 
     def register_validation_error_handler(self, error_type, handler):
         """

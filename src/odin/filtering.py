@@ -8,6 +8,7 @@ class FilterAtom(object):
     """
     Base filter statement
     """
+
     def __name__(self):
         return self.__class__.__name__
 
@@ -22,7 +23,7 @@ class FilterAtom(object):
 
 
 class FilterChain(FilterAtom):
-    operator_name = ''
+    operator_name = ""
     check_operator = all
 
     def __init__(self, *atoms):
@@ -37,25 +38,25 @@ class FilterChain(FilterAtom):
         elif isinstance(other, FilterComparison):
             self._atoms.append(other)
             return self
-        raise TypeError("{0} not supported for this operation".format(other))
+        raise TypeError("{} not supported for this operation".format(other))
 
     def __call__(self, resource):
         return self.check_operator(a(resource) for a in self._atoms)
 
     def __str__(self):
         if not self._atoms:
-            return ''
-        pin = " {0} ".format(self.operator_name)
-        return "({0})".format(pin.join(str(a) for a in self._atoms))
+            return ""
+        pin = " {} ".format(self.operator_name)
+        return "({})".format(pin.join(str(a) for a in self._atoms))
 
 
 class And(FilterChain):
-    operator_name = 'AND'
+    operator_name = "AND"
     check_operator = all
 
 
 class Or(FilterChain):
-    operator_name = 'OR'
+    operator_name = "OR"
     check_operator = any
 
 
@@ -63,6 +64,7 @@ class FilterComparison(FilterAtom):
     """
     Base class for filter operator atoms
     """
+
     # Symbol for this operator and alternatives. The first item is used when generating
     # a representation of the filter, the others are used for parsing queries.
     operator_symbols = []
@@ -85,55 +87,57 @@ class FilterComparison(FilterAtom):
     def __str__(self):
         value = self.value
         if isinstance(self.value, six.string_types):
-            value = "'{0}'".format(value)
+            value = "{!r}".format(value)
 
         if self.operation:
-            op_name = getattr(self.operation, 'name', self.operation.__name__)
-            return "{0}({1}) {2} {3}".format(op_name, self.field, self.operator_symbols[0], value)
+            op_name = getattr(self.operation, "name", self.operation.__name__)
+            return "{}({}) {} {}".format(
+                op_name, self.field, self.operator_symbols[0], value
+            )
         else:
-            return "{0} {1} {2}".format(self.field, self.operator_symbols[0], value)
+            return "{} {} {}".format(self.field, self.operator_symbols[0], value)
 
     def compare(self, value):
         raise NotImplementedError()
 
 
 class Equal(FilterComparison):
-    operator_symbols = ('==', '=', 'eq')
+    operator_symbols = ("==", "=", "eq")
 
     def compare(self, value):
         return value == self.value
 
 
 class NotEqual(FilterComparison):
-    operator_symbols = ('!=', '<>', 'neq')
+    operator_symbols = ("!=", "<>", "neq")
 
     def compare(self, value):
         return value != self.value
 
 
 class LessThan(FilterComparison):
-    operator_symbols = ('<', 'lt')
+    operator_symbols = ("<", "lt")
 
     def compare(self, value):
         return value < self.value
 
 
 class LessThanOrEqual(FilterComparison):
-    operator_symbols = ('<=', 'lte')
+    operator_symbols = ("<=", "lte")
 
     def compare(self, value):
         return value <= self.value
 
 
 class GreaterThan(FilterComparison):
-    operator_symbols = ('>', 'gt')
+    operator_symbols = (">", "gt")
 
     def compare(self, value):
         return value > self.value
 
 
 class GreaterThanOrEqual(FilterComparison):
-    operator_symbols = ('>=', 'gte')
+    operator_symbols = (">=", "gte")
 
     def compare(self, value):
         return value >= self.value

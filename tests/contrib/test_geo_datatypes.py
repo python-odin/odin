@@ -43,7 +43,7 @@ class TestDataTypes(object):
 
     def test_latitude_invalid(self):
         pytest.raises(TypeError, datatypes.latitude, None)
-        pytest.raises(ValueError, datatypes.latitude, 'a')
+        pytest.raises(ValueError, datatypes.latitude, "a")
         pytest.raises(ValueError, datatypes.latitude, 92.0)
         pytest.raises(ValueError, datatypes.latitude, -92.0)
         pytest.raises(TypeError, datatypes.latitude, 1, 2)
@@ -71,7 +71,7 @@ class TestDataTypes(object):
 
     def test_longitude_invalid(self):
         pytest.raises(TypeError, datatypes.longitude, None)
-        pytest.raises(ValueError, datatypes.longitude, 'a')
+        pytest.raises(ValueError, datatypes.longitude, "a")
         pytest.raises(ValueError, datatypes.longitude, 182.0)
         pytest.raises(ValueError, datatypes.longitude, -182.0)
         pytest.raises(TypeError, datatypes.longitude, 1, 2)
@@ -87,8 +87,10 @@ class TestDataTypes(object):
 
     def test_latlng_valid(self):
         assert (10.0, 20.0) == datatypes.latlng(10, 20)
-        assert (10.0, 20.0) == datatypes.latlng('10', '20')
-        assert (10.0, 20.0) == datatypes.latlng(datatypes.latitude(10), datatypes.longitude(20))
+        assert (10.0, 20.0) == datatypes.latlng("10", "20")
+        assert (10.0, 20.0) == datatypes.latlng(
+            datatypes.latitude(10), datatypes.longitude(20)
+        )
         assert (10.0, 20.0) == datatypes.latlng((10, 20))
         assert (90.0, 180.0) == datatypes.latlng(90, 180)
         assert (-90.0, -180.0) == datatypes.latlng(-90, -180)
@@ -98,7 +100,7 @@ class TestDataTypes(object):
         pytest.raises(TypeError, datatypes.latlng, 1)
         pytest.raises(TypeError, datatypes.latlng, 1, 2, 3)
         pytest.raises(TypeError, datatypes.latlng, (1, 2, 3))
-        pytest.raises(ValueError, datatypes.latlng, 90, 'a')
+        pytest.raises(ValueError, datatypes.latlng, 90, "a")
         pytest.raises(ValueError, datatypes.latlng, 100, 100)
 
     def test_latlng_str(self):
@@ -113,10 +115,10 @@ class TestDataTypes(object):
 
     def test_point_valid(self):
         assert (1, 2) == datatypes.point(1, 2)
-        assert (1, 2) == datatypes.point('1', '2')
+        assert (1, 2) == datatypes.point("1", "2")
         assert (1, 2) == datatypes.point((1, 2))
         assert (1, 2, 3) == datatypes.point(1, 2, 3)
-        assert (1, 2, 3) == datatypes.point('1', '2', '3')
+        assert (1, 2, 3) == datatypes.point("1", "2", "3")
         assert (1, 2, 3) == datatypes.point((1, 2, 3))
 
     def test_point_invalid(self):
@@ -124,16 +126,16 @@ class TestDataTypes(object):
         pytest.raises(TypeError, datatypes.point, 1)
         pytest.raises(TypeError, datatypes.point, 1, 2, 3, 4)
         pytest.raises(TypeError, datatypes.point, (1, 2, 3, 4))
-        pytest.raises(ValueError, datatypes.point, 90, 'a', 1)
+        pytest.raises(ValueError, datatypes.point, 90, "a", 1)
 
     def test_point_str(self):
         p = datatypes.point(1, 2)
-        assert "point(1.000000, 2.000000)" == repr(p)
-        assert "(1.000000, 2.000000)" == str(p)
+        assert repr(p) == "point(1.0, 2.0)"
+        assert str(p) == "(1.0, 2.0)"
 
         p = datatypes.point(1, 2, 3)
-        assert "point(1.000000, 2.000000, 3.000000)" == repr(p)
-        assert "(1.000000, 2.000000, 3.000000)" == str(p)
+        assert repr(p) == "point(1.0, 2.0, 3.0)"
+        assert str(p) == "(1.0, 2.0, 3.0)"
 
     def test_point_properties(self):
         p = datatypes.point(1, 2)

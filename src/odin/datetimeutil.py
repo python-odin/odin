@@ -14,7 +14,9 @@ class IgnoreTimezone(object):
 
 ZERO = datetime.timedelta(0)
 LOCAL_STD_OFFSET = datetime.timedelta(seconds=-time.timezone)
-LOCAL_DST_OFFSET = datetime.timedelta(seconds=-time.altzone) if time.daylight else LOCAL_STD_OFFSET
+LOCAL_DST_OFFSET = (
+    datetime.timedelta(seconds=-time.altzone) if time.daylight else LOCAL_STD_OFFSET
+)
 LOCAL_DST_DIFF = LOCAL_DST_OFFSET - LOCAL_STD_OFFSET
 
 
@@ -22,6 +24,7 @@ class UTC(datetime.tzinfo):
     """
     UTC timezone.
     """
+
     def utcoffset(self, _):
         return ZERO
 
@@ -35,7 +38,8 @@ class UTC(datetime.tzinfo):
         return "UTC"
 
     def __repr__(self):
-        return "<timezone: %s>" % self
+        return "<timezone: {}>".format(self)
+
 
 utc = UTC()
 
@@ -44,6 +48,7 @@ class LocalTimezone(datetime.tzinfo):
     """
     The current local timezone (according to the platform)
     """
+
     def utcoffset(self, dt):
         return LOCAL_DST_OFFSET if self._is_dst(dt) else LOCAL_STD_OFFSET
 
@@ -54,7 +59,19 @@ class LocalTimezone(datetime.tzinfo):
         return time.tzname[self._is_dst(dt)]
 
     def _is_dst(self, dt):
-        stamp = time.mktime((dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.weekday(), 0, 0))
+        stamp = time.mktime(
+            (
+                dt.year,
+                dt.month,
+                dt.day,
+                dt.hour,
+                dt.minute,
+                dt.second,
+                dt.weekday(),
+                0,
+                0,
+            )
+        )
         tt = time.localtime(stamp)
         return tt.tm_isdst > 0
 
@@ -64,6 +81,7 @@ class LocalTimezone(datetime.tzinfo):
     def __repr__(self):
         return "<timezone: %s>" % self
 
+
 local = LocalTimezone()
 
 
@@ -71,17 +89,21 @@ class FixedTimezone(datetime.tzinfo):
     """
     A fixed timezone for when a timezone is specified by a numerical offset and no dst information is available.
     """
-    __slots__ = ('offset', 'name',)
+
+    __slots__ = (
+        "offset",
+        "name",
+    )
 
     @classmethod
     def from_seconds(cls, seconds):
-        sign = '-' if seconds < 0 else ''
+        sign = "-" if seconds < 0 else ""
         minutes = abs(seconds // 60)
         hours = minutes // 60
         minutes %= 60
-        name = "%s%02d:%02d" % (sign, hours, minutes)
+        name = "{}{:02d}:{:02d}".format(sign, hours, minutes)
 
-        if sign == '-':
+        if sign == "-":
             hours *= -1
             minutes *= -1
 
@@ -89,12 +111,12 @@ class FixedTimezone(datetime.tzinfo):
 
     @classmethod
     def from_hours_minutes(cls, hours, minutes=0):
-        sign = '-' if hours < 0 else ''
+        sign = "-" if hours < 0 else ""
         hours = abs(hours)
         minutes = abs(minutes)
-        name = "%s%02d:%02d" % (sign, hours, minutes)
+        name = "{}{:02d}:{:02d}".format(sign, hours, minutes)
 
-        if sign == '-':
+        if sign == "-":
             hours *= -1
             minutes *= -1
 
@@ -102,19 +124,19 @@ class FixedTimezone(datetime.tzinfo):
 
     @classmethod
     def from_groups(cls, groups, default_timezone=utc):
-        tz = groups['timezone']
+        tz = groups["timezone"]
         if tz is None:
             return default_timezone
 
-        if tz in ('Z', 'GMT', 'UTC'):
+        if tz in ("Z", "GMT", "UTC"):
             return utc
 
-        sign = groups['tz_sign']
-        hours = int(groups['tz_hour'])
-        minutes = int(groups['tz_minute'] or 0)
-        name = "%s%02d:%02d" % (sign, hours, minutes)
+        sign = groups["tz_sign"]
+        hours = int(groups["tz_hour"])
+        minutes = int(groups["tz_minute"] or 0)
+        name = "{}{:02d}:{:02d}".format(sign, hours, minutes)
 
-        if sign == '-':
+        if sign == "-":
             hours = -hours
             minutes = -minutes
 
@@ -123,7 +145,7 @@ class FixedTimezone(datetime.tzinfo):
     def __init__(self, offset=None, name=None):
         super(FixedTimezone, self).__init__()
         self.offset = offset or ZERO
-        self.name = name or ''
+        self.name = name or ""
 
     def utcoffset(self, _):
         return self.offset
@@ -138,7 +160,7 @@ class FixedTimezone(datetime.tzinfo):
         return self.name
 
     def __repr__(self):
-        return "<timezone %r %r>" % (self.name, self.offset)
+        return "<timezone {!r} {!r}>".format(self.name, self.offset)
 
     def __eq__(self, other):
         return self.offset == other.offset
@@ -147,13 +169,13 @@ class FixedTimezone(datetime.tzinfo):
 
     def __getstate__(self):
         return {
-            'offset': self.offset,
-            'name': self.name,
+            "offset": self.offset,
+            "name": self.name,
         }
 
     def __setstate__(self, state):
-        self.offset = state.get('offset')
-        self.name = state.get('name')
+        self.offset = state.get("offset")
+        self.name = state.get("name")
 
 
 def get_tz_aware_dt(dt, assumed_tz=local):
@@ -186,14 +208,18 @@ def now_local():
 
 # Fallback for python 2.6
 if sys.version_info[0] == 2 and sys.version_info[1] == 6:
+
     def total_seconds(timedelta):
         """
         Backported implementation of total_seconds
         """
         return (
-            timedelta.microseconds + 0.0 +
-            (timedelta.seconds + timedelta.days * 24 * 3600)
+            timedelta.microseconds
+            + 0.0
+            + (timedelta.seconds + timedelta.days * 24 * 3600)
         )
+
+
 else:
     total_seconds = datetime.timedelta.total_seconds
 
@@ -202,17 +228,20 @@ UNIX_EPOCH = datetime.datetime(1970, 1, 1, tzinfo=utc)
 if six.PY3:
     to_timestamp = datetime.datetime.timestamp
 else:
+
     def to_timestamp(dt):
         return total_seconds((dt - UNIX_EPOCH))
 
 
 ISO8601_TIME_STRING_RE = re.compile(
     r"^(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})(\.(?P<microseconds>\d+))?"
-    r"(?P<timezone>Z|((?P<tz_sign>[-+])(?P<tz_hour>\d{2})(:(?P<tz_minute>\d{2}))?))?$")
+    r"(?P<timezone>Z|((?P<tz_sign>[-+])(?P<tz_hour>\d{2})(:(?P<tz_minute>\d{2}))?))?$"
+)
 ISO8601_DATETIME_STRING_RE = re.compile(
     r"^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})[tT\s]"
     r"(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})(\.(?P<microseconds>\d+))? ?"
-    r"(?P<timezone>Z|GMT|UTC|((?P<tz_sign>[-+])(?P<tz_hour>\d{2})(:?(?P<tz_minute>\d{2}))?))?$")
+    r"(?P<timezone>Z|GMT|UTC|((?P<tz_sign>[-+])(?P<tz_hour>\d{2})(:?(?P<tz_minute>\d{2}))?))?$"
+)
 
 
 def parse_iso_date_string(date_string):
@@ -223,7 +252,7 @@ def parse_iso_date_string(date_string):
         raise ValueError("Expected string")
 
     try:
-        return datetime.datetime.strptime(date_string, '%Y-%m-%d').date()
+        return datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
     except ValueError:
         raise ValueError("Expected ISO 8601 formatted date string.")
 
@@ -245,11 +274,11 @@ def parse_iso_time_string(time_string, default_timezone=utc):
     else:
         tz = FixedTimezone.from_groups(groups, default_timezone)
     return datetime.time(
-        int(groups['hour']),
-        int(groups['minute']),
-        int(groups['second']),
-        int(groups['microseconds'] or 0),
-        tz
+        int(groups["hour"]),
+        int(groups["minute"]),
+        int(groups["second"]),
+        int(groups["microseconds"] or 0),
+        tz,
     )
 
 
@@ -270,14 +299,14 @@ def parse_iso_datetime_string(datetime_string, default_timezone=utc):
     else:
         tz = FixedTimezone.from_groups(groups, default_timezone)
     return datetime.datetime(
-        int(groups['year']),
-        int(groups['month']),
-        int(groups['day']),
-        int(groups['hour']),
-        int(groups['minute']),
-        int(groups['second']),
-        int(groups['microseconds'] or 0),
-        tz
+        int(groups["year"]),
+        int(groups["month"]),
+        int(groups["day"]),
+        int(groups["hour"]),
+        int(groups["minute"]),
+        int(groups["second"]),
+        int(groups["microseconds"] or 0),
+        tz,
     )
 
 
@@ -292,8 +321,15 @@ def to_ecma_datetime_string(dt, default_timezone=local):
         else assumes the time value is utc.
     """
     dt = get_tz_aware_dt(dt, default_timezone).astimezone(utc)
-    return "%4i-%02i-%02iT%02i:%02i:%02i.%03iZ" % (
-        dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond / 1000)
+    return "{:4d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}.{:03d}Z".format(
+        dt.year,
+        dt.month,
+        dt.day,
+        dt.hour,
+        dt.minute,
+        dt.second,
+        dt.microsecond // 1000,
+    )
 
 
 def parse_http_datetime_string(datetime_string):
@@ -307,7 +343,26 @@ def parse_http_datetime_string(datetime_string):
     if not elements:
         raise ValueError("Expected ISO-1123 formatted datetime string.")
 
-    return datetime.datetime(*elements[:6], tzinfo=FixedTimezone.from_seconds(elements[-1]))
+    return datetime.datetime(
+        *elements[:6], tzinfo=FixedTimezone.from_seconds(elements[-1])
+    )
+
+
+HTTP_DAY_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+HTTP_MONTH = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+]
 
 
 def to_http_datetime_string(dt, default_timezone=local):
@@ -318,9 +373,13 @@ def to_http_datetime_string(dt, default_timezone=local):
     dt = get_tz_aware_dt(dt, default_timezone).astimezone(utc)
     timeval = time.mktime(dt.timetuple())
     now = time.localtime(timeval)
-    return '{0}, {1:02d} {2} {3:04d} {4:02d}:{5:02d}:{6:02d} {7}'.format(
-        ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][now[6]],
+    return "{0}, {1:02d} {2} {3:04d} {4:02d}:{5:02d}:{6:02d} {7}".format(
+        HTTP_DAY_OF_WEEK[now[6]],
         now[2],
-        ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now[1] - 1],
-        now[0], now[3], now[4], now[5], 'GMT')
+        HTTP_MONTH[now[1] - 1],
+        now[0],
+        now[3],
+        now[4],
+        now[5],
+        "GMT",
+    )

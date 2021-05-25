@@ -1,3 +1,9 @@
+1.X.X
+=====
+
+- Migrate string formatting from % to "".format
+- Add a Text block to XML Codec
+
 1.6.1
 =====
 

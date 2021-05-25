@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from odin import registration
 
-NON_FIELD_ERRORS = '__all__'
+NON_FIELD_ERRORS = "__all__"
 
 
 class ValidationError(Exception):
     """An error while validating data."""
+
     def __init__(self, message, code=None, params=None):
         """
         ValidationError can be passed any object that can be printed (usually
@@ -26,23 +27,25 @@ class ValidationError(Exception):
         # instance would result in this:
         # AttributeError: ValidationError instance has no attribute 'args'
         # See http://www.python.org/doc/current/tut/node10.html#handling
-        if hasattr(self, 'message_dict'):
+        if hasattr(self, "message_dict"):
             message_dict = self.message_dict
-            return "{%s}" % ', '.join("'%s': %r" % (key, message_dict[key]) for key in sorted(message_dict))
+            return "{%s}" % ", ".join(
+                "'%s': %r" % (key, message_dict[key]) for key in sorted(message_dict)
+            )
         return repr(self.messages)
 
     def __repr__(self):
-        return 'ValidationError(%s)' % self
+        return "ValidationError({})".format(self)
 
     @property
     def error_messages(self):
-        if hasattr(self, 'message_dict'):
+        if hasattr(self, "message_dict"):
             return self.message_dict
         else:
             return self.messages
 
     def update_error_dict(self, error_dict):
-        if hasattr(self, 'message_dict'):
+        if hasattr(self, "message_dict"):
             if error_dict:
                 for k, v in self.message_dict.items():
                     error_dict.setdefault(k, []).extend(v)
@@ -54,7 +57,7 @@ class ValidationError(Exception):
 
 
 def validation_error_handler(exception, field, errors):
-    if hasattr(exception, 'code') and exception.code in field.error_messages:
+    if hasattr(exception, "code") and exception.code in field.error_messages:
         message = field.error_messages[exception.code]
         if exception.params:
             message = message % exception.params
@@ -62,7 +65,10 @@ def validation_error_handler(exception, field, errors):
     else:
         errors.extend(exception.messages)
 
-registration.register_validation_error_handler(ValidationError, validation_error_handler)
+
+registration.register_validation_error_handler(
+    ValidationError, validation_error_handler
+)
 
 
 class ResourceException(ValidationError):
@@ -114,6 +120,7 @@ class TraversalError(Exception):
     """
     Exception raised during a traversal operation.
     """
+
     def __init__(self, path, *args, **kwargs):
         super(TraversalError, self).__init__(*args, **kwargs)
         self.path = path

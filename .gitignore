@@ -13,6 +13,7 @@ dist
 build
 _build
 .tox
+reports/xunit-result-eek.xml
 
 # IDE cruft
 .idea

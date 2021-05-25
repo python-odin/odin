@@ -7,13 +7,14 @@ from odin.fields import Field
 from odin.utils import value_in_choices, getmeta
 from odin.validators import EMPTY_VALUES
 
-__all__ = ('CompositeField', 'DictAs', 'ObjectAs', 'ListOf', 'ArrayOf', 'DictOf')
+__all__ = ("CompositeField", "DictAs", "ObjectAs", "ListOf", "ArrayOf", "DictOf")
 
 
 class CompositeField(Field):
     """
     The base class for composite (or fields that contain other resources) eg DictAs/ListOf fields.
     """
+
     def __init__(self, resource, use_container=False, **options):
         """
         Initialisation of a CompositeField.
@@ -25,13 +26,15 @@ class CompositeField(Field):
         :param options: Additional options passed to :py:class:`odin.fields.Field` super class.
 
         """
-        if not hasattr(resource, '_meta'):
-            raise TypeError("``%r`` is not a valid type for a related field." % resource)
+        if not hasattr(resource, "_meta"):
+            raise TypeError(
+                "{!r} is not a valid type for a related field.".format(resource)
+            )
         self.of = resource
         self.use_container = use_container
 
-        if not options.get('null', False):
-            options.setdefault('default', lambda: resource())
+        if not options.get("null", False):
+            options.setdefault("default", lambda: resource())
 
         super(CompositeField, self).__init__(**options)
 
@@ -42,7 +45,7 @@ class CompositeField(Field):
             return value
         if isinstance(value, dict):
             return create_resource_from_dict(value, getmeta(self.of).resource_name)
-        msg = self.error_messages['invalid'] % self.of
+        msg = self.error_messages["invalid"] % self.of
         raise exceptions.ValidationError(msg)
 
     def validate(self, value):
@@ -74,8 +77,9 @@ class DictAs(CompositeField):
     """
     Treat a dictionary as a Resource.
     """
+
     default_error_messages = {
-        'invalid': "Must be a dict of type ``%r``.",
+        "invalid": "Must be a dict of type ``%r``.",
     }
     data_type_name = "Dict as"
 
@@ -87,6 +91,7 @@ class DictAs(CompositeField):
     def key_to_python(self, key):
         pass  # Not required as keys are not used.
 
+
 ObjectAs = DictAs
 
 
@@ -94,15 +99,16 @@ class ListOf(CompositeField):
     """
     List of resources.
     """
+
     default_error_messages = {
-        'invalid': "Must be a list of ``%r`` objects.",
-        'null': "List cannot contain null entries.",
-        'empty': "List cannot be empty",
+        "invalid": "Must be a list of ``%r`` objects.",
+        "null": "List cannot contain null entries.",
+        "empty": "List cannot be empty",
     }
     data_type_name = "List of"
 
     def __init__(self, resource, empty=True, **options):
-        options.setdefault('default', list)
+        options.setdefault("default", list)
         super(ListOf, self).__init__(resource, **options)
         self.empty = empty
 
@@ -131,11 +137,11 @@ class ListOf(CompositeField):
 
             def process(val):
                 if val is None:
-                    raise exceptions.ValidationError(self.error_messages['null'])
+                    raise exceptions.ValidationError(self.error_messages["null"])
                 return super_to_python(val)
 
             return self._process_list(value, process)
-        msg = self.error_messages['invalid'] % self.of
+        msg = self.error_messages["invalid"] % self.of
         raise exceptions.ValidationError(msg)
 
     def validate(self, value):
@@ -146,7 +152,7 @@ class ListOf(CompositeField):
             self._process_list(value, super_validate)
 
         if (value is not None) and (not value) and (not self.empty):
-            raise exceptions.ValidationError(self.error_messages['empty'])
+            raise exceptions.ValidationError(self.error_messages["empty"])
 
     def __iter__(self):
         # This does nothing but it does prevent inspections from complaining.
@@ -166,6 +172,7 @@ class ListOf(CompositeField):
         """
         return int(key)
 
+
 ArrayOf = ListOf
 
 
@@ -173,16 +180,17 @@ class DictOf(CompositeField):
     """
     Dictionary of resources.
     """
+
     default_error_messages = {
-        'invalid': "Must be a dict of ``%r`` objects.",
-        'null': "Dict cannot contain null entries.",
-        'empty': "List cannot be empty",
-        'invalid_key': 'Key %r is not a valid choice.',
+        "invalid": "Must be a dict of ``%r`` objects.",
+        "null": "Dict cannot contain null entries.",
+        "empty": "List cannot be empty",
+        "invalid_key": "Key %r is not a valid choice.",
     }
     data_type_name = "Dict of"
 
     def __init__(self, resource, empty=True, key_choices=None, **options):
-        options.setdefault('default', dict)
+        options.setdefault("default", dict)
         super(DictOf, self).__init__(resource, **options)
         self.empty = empty
         self.key_choices = key_choices
@@ -193,7 +201,7 @@ class DictOf(CompositeField):
         key_choices = self.key_choices
         for key, value in six.iteritems(value_dict):
             if key_choices and not value_in_choices(key, key_choices):
-                msg = self.error_messages['invalid_key'] % value
+                msg = self.error_messages["invalid_key"] % value
                 raise exceptions.ValidationError(msg)
 
             try:
@@ -214,11 +222,13 @@ class DictOf(CompositeField):
 
             def process(val):
                 if val is None:
-                    raise exceptions.ValidationError(self.error_messages['null'], code='null')
+                    raise exceptions.ValidationError(
+                        self.error_messages["null"], code="null"
+                    )
                 return super_to_python(val)
 
             return self._process_dict(value, process)
-        msg = self.error_messages['invalid'] % self.of
+        msg = self.error_messages["invalid"] % self.of
         raise exceptions.ValidationError(msg)
 
     def validate(self, value):
@@ -229,7 +239,7 @@ class DictOf(CompositeField):
             self._process_dict(value, super_validate)
 
         if (value is not None) and (not value) and (not self.empty):
-            raise exceptions.ValidationError(self.error_messages['empty'], code='empty')
+            raise exceptions.ValidationError(self.error_messages["empty"], code="empty")
 
     def __iter__(self):
         # This does nothing but it does prevent inspections from complaining.
