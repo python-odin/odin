@@ -546,8 +546,7 @@ class ResourceBase(object):
             raise ValidationError(errors)
 
 
-@six.add_metaclass(ResourceType)
-class Resource(ResourceBase):
+class Resource(six.with_metaclass(ResourceType, ResourceBase)):
     pass
 
 
@@ -616,6 +615,75 @@ def create_resource_from_iter(
 R = TypeVar("R")
 
 
+def _resolve_type_from_resource(data, resource):
+    """
+    Resolve resource type from resource(s)
+
+    If a data type is supplied check it is correct.
+
+    """
+    resource_type = None
+
+    # Convert to single resource then resolve document type
+    if isinstance(resource, (tuple, list)):
+        resources = (resolve_resource_type(r) for r in resource)
+    else:
+        resources = [resolve_resource_type(resource)]
+
+    for resource_name, type_field in resources:
+        # See if the input includes a type field and check it's registered
+        document_resource_name = data.get(type_field, None)
+        if document_resource_name:
+            resource_type = registration.get_resource(document_resource_name)
+        else:
+            resource_type = registration.get_resource(resource_name)
+
+        if not resource_type:
+            raise exceptions.ResourceException(
+                "Resource {!r} is not registered.".format(
+                    document_resource_name or resource_name
+                )
+            )
+
+        if document_resource_name:
+            # Check resource types match or are inherited types
+            if (
+                resource_name == document_resource_name
+                or resource_name in getmeta(resource_type).parent_resource_names
+            ):
+                break  # We are done
+        else:
+            break
+
+    if not resource_type:
+        raise exceptions.ResourceException(
+            "Incoming resource does not match [{}]".format(
+                ", ".join(r for r, t in resources)
+            )
+        )
+
+    return resource_type
+
+
+def _resolve_type_from_data(data):
+    """
+    Resolve type entirely from data
+    """
+    # No resource specified, rely on type field
+    document_resource_name = data.pop(DEFAULT_TYPE_FIELD, None)
+    if not document_resource_name:
+        raise exceptions.ResourceException("Resource not defined.")
+
+    # Get an instance of a resource type
+    resource_type = registration.get_resource(document_resource_name)
+    if not resource_type:
+        raise exceptions.ResourceException(
+            "Resource {!r} is not registered.".format(document_resource_name)
+        )
+
+    return resource_type
+
+
 def create_resource_from_dict(
     d, resource=None, full_clean=True, copy_dict=True, default_to_not_provided=False
 ):
@@ -640,60 +708,14 @@ def create_resource_from_dict(
         d = d.copy()
 
     if resource:
-        resource_type = None
-
-        # Convert to single resource then resolve document type
-        if isinstance(resource, (tuple, list)):
-            resources = (resolve_resource_type(r) for r in resource)
-        else:
-            resources = [resolve_resource_type(resource)]
-
-        for resource_name, type_field in resources:
-            # See if the input includes a type field  and check it's registered
-            document_resource_name = d.get(type_field, None)
-            if document_resource_name:
-                resource_type = registration.get_resource(document_resource_name)
-            else:
-                resource_type = registration.get_resource(resource_name)
-
-            if not resource_type:
-                raise exceptions.ResourceException(
-                    "Resource {!r} is not registered.".format(document_resource_name)
-                    or resource_name
-                )
-
-            if document_resource_name:
-                # Check resource types match or are inherited types
-                if (
-                    resource_name == document_resource_name
-                    or resource_name in getmeta(resource_type).parent_resource_names
-                ):
-                    break  # We are done
-            else:
-                break
-
-        if not resource_type:
-            raise exceptions.ResourceException(
-                "Incoming resource does not match [{}]".format(
-                    ", ".join(r for r, t in resources)
-                )
-            )
+        resource_type = _resolve_type_from_resource(d, resource)
     else:
-        # No resource specified, relay on type field
-        document_resource_name = d.pop(DEFAULT_TYPE_FIELD, None)
-        if not document_resource_name:
-            raise exceptions.ResourceException("Resource not defined.")
-
-        # Get an instance of a resource type
-        resource_type = registration.get_resource(document_resource_name)
-        if not resource_type:
-            raise exceptions.ResourceException(
-                "Resource {!r} is not registered.".format(document_resource_name)
-            )
+        resource_type = _resolve_type_from_data(d)
 
     attrs = []
     errors = {}
     meta = getmeta(resource_type)
+    # Extract field attributes
     for f in meta.init_fields:
         value = d.pop(f.name, NotProvided)
         if value is NotProvided:
@@ -706,14 +728,21 @@ def create_resource_from_dict(
                 errors[f.name] = ve.error_messages
         attrs.append(value)
 
+    # Stop if there are any errors
     if errors:
         raise ValidationError(errors)
 
+    # Create the new instance
     new_resource = resource_type(*attrs)
+
     if d:
+        # If there are any extra attributes let the resource handle them
         new_resource.extra_attrs(d)
+
     if full_clean:
+        # Validate the resource in full
         new_resource.full_clean()
+
     return new_resource
 
 
