@@ -98,7 +98,11 @@ def dump(
 
         elif isinstance(field, TextField):
             if value is not None:
-                fp.write("{}{}".format(value, line_ending))
+                fp.write(
+                    "{}{}".format(
+                        saxutils.escape(_serialize_to_string(value)), line_ending
+                    )
+                )
 
         else:
             fp.write(
