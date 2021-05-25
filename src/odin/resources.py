@@ -546,8 +546,7 @@ class ResourceBase(object):
             raise ValidationError(errors)
 
 
-@six.add_metaclass(ResourceType)
-class Resource(ResourceBase):
+class Resource(six.with_metaclass(ResourceType, ResourceBase)):
     pass
 
 
