@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import copy
 import six
-
-# Typing imports
-from typing import TypeVar, Dict, Any  # noqa
+from typing import TypeVar, Dict, Any, Type  # noqa
 
 from odin import bases
 from odin import exceptions, registration
@@ -687,7 +685,7 @@ def _resolve_type_from_data(data):
 def create_resource_from_dict(
     d, resource=None, full_clean=True, copy_dict=True, default_to_not_provided=False
 ):
-    # type: (Dict[str, Any], R, bool, bool, bool) -> Instance[R]
+    # type: (Dict[str, Any], Type[R], bool, bool, bool) -> R
     """
     Create a resource from a dict.
 
