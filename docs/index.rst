@@ -44,6 +44,7 @@ Project Links
 
 * `Project home <https://github.com/python-odin/odin>`_
 * `Issue/Bug tracker <https://github.com/python-odin/odin/issues>`_
+* :doc:`change-history`
 
 Indices and tables
 ******************
