@@ -1,3 +1,10 @@
+1.7.0
+=====
+
+- Migrate from collections.Iterable to typeing.Iterable to remove a warning
+- Add user defined metadata to Resource.Meta object
+- Add a reserved word guard, starting with fields (using fields causes clean_fields to go into a infinite recursion loop)
+
 1.6.2
 =====
 
