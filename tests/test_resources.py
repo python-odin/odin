@@ -7,8 +7,9 @@ from odin.resources import (
     ResourceOptions,
     build_object_graph,
     create_resource_from_dict,
+    Resource,
 )
-from odin.exceptions import ValidationError
+from odin.exceptions import ValidationError, ResourceDefError
 from odin.utils import getmeta
 from .resources import Book, BookProxy, Library, Subscriber
 
@@ -218,6 +219,12 @@ class TestMetaOptions(object):
 
         with pytest.raises(TypeError):
             target.contribute_to_class(NewResource, "etc")
+
+    def test_use_a_reserved_field(self):
+        with pytest.raises(ResourceDefError, match="fields"):
+
+            class InvalidFieldsResource(Resource):
+                fields = odin.StringField()
 
 
 class TestConstructionMethods(object):
