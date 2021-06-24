@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import collections
 import six
+import typing
 from odin import bases
 from odin import registration
 from odin.fields import NotProvided
@@ -624,7 +625,7 @@ class MappingBase(object):
                 )
 
         if to_list:
-            if isinstance(to_values, collections.Iterable):
+            if isinstance(to_values, typing.Iterable):
                 to_values = (list(to_values),)
         else:
             to_values = force_tuple(to_values)
