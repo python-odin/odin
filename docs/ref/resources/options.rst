@@ -84,3 +84,15 @@ Meta Options
             class Meta:
                 field_sorting = sort_by_name
 
+
+``user_data``
+    Additional data that can be added to metadata. This can be used to provide additional
+    parameters beyond those supported by odin for a custom application use-case.
+
+    For example::
+
+        class MyResource(Resource):
+            class Meta:
+                user_data = {
+                    "custom": "my-custom-value",
+                }

@@ -3,8 +3,14 @@ from __future__ import absolute_import
 import pytest
 import odin
 from odin.fields import NotProvided
-from odin.resources import ResourceOptions, build_object_graph, create_resource_from_dict
-from odin.exceptions import ValidationError
+from odin.resources import (
+    ResourceOptions,
+    build_object_graph,
+    create_resource_from_dict,
+    Resource,
+)
+from odin.exceptions import ValidationError, ResourceDefError
+from odin.utils import getmeta
 from .resources import Book, BookProxy, Library, Subscriber
 
 
@@ -64,6 +70,17 @@ class ResourceF(ResourceE):
     aaa = odin.StringField()
 
 
+class ResourceG(odin.Resource):
+    """
+    Test with user metadata
+    """
+
+    class Meta:
+        user_data = {"custom": "my-custom-metadata"}
+
+    name = odin.StringField()
+
+
 class TestResource(object):
     def test_constructor_kwargs_only(self):
         r = Author(name="Foo")
@@ -81,7 +98,9 @@ class TestResource(object):
     def test_constructor_args_excess(self):
         with pytest.raises(TypeError) as ex:
             Author("Foo", "Australia", 42)
-        assert "This resource takes 2 positional arguments but 3 where given." == str(ex.value)
+        assert "This resource takes 2 positional arguments but 3 where given." == str(
+            ex.value
+        )
 
     def test_constructor_args_and_kwargs(self):
         r = Author("Foo", country="Australia")
@@ -121,7 +140,7 @@ class TestResource(object):
         try:
             r.clean_fields()
         except ValidationError as ve:
-            assert ["What are ya?"] == ve.message_dict['country']
+            assert ["What are ya?"] == ve.message_dict["country"]
         else:
             raise AssertionError("ValidationError not raised.")
 
@@ -131,7 +150,7 @@ class TestResource(object):
         try:
             r.clean_fields()
         except ValidationError as ve:
-            assert ["This field cannot be null."] == ve.message_dict['name']
+            assert ["This field cannot be null."] == ve.message_dict["name"]
         else:
             raise AssertionError("ValidationError not raised.")
 
@@ -141,21 +160,21 @@ class TestResource(object):
         try:
             r.full_clean()
         except ValidationError as ve:
-            assert ["No no no no"] == ve.message_dict['__all__']
+            assert ["No no no no"] == ve.message_dict["__all__"]
         else:
             raise AssertionError("ValidationError not raised.")
 
     def test_full_clean_exclude(self):
         r = Author(name="Bruce", country="England")
 
-        r.full_clean(exclude=('country',))
+        r.full_clean(exclude=("country",))
 
         assert "Bruce" == r.name
         assert "England" == r.country
 
     # Fix for #11
     def test_multiple_abstract_namespaces(self):
-        assert 'example.ResourceC' == ResourceC._meta.resource_name
+        assert "example.ResourceC" == ResourceC._meta.resource_name
 
     def test_parents_1(self):
         assert [] == ResourceA._meta.parents
@@ -164,16 +183,28 @@ class TestResource(object):
         assert [ResourceA, ResourceB, ResourceC] == ResourceD._meta.parents
 
     def test_field_sorting(self):
-        assert ['c', 'b', 'a'] == [f.name for f in ResourceC._meta.fields]
+        assert ["c", "b", "a"] == [f.name for f in ResourceC._meta.fields]
 
     def test_field_sorting__enabled(self):
-        assert ['a', 'b', 'c', 'd'] == [f.name for f in ResourceD._meta.fields]
+        assert ["a", "b", "c", "d"] == [f.name for f in ResourceD._meta.fields]
 
     def test_field_sorting__callable(self):
-        assert ['a', 'aa', 'b', 'c', 'd'] == [f.name for f in ResourceE._meta.fields]
+        assert ["a", "aa", "b", "c", "d"] == [f.name for f in ResourceE._meta.fields]
 
     def test_field_sorting__inherited(self):
-        assert ['a', 'aa', 'aaa', 'b', 'c', 'd'] == [f.name for f in ResourceF._meta.fields]
+        assert ["a", "aa", "aaa", "b", "c", "d"] == [
+            f.name for f in ResourceF._meta.fields
+        ]
+
+    def test_user_data__where_not_supplied(self):
+        assert getmeta(ResourceA).user_data is None
+
+    def test_user_data__where_supplied_on_type(self):
+        assert getmeta(ResourceG).user_data == {"custom": "my-custom-metadata"}
+
+    def test_user_data__where_supplied_on_instance(self):
+        target = ResourceG(name="Ludwig")
+        assert getmeta(target).user_data == {"custom": "my-custom-metadata"}
 
 
 class TestMetaOptions(object):
@@ -187,128 +218,172 @@ class TestMetaOptions(object):
         target = ResourceOptions(Meta)
 
         with pytest.raises(TypeError):
-            target.contribute_to_class(NewResource, 'etc')
+            target.contribute_to_class(NewResource, "etc")
+
+    def test_use_a_reserved_field(self):
+        with pytest.raises(ResourceDefError, match="fields"):
+
+            class InvalidFieldsResource(Resource):
+                fields = odin.StringField()
 
 
 class TestConstructionMethods(object):
     def test_build_object_graph_empty_dict_no_clean(self):
         book = build_object_graph({}, Book, full_clean=False)
 
-        assert dict(
-            title=None,
-            isbn=None,
-            num_pages=None,
-            rrp=20.4,
-            fiction=None,
-            genre=None,
-            published=None,
-            authors=None,
-            publisher=None
-        ) == book.to_dict()
+        assert (
+            dict(
+                title=None,
+                isbn=None,
+                num_pages=None,
+                rrp=20.4,
+                fiction=None,
+                genre=None,
+                published=None,
+                authors=None,
+                publisher=None,
+            )
+            == book.to_dict()
+        )
 
     def test_build_object_graph_empty_dict(self):
         with pytest.raises(ValidationError) as ctx:
             build_object_graph({}, Book)
 
-        assert dict(
-            title=['This field cannot be null.'],
-            isbn=['This field cannot be null.'],
-            num_pages=['This field cannot be null.'],
-            fiction=['This field cannot be null.'],
-            genre=['This field cannot be null.'],
-            published=['This field cannot be null.'],
-            authors=['List cannot contain null entries.'],
-        ) == ctx.value.error_messages
+        assert (
+            dict(
+                title=["This field cannot be null."],
+                isbn=["This field cannot be null."],
+                num_pages=["This field cannot be null."],
+                fiction=["This field cannot be null."],
+                genre=["This field cannot be null."],
+                published=["This field cannot be null."],
+                authors=["List cannot contain null entries."],
+            )
+            == ctx.value.error_messages
+        )
 
     def test_build_object_graph_from_list(self):
-        books = build_object_graph([dict(
-            title="Book1"
-        ), dict(
-            title="Book2"
-        )], Book, full_clean=False)
+        books = build_object_graph(
+            [dict(title="Book1"), dict(title="Book2")], Book, full_clean=False
+        )
 
-        assert [dict(
-            title="Book1",
-            isbn=None,
-            num_pages=None,
-            rrp=20.4,
-            fiction=None,
-            genre=None,
-            published=None,
-            authors=None,
-            publisher=None
-        ), dict(
-            title="Book2",
-            isbn=None,
-            num_pages=None,
-            rrp=20.4,
-            fiction=None,
-            genre=None,
-            published=None,
-            authors=None,
-            publisher=None
-        )] == [book.to_dict() for book in books]
+        assert [
+            dict(
+                title="Book1",
+                isbn=None,
+                num_pages=None,
+                rrp=20.4,
+                fiction=None,
+                genre=None,
+                published=None,
+                authors=None,
+                publisher=None,
+            ),
+            dict(
+                title="Book2",
+                isbn=None,
+                num_pages=None,
+                rrp=20.4,
+                fiction=None,
+                genre=None,
+                published=None,
+                authors=None,
+                publisher=None,
+            ),
+        ] == [book.to_dict() for book in books]
 
     def test_build_nested_objects(self):
         subscribers = [
-            {'name': 'John Smith', 'address': 'Oak Lane 1234'},
-            {'name': 'Johnny Smith', 'address': 'Oak Lane 1235'}]
+            {"name": "John Smith", "address": "Oak Lane 1234"},
+            {"name": "Johnny Smith", "address": "Oak Lane 1235"},
+        ]
 
-        library = {
-            'name': 'John Smith Library',
-            'subscribers': subscribers
-        }
+        library = {"name": "John Smith Library", "subscribers": subscribers}
 
-        expected = sorted(build_object_graph(subscribers, resource=Subscriber, full_clean=False), key=lambda s: s.name)
-        actual = sorted(build_object_graph(library, resource=Library, full_clean=False).subscribers, key=lambda s: s.name)
+        expected = sorted(
+            build_object_graph(subscribers, resource=Subscriber, full_clean=False),
+            key=lambda s: s.name,
+        )
+        actual = sorted(
+            build_object_graph(library, resource=Library, full_clean=False).subscribers,
+            key=lambda s: s.name,
+        )
 
         assert actual == expected
 
     def test_build_nested_objects_with_polymorphism(self):
-        books = [{'title': "Book1", "isbn": "abc-123", 'num_pages': 1, 'rrp': 20.4, 'fiction': True, 'genre': 'sci-fi', 'published': [],
-                  'authors': [], 'publisher': None, '$': 'tests.resources.Book'},
-                 {'title': "Book2", "isbn": "def-456", 'num_pages': 1, 'rrp': 20.4, 'fiction': True, 'genre': 'sci-fi', 'published': [],
-                  'authors': [], 'publisher': None, '$': 'tests.resources.Book'}]
+        books = [
+            {
+                "title": "Book1",
+                "isbn": "abc-123",
+                "num_pages": 1,
+                "rrp": 20.4,
+                "fiction": True,
+                "genre": "sci-fi",
+                "published": [],
+                "authors": [],
+                "publisher": None,
+                "$": "tests.resources.Book",
+            },
+            {
+                "title": "Book2",
+                "isbn": "def-456",
+                "num_pages": 1,
+                "rrp": 20.4,
+                "fiction": True,
+                "genre": "sci-fi",
+                "published": [],
+                "authors": [],
+                "publisher": None,
+                "$": "tests.resources.Book",
+            },
+        ]
 
-        library = {
-            'name': 'John Smith Library',
-            'books': books
-        }
+        library = {"name": "John Smith Library", "books": books}
 
-        expected = sorted(build_object_graph(books, full_clean=False), key=lambda s: s.title)
-        actual = sorted(build_object_graph(library, resource=Library, full_clean=False).books, key=lambda s: s.title)
+        expected = sorted(
+            build_object_graph(books, full_clean=False), key=lambda s: s.title
+        )
+        actual = sorted(
+            build_object_graph(library, resource=Library, full_clean=False).books,
+            key=lambda s: s.title,
+        )
 
         assert actual == expected
 
     def test_create_resource_from_dict_with_default_to_not_supplied(self):
-        book = create_resource_from_dict({
-            "title": "Foo",
-            "num_pages": 42
-        }, Book, full_clean=False, default_to_not_provided=True)
+        book = create_resource_from_dict(
+            {"title": "Foo", "num_pages": 42},
+            Book,
+            full_clean=False,
+            default_to_not_provided=True,
+        )
 
-        assert dict(
-            title="Foo",
-            isbn=NotProvided,
-            num_pages=42,
-            rrp=NotProvided,
-            fiction=NotProvided,
-            genre=NotProvided,
-            published=NotProvided,
-            authors=NotProvided,
-            publisher=NotProvided
-        ) == book.to_dict()
+        assert (
+            dict(
+                title="Foo",
+                isbn=NotProvided,
+                num_pages=42,
+                rrp=NotProvided,
+                fiction=NotProvided,
+                genre=NotProvided,
+                published=NotProvided,
+                authors=NotProvided,
+                publisher=NotProvided,
+            )
+            == book.to_dict()
+        )
 
     def test_create_resource_from_dict__with_proxy(self):
-        book = create_resource_from_dict({
-            "title": "Foo",
-            "num_pages": 42,
-            "rrp": 10000.99,
-            "fiction": True
-        }, BookProxy, full_clean=False, default_to_not_provided=True)
+        book = create_resource_from_dict(
+            {"title": "Foo", "num_pages": 42, "rrp": 10000.99, "fiction": True},
+            BookProxy,
+            full_clean=False,
+            default_to_not_provided=True,
+        )
 
-        assert dict(
-            title="Foo",
-            isbn=NotProvided,
-            num_pages=42,
-            rrp=20.4,
-        ) == book.to_dict()
+        assert (
+            dict(title="Foo", isbn=NotProvided, num_pages=42, rrp=20.4,)
+            == book.to_dict()
+        )

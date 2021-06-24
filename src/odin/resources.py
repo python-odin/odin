@@ -5,7 +5,7 @@ from typing import TypeVar, Dict, Any, Type  # noqa
 
 from odin import bases
 from odin import exceptions, registration
-from odin.exceptions import ValidationError
+from odin.exceptions import ValidationError, ResourceDefError
 from odin.fields import NotProvided
 from odin.utils import (
     lazy_property,
@@ -16,6 +16,11 @@ from odin.utils import (
 )
 
 DEFAULT_TYPE_FIELD = "$"
+
+# Set of field names that cannot be used
+RESERVED_FIELD_NAMES = {
+    "fields",  # Causes a infinite-recursion with clean_fields being a builtin method
+}
 
 
 class ResourceOptions(object):
@@ -31,6 +36,7 @@ class ResourceOptions(object):
         "key_field_name",
         "key_field_names",
         "field_sorting",
+        "user_data",
     )
 
     def __init__(self, meta):
@@ -51,6 +57,7 @@ class ResourceOptions(object):
         self.type_field = DEFAULT_TYPE_FIELD
         self.key_field_names = None
         self.field_sorting = NotProvided
+        self.user_data = None
 
         self._cache = {}
 
@@ -110,6 +117,11 @@ class ResourceOptions(object):
         """
         Dynamically add a field.
         """
+        if field.attname in RESERVED_FIELD_NAMES:
+            raise ResourceDefError(
+                "`{}` is a reserved name. Use the `name` argument to specify "
+                "the name used for serialisation.".format(field.attname)
+            )
         self.fields.append(field)
         if field.key:
             self._add_key_field(field)
