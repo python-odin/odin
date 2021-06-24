@@ -31,6 +31,7 @@ class ResourceOptions(object):
         "key_field_name",
         "key_field_names",
         "field_sorting",
+        "user_data",
     )
 
     def __init__(self, meta):
@@ -51,6 +52,7 @@ class ResourceOptions(object):
         self.type_field = DEFAULT_TYPE_FIELD
         self.key_field_names = None
         self.field_sorting = NotProvided
+        self.user_data = None
 
         self._cache = {}
 
