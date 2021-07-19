@@ -7,8 +7,8 @@ from sphinx.ext.autodoc import Documenter, ModuleLevelDocumenter, bool_option
 
 
 def reference_to(obj):
-    if hasattr(obj, '_meta'):
-        return ":py:class:`%s`" % getmeta(obj).name
+    if hasattr(obj, "_meta"):
+        return u":py:class:`{}`".format(getmeta(obj).name)
     return obj
 
 
@@ -28,9 +28,10 @@ class ResourceDocumenter(ModuleLevelDocumenter):
     To select API form use the *include_virtual* option.
 
     """
-    objtype = 'odin-resource'
-    directivetype = 'class'
-    content_indent = ''
+
+    objtype = "odin-resource"
+    directivetype = "class"
+    content_indent = ""
 
     option_spec = dict(
         include_virtual=bool_option,
@@ -42,23 +43,23 @@ class ResourceDocumenter(ModuleLevelDocumenter):
 
     @classmethod
     def can_document_member(cls, member, *_):
-        return isinstance(member, ResourceBase)
+        return isinstance(member, type) and issubclass(member, ResourceBase)
 
     def add_directive_header(self, _):
-        domain = getattr(self, 'domain', 'py')
-        directive = getattr(self, 'directivetype', self.objtype)
+        domain = getattr(self, "domain", "py")
+        directive = getattr(self, "directivetype", self.objtype)
         source_name = self.get_sourcename()
 
-        if self.options.get('api_documentation'):
+        if self.options.get("api_documentation"):
             meta = getmeta(self.object)
             name = meta.resource_name
         else:
             name = self.format_name()
 
-        self.add_line(u'.. %s:%s:: %s' % (domain, directive, name), source_name)
+        self.add_line(u".. {}:{}:: {}".format(domain, directive, name), source_name)
 
         if self.options.noindex:
-            self.add_line(u'   :noindex:', source_name)
+            self.add_line(u"   :noindex:", source_name)
 
     def build_field_triple(self, field):
         """
@@ -73,37 +74,40 @@ class ResourceDocumenter(ModuleLevelDocumenter):
             details.append(field.doc_text)
 
         if field.has_default():
-            details.append(u"\n\nDefault value: %s\n" % reference_to(field.get_default()))
+            details.append(
+                u"\n\nDefault value: {}\n".format(reference_to(field.get_default()))
+            )
 
-        if not self.options.get('hide_choices') and field.choices:
+        if not self.options.get("hide_choices") and field.choices_doc_text:
             details.append(u"\n\nChoices:\n")
             for value, label in field.choices_doc_text:
-                details.append("* %s - %s" % (value, label))
+                details.append(u"* {} - {}".format(value, label))
 
-        if self.options.get('include_validators') and field.validators:
+        if self.options.get("include_validators") and field.validators:
             details.append(u"\n\nValidation rules:\n")
             for validator in field.validators:
-                details.append(u"* %s" % validator)
+                details.append(u"* {}".format(validator))
 
         # Generate the name of the type this field represents
         type_name = field.data_type_name
-        max_length = getattr(field, 'max_length', None)
+        max_length = getattr(field, "max_length", None)
         if max_length:
-            type_name = "%s [%s]" % (type_name, max_length)
+            type_name = u"{} [{}]".format(type_name, max_length)
         if callable(type_name):
             type_name = type_name(field)
         if isinstance(field, odin.CompositeField):
-            type_name = "%s %s" % (type_name, reference_to(field.of))
+            type_name = u"{} {}".format(type_name, reference_to(field.of))
 
         return (
-            "*%s*" % field.name if field.null else field.name,  # Name
-            reference_to(type_name or "Unknown"),  # Data-type
-            '\n'.join(details).split('\n')  # Details
+            u"*{}*".format(field.name) if field.null else field.name,  # Name
+            reference_to(type_name or u"Unknown"),  # Data-type
+            u"\n".join(details).split(u"\n"),  # Details
         )
 
     def document_members(self, all_members=False):
         data_table = [
-            self.build_field_triple(f) for f in field_iter(self.object, self.options.include_virtual)
+            self.build_field_triple(f)
+            for f in field_iter(self.object, self.options.include_virtual)
         ]
 
         # Calculate table column widths
@@ -118,29 +122,36 @@ class ResourceDocumenter(ModuleLevelDocumenter):
         data_type_len += 2  # Padding
         details_len += 2  # Padding
 
-        def add_separator(char='-'):
-            self.add_line("+%s+%s+%s+" % (
-                char * name_len,
-                char * data_type_len,
-                char * details_len
-            ), '<odin_sphinx>')
+        def add_separator(char="-"):
+            self.add_line(
+                u"+{}+{}+{}+".format(
+                    char * name_len, char * data_type_len, char * details_len
+                ),
+                "<odin_sphinx>",
+            )
 
         def add_row_line(name, data_type, details):
-            self.add_line("| %s%s | %s%s | %s%s |" % (
-                name, ' ' * (name_len - len(name) - 2),
-                data_type, ' ' * (data_type_len - len(data_type) - 2),
-                details, ' ' * (details_len - len(details) - 2),
-            ), '<odin_sphinx>')
+            self.add_line(
+                u"| {}{} | {}{} | {}{} |".format(
+                    name,
+                    " " * (name_len - len(name) - 2),
+                    data_type,
+                    " " * (data_type_len - len(data_type) - 2),
+                    details,
+                    " " * (details_len - len(details) - 2),
+                ),
+                "<odin_sphinx>",
+            )
 
         def add_row(name, data_type, details):
             add_row_line(name, data_type, details.pop(0))
             for line in details:
-                add_row_line('', '', line)
+                add_row_line("", "", line)
 
         # Generate table
         add_separator()
         add_row("Name", "Data type", ["Details"])
-        add_separator('=')
+        add_separator("=")
         for row in data_table:
             add_row(*row)
             add_separator()
