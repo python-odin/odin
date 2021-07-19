@@ -48,6 +48,7 @@ ply = {version = "*", optional = true }
 mock = "*"
 pytest = "*"
 pytest-cov = "*"
+sphinx = "*"
 
 [tool.poetry.extras]
 yaml = ["pyyaml"]
