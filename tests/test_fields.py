@@ -7,7 +7,12 @@ from odin.fields import *
 from odin.fields import Field, TimeStampField, NotProvided
 from odin.datetimeutil import utc, FixedTimezone
 from odin.fields.virtual import VirtualField
-from odin.validators import MinValueValidator, MaxValueValidator, MaxLengthValidator, RegexValidator
+from odin.validators import (
+    MinValueValidator,
+    MaxValueValidator,
+    MaxLengthValidator,
+    RegexValidator,
+)
 from odin.exceptions import ValidationError
 
 
@@ -16,8 +21,8 @@ class ObjectValue(object):
 
 
 class ValidatorTest(object):
-    message = 'Default message'
-    code = 'test_code'
+    message = "Default message"
+    code = "test_code"
 
     def __init__(self, fail, *params):
         self.fail = fail
@@ -25,7 +30,9 @@ class ValidatorTest(object):
 
     def __call__(self, value):
         if self.fail:
-            raise ValidationError(code=self.code, message=self.message, params=self.params)
+            raise ValidationError(
+                code=self.code, message=self.message, params=self.params
+            )
 
 
 class FieldTest(Field):
@@ -44,23 +51,20 @@ class TestField(object):
         target = FieldTest()
 
         assert {
-                   'invalid_choice': 'Value %r is not a valid choice.',
-                   'null': 'This field cannot be null.',
-                   'required': 'This field is required.',
-               } == target.error_messages
+            "invalid_choice": "Value %r is not a valid choice.",
+            "null": "This field cannot be null.",
+            "required": "This field is required.",
+        } == target.error_messages
 
     def test_error_messages_override_add(self):
-        target = FieldTest(error_messages={
-            'null': 'Override',
-            'other': 'Other Value',
-        })
+        target = FieldTest(error_messages={"null": "Override", "other": "Other Value",})
 
         assert {
-                   'invalid_choice': 'Value %r is not a valid choice.',
-                   'null': 'Override',
-                   'required': 'This field is required.',
-                   'other': 'Other Value',
-               } == target.error_messages
+            "invalid_choice": "Value %r is not a valid choice.",
+            "null": "Override",
+            "required": "This field is required.",
+            "other": "Other Value",
+        } == target.error_messages
 
     def test_set_attributes_from_name(self):
         target = FieldTest()
@@ -89,14 +93,17 @@ class TestField(object):
         assert "init Verbose Name" == target.verbose_name
         assert "init Verbose Names" == target.verbose_name_plural
 
-    @pytest.mark.parametrize("value, expected",(
+    @pytest.mark.parametrize(
+        "value, expected",
+        (
             (None, None),
             ("", ""),
             ("abc", "abc"),
             (1, "1"),
             (True, "True"),
             (False, "False"),
-    ))
+        ),
+    )
     def test_as_string(self, value, expected):
         target = FieldTest()
 
@@ -105,12 +112,14 @@ class TestField(object):
         assert actual == expected
 
     def test_choice_doc_test(self):
-        target = FieldTest(choices=(
-            ("a", "A Value"),
-            ("b", "B Value"),
-            ("c", "C Value"),
-            ("d", "D Value"),
-        ))
+        target = FieldTest(
+            choices=(
+                ("a", "A Value"),
+                ("b", "B Value"),
+                ("c", "C Value"),
+                ("d", "D Value"),
+            )
+        )
 
         assert target.choices_doc_text == target.choices
 
@@ -164,23 +173,28 @@ class TestField(object):
         assert field.name == target_copy.name
 
     def test_run_validators_and_override_validator_message(self):
-        target = FieldTest(error_messages={'test_code': 'Override message'}, validators=[ValidatorTest(True)])
+        target = FieldTest(
+            error_messages={"test_code": "Override message"},
+            validators=[ValidatorTest(True)],
+        )
 
         try:
             target.run_validators("Placeholder")
         except ValidationError as ve:
-            assert 'Override message' == ve.messages[0]
+            assert "Override message" == ve.messages[0]
         else:
             raise AssertionError("Validation Error not raised.")
 
     def test_run_validators_and_override_validator_message_with_params(self):
-        target = FieldTest(error_messages={'test_code': 'Override message: %s'},
-                           validators=[ValidatorTest(True, "123")])
+        target = FieldTest(
+            error_messages={"test_code": "Override message: %s"},
+            validators=[ValidatorTest(True, "123")],
+        )
 
         try:
             target.run_validators("Placeholder")
         except ValidationError as ve:
-            assert ['Override message: 123'] == ve.messages
+            assert ["Override message: 123"] == ve.messages
         else:
             raise AssertionError("Validation Error not raised.")
 
@@ -189,13 +203,13 @@ class TestField(object):
         pytest.raises(NotImplementedError, target.to_python, "Anything...")
 
     def test_clean_uses_default_if_value_is_not_provided_is_true(self):
-        target = FieldTest(use_default_if_not_provided=True, default='foo')
+        target = FieldTest(use_default_if_not_provided=True, default="foo")
         actual = target.clean(NotProvided)
-        assert 'foo' == actual
+        assert "foo" == actual
 
     def test_clean_uses_default_if_value_is_not_provided_is_false(self):
         # Need to allow None as the if use_default_if_not_provided is false NOT_PROVIDED evaluates to None.
-        target = FieldTest(use_default_if_not_provided=False, default='foo', null=True)
+        target = FieldTest(use_default_if_not_provided=False, default="foo", null=True)
         actual = target.clean(NotProvided)
         assert actual is None
 
@@ -245,7 +259,9 @@ class TestFields(object):
         for v in validators:
             if isinstance(v, validatorClass):
                 return
-        raise AssertionError("Validator %r was not found in list of validators." % validatorClass)
+        raise AssertionError(
+            "Validator %r was not found in list of validators." % validatorClass
+        )
 
     def assertValidatorNotIn(self, validatorClass, validators):
         """
@@ -255,61 +271,71 @@ class TestFields(object):
         """
         for v in validators:
             if isinstance(v, validatorClass):
-                raise AssertionError("Validator %r was found in list of validators." % validatorClass)
+                raise AssertionError(
+                    "Validator %r was found in list of validators." % validatorClass
+                )
 
     # BooleanField ############################################################
 
-    @pytest.mark.parametrize(('field', 'value', 'actual'), (
+    @pytest.mark.parametrize(
+        ("field", "value", "actual"),
+        (
             (BooleanField(), True, True),
             (BooleanField(), 1, True),
-            (BooleanField(), 'Yes', True),
-            (BooleanField(), 'true', True),
-            (BooleanField(), 'T', True),
-            (BooleanField(), '1', True),
-            (BooleanField(), 'TRUE', True),
+            (BooleanField(), "Yes", True),
+            (BooleanField(), "true", True),
+            (BooleanField(), "T", True),
+            (BooleanField(), "1", True),
+            (BooleanField(), "TRUE", True),
             (BooleanField(), False, False),
             (BooleanField(), 0, False),
-            (BooleanField(), 'No', False),
-            (BooleanField(), 'false', False),
-            (BooleanField(), 'FALSE', False),
-            (BooleanField(), 'F', False),
-            (BooleanField(), '0', False),
+            (BooleanField(), "No", False),
+            (BooleanField(), "false", False),
+            (BooleanField(), "FALSE", False),
+            (BooleanField(), "F", False),
+            (BooleanField(), "0", False),
             (BooleanField(null=True), None, None),
-    ))
+        ),
+    )
     def test_booleanfield_success(self, field, value, actual):
         assert field.clean(value) == actual
 
-    @pytest.mark.parametrize(('field', 'value'), (
-            (BooleanField(), None),
-            (BooleanField(), ''),
-            (BooleanField(), 'Awesome!'),
-    ))
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        ((BooleanField(), None), (BooleanField(), ""), (BooleanField(), "Awesome!"),),
+    )
     def test_booleanfield_failure(self, field, value):
         with pytest.raises(ValidationError):
             field.clean(value)
 
     # StringField #############################################################
 
-    @pytest.mark.parametrize(('field', 'value', 'actual'), (
-            (StringField(), '1', '1'),
-            (StringField(), 'eek', 'eek'),
-            (StringField(null=True), '1', '1'),
+    @pytest.mark.parametrize(
+        ("field", "value", "actual"),
+        (
+            (StringField(), "1", "1"),
+            (StringField(), "eek", "eek"),
+            (StringField(null=True), "1", "1"),
             (StringField(null=True), None, None),
-            (StringField(null=True), '', ''),
-            (StringField(null=True, empty=True), '', ''),
-            (StringField(empty=True), '', ''),
-            (StringField(max_length=10), '123456', '123456'),
-    ))
+            (StringField(null=True), "", ""),
+            (StringField(null=True, empty=True), "", ""),
+            (StringField(empty=True), "", ""),
+            (StringField(max_length=10), "123456", "123456"),
+        ),
+    )
     def test_stringfield_success(self, field, value, actual):
         assert field.clean(value) == actual
 
-    @pytest.mark.parametrize(('field', 'value'), (
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        (
             (StringField(), None),
-            (StringField(), ''),
-            (StringField(null=True, empty=False), ''),
-            (StringField(empty=False), ''),
-            (StringField(max_length=10), '1234567890a'),
-    ))
+            (StringField(), ""),
+            (StringField(null=True, empty=False), ""),
+            (StringField(empty=False), ""),
+            (StringField(max_length=10), "1234567890a"),
+        ),
+    )
     def test_stringfield_failure(self, field, value):
         with pytest.raises(ValidationError):
             field.clean(value)
@@ -323,7 +349,9 @@ class TestFields(object):
         assert f.max_length == 10
         self.assertValidatorIn(MaxLengthValidator, f.validators)
 
-    @pytest.mark.parametrize(('field', 'empty_value'), (
+    @pytest.mark.parametrize(
+        ("field", "empty_value"),
+        (
             (StringField(), False),
             (StringField(null=True), True),
             (StringField(null=False), False),
@@ -331,7 +359,8 @@ class TestFields(object):
             (StringField(null=False, empty=True), True),
             (StringField(null=True, empty=False), False),
             (StringField(null=False, empty=False), False),
-    ))
+        ),
+    )
     def test_stringfield__handling_of_null_empty(self, field, empty_value):
         assert field.empty == empty_value
 
@@ -339,8 +368,8 @@ class TestFields(object):
 
     def test_urlfield_1(self):
         f = UrlField()
-        assert 'http://www.github.com' == f.clean('http://www.github.com')
-        pytest.raises(ValidationError, f.clean, 'eek')
+        assert "http://www.github.com" == f.clean("http://www.github.com")
+        pytest.raises(ValidationError, f.clean, "eek")
         pytest.raises(ValidationError, f.clean, None)
         assert f.max_length == None
         self.assertValidatorIn(RegexValidator, f.validators)
@@ -350,9 +379,9 @@ class TestFields(object):
     def test_integerfield_1(self):
         f = IntegerField()
         pytest.raises(ValidationError, f.clean, None)
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         assert 123 == f.clean(123)
-        assert 123 == f.clean('123')
+        assert 123 == f.clean("123")
         assert 123 == f.clean(123.5)
         assert None == f.min_value
         self.assertValidatorNotIn(MinValueValidator, f.validators)
@@ -362,9 +391,9 @@ class TestFields(object):
     def test_integerfield_2(self):
         f = IntegerField(null=True)
         assert None == f.clean(None)
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         assert 69 == f.clean(69)
-        assert 69 == f.clean('69')
+        assert 69 == f.clean("69")
         assert 69 == f.clean(69.5)
         assert None == f.min_value
         self.assertValidatorNotIn(MinValueValidator, f.validators)
@@ -374,9 +403,9 @@ class TestFields(object):
     def test_integerfield_3(self):
         f = IntegerField(min_value=50, max_value=100)
         pytest.raises(ValidationError, f.clean, None)
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         assert 69 == f.clean(69)
-        assert 69 == f.clean('69')
+        assert 69 == f.clean("69")
         assert 69 == f.clean(69.5)
         assert 50 == f.clean(50)
         assert 100 == f.clean(100)
@@ -392,9 +421,9 @@ class TestFields(object):
     def test_floatfield_1(self):
         f = FloatField()
         pytest.raises(ValidationError, f.clean, None)
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         assert 123 == f.clean(123)
-        assert 123.5 == f.clean('123.5')
+        assert 123.5 == f.clean("123.5")
         assert 123.5 == f.clean(123.5)
         assert None == f.min_value
         self.assertValidatorNotIn(MinValueValidator, f.validators)
@@ -404,9 +433,9 @@ class TestFields(object):
     def test_floatfield_2(self):
         f = FloatField(null=True)
         assert f.clean(None) is None
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         assert 69 == f.clean(69)
-        assert 69.5 == f.clean('69.5')
+        assert 69.5 == f.clean("69.5")
         assert 69.5 == f.clean(69.5)
         assert None == f.min_value
         self.assertValidatorNotIn(MinValueValidator, f.validators)
@@ -416,9 +445,9 @@ class TestFields(object):
     def test_floatfield_3(self):
         f = FloatField(min_value=50.5, max_value=100.4)
         pytest.raises(ValidationError, f.clean, None)
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         assert 69 == f.clean(69)
-        assert 69.5 == f.clean('69.5')
+        assert 69.5 == f.clean("69.5")
         assert 69.5 == f.clean(69.5)
         assert 50.5 == f.clean(50.5)
         assert 100.4 == f.clean(100.4)
@@ -431,26 +460,33 @@ class TestFields(object):
 
     # DateField ###############################################################
 
-    @pytest.mark.parametrize('field,value,expected'.split(','), (
-            (DateField(), '2013-11-24', datetime.date(2013, 11, 24)),
+    @pytest.mark.parametrize(
+        "field,value,expected".split(","),
+        (
+            (DateField(), "2013-11-24", datetime.date(2013, 11, 24)),
             (DateField(), datetime.date(2013, 11, 24), datetime.date(2013, 11, 24)),
-            (DateField(), datetime.datetime(2013, 11, 24, 1, 14), datetime.date(2013, 11, 24)),
+            (
+                DateField(),
+                datetime.datetime(2013, 11, 24, 1, 14),
+                datetime.date(2013, 11, 24),
+            ),
             (DateField(null=True), None, None),
-    ))
+        ),
+    )
     def test_datefield_clean_success(self, field, value, expected):
         assert field.clean(value) == expected
 
-    @pytest.mark.parametrize('field,value'.split(','), (
-            (DateField(), None),
-            (DateField(), 'abc'),
-            (DateField(), 123),
-    ))
+    @pytest.mark.parametrize(
+        "field,value".split(","),
+        ((DateField(), None), (DateField(), "abc"), (DateField(), 123),),
+    )
     def test_datefield_clean_failure(self, field, value):
         pytest.raises(ValidationError, field.clean, value)
 
-    @pytest.mark.parametrize('field,value,expected'.split(','), (
-            (DateField(), datetime.date(2013, 11, 24), '2013-11-24'),
-    ))
+    @pytest.mark.parametrize(
+        "field,value,expected".split(","),
+        ((DateField(), datetime.date(2013, 11, 24), "2013-11-24"),),
+    )
     def test_datefield_as_string(self, field, value, expected):
         assert field.as_string(value) == expected
 
@@ -459,67 +495,120 @@ class TestFields(object):
     def test_timefield_1(self):
         f = TimeField(assume_local=False)
         pytest.raises(ValidationError, f.clean, None)
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
-        assert datetime.time(18, 43, tzinfo=utc) == f.clean('18:43:00.000Z')
-        assert datetime.time(18, 43, tzinfo=utc) == f.clean(datetime.time(18, 43, tzinfo=utc))
+        assert datetime.time(18, 43, tzinfo=utc) == f.clean("18:43:00.000Z")
+        assert datetime.time(18, 43, tzinfo=utc) == f.clean(
+            datetime.time(18, 43, tzinfo=utc)
+        )
 
     def test_timefield_2(self):
         f = TimeField(assume_local=False, null=True)
         assert f.clean(None) is None
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
-        assert datetime.time(18, 43, tzinfo=utc) == f.clean('18:43:00.000Z')
-        assert datetime.time(18, 43, tzinfo=utc) == f.clean(datetime.time(18, 43, tzinfo=utc))
+        assert datetime.time(18, 43, tzinfo=utc) == f.clean("18:43:00.000Z")
+        assert datetime.time(18, 43, tzinfo=utc) == f.clean(
+            datetime.time(18, 43, tzinfo=utc)
+        )
 
-    @pytest.mark.parametrize('field,value,expected'.split(','), (
-            (TimeField(), datetime.time(12, 44, 12, 12), '12:44:12.000012'),
-            (TimeField(), datetime.time(12, 44, 12, 12, utc), '12:44:12.000012+00:00'),
-    ))
+    @pytest.mark.parametrize(
+        "field,value,expected".split(","),
+        (
+            (TimeField(), datetime.time(12, 44, 12, 12), "12:44:12.000012"),
+            (TimeField(), datetime.time(12, 44, 12, 12, utc), "12:44:12.000012+00:00"),
+        ),
+    )
     def test_timefield_as_string(self, field, value, expected):
         assert field.as_string(value) == expected
 
     # NaiveTimeField ##########################################################
 
-    @pytest.mark.parametrize(('target', 'value', 'expected'), (
-            (NaiveTimeField(ignore_timezone=False), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
-            (NaiveTimeField(ignore_timezone=False), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
-            (NaiveTimeField(ignore_timezone=False), datetime.time(18, 43, tzinfo=utc),
-             datetime.time(18, 43, tzinfo=utc)),
-
+    @pytest.mark.parametrize(
+        ("target", "value", "expected"),
+        (
+            (
+                NaiveTimeField(ignore_timezone=False),
+                "18:43:00.000Z",
+                datetime.time(18, 43, tzinfo=utc),
+            ),
+            (
+                NaiveTimeField(ignore_timezone=False),
+                "18:43:00.000Z",
+                datetime.time(18, 43, tzinfo=utc),
+            ),
+            (
+                NaiveTimeField(ignore_timezone=False),
+                datetime.time(18, 43, tzinfo=utc),
+                datetime.time(18, 43, tzinfo=utc),
+            ),
             (NaiveTimeField(ignore_timezone=False, null=True), None, None),
-            (NaiveTimeField(ignore_timezone=False, null=True), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
-            (NaiveTimeField(ignore_timezone=False, null=True), '18:43:00.000Z', datetime.time(18, 43, tzinfo=utc)),
-            (NaiveTimeField(ignore_timezone=False, null=True), datetime.time(18, 43, tzinfo=utc),
-             datetime.time(18, 43, tzinfo=utc)),
-
-            (NaiveTimeField(ignore_timezone=True), '18:43:00.000Z', datetime.time(18, 43)),
-            (NaiveTimeField(ignore_timezone=True), '18:43:00.000Z', datetime.time(18, 43)),
-            (NaiveTimeField(ignore_timezone=True), datetime.time(18, 43, tzinfo=utc), datetime.time(18, 43)),
-    ))
+            (
+                NaiveTimeField(ignore_timezone=False, null=True),
+                "18:43:00.000Z",
+                datetime.time(18, 43, tzinfo=utc),
+            ),
+            (
+                NaiveTimeField(ignore_timezone=False, null=True),
+                "18:43:00.000Z",
+                datetime.time(18, 43, tzinfo=utc),
+            ),
+            (
+                NaiveTimeField(ignore_timezone=False, null=True),
+                datetime.time(18, 43, tzinfo=utc),
+                datetime.time(18, 43, tzinfo=utc),
+            ),
+            (
+                NaiveTimeField(ignore_timezone=True),
+                "18:43:00.000Z",
+                datetime.time(18, 43),
+            ),
+            (
+                NaiveTimeField(ignore_timezone=True),
+                "18:43:00.000Z",
+                datetime.time(18, 43),
+            ),
+            (
+                NaiveTimeField(ignore_timezone=True),
+                datetime.time(18, 43, tzinfo=utc),
+                datetime.time(18, 43),
+            ),
+        ),
+    )
     def test_naivetimefield__clean_valid_values(self, target, value, expected):
         assert target.clean(value) == expected
 
-    @pytest.mark.parametrize(('target', 'value'), (
+    @pytest.mark.parametrize(
+        ("target", "value"),
+        (
             (NaiveTimeField(ignore_timezone=False), None),
-            (NaiveTimeField(ignore_timezone=False), 'abc'),
+            (NaiveTimeField(ignore_timezone=False), "abc"),
             (NaiveTimeField(ignore_timezone=False), 123),
-
-            (NaiveTimeField(ignore_timezone=False, null=True), 'abc'),
+            (NaiveTimeField(ignore_timezone=False, null=True), "abc"),
             (NaiveTimeField(ignore_timezone=False, null=True), 123),
-
             (NaiveTimeField(ignore_timezone=True), None),
-            (NaiveTimeField(ignore_timezone=True), 'abc'),
+            (NaiveTimeField(ignore_timezone=True), "abc"),
             (NaiveTimeField(ignore_timezone=True), 123),
-    ))
+        ),
+    )
     def test_naivetimefield__clean_invalid_values(self, target, value):
         pytest.raises(ValidationError, target.clean, value)
 
-    @pytest.mark.parametrize(('target', 'value', 'expected'), (
-            (NaiveTimeField(ignore_timezone=False), datetime.time(18, 43, tzinfo=utc),
-             datetime.time(18, 43, tzinfo=utc)),
-            (NaiveTimeField(ignore_timezone=True), datetime.time(18, 43, tzinfo=utc), datetime.time(18, 43)),
-    ))
+    @pytest.mark.parametrize(
+        ("target", "value", "expected"),
+        (
+            (
+                NaiveTimeField(ignore_timezone=False),
+                datetime.time(18, 43, tzinfo=utc),
+                datetime.time(18, 43, tzinfo=utc),
+            ),
+            (
+                NaiveTimeField(ignore_timezone=True),
+                datetime.time(18, 43, tzinfo=utc),
+                datetime.time(18, 43),
+            ),
+        ),
+    )
     def test_naivetimefield__prepare(self, target, value, expected):
         assert target.prepare(value) == expected
 
@@ -528,80 +617,140 @@ class TestFields(object):
     def test_datetimefield_1(self):
         f = DateTimeField(assume_local=False)
         pytest.raises(ValidationError, f.clean, None)
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
-        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean('2013-11-24T18:43:00.000Z')
-        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean('2013-11-24 18:43:00.000Z')
         assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
-            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
+            "2013-11-24T18:43:00.000Z"
+        )
+        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
+            "2013-11-24 18:43:00.000Z"
+        )
+        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
+            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)
+        )
 
     def test_datetimefield_2(self):
         f = DateTimeField(assume_local=False, null=True)
         assert f.clean(None) is None
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
-        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean('2013-11-24T18:43:00.000Z')
-        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean('2013-11-24 18:43:00.000Z')
         assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
-            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
+            "2013-11-24T18:43:00.000Z"
+        )
+        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
+            "2013-11-24 18:43:00.000Z"
+        )
+        assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
+            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)
+        )
 
-    @pytest.mark.parametrize('field,value,expected'.split(','), (
-            (DateTimeField(), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=FixedTimezone.from_hours_minutes(10)),
-             '2013-11-24T18:43:00+10:00'),
-            (DateTimeField(), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc), '2013-11-24T18:43:00+00:00'),
-    ))
+    @pytest.mark.parametrize(
+        "field,value,expected".split(","),
+        (
+            (
+                DateTimeField(),
+                datetime.datetime(
+                    2013, 11, 24, 18, 43, tzinfo=FixedTimezone.from_hours_minutes(10)
+                ),
+                "2013-11-24T18:43:00+10:00",
+            ),
+            (
+                DateTimeField(),
+                datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+                "2013-11-24T18:43:00+00:00",
+            ),
+        ),
+    )
     def test_datetimefield_as_string(self, field, value, expected):
         assert field.as_string(value) == expected
 
     # NaiveDateTimeField ######################################################
 
-    @pytest.mark.parametrize(('target', 'value', 'expected'), (
-            (NaiveDateTimeField(ignore_timezone=False), '2013-11-24T18:43:00.000Z',
-             datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
-            (NaiveDateTimeField(ignore_timezone=False), '2013-11-24 18:43:00.000Z',
-             datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
-            (NaiveDateTimeField(ignore_timezone=False), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
-             datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
-
+    @pytest.mark.parametrize(
+        ("target", "value", "expected"),
+        (
+            (
+                NaiveDateTimeField(ignore_timezone=False),
+                "2013-11-24T18:43:00.000Z",
+                datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+            ),
+            (
+                NaiveDateTimeField(ignore_timezone=False),
+                "2013-11-24 18:43:00.000Z",
+                datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+            ),
+            (
+                NaiveDateTimeField(ignore_timezone=False),
+                datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+                datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+            ),
             (NaiveDateTimeField(ignore_timezone=False, null=True), None, None),
-            (NaiveDateTimeField(ignore_timezone=False, null=True), '2013-11-24T18:43:00.000Z',
-             datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
-            (NaiveDateTimeField(ignore_timezone=False, null=True), '2013-11-24 18:43:00.000Z',
-             datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
-            (NaiveDateTimeField(ignore_timezone=False, null=True), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
-             datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
-
-            (NaiveDateTimeField(ignore_timezone=True), '2013-11-24T18:43:00.000Z',
-             datetime.datetime(2013, 11, 24, 18, 43)),
-            (NaiveDateTimeField(ignore_timezone=True), '2013-11-24 18:43:00.000Z',
-             datetime.datetime(2013, 11, 24, 18, 43)),
-            (NaiveDateTimeField(ignore_timezone=True), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
-             datetime.datetime(2013, 11, 24, 18, 43)),
-    ))
+            (
+                NaiveDateTimeField(ignore_timezone=False, null=True),
+                "2013-11-24T18:43:00.000Z",
+                datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+            ),
+            (
+                NaiveDateTimeField(ignore_timezone=False, null=True),
+                "2013-11-24 18:43:00.000Z",
+                datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+            ),
+            (
+                NaiveDateTimeField(ignore_timezone=False, null=True),
+                datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+                datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+            ),
+            (
+                NaiveDateTimeField(ignore_timezone=True),
+                "2013-11-24T18:43:00.000Z",
+                datetime.datetime(2013, 11, 24, 18, 43),
+            ),
+            (
+                NaiveDateTimeField(ignore_timezone=True),
+                "2013-11-24 18:43:00.000Z",
+                datetime.datetime(2013, 11, 24, 18, 43),
+            ),
+            (
+                NaiveDateTimeField(ignore_timezone=True),
+                datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+                datetime.datetime(2013, 11, 24, 18, 43),
+            ),
+        ),
+    )
     def test_naivedatetimefield__clean_valid_values(self, target, value, expected):
         assert target.clean(value) == expected
 
-    @pytest.mark.parametrize(('target', 'value'), (
+    @pytest.mark.parametrize(
+        ("target", "value"),
+        (
             (NaiveDateTimeField(ignore_timezone=False), None),
-            (NaiveDateTimeField(ignore_timezone=False), 'abc'),
+            (NaiveDateTimeField(ignore_timezone=False), "abc"),
             (NaiveDateTimeField(ignore_timezone=False), 123),
-
-            (NaiveDateTimeField(ignore_timezone=False, null=True), 'abc'),
+            (NaiveDateTimeField(ignore_timezone=False, null=True), "abc"),
             (NaiveDateTimeField(ignore_timezone=False, null=True), 123),
-
             (NaiveDateTimeField(ignore_timezone=True), None),
-            (NaiveDateTimeField(ignore_timezone=True), 'abc'),
+            (NaiveDateTimeField(ignore_timezone=True), "abc"),
             (NaiveDateTimeField(ignore_timezone=True), 123),
-    ))
+        ),
+    )
     def test_naivedatetimefield__clean_invalid_values(self, target, value):
         pytest.raises(ValidationError, target.clean, value)
 
-    @pytest.mark.parametrize(('target', 'value', 'expected'), (
-            (NaiveDateTimeField(ignore_timezone=False), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
-             datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)),
-            (NaiveDateTimeField(ignore_timezone=True), datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
-             datetime.datetime(2013, 11, 24, 18, 43)),
-    ))
+    @pytest.mark.parametrize(
+        ("target", "value", "expected"),
+        (
+            (
+                NaiveDateTimeField(ignore_timezone=False),
+                datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+                datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+            ),
+            (
+                NaiveDateTimeField(ignore_timezone=True),
+                datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc),
+                datetime.datetime(2013, 11, 24, 18, 43),
+            ),
+        ),
+    )
     def test_naivedatetimefield__prepare(self, target, value, expected):
         assert target.prepare(value) == expected
 
@@ -610,20 +759,26 @@ class TestFields(object):
     def test_httpdatetimefield_1(self):
         f = HttpDateTimeField()
         pytest.raises(ValidationError, f.clean, None)
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
-        assert datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=utc) == f.clean('Wed Aug 29 17:12:58 +0000 2012')
+        assert datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=utc) == f.clean(
+            "Wed Aug 29 17:12:58 +0000 2012"
+        )
         assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
-            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
+            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)
+        )
 
     def test_httpdatetimefield_2(self):
         f = HttpDateTimeField(null=True)
         assert f.clean(None) is None
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
-        assert datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=utc) == f.clean('Wed Aug 29 17:12:58 +0000 2012')
+        assert datetime.datetime(2012, 8, 29, 17, 12, 58, tzinfo=utc) == f.clean(
+            "Wed Aug 29 17:12:58 +0000 2012"
+        )
         assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
-            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
+            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)
+        )
 
     def test_httpdate_time_field__as_string(self):
         target = HttpDateTimeField()
@@ -637,20 +792,22 @@ class TestFields(object):
     def test_timestampfield_1(self):
         f = TimeStampField()
         pytest.raises(ValidationError, f.clean, None)
-        pytest.raises(ValidationError, f.clean, 'abc')
-        pytest.raises(ValidationError, f.clean, 'Wed Aug 29 17:12:58 +0000 2012')
+        pytest.raises(ValidationError, f.clean, "abc")
+        pytest.raises(ValidationError, f.clean, "Wed Aug 29 17:12:58 +0000 2012")
         assert datetime.datetime(1970, 1, 1, 0, 2, 3, tzinfo=utc) == f.clean(123)
         assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
-            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
+            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)
+        )
 
     def test_timestampfield_2(self):
         f = TimeStampField(null=True)
         assert f.clean(None) is None
-        pytest.raises(ValidationError, f.clean, 'abc')
-        pytest.raises(ValidationError, f.clean, 'Wed Aug 29 17:12:58 +0000 2012')
+        pytest.raises(ValidationError, f.clean, "abc")
+        pytest.raises(ValidationError, f.clean, "Wed Aug 29 17:12:58 +0000 2012")
         assert datetime.datetime(1970, 1, 1, 0, 2, 3, tzinfo=utc) == f.clean(123)
         assert datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc) == f.clean(
-            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc))
+            datetime.datetime(2013, 11, 24, 18, 43, tzinfo=utc)
+        )
 
     def test_timestampfield_3(self):
         f = TimeStampField()
@@ -658,47 +815,50 @@ class TestFields(object):
         assert 123 == f.prepare(datetime.datetime(1970, 1, 1, 0, 2, 3, tzinfo=utc))
         assert 123 == f.prepare(123)
         assert 123 == f.prepare(
-            datetime.datetime(1970, 1, 1, 10, 2, 3, tzinfo=FixedTimezone.from_hours_minutes(10)))
+            datetime.datetime(
+                1970, 1, 1, 10, 2, 3, tzinfo=FixedTimezone.from_hours_minutes(10)
+            )
+        )
 
     # DictField ###############################################################
 
     def test_dictfield_1(self):
         f = DictField()
         pytest.raises(ValidationError, f.clean, None)
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
         assert {} == f.clean({})
-        assert {'foo': 'bar'} == f.clean({'foo': 'bar'})
+        assert {"foo": "bar"} == f.clean({"foo": "bar"})
         assert f.default == dict
 
     def test_dictfield_2(self):
         f = DictField(null=True)
         assert None == f.clean(None)
         assert {} == f.clean({})
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
-        assert {'foo': 'bar'} == f.clean({'foo': 'bar'})
+        assert {"foo": "bar"} == f.clean({"foo": "bar"})
 
     # ArrayField ##############################################################
 
     def test_arrayfield_1(self):
         f = ArrayField()
         pytest.raises(ValidationError, f.clean, None)
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
         assert [] == f.clean([])
-        assert ['foo', 'bar'], f.clean(['foo' == 'bar'])
-        assert ['foo', 'bar', '$', 'eek'], f.clean(['foo', 'bar', '$' == 'eek'])
+        assert ["foo", "bar"], f.clean(["foo" == "bar"])
+        assert ["foo", "bar", "$", "eek"], f.clean(["foo", "bar", "$" == "eek"])
         assert f.default == list
 
     def test_arrayfield_2(self):
         f = ArrayField(null=True)
         assert None == f.clean(None)
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
         assert [] == f.clean([])
-        assert ['foo', 'bar'], f.clean(['foo' == 'bar'])
-        assert ['foo', 'bar', '$', 'eek'], f.clean(['foo', 'bar', '$' == 'eek'])
+        assert ["foo", "bar"], f.clean(["foo" == "bar"])
+        assert ["foo", "bar", "$", "eek"], f.clean(["foo", "bar", "$" == "eek"])
 
     # TypedListField #########################################################
 
@@ -706,10 +866,10 @@ class TestFields(object):
         f = TypedListField(IntegerField())
         assert "List<Integer>" == f.data_type_name(f)
         pytest.raises(ValidationError, f.clean, None)
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
         assert [] == f.clean([])
-        pytest.raises(ValidationError, f.clean, ['foo', 'bar'])
+        pytest.raises(ValidationError, f.clean, ["foo", "bar"])
         assert [1, 2, 3], f.clean([1, 2 == 3])
         assert f.default == list
 
@@ -717,15 +877,30 @@ class TestFields(object):
         f = TypedListField(IntegerField(), null=True)
         assert "List<Integer>" == f.data_type_name(f)
         assert None == f.clean(None)
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
         assert [] == f.clean([])
-        pytest.raises(ValidationError, f.clean, ['foo', 'bar'])
+        pytest.raises(ValidationError, f.clean, ["foo", "bar"])
         assert [1, 2, 3], f.clean([1, 2 == 3])
 
     def test_typed_list_field_dynamic_type_name(self):
         f = TypedListField(DynamicTypeNameFieldTest(), null=True)
         assert "List<Foo>" == f.data_type_name(f)
+
+    @pytest.mark.parametrize(
+        "target, expected",
+        (
+            (TypedListField(IntegerField()), None),
+            (
+                TypedListField(IntegerField(), choices=["these", "are", "bad"]),
+                ["these", "are", "bad"],
+            ),
+            (TypedListField(IntegerField(choices=(1, 2, 3))), (1, 2, 3)),
+        ),
+    )
+    def test_typed_list_field__with_choices(self, target, expected):
+        f = TypedListField(DynamicTypeNameFieldTest(), null=True)
+        assert target.choices_doc_text == expected
 
     # TypedDictField ##########################################################
 
@@ -733,159 +908,164 @@ class TestFields(object):
         f = TypedDictField(IntegerField())
         assert "Dict<String, Integer>" == f.data_type_name(f)
         pytest.raises(ValidationError, f.clean, None)
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
         assert {} == f.clean({})
-        pytest.raises(ValidationError, f.clean, {'foo': 'bar'})
-        assert {'foo': 1} == f.clean({'foo': 1})
+        pytest.raises(ValidationError, f.clean, {"foo": "bar"})
+        assert {"foo": 1} == f.clean({"foo": 1})
 
     def test_typeddictfield_2(self):
         f = TypedDictField(IntegerField(), null=True)
         assert "Dict<String, Integer>" == f.data_type_name(f)
         assert None == f.clean(None)
-        pytest.raises(ValidationError, f.clean, 'abc')
+        pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
         assert {} == f.clean({})
-        pytest.raises(ValidationError, f.clean, {'foo': 'bar'})
-        assert {'foo': 1} == f.clean({'foo': 1})
+        pytest.raises(ValidationError, f.clean, {"foo": "bar"})
+        assert {"foo": 1} == f.clean({"foo": 1})
 
     def test_typeddictfield_3(self):
         f = TypedDictField(StringField(), IntegerField(), null=True)
         assert "Dict<Integer, String>" == f.data_type_name(f)
-        pytest.raises(ValidationError, f.clean, {'foo': 'bar'})
-        assert {1: 'foo'} == f.clean({1: 'foo'})
+        pytest.raises(ValidationError, f.clean, {"foo": "bar"})
+        assert {1: "foo"} == f.clean({1: "foo"})
 
     def test_typeddictfield_nested_typed_array(self):
         f = TypedDictField(TypedArrayField(StringField()))
         assert "Dict<String, List<String>>" == f.data_type_name(f)
         assert {} == f.clean({})
-        pytest.raises(ValidationError, f.clean, {'foo': 'bar'})
-        assert {'foo': ['bar', 'eek']}, f.clean({'foo': ['bar' == 'eek']})
+        pytest.raises(ValidationError, f.clean, {"foo": "bar"})
+        assert {"foo": ["bar", "eek"]}, f.clean({"foo": ["bar" == "eek"]})
 
     def test_typeddictfield_validate(self):
         f = TypedDictField(
             IntegerField(min_value=5),
-            StringField(max_length=5, choices=[
-                ('foo', 'Foo'),
-                ('bad_value', 'Bad Value'),
-            ])
+            StringField(
+                max_length=5, choices=[("foo", "Foo"), ("bad_value", "Bad Value"),]
+            ),
         )
         assert "Dict<String, Integer>" == f.data_type_name(f)
         pytest.raises(ValidationError, f.clean, {None: 6})
-        pytest.raises(ValidationError, f.clean, {'bad_value': 6})
-        pytest.raises(ValidationError, f.clean, {'bar': 6})
-        pytest.raises(ValidationError, f.clean, {'foo': None})
-        pytest.raises(ValidationError, f.clean, {'foo': 2})
+        pytest.raises(ValidationError, f.clean, {"bad_value": 6})
+        pytest.raises(ValidationError, f.clean, {"bar": 6})
+        pytest.raises(ValidationError, f.clean, {"foo": None})
+        pytest.raises(ValidationError, f.clean, {"foo": 2})
 
     def test_typed_dict_field_dynamic_type_name(self):
-        f = TypedDictField(
-            DynamicTypeNameFieldTest(),
-            DynamicTypeNameFieldTest(),
-        )
+        f = TypedDictField(DynamicTypeNameFieldTest(), DynamicTypeNameFieldTest(),)
         assert "Dict<Foo, Foo>" == f.data_type_name(f)
 
-    @pytest.mark.parametrize('field value actual'.split(), (
-        (EmailField(), u'foo@example.company', u'foo@example.company'),
-
-        (IPv4Field(), u'127.0.0.1', u'127.0.0.1'),
-
-        (IPv6Field(), u'::1', u'::1'),
-        (IPv6Field(), u'1:2:3:4:5:6:7:8', u'1:2:3:4:5:6:7:8'),
-
-        (IPv46Field(), u'127.0.0.1', u'127.0.0.1'),
-        (IPv46Field(), u'::1', u'::1'),
-        (IPv46Field(), u'1:2:3:4:5:6:7:8', u'1:2:3:4:5:6:7:8'),
-    ))
+    @pytest.mark.parametrize(
+        "field value actual".split(),
+        (
+            (EmailField(), u"foo@example.company", u"foo@example.company"),
+            (IPv4Field(), u"127.0.0.1", u"127.0.0.1"),
+            (IPv6Field(), u"::1", u"::1"),
+            (IPv6Field(), u"1:2:3:4:5:6:7:8", u"1:2:3:4:5:6:7:8"),
+            (IPv46Field(), u"127.0.0.1", u"127.0.0.1"),
+            (IPv46Field(), u"::1", u"::1"),
+            (IPv46Field(), u"1:2:3:4:5:6:7:8", u"1:2:3:4:5:6:7:8"),
+        ),
+    )
     def test_valid_values(self, field, value, actual):
         assert field.clean(value) == actual
 
     # UUIDField ################################################################
 
-    @pytest.mark.parametrize('value', (
-        uuid.uuid1(),
-        uuid.uuid3(uuid.uuid4(), 'name'),
-        uuid.uuid4(),
-        uuid.uuid5(uuid.uuid4(), 'name'),
-    ))
+    @pytest.mark.parametrize(
+        "value",
+        (
+            uuid.uuid1(),
+            uuid.uuid3(uuid.uuid4(), "name"),
+            uuid.uuid4(),
+            uuid.uuid5(uuid.uuid4(), "name"),
+        ),
+    )
     def test_uuid_field_with_uuid_objects(self, value):
         f = UUIDField()
 
         assert f.clean(value) == value
 
-    @pytest.mark.parametrize('value', (
-        uuid.uuid1().bytes,
-        uuid.uuid3(uuid.uuid4(), 'name').bytes,
-        uuid.uuid4().bytes,
-        uuid.uuid5(uuid.uuid4(), 'name').bytes,
-    ), ids=('bytes-uuid1', 'bytes-uuid3', 'bytes-uuid4', 'bytes-uuid5',))
+    @pytest.mark.parametrize(
+        "value",
+        (
+            uuid.uuid1().bytes,
+            uuid.uuid3(uuid.uuid4(), "name").bytes,
+            uuid.uuid4().bytes,
+            uuid.uuid5(uuid.uuid4(), "name").bytes,
+        ),
+        ids=("bytes-uuid1", "bytes-uuid3", "bytes-uuid4", "bytes-uuid5",),
+    )
     def test_uuid_field_with_16_bytes_sequence(self, value):
         f = UUIDField()
 
         assert f.clean(value) == uuid.UUID(bytes=value)
 
-    @pytest.mark.parametrize('value', (
-        str(uuid.uuid1()).encode('utf-8'),
-        str(uuid.uuid3(uuid.uuid4(), 'name')).encode('utf-8'),
-        str(uuid.uuid4()).encode('utf-8'),
-        str(uuid.uuid5(uuid.uuid4(), 'name')).encode('utf-8'),
-    ))
+    @pytest.mark.parametrize(
+        "value",
+        (
+            str(uuid.uuid1()).encode("utf-8"),
+            str(uuid.uuid3(uuid.uuid4(), "name")).encode("utf-8"),
+            str(uuid.uuid4()).encode("utf-8"),
+            str(uuid.uuid5(uuid.uuid4(), "name")).encode("utf-8"),
+        ),
+    )
     def test_uuid_field_with_bytes(self, value):
         f = UUIDField()
 
-        assert f.clean(value) == uuid.UUID(value.decode('utf-8'))
+        assert f.clean(value) == uuid.UUID(value.decode("utf-8"))
 
-    @pytest.mark.parametrize('value', (
-        str(uuid.uuid1()),
-        str(uuid.uuid3(uuid.uuid4(), 'name')),
-        str(uuid.uuid4()),
-        str(uuid.uuid5(uuid.uuid4(), 'name')),
-    ))
+    @pytest.mark.parametrize(
+        "value",
+        (
+            str(uuid.uuid1()),
+            str(uuid.uuid3(uuid.uuid4(), "name")),
+            str(uuid.uuid4()),
+            str(uuid.uuid5(uuid.uuid4(), "name")),
+        ),
+    )
     def test_uuid_field_with_string(self, value):
         f = UUIDField()
 
         assert f.clean(value) == uuid.UUID(value)
 
-    @pytest.mark.parametrize('value', range(4))
+    @pytest.mark.parametrize("value", range(4))
     def test_uuid_field_with_int(self, value):
         f = UUIDField()
 
         assert f.clean(value) == uuid.UUID(int=value)
 
-    @pytest.mark.parametrize('value', (
-        -1,
-        -2
-    ))
+    @pytest.mark.parametrize("value", (-1, -2))
     def test_uuid_field_invalid_int(self, value):
         f = UUIDField()
         with pytest.raises(ValidationError):
             f.clean(value)
 
-    @pytest.mark.parametrize('value', (
-        b'\254',
-        b'\255',
-    ))
+    @pytest.mark.parametrize("value", (b"\254", b"\255",))
     def test_uuid_field_invalid_bytes(self, value):
         f = UUIDField()
         with pytest.raises(ValidationError):
             f.clean(value)
 
-    @pytest.mark.parametrize('value', (
-        (1, 2, 3, 4, 5),
-        [1, 2, 3, 4, 5],
-        (-1, 2, 2, 2, 2, 2),
-        [-1, 2, 2, 2, 2, 2],
-        (2, -1, 2, 2, 2, 2),
-        [2, -1, 2, 2, 2, 2],
-    ))
+    @pytest.mark.parametrize(
+        "value",
+        (
+            (1, 2, 3, 4, 5),
+            [1, 2, 3, 4, 5],
+            (-1, 2, 2, 2, 2, 2),
+            [-1, 2, 2, 2, 2, 2],
+            (2, -1, 2, 2, 2, 2),
+            [2, -1, 2, 2, 2, 2],
+        ),
+    )
     def test_uuid_field_invalid_fields(self, value):
         f = UUIDField()
         with pytest.raises(ValidationError):
             f.clean(value)
 
-    @pytest.mark.parametrize('value', (
-        "sometext",
-        "01010101-0101-0101-0101-01010101010"
-    ))
+    @pytest.mark.parametrize(
+        "value", ("sometext", "01010101-0101-0101-0101-01010101010")
+    )
     def test_uuid_field_invalid_hex(self, value):
         f = UUIDField()
         with pytest.raises(ValidationError):
