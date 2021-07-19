@@ -99,7 +99,7 @@ class ResourceDocumenter(ModuleLevelDocumenter):
             type_name = u"{} {}".format(type_name, reference_to(field.of))
 
         return (
-            u"*{}*".format(field.name if field.null else field.name),  # Name
+            u"*{}*".format(field.name) if field.null else field.name,  # Name
             reference_to(type_name or u"Unknown"),  # Data-type
             u"\n".join(details).split(u"\n"),  # Details
         )
