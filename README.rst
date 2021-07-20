@@ -165,11 +165,3 @@ Authors
 *******
 
 Tim Savage
-
-
-Special Mention
-***************
-
-I would like to acknowledge the strong influence on the design of Odin Resources from the Django ORM and it's notable
-contributor Malcolm Tredinnick. He was a valued colleague who's untimely passing left a large void in our company and
-the wider community.
