@@ -80,6 +80,12 @@ class ResourceException(ValidationError):
     """
 
 
+class ResourceDefError(Exception):
+    """
+    Exceptions raised if a resource definition contains errors.
+    """
+
+
 class MappingError(Exception):
     """
     Exceptions related to mapping, will typically be a more specific `MappingSetupError` or `MappingExecutionError`.

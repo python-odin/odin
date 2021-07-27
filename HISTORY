@@ -1,3 +1,19 @@
+1.7.1
+=====
+
+- Tweak to generation of sphinx choices so TypedLists use choices from type.
+- Fix issue in Sphinx plugin where ``choices_doc_text`` was not used to format
+  choice values.
+- Add TypedDictField to docs
+
+1.7.0
+=====
+
+- Migrate from collections.Iterable to typing.Iterable to remove a warning
+- Add user defined metadata to Resource.Meta object
+- Add a reserved word guard, starting with fields (using fields causes
+  clean_fields to go into a infinite recursion loop)
+
 1.6.2
 =====
 
@@ -23,7 +39,8 @@
 
 1.5.2
 =====
-- Relax overly tight dependency specification. Removed pyup.io it is not suitable for packages.
+- Relax overly tight dependency specification. Removed pyup.io it is not suitable
+  for packages.
 
 1.5
 ===
@@ -32,22 +49,25 @@
 
 1.0b2
 =====
-- Added a redesigned CSV codec Reader to address issues with handling row-by-row processing and handling of row-level errors.
+- Added a redesigned CSV codec Reader to address issues with handling row-by-row
+  processing and handling of row-level errors.
 - Removed filter-query (moved to feature branch)
 
 0.10b9
 ======
-- Added support for MultiPartField field type. A virtual field that allows for the easy generation of key values
-  composed of several other fields.
+- Added support for MultiPartField field type. A virtual field that allows for
+  the easy generation of key values composed of several other fields.
 - Documentation updates and some initial type hints added (using :type... style) 
 - Allow a virtual field to be identified as a key
-- Introduce a common base class for ALL field types, this allows them to be identified separatly via hash (for sorting and keys)
-- Tweaked the new string.empty option so by default it behaves in the same way as it was previously defined (eg null assumes empty)
+- Introduce a common base class for ALL field types, this allows them to be identified
+  separately via hash (for sorting and keys)
+- Tweaked the new string.empty option so by default it behaves in the same way as
+  it was previously defined (eg null assumes empty)
 
 0.10b
 =====
-- Possible breaking change with date and time serializers, they no longer apply a timezone as this is expected to be
-  managed by date and time fields.
+- Possible breaking change with date and time serializers, they no longer apply
+  a timezone as this is expected to be managed by date and time fields.
 - Added getmeta tool for getting meta data.
 - Changes to Resource/Meta options to allow for them to be overridden.
 - Fixes regarding ResourceBase/Resource changes
@@ -68,47 +88,55 @@
 =====
 
 - Migrated all tests to py.test
-- Support for Python 2.6 for _most_ features (some contrib features are not supported see docs for detail)
+- Support for Python 2.6 for _most_ features (some contrib features are not supported
+  see docs for detail)
 
 0.8.1
 =====
 
-- Bug fix for compatibility.deprecated decorator. Was breaking baldr when handling classes.
+- Bug fix for compatibility.deprecated decorator. Was breaking baldr when handling
+  classes.
 - Some documentation fixes.
 
 0.8
 ===
 
-- Added key_fields to resource meta options. This allows definition of which field(s) are used to uniquely identify the
-  resource.
-- Added support to TraversalPath (and ResourceTraversalIterator) for using key_fields, both generating and traversing a
-  Resource tree.
+- Added key_fields to resource meta options. This allows definition of which field(s)
+  are used to uniquely identify the resource.
+- Added support to TraversalPath (and ResourceTraversalIterator) for using key_fields,
+  both generating and traversing a Resource tree.
 - CodecDecodeError and CodecEncodeError now inherit off CodecError.
-- TraversalPath now raises multiple error types InvalidPathError, NoMatchError, and MultipleMatchesError
-- Some additional tweaks to inspect tool, as of now is still only available to Python 3.
+- TraversalPath now raises multiple error types InvalidPathError, NoMatchError,
+  and MultipleMatchesError
+- Some additional tweaks to inspect tool, as of now is still only available to
+  Python 3.
 - Additional test cases.
 
 0.7
 ===
 
 - Python 3.5 added for Travis CI test runner
-- Added empty flag to ListOf and DictOf files to validate if fields is allowed to be empty
+- Added empty flag to ListOf and DictOf files to validate if fields is allowed to
+  be empty
 - Added key_choices to DictOf field to allow allow keys to be validated
 - Added TypedDictField this is a analog of the TypedListField but for dict objects
 - Project is now owned by the python-odin group
-- Initial work on combined string serialisation framework. This is to unify text serialisation support between the
-  various codecs so additional serialises only need to be registered in a central location.
-- Added DictCodec, this is codec for converting between a dict structure and resource structure. As Resource.to_dict
-  is explicitly designed to not act in a recursively this codec fills in a gap where a developer my require a nested
-  dict to be generated.
-- Initial implementation of resource filtering. Filtering allows for a filter expression to be defined and used to
-  filter a list of resources or ensure a particular resource matches the expression. Expressions are easy to define and
-  read and allow for filtering against sub-resources etc.
-- Added caching to the results of mapping operations. Previously iterating through a mapping multiple times caused the
-  mapping to be re-run. This has been made the default behaviour, if the previous behaviour is desired the MappingResult
-  class can be provided to Mapping.apply instead of CachingMappingResult.
-- ResourceAdapter.apply_to now caches Meta object of matching resources types, previously a new meta object was created
-  for each resource.
+- Initial work on combined string serialisation framework. This is to unify text
+  serialisation support between the various codecs so additional serialises only
+  need to be registered in a central location.
+- Added DictCodec, this is codec for converting between a dict structure and resource
+  structure. As Resource.to_dict is explicitly designed to not act in a recursively
+  this codec fills in a gap where a developer my require a nested dict to be generated.
+- Initial implementation of resource filtering. Filtering allows for a filter expression
+  to be defined and used to filter a list of resources or ensure a particular resource
+  matches the expression. Expressions are easy to define and read and allow for
+  filtering against sub-resources etc.
+- Added caching to the results of mapping operations. Previously iterating through
+  a mapping multiple times caused the mapping to be re-run. This has been made the
+  default behaviour, if the previous behaviour is desired the MappingResult class
+  can be provided to Mapping.apply instead of CachingMappingResult.
+- ResourceAdapter.apply_to now caches Meta object of matching resources types, previously
+  a new meta object was created for each resource.
 - ResourceAdapterOptions.virtual_fields is now filtered using include/exclude options.
 - More tests, more docs
 - Various bug fixes.
@@ -123,20 +151,24 @@ Odin
 - Pass through excluded_fields when generating types in mapping factory.
 - Added ignored fields parameter to be provided to Resource.convert_to method.
 - Added included fields parameter to the Mapping.update method
-- Updated the ResourceAdapter interface to match that of a normal Resource, can now be used in place of a Resource with
-  any codec.
-- Added ResourceAdapter.apply_to method that simplifies applying a resource adapter to a list of Resources.
+- Updated the ResourceAdapter interface to match that of a normal Resource, can
+  now be used in place of a Resource with any codec.
+- Added ResourceAdapter.apply_to method that simplifies applying a resource adapter
+  to a list of Resources.
 - Updated create_resource_from_dict to accept a list and return a list of resources.
-- Fixed bug in auto-mapping generation of MapListOf fields to set the to_list flag correctly
-- Added forward_mapping_factory a shortcut version of mapping_factory when only a forward mapping is required.
-- Added the assign (similar to the define shortcut) shortcut for defining an assignment mapping
-- Fixed a bug where performing a full clean on a Resource that was created via a mapping would fail when a
-  MappingResult object was encountered.
+- Fixed bug in auto-mapping generation of MapListOf fields to set the to_list flag
+  correctly
+- Added forward_mapping_factory a shortcut version of mapping_factory when only
+  a forward mapping is required.
+- Added the assign (similar to the define shortcut) shortcut for defining an assignment
+  mapping
+- Fixed a bug where performing a full clean on a Resource that was created via a
+  mapping would fail when a MappingResult object was encountered.
 - Added ResourceOptions.element_field_map for use in XML codecs
 - Added container flag and ResourceOptions.container_fields for XML style codecs
 - Large number of documentation updates
-- Fixed bug where Mapping.loop_idx was not being updated correctly, after 2 levels of nesting the wrong index was being
-  updated.
+- Fixed bug where Mapping.loop_idx was not being updated correctly, after 2 levels
+  of nesting the wrong index was being updated.
 
 Sphinx Integration
 ------------------

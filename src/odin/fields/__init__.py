@@ -685,6 +685,15 @@ class TypedListField(ListField):
         self.field = field
         super(TypedListField, self).__init__(**options)
 
+    @property
+    def choices_doc_text(self):
+        # type: () -> Sequence[Tuple[str, str]]
+        if self.choices:
+            return self.choices
+        if hasattr(self.field, "choices_doc_text"):
+            return self.field.choices_doc_text
+        return self.field.choices
+
     def to_python(self, value):
         value = super(TypedListField, self).to_python(value)
         if not value:

@@ -327,7 +327,22 @@ each entry in the array is validated against.
 :py:attr:`TypedArrayField.field`
     An instance of an odin field that is used to validate each entry in the array.
 
-.. _field-object_field:
+.. _field-typed_dict_field:
+
+TypedDictField
+===============
+``class TypedDictField(key_field, value_field, [**options])``
+
+A object structure represented in Python by a *dict* instance accepts additional parameters of both a key and value
+field type that each item in the dict is validated against.
+
+:py:attr:`TypedDictField.key_field`
+    An instance of an odin field that is used to validate each key in the dict; default is ``StringField``.
+
+:py:attr:`TypedDictField.value_field`
+    An instance of an odin field that is used to validate each value in the dict; default is ``StringField``.
+
+.. _field-dict_field:
 
 DictField
 =========
@@ -346,7 +361,7 @@ Composite fields
 Odin also defines a set of fields that allow for composition.
 
 
-.. _field-object_as_field:
+.. _field-dict_as_field:
 
 DictAs field
 ============

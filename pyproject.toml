@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "odin"
-version = "1.6.2"
+version = "1.7.1"
 description = "Data-structure definition/validation/traversal, mapping and serialisation toolkit for Python"
 authors = ["Tim Savage <tim@savage.company>"]
 license = "BSD-3-Clause"
@@ -48,6 +48,7 @@ ply = {version = "*", optional = true }
 mock = "*"
 pytest = "*"
 pytest-cov = "*"
+sphinx = "*"
 
 [tool.poetry.extras]
 yaml = ["pyyaml"]
