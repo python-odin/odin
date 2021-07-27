@@ -2,7 +2,7 @@ from datetime import date
 from enum import Enum
 from typing import List, Optional
 
-from odin import new_resources
+from odin import new_resource
 from odin.utils import getmeta
 from .resources import Author, Publisher
 
@@ -15,15 +15,23 @@ class Genre(Enum):
     ComputersAndTechnology = "computers-and-tech"
 
 
-class NewBook(new_resources.NewResource):
+class BaseBook(new_resource.AbstractResource):
+    title: str
+
+
+class OldBook(new_resource.NewResource):
+    title: str
+    isbn: str
+
+
+class NewBook(BaseBook):
     class Meta:
         key_field_name = "isbn"
 
-    title: str
     isbn: str
     num_pages: int
-    rrp: float = new_resources.Options(20.4, use_default_if_not_provided=True)
-    fiction: bool = new_resources.Options(is_attribute=True)
+    rrp: float = new_resource.Options(20.4, use_default_if_not_provided=True)
+    fiction: bool = new_resource.Options(is_attribute=True)
     genre: Genre = Genre.ScienceFiction
     published: List[date]
     authors: List[Author]
