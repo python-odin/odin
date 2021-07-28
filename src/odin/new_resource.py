@@ -1,7 +1,39 @@
-from typing import Union, Any, Sequence, Callable, Dict, Tuple, Type
+"""
+New Style Resources
+~~~~~~~~~~~~~~~~~~~
 
+New style resources make use of Python type annotations to simplify the
+definition of data structures.
+
+New style resources still utilise many of the existing classes eg
+``ResourceBase``, ``ResourceOptions`` and all existing fields. Allowing
+existing code (eg Mappings, Codecs) including custom implementations to be
+utilised unchanged.
+
+Example:
+
+.. code-block:: python
+
+
+
+"""
+import datetime
+import inspect
+from typing import Union, Any, Sequence, Callable, Dict, Tuple, Type, Optional
+
+import odin
 from odin import NotProvided, registration
+from odin.fields import Field, BaseField
 from odin.resources import ResourceBase, ResourceOptions
+
+__all__ = (
+    "Validator",
+    "Choices",
+    "Options",
+    "NewResourceType",
+    "NewResource",
+    "AbstractResource",
+)
 
 Validator = Callable[[Any], None]
 Choices = Union[
@@ -15,48 +47,66 @@ class Options:
     """
 
     __slots__ = (
-        "default",
-        "name",
-        "verbose_name",
-        "verbose_name_plural",
-        "validators",
-        "choices",
-        "use_default_if_not_provided",
-        "error_messages",
-        "doc_text",
-        "is_attribute",
-        "key",
+        "field_type",
+        "base_args",
+        "field_args",
+        "extra_args",
     )
 
     def __init__(
         self,
         default: Any = NotProvided,
         *,
-        name: str = None,
         verbose_name: str = None,
         verbose_name_plural: str = None,
+        name: str = None,
         validators: Sequence[Validator] = None,
         choices: Choices = None,
         use_default_if_not_provided: bool = True,
         error_messages: Dict[str, str] = None,
         doc_text: str = "",
         is_attribute: bool = False,
-        key: bool = False
+        key: bool = False,
+        field_type: Type[BaseField] = None,
+        **extra_args: Any
     ):
-        self.default = default
-        self.name = name
-        self.verbose_name = verbose_name
-        self.verbose_name_plural = verbose_name_plural
-        self.validators = validators
-        self.choices = choices
-        self.use_default_if_not_provided = use_default_if_not_provided
-        self.error_messages = error_messages
-        self.doc_text = doc_text
-        self.is_attribute = is_attribute
-        self.key = key
+        self.field_type = field_type
+        self.base_args = {
+            "verbose_name": verbose_name,
+            "verbose_name_plural": verbose_name_plural,
+            "name": name,
+            "doc_text": doc_text,
+            "is_attribute": is_attribute,
+            "key": key,
+        }
+        self.base_args.update(extra_args)
+        self.field_args = {
+            "choices": choices,
+            "use_default_if_not_provided": use_default_if_not_provided,
+            "default": default,
+            "validators": validators,
+            "error_messages": error_messages,
+        }
+
+    def _kwargs(self):
+        final_args = self.base_args
+        if issubclass(self.field_type, Field):
+            final_args.update(self.field_args)
+        return final_args
+
+    def init_field(self):
+        """
+        Initialise field
+        """
+        if self.field_type:
+            return self.field_type(**self._kwargs())
+        # raise Hell
 
 
 def _new_meta_instance(meta_options_type, meta_def, new_class):
+    """
+    Generate meta options instance
+    """
     new_meta = meta_options_type(meta_def)
     new_class.add_to_class("_meta", new_meta)
 
@@ -81,8 +131,94 @@ def _new_meta_instance(meta_options_type, meta_def, new_class):
     return new_meta
 
 
-def _iterate_fields(attrs):
-    pass
+SIMPLE_ITEMS = {
+    str: odin.StringField,
+    int: odin.IntegerField,
+    float: odin.FloatField,
+    bool: odin.BooleanField,
+    datetime.datetime: odin.DateTimeField,
+    datetime.date: odin.DateField,
+}
+
+
+def _is_optional(type_):
+    if (
+        len(type_.__args__) == 2
+        and type(None) in type_.__args__  # pylint: disable=unidiomatic-typecheck
+    ):
+        pass
+
+
+def _resolve_field_from_type(type_):
+    """
+    Resolve a field from a basic type
+    """
+    return SIMPLE_ITEMS.get(type_)
+
+
+def _resolve_field_from_generic(type_):
+    """
+    Resolve a field from a generic type
+    """
+    origin = getattr(type_, "__origin__")
+    name = str(origin)
+    if name == "typing.Union":
+        if (
+            len(type_.__args__) == 2
+            and type(None) in type_.__args__  # pylint: disable=unidiomatic-typecheck
+        ):
+            return _resolve_field_from_type()
+
+            return type_.__args__[0] if type_.__args__ else None
+
+
+def _resolve_field_from_annotation(type_) -> Optional[Type[BaseField]]:
+    """
+    Resolve a field from a type annotation
+
+    Handles generics, sequences and optional types
+    """
+    origin = getattr(type_, "__origin__", None)
+    if origin is not None:
+        return _resolve_field_from_generic(type_)
+
+    elif isinstance(type_, type):
+        return _resolve_field_from_type(type_)
+
+    print(annotation)
+
+
+def _process_attribute(type_: Type, value: Union[Options, Any]):
+    """
+    Process an individual attribute
+    """
+
+    if isinstance(value, BaseField):
+        # Attribute is already a field object
+        return value
+
+    if not (type_ or isinstance(value, Options)):
+        # Attribute is neither annotated or an Options object
+        return value
+
+    if not isinstance(value, Options):
+        # Create a options object from the value
+        value = Options(value)
+
+    if not value.field_type:
+        # Resolve field type from annotation
+        value.field_type = _resolve_field_from_annotation(type_)
+
+    # Finally instantiate a field object
+    return value.init_field()
+
+
+def _iterate_attrs(attrs: Dict[str, Any]):
+    annotations = attrs.pop("__annotations__", None) or {}
+
+    for idx, (name, type_) in enumerate(annotations.items()):
+        value = attrs.pop(name, NotProvided)
+        yield name, _process_attribute(type_, value)
 
 
 class NewResourceType(type):
@@ -124,7 +260,9 @@ class NewResourceType(type):
         if r is not None:
             return r
 
-        # Determine and add fields
+        # Add all field attributes to the class.
+        for name, field in _iterate_attrs(attrs):
+            new_class.add_to_class(name, field)
 
         # Give fields an opportunity to do additional operations after the
         # resource is full populated and ready.

@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 
+import odin
 from odin.new_resource import NewResource, AbstractResource, Options
 
 
@@ -32,8 +33,8 @@ class Book(LibraryBook):
         key_field_name = "isbn"
 
     title: str
-    isbn: str
-    num_pages: int
+    isbn: str = Options(field_type=odin.StringField)
+    num_pages: Optional[int]
     rrp: float = Options(20.4, use_default_if_not_provided=True)
     fiction: bool = Options(is_attribute=True)
     genre: str = Options(
@@ -43,11 +44,13 @@ class Book(LibraryBook):
             ("biography", "Biography"),
             ("others", "Others"),
             ("computers-and-tech", "Computers & technology"),
-        )
+        ),
     )
     published: List[datetime]
     authors: List[Author] = Options(use_container=True)
     publisher: Optional[Publisher]
+
+    A_CONST = "Foo Bar"
 
     def __eq__(self, other):
         if other:

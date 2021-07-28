@@ -24,6 +24,8 @@ from odin.validators import (
 from .base import BaseField
 
 __all__ = (
+    "BaseField",
+    "Field",
     "BooleanField",
     "StringField",
     "UrlField",

@@ -5,7 +5,12 @@ from odin.utils import force_tuple, getmeta
 
 from .base import BaseField
 
-__all__ = ("ConstantField", "CalculatedField", "calculated_field", "MultiPartField")
+__all__ = (
+    "ConstantField",
+    "CalculatedField",
+    "calculated_field",
+    "MultiPartField",
+)
 
 
 class VirtualField(BaseField):
