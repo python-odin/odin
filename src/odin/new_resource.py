@@ -209,7 +209,9 @@ def _process_attribute(type_: Type, value: Union[Options, Any]):
 
     if not value.field_type:
         # Resolve field type from annotation
-        value.field_args["null"], value.field_type = _resolve_field_from_annotation(type_)
+        value.field_args["null"], value.field_type = _resolve_field_from_annotation(
+            type_
+        )
 
     # Finally instantiate a field object
     return value.init_field()
