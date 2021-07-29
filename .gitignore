@@ -14,6 +14,7 @@ build
 _build
 .tox
 reports/xunit-result-eek.xml
+requirements.txt
 
 # IDE cruft
 .idea

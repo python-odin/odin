@@ -16,9 +16,18 @@ else:
 
 
 @pytest.mark.skipif(new_resource is None, reason="Requires Python 3.6 or higher")
-class TestOptions:
-    def test_meta(self):
-
+class TestNewResourceType:
+    def test_fields_are_identified_in_correct_order(self):
         meta = getmeta(Book)
 
-        assert meta.fields == []
+        assert [f.name for f in meta.fields] == [
+            "title",
+            "isbn",
+            "num_pages",
+            "rrp",
+            "fiction",
+            "genre",
+            "published",
+            "authors",
+            "publisher",
+        ]

@@ -18,7 +18,6 @@ Example:
 
 """
 import datetime
-import inspect
 from typing import Union, Any, Sequence, Callable, Dict, Tuple, Type, Optional
 
 import odin
@@ -100,7 +99,7 @@ class Options:
         """
         if self.field_type:
             return self.field_type(**self._kwargs())
-        # raise Hell
+        # raise ResourceDefError("Field type could not be resolved")
 
 
 def _new_meta_instance(meta_options_type, meta_def, new_class):
@@ -162,17 +161,22 @@ def _resolve_field_from_generic(type_):
     """
     origin = getattr(type_, "__origin__")
     name = str(origin)
+    nullable = False
     if name == "typing.Union":
         if (
             len(type_.__args__) == 2
             and type(None) in type_.__args__  # pylint: disable=unidiomatic-typecheck
         ):
-            return _resolve_field_from_type()
+            nullable = True
+            type_ = type_.__args__[0]
 
-            return type_.__args__[0] if type_.__args__ else None
+    else:
+        type_ = _resolve_field_from_type(type_.__args__[0])
+
+    return nullable, _resolve_field_from_type(type_)
 
 
-def _resolve_field_from_annotation(type_) -> Optional[Type[BaseField]]:
+def _resolve_field_from_annotation(type_) -> Tuple[bool, Optional[Type[BaseField]]]:
     """
     Resolve a field from a type annotation
 
@@ -183,9 +187,7 @@ def _resolve_field_from_annotation(type_) -> Optional[Type[BaseField]]:
         return _resolve_field_from_generic(type_)
 
     elif isinstance(type_, type):
-        return _resolve_field_from_type(type_)
-
-    print(annotation)
+        return False, _resolve_field_from_type(type_)
 
 
 def _process_attribute(type_: Type, value: Union[Options, Any]):
@@ -207,7 +209,7 @@ def _process_attribute(type_: Type, value: Union[Options, Any]):
 
     if not value.field_type:
         # Resolve field type from annotation
-        value.field_type = _resolve_field_from_annotation(type_)
+        value.field_args["null"], value.field_type = _resolve_field_from_annotation(type_)
 
     # Finally instantiate a field object
     return value.init_field()
@@ -292,7 +294,9 @@ class NewResourceType(type):
 class NewResource(
     ResourceBase, metaclass=NewResourceType, meta_options_type=ResourceOptions
 ):
-    pass
+    """
+    New Style Resource utilising type annotations for defining fields
+    """
 
 
 class AbstractResource(
@@ -301,4 +305,6 @@ class AbstractResource(
     meta_options_type=ResourceOptions,
     abstract=True,
 ):
-    pass
+    """
+    New Style Abstract Resource utilising type annotations for defining fields
+    """
