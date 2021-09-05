@@ -33,10 +33,10 @@ class Book(LibraryBook):
         key_field_name = "isbn"
 
     title: str
-    isbn: str = Options(field_type=odin.StringField)
+    isbn: str
     num_pages: Optional[int]
     rrp: float = Options(20.4, use_default_if_not_provided=True)
-    fiction: bool = Options(is_attribute=True)
+    fiction: bool = True
     genre: str = Options(
         choices=(
             ("sci-fi", "Science Fiction"),

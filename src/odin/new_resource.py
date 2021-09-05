@@ -18,6 +18,9 @@ Example:
 
 """
 import datetime
+import decimal
+import uuid
+from pathlib import Path
 from typing import Union, Any, Sequence, Callable, Dict, Tuple, Type, Optional
 
 import odin
@@ -130,13 +133,17 @@ def _new_meta_instance(meta_options_type, meta_def, new_class):
     return new_meta
 
 
-SIMPLE_ITEMS = {
-    str: odin.StringField,
-    int: odin.IntegerField,
-    float: odin.FloatField,
+SIMPLE_TYPE_MAP = {
     bool: odin.BooleanField,
-    datetime.datetime: odin.DateTimeField,
     datetime.date: odin.DateField,
+    datetime.datetime: odin.DateTimeField,
+    dict: odin.DictField,
+    float: odin.FloatField,
+    int: odin.IntegerField,
+    list: odin.ListField,
+    str: odin.StringField,
+    datetime.time: odin.TimeField,
+    uuid.UUID: odin.UUIDField,
 }
 
 
@@ -152,7 +159,7 @@ def _resolve_field_from_type(type_):
     """
     Resolve a field from a basic type
     """
-    return SIMPLE_ITEMS.get(type_)
+    return SIMPLE_TYPE_MAP.get(type_)
 
 
 def _resolve_field_from_generic(type_):
