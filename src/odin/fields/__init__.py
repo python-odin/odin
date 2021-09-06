@@ -40,6 +40,7 @@ __all__ = (
     "IPv4Field",
     "IPv6Field",
     "IPv46Field",
+    "ListField",
     "UUIDField",
     "DictField",
     "ObjectField",
@@ -76,6 +77,7 @@ class Field(BaseField):
         "required": "This field is required.",
     }
     data_type_name = None
+    empty_values = EMPTY_VALUES
 
     def __init__(
         self,
@@ -170,7 +172,7 @@ class Field(BaseField):
         raise NotImplementedError()
 
     def run_validators(self, value):
-        if value in EMPTY_VALUES:
+        if value in self.empty_values:
             return
 
         errors = []
@@ -186,7 +188,7 @@ class Field(BaseField):
     def validate(self, value):
         if (
             self.choice_values
-            and (value not in EMPTY_VALUES)
+            and (value not in self.empty_values)
             and (value not in self.choice_values)
         ):
             msg = self.error_messages["invalid_choice"] % value
@@ -315,7 +317,7 @@ class ScalarField(Field):
             self.validators.append(MaxValueValidator(max_value))
 
     def to_python(self, value):
-        if value in EMPTY_VALUES:
+        if value in self.empty_values:
             return
         try:
             return self.scalar_type(value)
@@ -366,7 +368,7 @@ class DateField(_IsoFormatMixin, Field):
     data_type_name = "ISO-8601 Date"
 
     def to_python(self, value):
-        if value in EMPTY_VALUES:
+        if value in self.empty_values:
             return
         if isinstance(value, datetime.datetime):
             return value.date()
@@ -403,7 +405,7 @@ class TimeField(_IsoFormatMixin, Field):
         self.assume_local = assume_local
 
     def to_python(self, value):
-        if value in EMPTY_VALUES:
+        if value in self.empty_values:
             return
         if isinstance(value, datetime.time):
             return value
@@ -440,7 +442,7 @@ class NaiveTimeField(_IsoFormatMixin, Field):
         self.ignore_timezone = ignore_timezone
 
     def to_python(self, value):
-        if value in EMPTY_VALUES:
+        if value in self.empty_values:
             return
         if isinstance(value, datetime.time):
             if value.tzinfo and self.ignore_timezone:
@@ -491,7 +493,7 @@ class DateTimeField(_IsoFormatMixin, Field):
         self.assume_local = assume_local
 
     def to_python(self, value):
-        if value in EMPTY_VALUES:
+        if value in self.empty_values:
             return
         if isinstance(value, datetime.datetime):
             return value
@@ -528,7 +530,7 @@ class NaiveDateTimeField(_IsoFormatMixin, Field):
         self.ignore_timezone = ignore_timezone
 
     def to_python(self, value):
-        if value in EMPTY_VALUES:
+        if value in self.empty_values:
             return
         if isinstance(value, datetime.datetime):
             if value.tzinfo and self.ignore_timezone:
@@ -570,7 +572,7 @@ class HttpDateTimeField(Field):
     data_type_name = "ISO-1123 DateTime"
 
     def to_python(self, value):
-        if value in EMPTY_VALUES:
+        if value in self.empty_values:
             return
         if isinstance(value, datetime.datetime):
             return value
@@ -607,7 +609,7 @@ class TimeStampField(Field):
     data_type_name = "Integer"
 
     def to_python(self, value):
-        if value in EMPTY_VALUES:
+        if value in self.empty_values:
             return
         if isinstance(value, datetime.datetime):
             return value
@@ -619,7 +621,7 @@ class TimeStampField(Field):
         raise exceptions.ValidationError(msg)
 
     def prepare(self, value):
-        if value in EMPTY_VALUES:
+        if value in self.empty_values:
             return
         if isinstance(value, six.integer_types):
             return long(value)
@@ -632,6 +634,7 @@ class DictField(Field):
         "invalid": "Must be a dict.",
     }
     data_type_name = "Dict"
+    empty_values = (None, "", [], ())
 
     def __init__(self, **options):
         options.setdefault("default", dict)
@@ -656,6 +659,7 @@ class ListField(Field):
         "invalid": "Must be an array.",
     }
     data_type_name = "List"
+    empty_values = (None, "", {}, ())
 
     def __init__(self, **options):
         options.setdefault("default", list)
@@ -701,9 +705,10 @@ class TypedListField(ListField):
 
         value_list = []
         errors = {}
+        field_to_python = self.field.to_python
         for idx, item in enumerate(value):
             try:
-                value_list.append(self.field.to_python(item))
+                value_list.append(field_to_python(item))
             except exceptions.ValidationError as ve:
                 errors[idx] = ve.error_messages
 
@@ -711,6 +716,46 @@ class TypedListField(ListField):
             raise exceptions.ValidationError(errors)
 
         return value_list
+
+    def validate(self, value):
+        """
+        Validate each item against field
+        """
+        super(TypedListField, self).validate(value)
+        if value:
+            field_validate = self.field.validate
+
+            errors = {}
+            for idx, item in enumerate(value):
+                try:
+                    field_validate(item)
+                except exceptions.ValidationError as ve:
+                    errors[idx] = ve.error_messages
+
+            if errors:
+                raise exceptions.ValidationError(errors)
+
+        return value
+
+    def run_validators(self, value):
+        """
+        Run validators against each item in the field
+        """
+        super(TypedListField, self).run_validators(value)
+        if value:
+            field_run_validators = self.field.run_validators
+
+            errors = {}
+            for idx, item in enumerate(value):
+                try:
+                    field_run_validators(item)
+                except exceptions.ValidationError as ve:
+                    errors[idx] = ve.error_messages
+
+            if errors:
+                raise exceptions.ValidationError(errors)
+
+        return value
 
     def prepare(self, value):
         if isinstance(value, (tuple, list)):
@@ -783,7 +828,7 @@ class TypedDictField(DictField):
     def validate(self, value):
         super(TypedDictField, self).validate(value)
 
-        if value in EMPTY_VALUES:
+        if value in self.empty_values:
             return
 
         key_errors = []
@@ -811,7 +856,7 @@ class TypedDictField(DictField):
     def run_validators(self, value):
         super(TypedDictField, self).run_validators(value)
 
-        if value in EMPTY_VALUES:
+        if value in self.empty_values:
             return
 
         key_errors = []
