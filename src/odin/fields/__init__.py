@@ -705,9 +705,10 @@ class TypedListField(ListField):
 
         value_list = []
         errors = {}
+        field_to_python = self.field.to_python
         for idx, item in enumerate(value):
             try:
-                value_list.append(self.field.to_python(item))
+                value_list.append(field_to_python(item))
             except exceptions.ValidationError as ve:
                 errors[idx] = ve.error_messages
 
@@ -715,6 +716,46 @@ class TypedListField(ListField):
             raise exceptions.ValidationError(errors)
 
         return value_list
+
+    def validate(self, value):
+        """
+        Validate each item against field
+        """
+        super(TypedListField, self).validate(value)
+        if value:
+            field_validate = self.field.validate
+
+            errors = {}
+            for idx, item in enumerate(value):
+                try:
+                    field_validate(item)
+                except exceptions.ValidationError as ve:
+                    errors[idx] = ve.error_messages
+
+            if errors:
+                raise exceptions.ValidationError(errors)
+
+        return value
+
+    def run_validators(self, value):
+        """
+        Run validators against each item in the field
+        """
+        super(TypedListField, self).run_validators(value)
+        if value:
+            field_run_validators = self.field.run_validators
+
+            errors = {}
+            for idx, item in enumerate(value):
+                try:
+                    field_run_validators(item)
+                except exceptions.ValidationError as ve:
+                    errors[idx] = ve.error_messages
+
+            if errors:
+                raise exceptions.ValidationError(errors)
+
+        return value
 
     def prepare(self, value):
         if isinstance(value, (tuple, list)):

@@ -917,6 +917,11 @@ class TestFields(object):
         f = TypedListField(DynamicTypeNameFieldTest(), null=True)
         assert target.choices_doc_text == expected
 
+    @pytest.mark.parametrize("value", ([None], [10, 11, 3], ["Fifteen"]))
+    def test_typed_list_field__with_nested_validation_errors(self, value):
+        target = TypedListField(IntegerField(min_value=10, null=False))
+        pytest.raises(ValidationError, target.clean, value)
+
     # TypedDictField ##########################################################
 
     def test_typeddictfield_1(self):
