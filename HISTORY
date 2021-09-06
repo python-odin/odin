@@ -1,3 +1,9 @@
+1.7.2
+=====
+
+- Fix an edge case bug where validators are not executed against empty list/dict
+  fields.
+
 1.7.1
 =====
 
