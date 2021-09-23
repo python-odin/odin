@@ -1,3 +1,11 @@
+1.7.2
+=====
+
+- Fix an edge case bug where validators are not executed against empty list/dict
+  fields.
+- Ensure that all validate and run_validators are executed on all entries in a
+  typed list field
+
 1.7.1
 =====
 

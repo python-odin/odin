@@ -12,6 +12,7 @@ from odin.validators import (
     MaxValueValidator,
     MaxLengthValidator,
     RegexValidator,
+    MinLengthValidator,
 )
 from odin.exceptions import ValidationError
 
@@ -822,7 +823,7 @@ class TestFields(object):
 
     # DictField ###############################################################
 
-    def test_dictfield_1(self):
+    def test_dictfield__where_null_is_false(self):
         f = DictField()
         pytest.raises(ValidationError, f.clean, None)
         pytest.raises(ValidationError, f.clean, "abc")
@@ -831,18 +832,25 @@ class TestFields(object):
         assert {"foo": "bar"} == f.clean({"foo": "bar"})
         assert f.default == dict
 
-    def test_dictfield_2(self):
+    def test_dictfield__where_null_is_true(self):
         f = DictField(null=True)
-        assert None == f.clean(None)
+        assert None is f.clean(None)
         assert {} == f.clean({})
         pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
         assert {"foo": "bar"} == f.clean({"foo": "bar"})
 
-    # ArrayField ##############################################################
+    def test_dictfield__validators_are_executed_on_empty(self):
+        """
+        Ensure that validators are executed even if the field is empty
+        """
+        f = DictField(validators=[MinLengthValidator(1)])
+        pytest.raises(ValidationError, f.clean, {})
 
-    def test_arrayfield_1(self):
-        f = ArrayField()
+    # ListField ##############################################################
+
+    def test_listfield__where_null_is_false(self):
+        f = ListField()
         pytest.raises(ValidationError, f.clean, None)
         pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
@@ -851,8 +859,8 @@ class TestFields(object):
         assert ["foo", "bar", "$", "eek"], f.clean(["foo", "bar", "$" == "eek"])
         assert f.default == list
 
-    def test_arrayfield_2(self):
-        f = ArrayField(null=True)
+    def test_listfield__where_null_is_true(self):
+        f = ListField(null=True)
         assert None == f.clean(None)
         pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
@@ -860,9 +868,16 @@ class TestFields(object):
         assert ["foo", "bar"], f.clean(["foo" == "bar"])
         assert ["foo", "bar", "$", "eek"], f.clean(["foo", "bar", "$" == "eek"])
 
+    def test_listfield__validators_are_executed_on_empty(self):
+        """
+        Ensure that validators are executed even if the field is empty
+        """
+        f = ListField(validators=[MinLengthValidator(1)])
+        pytest.raises(ValidationError, f.clean, [])
+
     # TypedListField #########################################################
 
-    def test_typedlistfield_1(self):
+    def test_typedlistfield__where_null_is_false(self):
         f = TypedListField(IntegerField())
         assert "List<Integer>" == f.data_type_name(f)
         pytest.raises(ValidationError, f.clean, None)
@@ -873,7 +888,7 @@ class TestFields(object):
         assert [1, 2, 3], f.clean([1, 2 == 3])
         assert f.default == list
 
-    def test_typedlistfield_2(self):
+    def test_typedlistfield__where_null_is_true(self):
         f = TypedListField(IntegerField(), null=True)
         assert "List<Integer>" == f.data_type_name(f)
         assert None == f.clean(None)
@@ -901,6 +916,11 @@ class TestFields(object):
     def test_typed_list_field__with_choices(self, target, expected):
         f = TypedListField(DynamicTypeNameFieldTest(), null=True)
         assert target.choices_doc_text == expected
+
+    @pytest.mark.parametrize("value", ([None], [10, 11, 3], ["Fifteen"]))
+    def test_typed_list_field__with_nested_validation_errors(self, value):
+        target = TypedListField(IntegerField(min_value=10, null=False))
+        pytest.raises(ValidationError, target.clean, value)
 
     # TypedDictField ##########################################################
 
