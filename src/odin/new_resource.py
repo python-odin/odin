@@ -21,7 +21,7 @@ import datetime
 import decimal
 import uuid
 from pathlib import Path
-from typing import Union, Any, Sequence, Callable, Dict, Tuple, Type, Optional
+from typing import Union, Any, Sequence, Callable, Dict, Tuple, Type, Optional, Mapping
 
 import odin
 from odin import NotProvided, registration
@@ -162,28 +162,34 @@ def _resolve_field_from_type(type_):
     return SIMPLE_TYPE_MAP.get(type_)
 
 
-def _resolve_field_from_generic(type_):
+def _resolve_field_from_generic(options: Options, type_):
     """
     Resolve a field from a generic type
     """
     origin = getattr(type_, "__origin__")
     name = str(origin)
-    nullable = False
     if name == "typing.Union":
         if (
             len(type_.__args__) == 2
             and type(None) in type_.__args__  # pylint: disable=unidiomatic-typecheck
         ):
-            nullable = True
-            type_ = type_.__args__[0]
+            options.field_args["null"] = True
+            _resolve_field_from_annotation(options, type_.__args__[0])
+            return
+
+    elif issubclass(origin, Sequence):
+        return
+
+    elif issubclass(origin, Mapping):
+        return
 
     else:
         type_ = _resolve_field_from_type(type_.__args__[0])
 
-    return nullable, _resolve_field_from_type(type_)
+    raise Exception("Not supported")
 
 
-def _resolve_field_from_annotation(type_) -> Tuple[bool, Optional[Type[BaseField]]]:
+def _resolve_field_from_annotation(options: Options, type_):
     """
     Resolve a field from a type annotation
 
@@ -191,10 +197,17 @@ def _resolve_field_from_annotation(type_) -> Tuple[bool, Optional[Type[BaseField
     """
     origin = getattr(type_, "__origin__", None)
     if origin is not None:
-        return _resolve_field_from_generic(type_)
+        _resolve_field_from_generic(options, type_)
+
+    elif isinstance(type_, ResourceBase):
+        options.field_args["resource"] = type_
+        options.field_type = odin.DictAs
 
     elif isinstance(type_, type):
-        return False, _resolve_field_from_type(type_)
+        options.field_type = _resolve_field_from_type(type_)
+
+    else:
+        raise Exception(f"Not a supported value {type_}")
 
 
 def _process_attribute(type_: Type, value: Union[Options, Any]):
@@ -216,9 +229,7 @@ def _process_attribute(type_: Type, value: Union[Options, Any]):
 
     if not value.field_type:
         # Resolve field type from annotation
-        value.field_args["null"], value.field_type = _resolve_field_from_annotation(
-            type_
-        )
+        _resolve_field_from_annotation(value, type_)
 
     # Finally instantiate a field object
     return value.init_field()
