@@ -1,3 +1,10 @@
+1.7.3
+=====
+
+- Fix bug where __classcell__ was not passed into super_new during metaclass
+  construction. This causes a RuntimeError with Python 3.8+ if the metaclass is
+  subclassed.
+
 1.7.2
 =====
 
