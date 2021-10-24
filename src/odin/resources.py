@@ -273,7 +273,14 @@ class ResourceType(type):
 
         # Create the class.
         module = attrs.pop("__module__")
-        new_class = super_new(mcs, name, bases, {"__module__": module})
+        new_attrs = {"__module__": module}
+
+        # Required for https://bugs.python.org/issue23722
+        class_cell = attrs.pop("__classcell__", None)
+        if class_cell is not None:
+            new_attrs["__classcell__"] = class_cell
+        new_class = super_new(mcs, name, bases, new_attrs)
+
         attr_meta = attrs.pop("Meta", None)
         abstract = getattr(attr_meta, "abstract", False)
         if not attr_meta:
