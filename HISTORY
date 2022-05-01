@@ -1,3 +1,10 @@
+1.8.0
+=====
+
+- Allow types to be resolved by assuming a types names space (simplifies
+  specification of types where the full name space can be assumed)
+- Inherit a custom type_field
+
 1.7.3
 =====
 
