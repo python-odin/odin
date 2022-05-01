@@ -570,9 +570,9 @@ class Resource(six.with_metaclass(ResourceType, ResourceBase)):
 def resolve_resource_type(resource):
     if isinstance(resource, type) and issubclass(resource, ResourceBase):
         meta = getmeta(resource)
-        return meta.resource_name, meta.type_field
+        return meta.resource_name, meta.type_field, meta.name_space
     else:
-        return resource, DEFAULT_TYPE_FIELD
+        return resource, DEFAULT_TYPE_FIELD, ""
 
 
 def create_resource_from_iter(
@@ -647,11 +647,16 @@ def _resolve_type_from_resource(data, resource):
     else:
         resources = [resolve_resource_type(resource)]
 
-    for resource_name, type_field in resources:
+    for resource_name, type_field, name_space in resources:
         # See if the input includes a type field and check it's registered
         document_resource_name = data.get(type_field, None)
         if document_resource_name:
             resource_type = registration.get_resource(document_resource_name)
+            # Fall back to try applying a prefix
+            if not resource_type and name_space:
+                resource_type = registration.get_resource(
+                    "{}.{}".format(name_space, document_resource_name)
+                )
         else:
             resource_type = registration.get_resource(resource_name)
 
@@ -702,9 +707,12 @@ def _resolve_type_from_data(data):
 
 
 def create_resource_from_dict(
-    d, resource=None, full_clean=True, copy_dict=True, default_to_not_provided=False
+    d,  # type: Dict[str, Any]
+    resource=None,  # type: Type[R]
+    full_clean=True,  # type: bool
+    copy_dict=True,  # type: bool
+    default_to_not_provided=False,  # type: bool
 ):
-    # type: (Dict[str, Any], Type[R], bool, bool, bool) -> R
     """
     Create a resource from a dict.
 
@@ -764,7 +772,11 @@ def create_resource_from_dict(
 
 
 def build_object_graph(
-    d, resource=None, full_clean=True, copy_dict=True, default_to_not_supplied=False
+    d,  # type: Dict[str, Any]
+    resource=None,  # type: Type[R]
+    full_clean=True,  # type: bool
+    copy_dict=True,  # type: bool
+    default_to_not_supplied=False,  # type: bool
 ):
     """
     Generate an object graph from a dict
