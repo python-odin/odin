@@ -1,3 +1,9 @@
+1.8.1
+=====
+
+- Change composite field to pass the resource the field is defined with rather
+  than the name of the field, this allows namespace and typing to work correctly.
+
 1.8.0
 =====
 
@@ -67,6 +73,7 @@
 
 1.5
 ===
+
 - Improvements to sphinx autodoc generation
 - Improvements to enum support
 
