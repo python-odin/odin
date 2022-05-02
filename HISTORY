@@ -3,7 +3,8 @@
 
 - Allow types to be resolved by assuming a types names space (simplifies
   specification of types where the full name space can be assumed)
-- Inherit a custom type_field
+- Inherit a custom type_field (this could cause unexpected side effects,
+  although unlikely as this is a required change)
 
 1.7.3
 =====

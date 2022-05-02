@@ -54,7 +54,7 @@ class ResourceOptions(object):
         self.verbose_name_plural = None
         self.abstract = False
         self.doc_group = None
-        self.type_field = DEFAULT_TYPE_FIELD
+        self.type_field = NotProvided
         self.key_field_names = None
         self.field_sorting = NotProvided
         self.user_data = None
@@ -292,13 +292,17 @@ class ResourceType(type):
         new_meta = mcs.meta_options(meta)
         new_class.add_to_class("_meta", new_meta)
 
-        # Namespace is inherited
+        # Namespace is inherited and default if not provided
         if base_meta and new_meta.name_space is NotProvided:
             new_meta.name_space = base_meta.name_space
-
-        # Generate a namespace if one is not provided
         if new_meta.name_space is NotProvided:
             new_meta.name_space = module
+
+        # Type field is inherited and default if not provided
+        if base_meta and new_meta.type_field is NotProvided:
+            new_meta.type_field = base_meta.type_field
+        if new_meta.type_field is NotProvided:
+            new_meta.type_field = DEFAULT_TYPE_FIELD
 
         # Key field is inherited
         if base_meta and new_meta.key_field_names is None:
