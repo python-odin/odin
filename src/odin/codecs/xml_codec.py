@@ -11,7 +11,7 @@ To support this the XML codec includes a TextField, any TextField found on a
 resource will be exported (if multiple are defined they will all be exported
 into the one text block).
 
-The TextField is for all intensive purposes just a StringField, other codecs
+The TextField is for all intents and purposes just a StringField, other codecs
 will export any value as a String.
 
 """

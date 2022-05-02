@@ -54,7 +54,7 @@ class ResourceOptions(object):
         self.verbose_name_plural = None
         self.abstract = False
         self.doc_group = None
-        self.type_field = DEFAULT_TYPE_FIELD
+        self.type_field = NotProvided
         self.key_field_names = None
         self.field_sorting = NotProvided
         self.user_data = None
@@ -274,11 +274,13 @@ class ResourceType(type):
         # Create the class.
         module = attrs.pop("__module__")
         new_attrs = {"__module__": module}
+
         # Required for https://bugs.python.org/issue23722
         class_cell = attrs.pop("__classcell__", None)
         if class_cell is not None:
             new_attrs["__classcell__"] = class_cell
         new_class = super_new(mcs, name, bases, new_attrs)
+
         attr_meta = attrs.pop("Meta", None)
         abstract = getattr(attr_meta, "abstract", False)
         if not attr_meta:
@@ -290,13 +292,17 @@ class ResourceType(type):
         new_meta = mcs.meta_options(meta)
         new_class.add_to_class("_meta", new_meta)
 
-        # Namespace is inherited
+        # Namespace is inherited and default if not provided
         if base_meta and new_meta.name_space is NotProvided:
             new_meta.name_space = base_meta.name_space
-
-        # Generate a namespace if one is not provided
         if new_meta.name_space is NotProvided:
             new_meta.name_space = module
+
+        # Type field is inherited and default if not provided
+        if base_meta and new_meta.type_field is NotProvided:
+            new_meta.type_field = base_meta.type_field
+        if new_meta.type_field is NotProvided:
+            new_meta.type_field = DEFAULT_TYPE_FIELD
 
         # Key field is inherited
         if base_meta and new_meta.key_field_names is None:
@@ -568,9 +574,9 @@ class Resource(six.with_metaclass(ResourceType, ResourceBase)):
 def resolve_resource_type(resource):
     if isinstance(resource, type) and issubclass(resource, ResourceBase):
         meta = getmeta(resource)
-        return meta.resource_name, meta.type_field
+        return meta.resource_name, meta.type_field, meta.name_space
     else:
-        return resource, DEFAULT_TYPE_FIELD
+        return resource, DEFAULT_TYPE_FIELD, ""
 
 
 def create_resource_from_iter(
@@ -645,11 +651,16 @@ def _resolve_type_from_resource(data, resource):
     else:
         resources = [resolve_resource_type(resource)]
 
-    for resource_name, type_field in resources:
+    for resource_name, type_field, name_space in resources:
         # See if the input includes a type field and check it's registered
         document_resource_name = data.get(type_field, None)
         if document_resource_name:
             resource_type = registration.get_resource(document_resource_name)
+            # Fall back to try applying a prefix
+            if not resource_type and name_space:
+                resource_type = registration.get_resource(
+                    "{}.{}".format(name_space, document_resource_name)
+                )
         else:
             resource_type = registration.get_resource(resource_name)
 
@@ -700,9 +711,12 @@ def _resolve_type_from_data(data):
 
 
 def create_resource_from_dict(
-    d, resource=None, full_clean=True, copy_dict=True, default_to_not_provided=False
+    d,  # type: Dict[str, Any]
+    resource=None,  # type: Type[R]
+    full_clean=True,  # type: bool
+    copy_dict=True,  # type: bool
+    default_to_not_provided=False,  # type: bool
 ):
-    # type: (Dict[str, Any], Type[R], bool, bool, bool) -> R
     """
     Create a resource from a dict.
 
@@ -762,7 +776,11 @@ def create_resource_from_dict(
 
 
 def build_object_graph(
-    d, resource=None, full_clean=True, copy_dict=True, default_to_not_supplied=False
+    d,  # type: Dict[str, Any]
+    resource=None,  # type: Type[R]
+    full_clean=True,  # type: bool
+    copy_dict=True,  # type: bool
+    default_to_not_supplied=False,  # type: bool
 ):
     """
     Generate an object graph from a dict

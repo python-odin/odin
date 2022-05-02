@@ -1,3 +1,18 @@
+1.8.0
+=====
+
+- Allow types to be resolved by assuming a types names space (simplifies
+  specification of types where the full name space can be assumed)
+- Inherit a custom type_field (this could cause unexpected side effects,
+  although unlikely as this is a required change)
+
+1.7.3
+=====
+
+- Fix bug where __classcell__ was not passed into super_new during metaclass
+  construction. This causes a RuntimeError with Python 3.8+ if the metaclass is
+  subclassed.
+
 1.7.2
 =====
 
