@@ -8,7 +8,7 @@ __all__ = ("ResourceAdapter",)
 
 class CurriedAdapter(object):
     """
-    Curry wrapper for a Adapter to allow for pre-config of include/exclude and
+    Curry wrapper for an Adapter to allow for pre-config of include/exclude and
     any other user defined arguments provided in kwargs.
     """
 
