@@ -1,3 +1,14 @@
+1.9.0
+=====
+
+- Drop support for Python <3.6, officially tested on Python 3.8+
+- Removed a number of dependencies that where only required for Python <3.6 eg
+  (enum, six etc)
+- Removed deprecated features:
+  - odin.csv_codec.ResourceReader
+  - odin.serializers.DatetimeEcmaFormat
+- Initial improvements to typing and utilising of modern Python features
+
 1.8.1
 =====
 
