@@ -33,18 +33,15 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.6 <4"
+python = "^3.8"
 pyyaml = {version = "*", optional = true }
 toml = {version = "*", optional = true }
 pint = {version = "*", optional = true }
 arrow = {version = "*", optional = true }
 msgpack = {version = "*", optional = true }
-humanfriendly = {version = "*", optional = true }
-ply = {version = "*", optional = true }
 
 [tool.poetry.dev-dependencies]
-mock = "*"
-pytest = "*"
+pytest = "^7.0"
 pytest-cov = "*"
 sphinx = "*"
 
@@ -54,5 +51,3 @@ msgpack = ["msgpack"]
 toml = ["toml"]
 pint = ["pint"]
 arrow = ["arrow"]
-inspect = ["humanfriendly"]
-filter_query = ["ply"]

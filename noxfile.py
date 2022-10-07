@@ -13,6 +13,7 @@ def tests(session: Session):
         "--extras=yaml",
         "--extras=arrow",
         "--extras=msgpack",
+        "--extras=pint",
         external=True,
     )
     # fmt: on
