@@ -61,7 +61,7 @@ def lower_dash_to_camel(value):
     return _LOWER_DASH_CASE_RE.sub(lambda m: m.group(1).upper(), value.lower())
 
 
-class cached_property(object):  # noqa - Made to match property builtin
+class cached_property:  # noqa - Made to match property builtin
     """
     Acts like a standard class `property` except return values cached.
     """
@@ -89,7 +89,7 @@ class cached_property(object):  # noqa - Made to match property builtin
         return value
 
 
-class lazy_property(object):  # noqa - Made to match the property builtin
+class lazy_property:  # noqa - Made to match the property builtin
     """
     The bottle cached property, requires a alternate name so as not to
     clash with existing cached_property behaviour

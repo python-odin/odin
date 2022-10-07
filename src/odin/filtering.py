@@ -2,7 +2,7 @@ from .exceptions import InvalidPathError
 from .traversal import TraversalPath
 
 
-class FilterAtom(object):
+class FilterAtom:
     """
     Base filter statement
     """

@@ -5,7 +5,7 @@ from email.utils import parsedate_tz as parse_http_datetime
 from email.utils import formatdate as format_http_datetime  # noqa
 
 
-class IgnoreTimezone(object):
+class IgnoreTimezone:
     pass
 
 

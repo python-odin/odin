@@ -17,7 +17,7 @@ from odin.utils import getmeta, filter_fields, lazy_property
 EMPTY = tuple()
 
 
-class FieldProxyDescriptor(object):
+class FieldProxyDescriptor:
     """
     Descriptor to proxy field to underlying resource.
     """
@@ -280,7 +280,7 @@ class ResourceProxyBase(ResourceBase):
         return self._shadow
 
 
-class ResourceProxy(ResourceProxyBase, metaclass=ResourceProxyBase):
+class ResourceProxy(ResourceProxyBase, metaclass=ResourceProxyType):
     """
     Proxy for a Resources that allow a filtered set of fields to be made
     available and updated.

@@ -59,7 +59,7 @@ class URLValidator(RegexValidator):
 validate_url = URLValidator()
 
 
-class BaseValidator(object):
+class BaseValidator:
     message = "Ensure this value is %(limit_value)s (it is %(show_value)s)."
     code = "limit_value"
     description = "Ensure that a value is %(limit_value)s."
@@ -133,7 +133,7 @@ class MinLengthValidator(LengthValidator):
         return a < b
 
 
-class SimpleValidator(object):
+class SimpleValidator:
     def __init__(self, assertion, message, code):
         self.assertion = assertion
         self.message = message
@@ -217,7 +217,7 @@ def validate_ipv46_address(value):
             )
 
 
-class EmailValidator(object):
+class EmailValidator:
     """
     Validate is a valid email address format.
     """

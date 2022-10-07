@@ -3,7 +3,7 @@ from odin.utils import cached_property, field_iter_items, getmeta
 __all__ = ("ResourceAdapter",)
 
 
-class CurriedAdapter(object):
+class CurriedAdapter:
     """
     Curry wrapper for an Adapter to allow for pre-config of include/exclude and
     any other user defined arguments provided in kwargs.
@@ -20,7 +20,7 @@ class CurriedAdapter(object):
         return self.cls.apply_to(sources, **self.kwargs)
 
 
-class ResourceOptionsAdapter(object):
+class ResourceOptionsAdapter:
     """
     A lightweight wrapper for the *ResourceOptions* class that filters fields.
     """
@@ -78,7 +78,7 @@ class ResourceOptionsAdapter(object):
         return [f for f in self.fields if not f.is_attribute]
 
 
-class ResourceAdapter(object):
+class ResourceAdapter:
     """
     A lightweight wrapper that can be placed around a resource to filter out specific
     fields or to provide additional specific methods or calculated properties.

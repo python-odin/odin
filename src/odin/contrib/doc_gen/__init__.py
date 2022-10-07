@@ -20,7 +20,7 @@ FORMAT_TEMPLATE_RST = "odin/doc.rst"
 FORMAT_TEMPLATE_HTML = "odin/doc.html"
 
 
-class ResourceDocumentation(object):
+class ResourceDocumentation:
     """
     Wrapper for resources to simplify documentation generation.
     """

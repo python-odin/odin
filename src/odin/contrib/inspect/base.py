@@ -9,7 +9,7 @@ def resource_reference(resource):
     )
 
 
-class SummaryBase(object):
+class SummaryBase:
     """
     Base class for summaries
     """

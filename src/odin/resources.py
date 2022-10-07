@@ -21,7 +21,7 @@ RESERVED_FIELD_NAMES = {
 }
 
 
-class ResourceOptions(object):
+class ResourceOptions:
     META_OPTION_NAMES = (
         "name",
         "namespace",
@@ -396,7 +396,7 @@ class ResourceType(type):
             setattr(cls, name, value)
 
 
-class ResourceBase(object):
+class ResourceBase:
     def __init__(self, *args, **kwargs):
         args_len = len(args)
         meta = getmeta(self)

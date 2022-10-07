@@ -461,7 +461,7 @@ class CachingMappingResult(MappingResult):
         return self.items[idx]
 
 
-class MappingBase(object):
+class MappingBase:
     from_obj = None  # type: type
     to_obj = None  # type: type
 
