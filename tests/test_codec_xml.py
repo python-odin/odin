@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
-
 import os
 from datetime import date
 
@@ -36,7 +33,7 @@ class XMLBook(LibraryBook):
     summary = odin.DictAs(Summary)
 
 
-class TestXmlLoad(object):
+class TestXmlLoad:
     def test_dumps(self):
         book = XMLBook(
             title="Consider Phlebas & Other stories",

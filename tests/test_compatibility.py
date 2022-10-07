@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 import warnings
 from odin.compatibility import deprecated
 
 
-class TestDeprecated(object):
+class TestDeprecated:
     def test_function_deprecation_warning(self):
         @deprecated("No longer used.", category=UserWarning)
         def deprecated_function():
@@ -14,15 +13,14 @@ class TestDeprecated(object):
 
         # Compare the message values
         assert [
-            str(m.message) for m in
-            sorted(warning_log, key=lambda l: str(l.message))
+            str(m.message) for m in sorted(warning_log, key=lambda l: str(l.message))
         ] == [
-            'deprecated_function is deprecated and scheduled for removal. No longer used.',
+            "deprecated_function is deprecated and scheduled for removal. No longer used.",
         ]
 
     def test_class_deprecation_warning(self):
         @deprecated("No longer used.", category=UserWarning)
-        class DeprecatedClass(object):
+        class DeprecatedClass:
             pass
 
         with warnings.catch_warnings(record=True) as warning_log:
@@ -30,9 +28,7 @@ class TestDeprecated(object):
 
         # Compare the message values
         assert [
-            str(m.message) for m in
-            sorted(warning_log, key=lambda l: str(l.message))
+            str(m.message) for m in sorted(warning_log, key=lambda l: str(l.message))
         ] == [
-            'DeprecatedClass is deprecated and scheduled for removal. No longer used.',
+            "DeprecatedClass is deprecated and scheduled for removal. No longer used.",
         ]
-

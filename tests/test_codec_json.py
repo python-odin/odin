@@ -1,23 +1,20 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
 import uuid
 import datetime
 import os
 from odin.datetimeutil import utc
-from six import StringIO
 from odin.codecs import json_codec
 from .resources import *
 
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
-class TestJSONCodec(object):
+class TestJSONCodec:
     def test_dumps_and_loads(self):
         in_resource = IdentifiableBook(
             id=uuid.uuid4(),
             purchased_from=From.Ebay,
-            title='Consider Phlebas',
-            isbn='0-333-45430-8',
+            title="Consider Phlebas",
+            isbn="0-333-45430-8",
             num_pages=471,
             rrp=19.50,
             fiction=True,
@@ -44,15 +41,15 @@ class TestJSONCodec(object):
         in_resource = IdentifiableBook(
             id=uuid.uuid4(),
             purchased_from=From.Shop,
-            title='Consider Phlebas',
-            isbn='0-333-45430-8',
+            title="Consider Phlebas",
+            isbn="0-333-45430-8",
             num_pages=471,
             rrp=19.50,
             fiction=True,
             genre="sci-fi",
             authors=[Author(name="Iain M. Banks")],
             publisher=Publisher(name="Macmillan"),
-            published=[datetime.datetime(1987, 1, 1, tzinfo=utc)]
+            published=[datetime.datetime(1987, 1, 1, tzinfo=utc)],
         )
 
         fp = StringIO()

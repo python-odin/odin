@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 import pytest
-import six
 from odin.contrib.geo import datatypes
 
 
-class TestDataTypes(object):
+class TestDataTypes:
     def test_to_dms(self):
         # I am aware that round in python is not accurate but in this case I have calculated the test values
         # specifically so that the rounding will not effect the outcome of this test.
@@ -51,11 +49,11 @@ class TestDataTypes(object):
     def test_latitude_str(self):
         lat = datatypes.latitude(27.3375)
         assert "27.3375" == repr(lat)
-        assert u"27°20'15.000000\"N" == six.text_type(lat)
+        assert "27°20'15.000000\"N" == str(lat)
 
         lat = datatypes.latitude(-27.3375)
         assert "-27.3375" == repr(lat)
-        assert u"27°20'15.000000\"S" == six.text_type(lat)
+        assert "27°20'15.000000\"S" == str(lat)
 
     def test_longitude_valid(self):
         assert 30 == datatypes.longitude(30)
@@ -79,11 +77,11 @@ class TestDataTypes(object):
     def test_longitude_str(self):
         lat = datatypes.longitude(27.3375)
         assert "27.3375" == repr(lat)
-        assert u"027°20'15.000000\"E" == six.text_type(lat)
+        assert "027°20'15.000000\"E" == str(lat)
 
         lat = datatypes.longitude(-27.3375)
         assert "-27.3375" == repr(lat)
-        assert u"027°20'15.000000\"W" == six.text_type(lat)
+        assert "027°20'15.000000\"W" == str(lat)
 
     def test_latlng_valid(self):
         assert (10.0, 20.0) == datatypes.latlng(10, 20)
@@ -106,7 +104,7 @@ class TestDataTypes(object):
     def test_latlng_str(self):
         ll = datatypes.latlng(27.3375, -27.3375)
         assert "latlng(27.3375, -27.3375)" == repr(ll)
-        assert u"(27°20'15.000000\"N, 027°20'15.000000\"W)" == six.text_type(ll)
+        assert "(27°20'15.000000\"N, 027°20'15.000000\"W)" == str(ll)
 
     def test_latlng_properties(self):
         ll = datatypes.latlng(27.3375, -27.3375)
