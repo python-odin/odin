@@ -63,24 +63,3 @@ def time_iso_format(value):
     Serialise a datetime.time to ISO string format.
     """
     return value.isoformat()
-
-
-@deprecated(
-    "Defaulting the timezone should be preformed by the fields only, this confuses things. "
-    "Most codecs have already migrated to not use this class."
-)
-class DatetimeEcmaFormat:
-    """
-    Serialize a datetime object into the ECMA defined format.
-    """
-
-    input_type = datetime.datetime
-
-    def __init__(self, assume_local=True, default_timezone=datetimeutil.local):
-        self.default_timezone = datetimeutil.local if assume_local else default_timezone
-
-    def __call__(self, value):
-        return datetimeutil.to_ecma_datetime_string(value, self.default_timezone)
-
-
-datetime_ecma_format = DatetimeEcmaFormat()

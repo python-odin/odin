@@ -44,20 +44,6 @@ class Book(odin.Resource):
         )
 
 
-class TestCsvResourceReader:
-    def test_valid(self):
-        with open(os.path.join(FIXTURE_PATH_ROOT, "library-valid.csv")) as f:
-            books = [book for book in csv_codec.ResourceReader(f, Book)]
-
-        assert 6 == len(books)
-        assert "Consider Phlebas" == books[0].title
-
-    def test_invalid(self):
-        with open(os.path.join(FIXTURE_PATH_ROOT, "library-invalid.csv")) as f:
-            with pytest.raises(odin.exceptions.ValidationError):
-                books = [book for book in csv_codec.ResourceReader(f, Book)]
-
-
 class TestReader:
     def open_fixture(self, file_name):
         return open(os.path.join(FIXTURE_PATH_ROOT, file_name))

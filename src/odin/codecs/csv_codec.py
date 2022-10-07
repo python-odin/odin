@@ -18,10 +18,9 @@ import csv
 from io import StringIO
 
 from odin import bases
-from odin.compatibility import deprecated
 from odin.datastructures import CaseLessStringList
 from odin.fields import NotProvided
-from odin.resources import create_resource_from_iter, create_resource_from_dict
+from odin.resources import create_resource_from_iter
 from odin.utils import getmeta, lazy_property
 from odin.exceptions import CodecDecodeError, ValidationError
 
@@ -251,18 +250,6 @@ def reader(
         strict_fields=strict_fields,
         **kwargs
     )
-
-
-@deprecated("This class will be removed in 1.1 migrate to the `reader` method.")
-class ResourceReader(csv.DictReader):
-    def __init__(self, f, resource, *args, **kwargs):
-        self.resource = resource
-        csv.DictReader.__init__(self, f, *args, **kwargs)
-
-    def __next__(self):
-        return create_resource_from_dict(
-            csv.DictReader.__next__(self), self.resource, copy_dict=False
-        )
 
 
 def value_fields(resource):
