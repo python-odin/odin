@@ -1,4 +1,6 @@
 import os
+from io import StringIO
+
 import pytest
 import odin
 import odin.exceptions
@@ -203,9 +205,7 @@ class TestReader:
             target = csv_codec.reader(f, Book, includes_header=True)
             expected_library = list(target)
 
-        actual_csv = six.StringIO(
-            csv_codec.dumps(expected_library, include_header=True)
-        )
+        actual_csv = StringIO(csv_codec.dumps(expected_library, include_header=True))
 
         actual_library = list(csv_codec.reader(actual_csv, Book, includes_header=True))
 

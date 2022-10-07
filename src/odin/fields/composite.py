@@ -47,7 +47,7 @@ class CompositeField(Field):
         raise exceptions.ValidationError(msg)
 
     def validate(self, value):
-        super(CompositeField, self).validate(value)
+        super().validate(value)
         if value not in EMPTY_VALUES:
             value.full_clean()
 
@@ -144,7 +144,7 @@ class ListOf(CompositeField):
 
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
-        super().validate(value)  # noqa
+        super(CompositeField, self).validate(value)  # noqa
         if value is not None:
             super_validate = super(ListOf, self).validate
             self._process_list(value, super_validate)

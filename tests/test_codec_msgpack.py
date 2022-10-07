@@ -1,6 +1,8 @@
 import uuid
 import datetime
 import os
+from io import BytesIO
+
 from odin.datetimeutil import utc
 from odin.codecs import msgpack_codec
 from .resources import *

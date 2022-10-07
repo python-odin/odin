@@ -52,7 +52,7 @@ class latitude(float):  # NoQA
             raise ValueError(f"not in range -90.0 -> 90.0: '{x}'")
         return lat
 
-    def __unicode__(self):
+    def __str__(self):
         result = "{:02d}°{:02d}'{:02f}\"".format(*to_dms(self, True))
         return result + ("S" if self < 0 else "N")
 
@@ -68,7 +68,7 @@ class longitude(float):  # NoQA
             raise ValueError("not in range -180.0 -> 180.0: '{}'".format(x))
         return lng
 
-    def __unicode__(self):
+    def __str__(self):
         result = "{:03d}°{:02d}'{:02f}\"".format(*to_dms(self, True))
         return result + ("W" if self < 0 else "E")
 
@@ -97,7 +97,10 @@ class latlng(tuple):
         return self[1]
 
     def __repr__(self):
-        return "latlng({:02.4f}, {:03.4f})".format(*self)
+        return "latlng({!r}, {!r})".format(*self)
+
+    def __str__(self):
+        return "({}, {})".format(*self)
 
 
 class point(tuple):

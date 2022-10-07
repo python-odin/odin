@@ -1,6 +1,8 @@
 import uuid
 import datetime
 import os
+from io import StringIO
+
 from odin.datetimeutil import utc
 from odin.codecs import json_codec
 from .resources import *
