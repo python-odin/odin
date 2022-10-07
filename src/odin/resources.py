@@ -702,7 +702,7 @@ def _resolve_type_from_data(data):
     resource_type = registration.get_resource(document_resource_name)
     if not resource_type:
         raise exceptions.ResourceException(
-            "Resource {!r} is not registered.".format(document_resource_name)
+            f"Resource {document_resource_name!r} is not registered."
         )
 
     return resource_type

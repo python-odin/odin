@@ -35,7 +35,7 @@ class TraversalPath:
         self._path = path
 
     def __repr__(self):
-        return "<TraversalPath: {}>".format(self)
+        return f"<TraversalPath: {self}>"
 
     def __str__(self):
         atoms = []
@@ -43,9 +43,9 @@ class TraversalPath:
             if value is NotSupplied:
                 atoms.append(field)
             elif key is NotSupplied:
-                atoms.append("{}[{}]".format(field, value))
+                atoms.append(f"{field}[{value}]")
             else:
-                atoms.append("{}{{{}={}}}".format(field, key, value))
+                atoms.append(f"{field}{{{key}={value}}}")
         return ".".join(atoms)
 
     def __hash__(self):
@@ -81,7 +81,7 @@ class TraversalPath:
             try:
                 field = meta.field_map[attr]
             except KeyError:
-                raise InvalidPathError(self, "Unknown field {!r}".format(attr))
+                raise InvalidPathError(self, f"Unknown field {attr!r}")
 
             result = field.value_from_object(result)
             if value is NotSupplied:
@@ -94,7 +94,7 @@ class TraversalPath:
                     result = result[value]
                 except (KeyError, IndexError):
                     raise NoMatchError(
-                        self, "Could not find index {!r} in {}.".format(value, field)
+                        self, f"Could not find index {value!r} in {field}."
                     )
             else:
                 # Filter elements
@@ -104,16 +104,12 @@ class TraversalPath:
                 if len(results) == 0:
                     raise NoMatchError(
                         self,
-                        "Filter matched no values; {!r} == {!r} in {}.".format(
-                            key, value, field
-                        ),
+                        f"Filter matched no values; {key!r} == {value!r} in {field}.",
                     )
                 elif len(results) > 1:
                     raise MultipleMatchesError(
                         self,
-                        "Filter matched multiple values; {!r} == {!r}.".format(
-                            key, value
-                        ),
+                        f"Filter matched multiple values; {key!r} == {value!r}.",
                     )
                 else:
                     result = results[0]

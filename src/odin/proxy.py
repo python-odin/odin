@@ -76,7 +76,7 @@ class ResourceProxyOptions(ResourceOptions):
         cls._meta = self
         cls_name = cls.__name__
         self.name = cls_name
-        self.class_name = "{}.{}".format(cls.__module__, cls_name)
+        self.class_name = f"{cls.__module__}.{cls_name}"
 
         # Get and filter meta attributes
         meta_attrs = self.meta.__dict__.copy()
@@ -121,9 +121,7 @@ class ResourceProxyOptions(ResourceOptions):
         # Any leftover attributes must be invalid.
         if meta_attrs != {}:
             raise TypeError(
-                "'class Meta' got invalid attribute(s): {}".format(
-                    ",".join(meta_attrs.keys())
-                )
+                f"'class Meta' got invalid attribute(s): {','.join(meta_attrs.keys())}"
             )
         del self.meta
 

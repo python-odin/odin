@@ -35,7 +35,7 @@ class UTC(datetime.tzinfo):
         return "UTC"
 
     def __repr__(self):
-        return "<timezone: {}>".format(self)
+        return f"<timezone: {self}>"
 
 
 utc = UTC()
@@ -77,7 +77,7 @@ class LocalTimezone(datetime.tzinfo):
         return time.tzname[0]
 
     def __repr__(self):
-        return "<timezone: %s>" % self
+        return f"<timezone: {self}>"
 
 
 local = LocalTimezone()
@@ -99,7 +99,7 @@ class FixedTimezone(datetime.tzinfo):
         minutes = abs(seconds // 60)
         hours = minutes // 60
         minutes %= 60
-        name = "{}{:02d}:{:02d}".format(sign, hours, minutes)
+        name = f"{sign}{hours:02d}:{minutes:02d}"
 
         if sign == "-":
             hours *= -1
@@ -112,7 +112,7 @@ class FixedTimezone(datetime.tzinfo):
         sign = "-" if hours < 0 else ""
         hours = abs(hours)
         minutes = abs(minutes)
-        name = "{}{:02d}:{:02d}".format(sign, hours, minutes)
+        name = f"{sign}{hours:02d}:{minutes:02d}"
 
         if sign == "-":
             hours *= -1
@@ -132,7 +132,7 @@ class FixedTimezone(datetime.tzinfo):
         sign = groups["tz_sign"]
         hours = int(groups["tz_hour"])
         minutes = int(groups["tz_minute"] or 0)
-        name = "{}{:02d}:{:02d}".format(sign, hours, minutes)
+        name = f"{sign}{hours:02d}:{minutes:02d}"
 
         if sign == "-":
             hours = -hours
@@ -158,7 +158,7 @@ class FixedTimezone(datetime.tzinfo):
         return self.name
 
     def __repr__(self):
-        return "<timezone {!r} {!r}>".format(self.name, self.offset)
+        return f"<timezone {self.name!r} {self.offset!r}>"
 
     def __eq__(self, other):
         return self.offset == other.offset
@@ -298,14 +298,9 @@ def to_ecma_datetime_string(dt, default_timezone=local):
         else assumes the time value is utc.
     """
     dt = get_tz_aware_dt(dt, default_timezone).astimezone(utc)
-    return "{:4d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}.{:03d}Z".format(
-        dt.year,
-        dt.month,
-        dt.day,
-        dt.hour,
-        dt.minute,
-        dt.second,
-        dt.microsecond // 1000,
+    return (
+        f"{dt.year:4d}-{dt.month:02d}-{dt.day:02d}T"
+        f"{dt.hour:02d}:{dt.minute:02d}:{dt.second:02d}.{dt.microsecond // 1000:03d}Z"
     )
 
 
@@ -350,13 +345,7 @@ def to_http_datetime_string(dt, default_timezone=local):
     dt = get_tz_aware_dt(dt, default_timezone).astimezone(utc)
     timeval = time.mktime(dt.timetuple())
     now = time.localtime(timeval)
-    return "{0}, {1:02d} {2} {3:04d} {4:02d}:{5:02d}:{6:02d} {7}".format(
-        HTTP_DAY_OF_WEEK[now[6]],
-        now[2],
-        HTTP_MONTH[now[1] - 1],
-        now[0],
-        now[3],
-        now[4],
-        now[5],
-        "GMT",
+    return (
+        f"{HTTP_DAY_OF_WEEK[now[6]]}, {now[2]:02d} {HTTP_MONTH[now[1] - 1]} {now[0]:04d} "
+        f"{now[3]:02d}:{now[4]:02d}:{now[5]:02d} {'GMT'}"
     )
