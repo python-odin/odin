@@ -19,9 +19,6 @@ Odin also comes with built in serialisation tools for importing and exporting da
 | Build   | .. image:: https://github.com/python-odin/odin/actions/workflows/python-package.yml/badge.svg               |
 |         |    :target: https://github.com/python-odin/odin/actions/workflows/python-package.yml                        |
 |         |    :alt: Python package                                                                                     |
-|         | .. image:: https://api.dependabot.com/badges/status?host=github&repo=python-odin/odin                       |
-|         |    :target: https://dependabot.com                                                                          |
-|         |    :alt: Dependabot Status                                                                                  |
 +---------+-------------------------------------------------------------------------------------------------------------+
 | Quality | .. image:: https://sonarcloud.io/api/project_badges/measure?project=python-odin_odin&metric=sqale_rating    |
 |         |    :target: https://sonarcloud.io/dashboard?id=python-odin/odin                                             |
@@ -56,9 +53,9 @@ Highlights
 * Fields for building composite resources
 * Field and Resource level validation
 * Easy extension to support custom fields
-* Python 2.7 :sup:`1`, Python 2.7+, Python 3.6+ and PyPy :sup:`1` supported
+* Python 3.8+ and PyPy :sup:`1` supported
 * Support for documenting resources with `Sphinx <http://sphinx-doc.org/>`_
-* Minimal dependencies (base functionality only requires *six*)
+* Minimal dependencies
 
 :sup:`1` certain contrib items are not supported. Pint is not installable with PyPy.
 
@@ -83,7 +80,7 @@ Upcoming features
 
 **In development**
 
-* XML Codec (export completed)
+* XML Codec (export only)
 * Complete documentation coverage
 * Improvements for CSV Codec (writing, reading multi resource CSV's)
 * Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms)
@@ -92,8 +89,6 @@ Upcoming features
 
 Requires
 ********
-
-* six
 
 **Optional**
 
@@ -104,7 +99,7 @@ Requires
 
 **Contrib**
 
-* jinja2 >= 2.7 - For documentation generation
+* arrow - Support for Arrow data types.
 * pint - Support for physical quantities using the `Pint <http://pint.readthedocs.org/>`_ library.
 
 **Development**
@@ -161,7 +156,3 @@ Example
     }
 
 
-Authors
-*******
-
-Tim Savage
