@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Optional
 
 
 class BaseField:
@@ -24,11 +24,11 @@ class BaseField:
         """
         Displays the module, class and name of the field.
         """
-        path = "{}.{}".format(self.__class__.__module__, self.__class__.__name__)
+        path = f"{self.__class__.__module__}.{self.__class__.__name__}"
         name = getattr(self, "name", None)
         if name is not None:
-            return "<{}: {}>".format(path, name)
-        return "<{}>".format(path)
+            return f"<{path}: {name}>"
+        return f"<{path}>"
 
     def set_attributes_from_name(self, attname):
         if not self.name:
@@ -37,7 +37,7 @@ class BaseField:
         if self.verbose_name is None and self.name:
             self.verbose_name = self.name.replace("_", " ")
         if self.verbose_name_plural is None and self.verbose_name:
-            self.verbose_name_plural = "{}s".format(self.verbose_name)
+            self.verbose_name_plural = f"{self.verbose_name}s"
 
     def prepare(self, value):
         """
@@ -45,8 +45,7 @@ class BaseField:
         """
         return value
 
-    def as_string(self, value):
-        # type: (Any) -> Optional[str]
+    def as_string(self, value) -> Optional[str]:
         """
         Generate a string representation of a field.
         """
