@@ -9,6 +9,7 @@
   - odin.serializers.DatetimeEcmaFormat
 - Initial improvements to typing and utilising of modern Python features
 - Fix bug in toml_codec that prevented the use of the include_type_field option.
+- Invalid choices now generate a ValueError exception
 
 1.8.1
 =====
