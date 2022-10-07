@@ -1,6 +1,10 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "odin"
-version = "1.8.0"
+version = "1.9"
 description = "Data-structure definition/validation/traversal, mapping and serialisation toolkit for Python"
 authors = ["Tim Savage <tim@savage.company>"]
 license = "BSD-3-Clause"
@@ -16,12 +20,10 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Application Frameworks",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 2",
-    "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
@@ -31,22 +33,15 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "~2.7 || >=3.6 <3.10"
-six = "*"
-typing = {version="~=3.7.4", python = "~2.7" }
-enum34 = {version="*", python = "<3.4" }
-
+python = "^3.8"
 pyyaml = {version = "*", optional = true }
 toml = {version = "*", optional = true }
 pint = {version = "*", optional = true }
 arrow = {version = "*", optional = true }
 msgpack = {version = "*", optional = true }
-humanfriendly = {version = "*", optional = true }
-ply = {version = "*", optional = true }
 
 [tool.poetry.dev-dependencies]
-mock = "*"
-pytest = "*"
+pytest = "^7.0"
 pytest-cov = "*"
 sphinx = "*"
 
@@ -56,9 +51,3 @@ msgpack = ["msgpack"]
 toml = ["toml"]
 pint = ["pint"]
 arrow = ["arrow"]
-inspect = ["humanfriendly"]
-filter_query = ["ply"]
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"

@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 
-class BaseField(object):
+class BaseField:
     # These track each time an instance is created. Used to retain order.
     creation_counter = 0
 

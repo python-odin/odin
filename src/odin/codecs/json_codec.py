@@ -1,39 +1,35 @@
-# -*- coding: utf-8 -*-
-import six
 import datetime
+import typing
 import uuid
-
-from odin.utils import getmeta
 
 from odin import bases
 from odin import serializers, resources, ResourceAdapter
 from odin.exceptions import CodecDecodeError, CodecEncodeError
+from odin.utils import getmeta
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-LIST_TYPES = [bases.ResourceIterable]
-if six.PY3:
-    import typing
-    LIST_TYPES += [typing.ValuesView, typing.KeysView]
-LIST_TYPES = tuple(LIST_TYPES)
-
+LIST_TYPES = (bases.ResourceIterable, typing.ValuesView, typing.KeysView)
 JSON_TYPES = {
     datetime.date: serializers.date_iso_format,
     datetime.time: serializers.time_iso_format,
     datetime.datetime: serializers.datetime_iso_format,
-    uuid.UUID: str
+    uuid.UUID: str,
 }
-CONTENT_TYPE = 'application/json'
+CONTENT_TYPE = "application/json"
 
 
 class OdinEncoder(json.JSONEncoder):
     """
     Encoder for Odin resources.
     """
-    def __init__(self, include_virtual_fields=True, include_type_field=True, *args, **kwargs):
+
+    def __init__(
+        self, include_virtual_fields=True, include_type_field=True, *args, **kwargs
+    ):
         super(OdinEncoder, self).__init__(*args, **kwargs)
         self.include_virtual_fields = include_virtual_fields
         self.include_type_field = include_type_field
@@ -89,7 +85,9 @@ def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
 
     """
     try:
-        return resources.build_object_graph(json.loads(s), resource, full_clean, False, default_to_not_supplied)
+        return resources.build_object_graph(
+            json.loads(s), resource, full_clean, False, default_to_not_supplied
+        )
     except (ValueError, TypeError) as ex:
         raise CodecDecodeError(str(ex))
 

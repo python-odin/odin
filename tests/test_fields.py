@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
-from copy import deepcopy
 import pytest
 import datetime
 import uuid
+from copy import deepcopy
+
 from odin.fields import *
 from odin.fields import Field, TimeStampField, NotProvided
 from odin.datetimeutil import utc, FixedTimezone
@@ -17,11 +17,11 @@ from odin.validators import (
 from odin.exceptions import ValidationError
 
 
-class ObjectValue(object):
+class ObjectValue:
     pass
 
 
-class ValidatorTest(object):
+class ValidatorTest:
     message = "Default message"
     code = "test_code"
 
@@ -47,7 +47,7 @@ class DynamicTypeNameFieldTest(IntegerField):
         return "Foo"
 
 
-class TestField(object):
+class TestField:
     def test_error_messages_no_overrides(self):
         target = FieldTest()
 
@@ -58,7 +58,12 @@ class TestField(object):
         } == target.error_messages
 
     def test_error_messages_override_add(self):
-        target = FieldTest(error_messages={"null": "Override", "other": "Other Value",})
+        target = FieldTest(
+            error_messages={
+                "null": "Override",
+                "other": "Other Value",
+            }
+        )
 
         assert {
             "invalid_choice": "Value %r is not a valid choice.",
@@ -219,7 +224,7 @@ class VirtualFieldTest(VirtualField):
     pass
 
 
-class TestVirtualField(object):
+class TestVirtualField:
     def test_creation_counter(self):
         current_count = VirtualField.creation_counter
         next_count = current_count + 1
@@ -236,7 +241,7 @@ class TestVirtualField(object):
         assert "<tests.test_fields.VirtualFieldTest: eek>" == repr(target)
 
     def test_default_descriptor_behaviour(self):
-        class TestObj(object):
+        class TestObj:
             test_field = VirtualField()
 
         target = TestObj()
@@ -250,7 +255,7 @@ class TestVirtualField(object):
         assert "Read only" == str(excinfo.value)
 
 
-class TestFields(object):
+class TestFields:
     def assertValidatorIn(self, validatorClass, validators):
         """
         Assert that the specified validator is in the validation list.
@@ -303,7 +308,11 @@ class TestFields(object):
 
     @pytest.mark.parametrize(
         ("field", "value"),
-        ((BooleanField(), None), (BooleanField(), ""), (BooleanField(), "Awesome!"),),
+        (
+            (BooleanField(), None),
+            (BooleanField(), ""),
+            (BooleanField(), "Awesome!"),
+        ),
     )
     def test_booleanfield_failure(self, field, value):
         with pytest.raises(ValidationError):
@@ -479,7 +488,11 @@ class TestFields(object):
 
     @pytest.mark.parametrize(
         "field,value".split(","),
-        ((DateField(), None), (DateField(), "abc"), (DateField(), 123),),
+        (
+            (DateField(), None),
+            (DateField(), "abc"),
+            (DateField(), 123),
+        ),
     )
     def test_datefield_clean_failure(self, field, value):
         pytest.raises(ValidationError, field.clean, value)
@@ -961,7 +974,11 @@ class TestFields(object):
         f = TypedDictField(
             IntegerField(min_value=5),
             StringField(
-                max_length=5, choices=[("foo", "Foo"), ("bad_value", "Bad Value"),]
+                max_length=5,
+                choices=[
+                    ("foo", "Foo"),
+                    ("bad_value", "Bad Value"),
+                ],
             ),
         )
         assert "Dict<String, Integer>" == f.data_type_name(f)
@@ -972,19 +989,22 @@ class TestFields(object):
         pytest.raises(ValidationError, f.clean, {"foo": 2})
 
     def test_typed_dict_field_dynamic_type_name(self):
-        f = TypedDictField(DynamicTypeNameFieldTest(), DynamicTypeNameFieldTest(),)
+        f = TypedDictField(
+            DynamicTypeNameFieldTest(),
+            DynamicTypeNameFieldTest(),
+        )
         assert "Dict<Foo, Foo>" == f.data_type_name(f)
 
     @pytest.mark.parametrize(
         "field value actual".split(),
         (
-            (EmailField(), u"foo@example.company", u"foo@example.company"),
-            (IPv4Field(), u"127.0.0.1", u"127.0.0.1"),
-            (IPv6Field(), u"::1", u"::1"),
-            (IPv6Field(), u"1:2:3:4:5:6:7:8", u"1:2:3:4:5:6:7:8"),
-            (IPv46Field(), u"127.0.0.1", u"127.0.0.1"),
-            (IPv46Field(), u"::1", u"::1"),
-            (IPv46Field(), u"1:2:3:4:5:6:7:8", u"1:2:3:4:5:6:7:8"),
+            (EmailField(), "foo@example.company", "foo@example.company"),
+            (IPv4Field(), "127.0.0.1", "127.0.0.1"),
+            (IPv6Field(), "::1", "::1"),
+            (IPv6Field(), "1:2:3:4:5:6:7:8", "1:2:3:4:5:6:7:8"),
+            (IPv46Field(), "127.0.0.1", "127.0.0.1"),
+            (IPv46Field(), "::1", "::1"),
+            (IPv46Field(), "1:2:3:4:5:6:7:8", "1:2:3:4:5:6:7:8"),
         ),
     )
     def test_valid_values(self, field, value, actual):
@@ -1014,7 +1034,12 @@ class TestFields(object):
             uuid.uuid4().bytes,
             uuid.uuid5(uuid.uuid4(), "name").bytes,
         ),
-        ids=("bytes-uuid1", "bytes-uuid3", "bytes-uuid4", "bytes-uuid5",),
+        ids=(
+            "bytes-uuid1",
+            "bytes-uuid3",
+            "bytes-uuid4",
+            "bytes-uuid5",
+        ),
     )
     def test_uuid_field_with_16_bytes_sequence(self, value):
         f = UUIDField()
@@ -1061,7 +1086,13 @@ class TestFields(object):
         with pytest.raises(ValidationError):
             f.clean(value)
 
-    @pytest.mark.parametrize("value", (b"\254", b"\255",))
+    @pytest.mark.parametrize(
+        "value",
+        (
+            b"\254",
+            b"\255",
+        ),
+    )
     def test_uuid_field_invalid_bytes(self, value):
         f = UUIDField()
         with pytest.raises(ValidationError):
@@ -1094,7 +1125,7 @@ class TestFields(object):
     def test_uuid_field_non_str_value(self):
         some_uuid = uuid.uuid4()
 
-        class SomeObject(object):
+        class SomeObject:
             def __str__(self):
                 return str(some_uuid)
 
@@ -1103,7 +1134,7 @@ class TestFields(object):
         assert f.clean(SomeObject()) == some_uuid
 
     def test_uuid_field_invalid_non_str_value(self):
-        class SomeObject(object):
+        class SomeObject:
             def __str__(self):
                 return "sometext"
 

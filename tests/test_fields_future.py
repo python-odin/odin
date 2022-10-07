@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
-
 import enum
 import pytest
 
@@ -26,7 +23,7 @@ class Number(enum.IntEnum):
     SixtyNine = 69
 
 
-class TestEnumField(object):
+class TestEnumField:
     @pytest.mark.parametrize(
         ("field", "value", "actual"),
         (
@@ -130,7 +127,10 @@ class TestEnumField(object):
         "field, expected",
         (
             (EnumField(Colour), (("red", "Red"), ("green", "Green"), ("blue", "Blue"))),
-            (EnumField(Number), ((13, "Thirteen"), (42, "FortyTwo"), (69, "SixtyNine"))),
+            (
+                EnumField(Number),
+                ((13, "Thirteen"), (42, "FortyTwo"), (69, "SixtyNine")),
+            ),
             (
                 EnumField(Colour, choices=(Colour.Red, Colour.Blue)),
                 (("red", "Red"), ("blue", "Blue")),
@@ -145,7 +145,10 @@ class TestEnumField(object):
         "field, expected",
         (
             (EnumField(Colour), {("red", "Red"), ("green", "Green"), ("blue", "Blue")}),
-            (EnumField(Number), {(13, "Thirteen"), (42, "FortyTwo"), (69, "SixtyNine")}),
+            (
+                EnumField(Number),
+                {(13, "Thirteen"), (42, "FortyTwo"), (69, "SixtyNine")},
+            ),
             (
                 EnumField(Colour, choices=(Colour.Red, Colour.Blue)),
                 {("red", "Red"), ("blue", "Blue")},

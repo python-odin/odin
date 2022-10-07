@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-import six
 from .exceptions import InvalidPathError
 from .traversal import TraversalPath
 
 
-class FilterAtom(object):
+class FilterAtom:
     """
     Base filter statement
     """
@@ -86,7 +84,7 @@ class FilterComparison(FilterAtom):
 
     def __str__(self):
         value = self.value
-        if isinstance(self.value, six.string_types):
+        if isinstance(self.value, str):
             value = "{!r}".format(value)
 
         if self.operation:

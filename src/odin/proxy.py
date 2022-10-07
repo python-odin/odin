@@ -7,14 +7,9 @@ The resource proxy is an object that provides an alternate interface to a shadow
 This could be as a means of providing a summary object, or for adding additional properties.
 
 """
-
-import six
-
-# Typing includes
-from typing import List, Union  # noqa
+from typing import List, Union, Optional
 
 from odin import registration
-
 from odin.bases import TypedResourceIterable
 from odin.resources import ResourceOptions, ResourceBase
 from odin.utils import getmeta, filter_fields, lazy_property
@@ -22,7 +17,7 @@ from odin.utils import getmeta, filter_fields, lazy_property
 EMPTY = tuple()
 
 
-class FieldProxyDescriptor(object):
+class FieldProxyDescriptor:
     """
     Descriptor to proxy field to underlying resource.
     """
@@ -30,7 +25,7 @@ class FieldProxyDescriptor(object):
     __slots__ = ("attname", "readonly")
 
     def __init__(self, readonly=False):
-        self.attname = None  # type: str
+        self.attname: Optional[str] = None
         self.readonly = readonly
 
     def __get__(self, instance, owner):
@@ -285,7 +280,7 @@ class ResourceProxyBase(ResourceBase):
         return self._shadow
 
 
-class ResourceProxy(six.with_metaclass(ResourceProxyType, ResourceProxyBase)):
+class ResourceProxy(ResourceProxyBase, metaclass=ResourceProxyType):
     """
     Proxy for a Resources that allow a filtered set of fields to be made
     available and updated.

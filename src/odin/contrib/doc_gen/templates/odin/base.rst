@@ -1,4 +1,0 @@
-*********
-Resources
-*********
-{% block body %}{% endblock %}

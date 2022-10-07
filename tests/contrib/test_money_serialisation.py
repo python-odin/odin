@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import odin
 from odin.contrib.money import AmountField
 from odin.contrib.money import Amount
@@ -14,19 +13,15 @@ class AmountResource(odin.Resource):
     c = AmountField()
 
 
-class TestMoneySerialisation(object):
+class TestMoneySerialisation:
     def test_serialise(self):
-        resource = AmountResource(
-            a=None,
-            b=Amount(10),
-            c=Amount(22.02, 'AUD')
-        )
+        resource = AmountResource(a=None, b=Amount(10), c=Amount(22.02, "AUD"))
 
         actual = json_codec.dumps(resource, sort_keys=True)
 
         assert (
-            actual ==
-            '{"$": "odin.tests.AmountResource", "a": null, "b": [10.0, "XXX"], "c": [22.02, "AUD"]}'
+            actual
+            == '{"$": "odin.tests.AmountResource", "a": null, "b": [10.0, "XXX"], "c": [22.02, "AUD"]}'
         )
 
     def test_deserialise(self):

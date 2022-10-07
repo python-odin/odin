@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import odin
 
 from odin.resources import ResourceBase
@@ -8,7 +7,7 @@ from sphinx.ext.autodoc import Documenter, ModuleLevelDocumenter, bool_option
 
 def reference_to(obj):
     if hasattr(obj, "_meta"):
-        return u":py:class:`{}`".format(getmeta(obj).name)
+        return ":py:class:`{}`".format(getmeta(obj).name)
     return obj
 
 
@@ -38,7 +37,7 @@ class ResourceDocumenter(ModuleLevelDocumenter):
         include_validators=bool_option,
         api_documentation=bool_option,
         hide_choices=bool_option,
-        **Documenter.option_spec
+        **Documenter.option_spec,
     )
 
     @classmethod
@@ -56,10 +55,10 @@ class ResourceDocumenter(ModuleLevelDocumenter):
         else:
             name = self.format_name()
 
-        self.add_line(u".. {}:{}:: {}".format(domain, directive, name), source_name)
+        self.add_line(".. {}:{}:: {}".format(domain, directive, name), source_name)
 
         if self.options.noindex:
-            self.add_line(u"   :noindex:", source_name)
+            self.add_line("   :noindex:", source_name)
 
     def build_field_triple(self, field):
         """
@@ -74,34 +73,32 @@ class ResourceDocumenter(ModuleLevelDocumenter):
             details.append(field.doc_text)
 
         if field.has_default():
-            details.append(
-                u"\n\nDefault value: {}\n".format(reference_to(field.get_default()))
-            )
+            details.append(f"\n\nDefault value: {reference_to(field.get_default())}\n")
 
         if not self.options.get("hide_choices") and field.choices_doc_text:
-            details.append(u"\n\nChoices:\n")
+            details.append("\n\nChoices:\n")
             for value, label in field.choices_doc_text:
-                details.append(u"* {} - {}".format(value, label))
+                details.append(f"* {value} - {label}")
 
         if self.options.get("include_validators") and field.validators:
-            details.append(u"\n\nValidation rules:\n")
+            details.append("\n\nValidation rules:\n")
             for validator in field.validators:
-                details.append(u"* {}".format(validator))
+                details.append(f"* {validator}")
 
         # Generate the name of the type this field represents
         type_name = field.data_type_name
         max_length = getattr(field, "max_length", None)
         if max_length:
-            type_name = u"{} [{}]".format(type_name, max_length)
+            type_name = f"{type_name} [{max_length}]"
         if callable(type_name):
             type_name = type_name(field)
         if isinstance(field, odin.CompositeField):
-            type_name = u"{} {}".format(type_name, reference_to(field.of))
+            type_name = f"{type_name} {reference_to(field.of)}"
 
         return (
-            u"*{}*".format(field.name) if field.null else field.name,  # Name
-            reference_to(type_name or u"Unknown"),  # Data-type
-            u"\n".join(details).split(u"\n"),  # Details
+            f"*{field.name}*" if field.null else field.name,  # Name
+            reference_to(type_name or "Unknown"),  # Data-type
+            "\n".join(details).split("\n"),  # Details
         )
 
     def document_members(self, all_members=False):
@@ -124,7 +121,7 @@ class ResourceDocumenter(ModuleLevelDocumenter):
 
         def add_separator(char="-"):
             self.add_line(
-                u"+{}+{}+{}+".format(
+                "+{}+{}+{}+".format(
                     char * name_len, char * data_type_len, char * details_len
                 ),
                 "<odin_sphinx>",
@@ -132,7 +129,7 @@ class ResourceDocumenter(ModuleLevelDocumenter):
 
         def add_row_line(name, data_type, details):
             self.add_line(
-                u"| {}{} | {}{} | {}{} |".format(
+                "| {}{} | {}{} | {}{} |".format(
                     name,
                     " " * (name_len - len(name) - 2),
                     data_type,

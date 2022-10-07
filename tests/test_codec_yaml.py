@@ -1,15 +1,14 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
 import datetime
 import os
-from six import StringIO
+from io import StringIO
+
 from odin.codecs import yaml_codec
 from .resources import *
 
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
-class TestYAMLCodec(object):
+class TestYAMLCodec:
     def test_dumps_and_loads(self):
         in_resource = Book(
             title="Consider Phlebas",

@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
-import six
 from odin.utils import getmeta
 
 from .exceptions import NoMatchError, MultipleMatchesError, InvalidPathError
 
 
-class NotSupplied(object):
+class NotSupplied:
     pass
 
 
@@ -21,7 +19,7 @@ def _split_atom(atom):
         return NotSupplied, NotSupplied, atom
 
 
-class TraversalPath(object):
+class TraversalPath:
     """
     A path through a resource structure.
     """
@@ -30,7 +28,7 @@ class TraversalPath(object):
     def parse(cls, path):
         if isinstance(path, TraversalPath):
             return path
-        if isinstance(path, six.string_types):
+        if isinstance(path, str):
             return cls(*[_split_atom(a) for a in path.split(".")])
 
     def __init__(self, *path):
@@ -63,12 +61,12 @@ class TraversalPath(object):
             return TraversalPath(*(self._path + other._path))
 
         # Assume appending a field
-        if isinstance(other, six.string_types):
+        if isinstance(other, str):
             return TraversalPath(
                 *(self._path + tuple([(NotSupplied, NotSupplied, other)]))
             )
 
-        raise TypeError("Cannot add '{}' to a path.".format(other))
+        raise TypeError(f"Cannot add '{other}' to a path.")
 
     def __iter__(self):
         return iter(self._path)
@@ -122,7 +120,7 @@ class TraversalPath(object):
         return result
 
 
-class ResourceTraversalIterator(object):
+class ResourceTraversalIterator:
     """
     Iterator for traversing (walking) a resource structure, including traversing composite fields to fully navigate a
     resource tree.
@@ -203,9 +201,6 @@ class ResourceTraversalIterator(object):
                 return next_resource
         else:
             raise StopIteration()
-
-    # Python 2.x compatibility
-    next = __next__
 
     @property
     def path(self):

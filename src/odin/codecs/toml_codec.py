@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
 from typing import Union, Sequence, Dict, Optional, Type, Any
 
-from six import StringIO
 from odin import Resource
 from odin import resources, ResourceAdapter
 from odin.exceptions import CodecDecodeError
@@ -43,7 +41,11 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
     except toml.TomlDecodeError as ex:
         raise CodecDecodeError(str(ex))
     return resources.build_object_graph(
-        data, resource, full_clean, False, default_to_not_supplied,
+        data,
+        resource,
+        full_clean,
+        False,
+        default_to_not_supplied,
     )
 
 
@@ -71,7 +73,11 @@ def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
     except toml.TomlDecodeError as ex:
         raise CodecDecodeError(str(ex))
     return resources.build_object_graph(
-        data, resource, full_clean, False, default_to_not_supplied,
+        data,
+        resource,
+        full_clean,
+        False,
+        default_to_not_supplied,
     )
 
 
@@ -99,18 +105,25 @@ class OdinEncoder(toml.TomlEncoder):
         return super(OdinEncoder, self).dump_value(v)
 
 
-RT = Union[Resource, ResourceAdapter, Sequence[Resource], Sequence[ResourceAdapter], Dict]
+RT = Union[
+    Resource, ResourceAdapter, Sequence[Resource], Sequence[ResourceAdapter], Dict
+]
 
 
-def dump(resource, fp, encoder=None, include_virtual_fields=True, **kwargs):
-    # type: (RT, StringIO, Optional[Type[OdinEncoder]], bool, Any) -> None
+def dump(
+    resource: RT,
+    fp,
+    encoder: Optional[Type[OdinEncoder]] = None,
+    include_virtual_fields: bool = True,
+    **kwargs
+):
     """
     Dump to a TOML encoded file.
 
     :param resource: The root resource to dump to a JSON encoded file.
     :param fp: The file pointer that represents the output file.
     :param encoder: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
-    :param include_virtual_fields: Include virtual fields in the output 
+    :param include_virtual_fields: Include virtual fields in the output
     :param kwargs: Additional keyword arguments for the encoder.
 
     """
@@ -131,7 +144,7 @@ def dumps(resource, encoder=None, include_virtual_fields=True, **kwargs):
 
     :param resource: The root resource to dump to a JSON encoded file.
     :param encoder: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
-    :param include_virtual_fields: Include virtual fields in the output 
+    :param include_virtual_fields: Include virtual fields in the output
     :param kwargs: Additional keyword arguments for the encoder.
     :returns: TOML encoded string.
 

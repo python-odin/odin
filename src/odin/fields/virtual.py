@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
-
 from odin.utils import force_tuple, getmeta
 
 from .base import BaseField
@@ -41,9 +38,7 @@ class VirtualField(BaseField):
         :param doc_text: Documentation for the field, replaces help text
         :param is_attribute: Special flag for codecs that support attributes on nodes (ie XML)
         """
-        super(VirtualField, self).__init__(
-            verbose_name, verbose_name_plural, name, doc_text
-        )
+        super().__init__(verbose_name, verbose_name_plural, name, doc_text)
 
         self.data_type_name = data_type_name
         self.is_attribute = is_attribute
@@ -70,7 +65,7 @@ class ConstantField(VirtualField):
     """
 
     def __init__(self, value, *args, **kwargs):
-        super(ConstantField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.value = value
 
     def __get__(self, instance, owner):
@@ -86,7 +81,7 @@ class CalculatedField(VirtualField):
 
     def __init__(self, expr, *args, **kwargs):
         assert callable(expr)
-        super(CalculatedField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.expr = expr
 
     def __get__(self, instance, owner):
@@ -125,7 +120,7 @@ class MultiPartField(VirtualField):
 
         """
         kwargs.setdefault("data_type_name", "String")
-        super(MultiPartField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.field_names = force_tuple(field_names)
         self.separator = separator
         self._fields = None

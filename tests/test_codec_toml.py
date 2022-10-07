@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
 import datetime
 import os
+from io import StringIO
 
 import pytest
-from six import StringIO
 from odin.codecs import toml_codec
 from odin.exceptions import CodecDecodeError, ValidationError
 from .resources import *
@@ -12,12 +10,12 @@ from .resources import *
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
-class CustomString(object):
+class CustomString:
     def __init__(self, s):
         self.wrapped = s
 
 
-class TestTomlCodec(object):
+class TestTomlCodec:
     def test_dumps_and_loads(self):
         in_resource = Book(
             title="Consider Phlebas",
@@ -94,7 +92,9 @@ class TestTomlCodec(object):
                 toml_codec.load(f)
 
     def test_custom_type(self, monkeypatch):
-        monkeypatch.setattr(toml_codec, "TOML_TYPES", {CustomString: lambda x: x.wrapped})
+        monkeypatch.setattr(
+            toml_codec, "TOML_TYPES", {CustomString: lambda x: x.wrapped}
+        )
 
         in_resource = Book(
             title=CustomString("Consider Phlebas"),

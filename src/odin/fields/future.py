@@ -1,7 +1,5 @@
-from __future__ import absolute_import
-
 from enum import Enum
-from typing import TypeVar, Optional, Any, Type  # noqa
+from typing import TypeVar, Optional, Any, Type
 
 from odin.exceptions import ValidationError
 from . import Field
@@ -26,7 +24,7 @@ class EnumField(Field):
         choices = options.pop("choices", None)
         options["choices"] = tuple((e, e.name) for e in choices or enum)
 
-        super(EnumField, self).__init__(**options)
+        super().__init__(**options)
         self.enum = enum
 
     @property

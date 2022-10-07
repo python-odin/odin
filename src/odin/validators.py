@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
 # This file is largely verbatim from the Django project, the wheel works well, no need to re-invent it.
 #
 # A note: to use validators from the Django project install the baldr package. Baldr is an integration between Odin and
 # the Django framework, the integration includes support for handling the Django version of the ValidationError
 # exception within Odin.
 import re
-import six
 
 from odin import exceptions
 from odin.utils.ipv6 import is_valid_ipv6_address
@@ -13,7 +11,7 @@ from odin.utils.ipv6 import is_valid_ipv6_address
 EMPTY_VALUES = (None, "", [], (), {})
 
 
-class RegexValidator(object):
+class RegexValidator:
     regex = r""
     message = "Enter a valid value."
     code = "invalid"
@@ -27,7 +25,7 @@ class RegexValidator(object):
             self.code = code
 
         # Compile the regex if it was not passed pre-compiled.
-        if isinstance(self.regex, six.string_types):
+        if isinstance(self.regex, str):
             self.regex = re.compile(self.regex)
 
     def __call__(self, value):
@@ -50,7 +48,7 @@ class URLValidator(RegexValidator):
         r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # domain...
         r"localhost|"  # localhost...
         r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|"  # ...or ipv4
-        r"\[?[A-F0-9]*:[A-F0-9:]+\]?)"  # ...or ipv6
+        r"\[?[A-F0-9]*:[A-F0-9:]+]?)"  # ...or ipv6
         r"(?::\d+)?"  # optional port
         r"(?:/?|[/?]\S+)$",
         re.IGNORECASE,
@@ -61,7 +59,7 @@ class URLValidator(RegexValidator):
 validate_url = URLValidator()
 
 
-class BaseValidator(object):
+class BaseValidator:
     message = "Ensure this value is %(limit_value)s (it is %(show_value)s)."
     code = "limit_value"
     description = "Ensure that a value is %(limit_value)s."
@@ -135,7 +133,7 @@ class MinLengthValidator(LengthValidator):
         return a < b
 
 
-class SimpleValidator(object):
+class SimpleValidator:
     def __init__(self, assertion, message, code):
         self.assertion = assertion
         self.message = message
@@ -219,7 +217,7 @@ def validate_ipv46_address(value):
             )
 
 
-class EmailValidator(object):
+class EmailValidator:
     """
     Validate is a valid email address format.
     """

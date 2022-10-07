@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division
-
 import datetime
 from typing import Union
 
@@ -34,7 +31,7 @@ def date_iso_format(value):
     "Defaulting the timezone should be preformed by the fields only, this confuses things. "
     "Most codecs have already migrated to not use this class."
 )
-class DatetimeIsoFormat(object):
+class DatetimeIsoFormat:
     """
     Serialise a datetime.time or datetime.datetime to ISO string format.
     """
@@ -72,7 +69,7 @@ def time_iso_format(value):
     "Defaulting the timezone should be preformed by the fields only, this confuses things. "
     "Most codecs have already migrated to not use this class."
 )
-class DatetimeEcmaFormat(object):
+class DatetimeEcmaFormat:
     """
     Serialize a datetime object into the ECMA defined format.
     """

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 CSV Codec
 ~~~~~~~~~
@@ -15,8 +14,8 @@ Reading data from a CSV file::
             ...
 
 """
-import six
 import csv
+from io import StringIO
 
 from odin import bases
 from odin.compatibility import deprecated
@@ -26,13 +25,14 @@ from odin.resources import create_resource_from_iter, create_resource_from_dict
 from odin.utils import getmeta, lazy_property
 from odin.exceptions import CodecDecodeError, ValidationError
 
-CONTENT_TYPE = 'text/csv'
+CONTENT_TYPE = "text/csv"
 
 
 class Reader(bases.TypedResourceIterable):
     """
     Customisable reader object.
     """
+
     csv_reader = csv.reader
     """
     CSV Reader object to use (if you wish to use *unicodecsv* or similar)
@@ -53,17 +53,19 @@ class Reader(bases.TypedResourceIterable):
     Strictly check header fields.
     """
 
-    csv_dialect = 'excel'
+    csv_dialect = "excel"
     """
     CSV Dialect to use; defaults to the CSV libraries default value of *excel*.
     """
 
-    default_empty_value = ''
+    default_empty_value = ""
     """
     The default value to use if a field is empty. This can be used to default to *None*.
     """
 
-    def __init__(self, f, resource_type, full_clean=True, error_callback=None, **reader_kwargs):
+    def __init__(
+        self, f, resource_type, full_clean=True, error_callback=None, **reader_kwargs
+    ):
         """
         Initialise a reader
 
@@ -80,7 +82,13 @@ class Reader(bases.TypedResourceIterable):
             self.handle_validation_error = error_callback
 
         # Backwards compatibility
-        for arg in ('csv_reader', 'includes_header', 'ignore_header_case', 'strict_fields', 'csv_dialect'):
+        for arg in (
+            "csv_reader",
+            "includes_header",
+            "ignore_header_case",
+            "strict_fields",
+            "csv_dialect",
+        ):
             if arg in reader_kwargs:
                 setattr(self, arg, reader_kwargs.pop(arg))
 
@@ -93,7 +101,9 @@ class Reader(bases.TypedResourceIterable):
 
             # Handle strict fields
             if self.strict_fields and self.extra_field_names:
-                raise CodecDecodeError("Extra unknown fields: {0}".format(','.join(self.extra_field_names)))
+                raise CodecDecodeError(
+                    "Extra unknown fields: {0}".format(",".join(self.extra_field_names))
+                )
 
         # Built in counters
         self.row_count = None
@@ -107,15 +117,16 @@ class Reader(bases.TypedResourceIterable):
         resource = self.resource_type
         full_clean = self.full_clean
         default_empty_value = self.default_empty_value
-        handle_validation_error = getattr(self, 'handle_validation_error', None)
+        handle_validation_error = getattr(self, "handle_validation_error", None)
         idx = -1
 
         def create_resource(values, i):
             try:
                 return create_resource_from_iter(
                     # Handle empty values
-                    (default_empty_value if v == '' else v for v in values),
-                    resource, full_clean
+                    (default_empty_value if v == "" else v for v in values),
+                    resource,
+                    full_clean,
                 )
             except ValidationError as ve:
                 # Don't raise these through yield as will cause a StopIteration
@@ -133,8 +144,8 @@ class Reader(bases.TypedResourceIterable):
             for idx, row in enumerate(self._reader):
                 # Check if row is less than mapping (as this will causes errors)!
                 res = create_resource(
-                    (s if s is NotProvided else row[s] for s in mapping),
-                    idx + 1)  # Add one to index as row "0" will be the header
+                    (s if s is NotProvided else row[s] for s in mapping), idx + 1
+                )  # Add one to index as row "0" will be the header
                 if res:
                     yield res
         else:
@@ -205,8 +216,16 @@ class Reader(bases.TypedResourceIterable):
         return tuple(mapping)
 
 
-def reader(f, resource, includes_header=False, csv_module=csv, full_clean=True,
-           ignore_header_case=False, strict_fields=False, **kwargs):
+def reader(
+    f,
+    resource,
+    includes_header=False,
+    csv_module=csv,
+    full_clean=True,
+    ignore_header_case=False,
+    strict_fields=False,
+    **kwargs
+):
     """
     CSV reader that returns resource objects
 
@@ -222,12 +241,16 @@ def reader(f, resource, includes_header=False, csv_module=csv, full_clean=True,
     :rtype: Reader
 
     """
-    return Reader(f, resource, full_clean,
-                  csv_reader=csv_module.reader,
-                  includes_header=includes_header,
-                  ignore_header_case=ignore_header_case,
-                  strict_fields=strict_fields,
-                  **kwargs)
+    return Reader(
+        f,
+        resource,
+        full_clean,
+        csv_reader=csv_module.reader,
+        includes_header=includes_header,
+        ignore_header_case=ignore_header_case,
+        strict_fields=strict_fields,
+        **kwargs
+    )
 
 
 @deprecated("This class will be removed in 1.1 migrate to the `reader` method.")
@@ -236,13 +259,10 @@ class ResourceReader(csv.DictReader):
         self.resource = resource
         csv.DictReader.__init__(self, f, *args, **kwargs)
 
-    # Python 2
-    def next(self):
-        return create_resource_from_dict(csv.DictReader.next(self), self.resource, copy_dict=False)
-
-    # Python 3
     def __next__(self):
-        return create_resource_from_dict(csv.DictReader.__next__(self), self.resource, copy_dict=False)
+        return create_resource_from_dict(
+            csv.DictReader.__next__(self), self.resource, copy_dict=False
+        )
 
 
 def value_fields(resource):
@@ -295,7 +315,9 @@ def dump_to_writer(writer, resources, resource_type=None, fields=None):
     return fields
 
 
-def dump(f, resources, resource_type=None, include_header=True, cls=csv.writer, **kwargs):
+def dump(
+    f, resources, resource_type=None, include_header=True, cls=csv.writer, **kwargs
+):
     """
     Dump resources into a CSV file.
 
@@ -332,6 +354,6 @@ def dumps(resources, resource_type=None, cls=csv.writer, **kwargs):
     :param kwargs: Additional parameters to be supplied to the writer instance.
 
     """
-    buf = six.StringIO()
+    buf = StringIO()
     dump(buf, resources, resource_type=resource_type, cls=cls, **kwargs)
     return buf.getvalue()

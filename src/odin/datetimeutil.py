@@ -1,14 +1,11 @@
-# -*- coding: utf-8 -*-
 import datetime
 import re
 import time
-import six
-import sys
 from email.utils import parsedate_tz as parse_http_datetime
 from email.utils import formatdate as format_http_datetime  # noqa
 
 
-class IgnoreTimezone(object):
+class IgnoreTimezone:
     pass
 
 
@@ -58,7 +55,8 @@ class LocalTimezone(datetime.tzinfo):
     def tzname(self, dt):
         return time.tzname[self._is_dst(dt)]
 
-    def _is_dst(self, dt):
+    @staticmethod
+    def _is_dst(dt):
         stamp = time.mktime(
             (
                 dt.year,
@@ -206,32 +204,11 @@ def now_local():
     return datetime.datetime.now(tz=local)
 
 
-# Fallback for python 2.6
-if sys.version_info[0] == 2 and sys.version_info[1] == 6:
-
-    def total_seconds(timedelta):
-        """
-        Backported implementation of total_seconds
-        """
-        return (
-            timedelta.microseconds
-            + 0.0
-            + (timedelta.seconds + timedelta.days * 24 * 3600)
-        )
-
-
-else:
-    total_seconds = datetime.timedelta.total_seconds
+total_seconds = datetime.timedelta.total_seconds
 
 
 UNIX_EPOCH = datetime.datetime(1970, 1, 1, tzinfo=utc)
-if six.PY3:
-    to_timestamp = datetime.datetime.timestamp
-else:
-
-    def to_timestamp(dt):
-        return total_seconds((dt - UNIX_EPOCH))
-
+to_timestamp = datetime.datetime.timestamp
 
 ISO8601_TIME_STRING_RE = re.compile(
     r"^(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})(\.(?P<microseconds>\d+))?"
@@ -248,7 +225,7 @@ def parse_iso_date_string(date_string):
     """
     Parse a date in the string format defined in ISO 8601.
     """
-    if not isinstance(date_string, six.string_types):
+    if not isinstance(date_string, str):
         raise ValueError("Expected string")
 
     try:
@@ -261,7 +238,7 @@ def parse_iso_time_string(time_string, default_timezone=utc):
     """
     Parse a time in the string format defined by ISO 8601.
     """
-    if not isinstance(time_string, six.string_types):
+    if not isinstance(time_string, str):
         raise ValueError("Expected string")
 
     matches = ISO8601_TIME_STRING_RE.match(time_string)
@@ -286,7 +263,7 @@ def parse_iso_datetime_string(datetime_string, default_timezone=utc):
     """
     Parse a datetime in the string format defined by ISO 8601.
     """
-    if not isinstance(datetime_string, six.string_types):
+    if not isinstance(datetime_string, str):
         raise ValueError("Expected string")
 
     matches = ISO8601_DATETIME_STRING_RE.match(datetime_string)
@@ -337,7 +314,7 @@ def parse_http_datetime_string(datetime_string):
     Parse a datetime in the string format defined by ISO-1123 (or HTTP date time).
     """
     elements = None
-    if isinstance(datetime_string, six.string_types):
+    if isinstance(datetime_string, str):
         elements = parse_http_datetime(datetime_string)
 
     if not elements:
