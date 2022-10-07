@@ -112,3 +112,41 @@ class TestTomlCodec:
         out_resource = toml_codec.loads(data)
 
         assert out_resource.title == in_resource.title.wrapped
+
+    def test_dump__with_include_type_field(self):
+        fp = StringIO()
+        expected = Book(
+            title="Consider Phlebas",
+            isbn="0-333-45430-8",
+            num_pages=471,
+            rrp=19.50,
+            fiction=True,
+            genre="sci-fi",
+            authors=[Author(name="Iain M. Banks")],
+            publisher=Publisher(name="Macmillan"),
+            published=[datetime.datetime(1987, 1, 1)],
+        )
+
+        toml_codec.dump(expected, fp, include_type_field=True)
+        fp.seek(0)
+        actual = toml_codec.load(fp)
+
+        assert expected.title == actual.title
+
+    def test_dumps__with_include_type_field(self):
+        expected = Book(
+            title="Consider Phlebas",
+            isbn="0-333-45430-8",
+            num_pages=471,
+            rrp=19.50,
+            fiction=True,
+            genre="sci-fi",
+            authors=[Author(name="Iain M. Banks")],
+            publisher=Publisher(name="Macmillan"),
+            published=[datetime.datetime(1987, 1, 1)],
+        )
+
+        data = toml_codec.dumps(expected, include_type_field=True)
+        actual = toml_codec.loads(data)
+
+        assert expected.title == actual.title
