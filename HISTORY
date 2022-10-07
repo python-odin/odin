@@ -8,6 +8,7 @@
   - odin.csv_codec.ResourceReader
   - odin.serializers.DatetimeEcmaFormat
 - Initial improvements to typing and utilising of modern Python features
+- Fix bug in toml_codec that prevented the use of the include_type_field option.
 
 1.8.1
 =====
