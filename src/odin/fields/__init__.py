@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
-
 import copy
 import datetime
-import six
 import uuid
-
 from typing import Sequence, Tuple
 
 from odin import exceptions, datetimeutil, registration
@@ -51,10 +46,6 @@ __all__ = (
     "TypedObjectField",
     "NotProvided",
 )
-
-
-if six.PY3:
-    long = int
 
 
 class NotProvided:
@@ -246,7 +237,7 @@ class BooleanField(Field):
             # if value is 1 or 0 then it's equal to True or False, but we want
             # to return a true bool for semantic reasons.
             return bool(value)
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             lvalue = value.lower()
             if lvalue in self.true_strings:
                 return True
@@ -285,7 +276,7 @@ class StringField(Field):
             self.validators.append(MaxLengthValidator(max_length))
 
     def to_python(self, value):
-        if value is None or isinstance(value, six.string_types):
+        if value is None or isinstance(value, str):
             return value
         return str(value)
 
@@ -614,7 +605,7 @@ class TimeStampField(Field):
         if isinstance(value, datetime.datetime):
             return value
         try:
-            return datetime.datetime.fromtimestamp(long(value), tz=datetimeutil.utc)
+            return datetime.datetime.fromtimestamp(int(value), tz=datetimeutil.utc)
         except ValueError:
             pass
         msg = self.error_messages["invalid"]
@@ -623,8 +614,8 @@ class TimeStampField(Field):
     def prepare(self, value):
         if value in self.empty_values:
             return
-        if isinstance(value, six.integer_types):
-            return long(value)
+        if isinstance(value, int):
+            return int(value)
         if isinstance(value, datetime.datetime):
             return datetimeutil.to_timestamp(value)
 
@@ -793,10 +784,10 @@ class TypedDictField(DictField):
     def __init__(self, value_field, key_field=StringField(), **options):
         self.key_field = key_field
         self.value_field = value_field
-        super(TypedDictField, self).__init__(**options)
+        super().__init__(**options)
 
     def to_python(self, value):
-        value = super(TypedDictField, self).to_python(value)
+        value = super().to_python(value)
         if not value:
             return value
 
@@ -826,7 +817,7 @@ class TypedDictField(DictField):
         return value_dict
 
     def validate(self, value):
-        super(TypedDictField, self).validate(value)
+        super().validate(value)
 
         if value in self.empty_values:
             return
@@ -927,7 +918,7 @@ class IPv6Field(StringField):
 
     def __init__(self, **options):
         options.setdefault("validators", []).append(validate_ipv6_address)
-        super(IPv6Field, self).__init__(**options)
+        super().__init__(**options)
 
 
 class IPv46Field(StringField):
@@ -942,7 +933,7 @@ class IPv46Field(StringField):
 
     def __init__(self, **options):
         options.setdefault("validators", []).append(validate_ipv46_address)
-        super(IPv46Field, self).__init__(**options)
+        super().__init__(**options)
 
 
 class UUIDField(Field):
@@ -955,7 +946,7 @@ class UUIDField(Field):
     data_type_name = "UUID"
 
     def __init__(self, **options):
-        super(UUIDField, self).__init__(**options)
+        super().__init__(**options)
 
     def to_python(self, value):
         if value is None:
@@ -964,7 +955,7 @@ class UUIDField(Field):
         if isinstance(value, uuid.UUID):
             return value
 
-        elif isinstance(value, six.binary_type):
+        elif isinstance(value, bytes):
             if len(value) == 16:
                 return uuid.UUID(bytes=value)
 
@@ -973,7 +964,7 @@ class UUIDField(Field):
             except UnicodeDecodeError as e:
                 raise exceptions.ValidationError(e.args[0], code="invalid")
 
-        elif isinstance(value, six.integer_types):
+        elif isinstance(value, int):
             try:
                 return uuid.UUID(int=value)
             except ValueError as e:
@@ -985,8 +976,8 @@ class UUIDField(Field):
             except ValueError as e:
                 raise exceptions.ValidationError(e.args[0], code="invalid")
 
-        elif not isinstance(value, six.text_type):
-            value = six.text_type(value)
+        elif not isinstance(value, str):
+            value = str(value)
 
         try:
             return uuid.UUID(value)

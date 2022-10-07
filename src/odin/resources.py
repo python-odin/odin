@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
 import copy
-import six
-from typing import TypeVar, Dict, Any, Type  # noqa
+from typing import TypeVar, Dict, Any, Type, Optional
 
 from odin import bases
 from odin import exceptions, registration
@@ -567,7 +565,7 @@ class ResourceBase(object):
             raise ValidationError(errors)
 
 
-class Resource(six.with_metaclass(ResourceType, ResourceBase)):
+class Resource(ResourceBase, metaclass=ResourceType):
     pass
 
 
@@ -776,12 +774,12 @@ def create_resource_from_dict(
 
 
 def build_object_graph(
-    d,  # type: Dict[str, Any]
-    resource=None,  # type: Type[R]
-    full_clean=True,  # type: bool
-    copy_dict=True,  # type: bool
-    default_to_not_supplied=False,  # type: bool
-):
+    d: Dict[str, Any],
+    resource: Optional[Type[R]] = None,
+    full_clean: bool = True,
+    copy_dict: bool = True,
+    default_to_not_supplied: bool = False,
+) -> R:
     """
     Generate an object graph from a dict
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from odin import registration
 
 NON_FIELD_ERRORS = "__all__"
@@ -128,7 +127,7 @@ class TraversalError(Exception):
     """
 
     def __init__(self, path, *args, **kwargs):
-        super(TraversalError, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.path = path
 
 

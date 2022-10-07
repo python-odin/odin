@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-import six
 from odin import bases
 from odin import exceptions
 from odin.resources import create_resource_from_dict
@@ -109,7 +107,7 @@ class ListOf(CompositeField):
 
     def __init__(self, resource, empty=True, **options):
         options.setdefault("default", list)
-        super(ListOf, self).__init__(resource, **options)
+        super().__init__(resource, **options)
         self.empty = empty
 
     @staticmethod
@@ -146,7 +144,7 @@ class ListOf(CompositeField):
 
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
-        super(CompositeField, self).validate(value)  # noqa
+        super().validate(value)  # noqa
         if value is not None:
             super_validate = super(ListOf, self).validate
             self._process_list(value, super_validate)
@@ -199,7 +197,7 @@ class DictOf(CompositeField):
         values = {}
         errors = {}
         key_choices = self.key_choices
-        for key, value in six.iteritems(value_dict):
+        for key, value in value_dict.items():
             if key_choices and not value_in_choices(key, key_choices):
                 msg = self.error_messages["invalid_key"] % value
                 raise exceptions.ValidationError(msg)

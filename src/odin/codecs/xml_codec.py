@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 XML Codec (output only)
 
@@ -15,10 +14,7 @@ The TextField is for all intents and purposes just a StringField, other codecs
 will export any value as a String.
 
 """
-from __future__ import unicode_literals
-
 import datetime
-import six
 from io import StringIO
 from typing import TextIO
 from xml.sax import saxutils
@@ -33,8 +29,6 @@ XML_TYPES = {
     datetime.time: serializers.time_iso_format,
     datetime.datetime: serializers.datetime_iso_format,
 }
-if not six.PY3:
-    XML_TYPES[unicode] = lambda v: v  # noqa
 
 CONTENT_TYPE = "application/xml"
 
@@ -53,7 +47,7 @@ def _serialize_to_string(value):
 
 
 def dump(
-    fp,  # type: TextIO
+    fp: TextIO,
     resource,  # type: Resource
     line_ending="",  # type: str
 ):

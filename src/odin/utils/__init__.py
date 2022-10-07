@@ -1,16 +1,12 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
-
 import re
-from typing import Iterable, Tuple, Union, Set, T, Sequence  # noqa
+from typing import Iterable, Tuple, Union, Set, T, Sequence
 
 _CAMEL_CASE_RE = re.compile(r"[A-Z]")
 _LOWER_UNDERSCORE_CASE_RE = re.compile(r"_([a-z])")
 _LOWER_DASH_CASE_RE = re.compile(r"-([a-z])")
 
 
-def camel_to_lower_separated(s, sep):
-    # type: (str, str) -> str
+def camel_to_lower_separated(s: str, sep: str) -> str:
     """
     Convert camel case representation into lower separated case ie:
 
@@ -156,7 +152,7 @@ def getmeta(resource_or_instance):
     return getattr(resource_or_instance, "_meta")
 
 
-def field_iter(resource, include_virtual=True):
+def field_iter(resource, include_virtual: bool = True):
     """
     Return an iterator that yields fields from a resource.
 

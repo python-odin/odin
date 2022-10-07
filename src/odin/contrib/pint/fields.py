@@ -1,22 +1,21 @@
-# -*- coding: utf-8 -*-
 from pint.unit import DimensionalityError
-import six
+
 from odin import exceptions
 from odin.contrib.pint.units import registry
 from odin.fields import Field
 from odin.validators import EMPTY_VALUES
 
-__all__ = ('FloatField',)
+__all__ = ("FloatField",)
 
 
 class PintField(Field):
     def __init__(self, units, **kwargs):
-        super(PintField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         # Ensure we have valid units
         if units is None:
             raise ValueError("Units cannot be None")
-        if isinstance(units, six.string_types):
+        if isinstance(units, str):
             units = registry[units]
         # if not units_ in units.registry:
         #    raise ValueError("Units object is not a member of `odin.units.registry`. Any custom units must be "
@@ -31,7 +30,7 @@ class PintField(Field):
             else:
                 raw_value, units = value, self.units
             # Extract the units
-            if isinstance(units, six.string_types):
+            if isinstance(units, str):
                 units = registry[units]
             # Convert the magnitude and apply units
             value = self.to_magnitude(raw_value) * units
@@ -47,7 +46,7 @@ class PintField(Field):
 
 class FloatField(PintField):
     default_error_messages = {
-        'invalid': "'%s' value must be a float.",
+        "invalid": "'%s' value must be a float.",
     }
     data_type_name = "Float"
 
@@ -55,7 +54,7 @@ class FloatField(PintField):
         try:
             return float(value)
         except ValueError:
-            msg = self.error_messages['invalid'] % value
+            msg = self.error_messages["invalid"] % value
             raise exceptions.ValidationError(msg)
 
     def to_python(self, value):

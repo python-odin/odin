@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
-
 from odin.utils import cached_property, field_iter_items, getmeta
 
 __all__ = ("ResourceAdapter",)

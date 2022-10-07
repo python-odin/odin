@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
-from six import StringIO
+from io import StringIO
+
 from odin import bases
 from odin import resources, ResourceAdapter
 from odin.exceptions import CodecEncodeError
@@ -66,7 +66,6 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
     :returns: A resource object or object graph of resources loaded from file.
 
     """
-    # try:
     return resources.build_object_graph(
         #  The SafeLoader is used here, this is to allow for CSafeLoader to be used.
         yaml.load(fp, SafeLoader),  # nosec - B506:yaml_load
@@ -75,8 +74,6 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
         False,
         default_to_not_supplied,
     )
-    # except (ValueError, TypeError) as ex:
-    #     raise CodecDecodeError(str(ex))
 
 
 loads = load

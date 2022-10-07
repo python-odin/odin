@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-from __future__ import division
 import decimal
-import six
 
 from collections import namedtuple
 
@@ -72,7 +69,7 @@ class Amount(tuple):
 
         if currency is None:
             currency = DEFAULT_CURRENCY
-        elif isinstance(currency, six.string_types):
+        elif isinstance(currency, str):
             currency = CURRENCY[currency.upper()]
         elif not isinstance(currency, Currency):
             raise TypeError(
@@ -225,7 +222,7 @@ class Amount(tuple):
         :return: formatted string
 
         """
-        assert isinstance(format_string, six.string_types)
+        assert isinstance(format_string, str)
         return format_string.format(
             value=("{{0:0.{:d}f}}".format(self.currency.precision)).format(self.value),
             value_raw=self.value,

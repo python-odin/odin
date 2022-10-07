@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
 import collections
-import six
 import typing
 from odin import bases
 from odin import registration
@@ -72,7 +70,7 @@ def assign(to_field, action, to_list=False, bind=True, skip_if_none=False):
     return FieldMapping(None, action, to_field, to_list, bind, skip_if_none)
 
 
-class FieldResolverBase(object):
+class FieldResolverBase:
     """Base class for field resolver objects"""
 
     def __init__(self, obj):
@@ -84,7 +82,7 @@ class FieldResolverBase(object):
         return self.get_from_field_dict()
 
     def get_from_field_dict(self):
-        """ Return a field map of source fields consisting of an attribute and a Field object (if one is used).
+        """Return a field map of source fields consisting of an attribute and a Field object (if one is used).
 
         For resource objects the field object would be an Odin resource field, for Django models a model field etc. If
         you are building a generic object mapper the field object can be :const:`None`.
@@ -103,7 +101,7 @@ class FieldResolverBase(object):
         return self.get_to_field_dict()
 
     def get_to_field_dict(self):
-        """ Return a field map consisting of an attribute and a Field object (if one is used).
+        """Return a field map consisting of an attribute and a Field object (if one is used).
 
         For resource objects the field object would be an Odin resource field, for Django models a model field etc. If
         you are building a generic object mapper the field object can be :const:`None`.
@@ -116,7 +114,7 @@ class FieldResolverBase(object):
         return self.get_field_dict()
 
     def get_field_dict(self):
-        """ Return a field map consisting of an attribute and a Field object (if one is used).
+        """Return a field map consisting of an attribute and a Field object (if one is used).
 
         For resource objects the field object would be an Odin resource field, for Django models a model field etc. If
         you are building a generic object mapper the field object can be :const:`None`.
@@ -142,7 +140,7 @@ registration.register_field_resolver(ResourceFieldResolver, Resource)
 
 class MappingMeta(type):
     """
-    Meta-class for all Mappings
+    Metaclass for all Mappings
     """
 
     def __new__(mcs, name, bases, attrs):
@@ -198,7 +196,7 @@ class MappingMeta(type):
             )
 
         def attr_mapping_to_mapping_rule(m, def_type, ref):
-            """ Parse, validate and normalise defined mapping rules so rules can be executed without having to perform
+            """Parse, validate and normalise defined mapping rules so rules can be executed without having to perform
             checks during a mapping operation."""
             to_list = False
             bind = False
@@ -211,9 +209,7 @@ class MappingMeta(type):
                     map_from, action, map_to = m
                 except ValueError:
                     raise MappingSetupError(
-                        "Bad mapping definition `{}` in {} `{}`.".format(
-                            m, def_type, ref
-                        )
+                        f"Bad mapping definition `{m}` in {def_type} `{ref}`."
                     )
 
             if map_from is None:
@@ -224,45 +220,38 @@ class MappingMeta(type):
                 for f in map_from:
                     if f not in from_fields:
                         raise MappingSetupError(
-                            "Field `{}` of {} `{}` not found on from object. ".format(
-                                f, def_type, ref
-                            )
+                            f"Field `{f}` of {def_type} `{ref}` not found on from object. "
                         )
 
-            if isinstance(action, six.string_types):
+            if isinstance(action, str):
                 if action not in attrs:
                     raise MappingSetupError(
-                        "Action named {} defined in {} `{}` was not defined on mapping object.".format(
-                            action, def_type, ref
-                        )
+                        f"Action named {action} defined in {def_type} `{ref}` was not defined on "
+                        f"mapping object."
                     )
                 if not callable(attrs[action]):
                     raise MappingSetupError(
-                        "Action named {} defined in {} `{}` is not callable.".format(
-                            action, def_type, ref
-                        )
+                        f"Action named {action} defined in {def_type} `{ref}` is not callable."
                     )
             elif action is not None and not callable(action):
                 raise MappingSetupError(
-                    "Action on {} `{}` is not callable.".format(def_type, ref)
+                    f"Action on {def_type} `{ref}` is not callable."
                 )
             elif action is None and is_assignment:
                 raise MappingSetupError(
-                    "No action supplied for `{}` in `{}`.".format(def_type, ref)
+                    f"No action supplied for `{def_type}` in `{ref}`."
                 )
 
             map_to = force_tuple(map_to)
             if to_list and len(map_to) != 1:
                 raise MappingSetupError(
-                    "The {} `{}` specifies a to_list mapping, these can only be applied to a "
-                    "single target field.".format(def_type, m)
+                    f"The {def_type} `{m}` specifies a to_list mapping, these can only be "
+                    f"applied to a single target field."
                 )
             for f in map_to:
                 if f not in to_fields:
                     raise MappingSetupError(
-                        "Field `{}` of {} `{}` not found on to object. ".format(
-                            f, def_type, ref
-                        )
+                        f"Field `{f}` of {def_type} `{ref}` not found on to object. "
                     )
 
             return FieldMapping(map_from, action, map_to, to_list, bind, skip_if_none)
@@ -498,7 +487,7 @@ class MappingBase(object):
 
         :param source_obj: The source resource, this must be an instance of :py:attr:`Mapping.from_obj`.
         :param context: An optional context value, this can be any value you want to aid in mapping
-        :param allow_subclass: Allow sub classes of mapping resource to be included.
+        :param allow_subclass: Allow sub-classes of mapping resource to be included.
         :param mapping_result: If an iterable is provided as the source object a mapping result is returned of the type
             specified is returned.
 
@@ -611,7 +600,7 @@ class MappingBase(object):
         if action is None:
             to_values = from_values
         else:
-            if isinstance(action, six.string_types):
+            if isinstance(action, str):
                 action = getattr(self, action)
 
             try:
@@ -725,7 +714,7 @@ class MappingBase(object):
         return diff_fields
 
 
-class Mapping(six.with_metaclass(MappingMeta, MappingBase)):
+class Mapping(MappingBase, metaclass=MappingMeta):
     """
     Definition of a mapping between two Objects.
     """
@@ -740,7 +729,7 @@ class DynamicMapping(MappingBase):
     """
 
 
-class ImmediateMapping(six.with_metaclass(MappingMeta, MappingBase)):
+class ImmediateMapping(MappingBase, metaclass=MappingMeta):
     """
     Definition of a mapping between two Objects.
 
