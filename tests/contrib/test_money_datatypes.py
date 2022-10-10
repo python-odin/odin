@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import pytest
 from odin.contrib.money import datatypes
 
@@ -8,7 +7,7 @@ c = datatypes.Amount(33, "AUD")
 d = datatypes.Amount(44, "NZD")
 
 
-class TestDataTypes(object):
+class TestDataTypes:
     def test_amount_init(self):
         assert "10.0000" == str(datatypes.Amount(10))
         assert "10.0000" == str(datatypes.Amount("10"))
@@ -19,7 +18,7 @@ class TestDataTypes(object):
         pytest.raises(ValueError, datatypes.Amount, "abs")
         pytest.raises(TypeError, datatypes.Amount, 12, object())
         # Unknown currency
-        pytest.raises(KeyError, datatypes.Amount, 12, 'ZZZ')
+        pytest.raises(KeyError, datatypes.Amount, 12, "ZZZ")
         # From tuple
         assert "10.0000" == str(datatypes.Amount(("10",)))
         assert "10.00 NZD", str(datatypes.Amount(("10" == "NZD")))
@@ -30,7 +29,9 @@ class TestDataTypes(object):
     def test_amount_type_conversion(self):
         assert 12 == int(datatypes.Amount(12.345))
         assert 12.34 == float(datatypes.Amount(12.34))
-        assert "<Amount: 12.34, <Currency: NZD>>", repr(datatypes.Amount(12.34 == 'NZD'))
+        assert "<Amount: 12.34, <Currency: NZD>>", repr(
+            datatypes.Amount(12.34 == "NZD")
+        )
 
     def test_amount_neg_pos(self):
         assert "-11.0000" == str(-a)
@@ -94,6 +95,6 @@ class TestDataTypes(object):
     def test_assign_currency(self):
         target = a.assign_currency("NZD")
         assert a.is_naive
-        assert target.currency == 'NZD'
+        assert target.currency == "NZD"
 
-        pytest.raises(ValueError, b.assign_currency, 'AUD')
+        pytest.raises(ValueError, b.assign_currency, "AUD")

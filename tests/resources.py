@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import odin
 import enum
 
@@ -28,20 +27,22 @@ class LibraryBook(odin.Resource):
 
 class Book(LibraryBook):
     class Meta:
-        key_field_name = 'isbn'
+        key_field_name = "isbn"
 
     title = odin.StringField()
     isbn = odin.StringField()
     num_pages = odin.IntegerField()
     rrp = odin.FloatField(default=20.4, use_default_if_not_provided=True)
     fiction = odin.BooleanField(is_attribute=True)
-    genre = odin.StringField(choices=(
-        ('sci-fi', 'Science Fiction'),
-        ('fantasy', 'Fantasy'),
-        ('biography', 'Biography'),
-        ('others', 'Others'),
-        ('computers-and-tech', 'Computers & technology'),
-    ))
+    genre = odin.StringField(
+        choices=(
+            ("sci-fi", "Science Fiction"),
+            ("fantasy", "Fantasy"),
+            ("biography", "Biography"),
+            ("others", "Others"),
+            ("computers-and-tech", "Computers & technology"),
+        )
+    )
     published = odin.TypedArrayField(odin.DateTimeField())
     authors = odin.ArrayOf(Author, use_container=True)
     publisher = odin.DictAs(Publisher, null=True)
@@ -53,9 +54,9 @@ class Book(LibraryBook):
 
 
 class From(enum.Enum):
-    Dumpster = 'dumpster'
-    Shop = 'shop'
-    Ebay = 'ebay'
+    Dumpster = "dumpster"
+    Shop = "shop"
+    Ebay = "ebay"
 
 
 class IdentifiableBook(Book):
@@ -66,10 +67,10 @@ class IdentifiableBook(Book):
 class BookProxy(odin.ResourceProxy):
     class Meta:
         resource = Book
-        include = ('title', 'isbn', 'num_pages', 'rrp')
-        readonly = ('rrp',)
-        verbose_name = 'Book Summary'
-        namespace = 'the.other.library'
+        include = ("title", "isbn", "num_pages", "rrp")
+        readonly = ("rrp",)
+        verbose_name = "Book Summary"
+        namespace = "the.other.library"
 
     @property
     def expensive(self):
@@ -99,13 +100,16 @@ class OldBook(LibraryBook):
     name = odin.StringField(key=True)
     num_pages = odin.IntegerField()
     price = odin.FloatField()
-    genre = odin.StringField(key=True, choices=(
-        ('sci-fi', 'Science Fiction'),
-        ('fantasy', 'Fantasy'),
-        ('biography', 'Biography'),
-        ('others', 'Others'),
-        ('computers-and-tech', 'Computers & technology'),
-    ))
+    genre = odin.StringField(
+        key=True,
+        choices=(
+            ("sci-fi", "Science Fiction"),
+            ("fantasy", "Fantasy"),
+            ("biography", "Biography"),
+            ("others", "Others"),
+            ("computers-and-tech", "Computers & technology"),
+        ),
+    )
     published = odin.DateTimeField()
     author = odin.ObjectAs(Author)
     publisher = odin.ObjectAs(Publisher)
@@ -115,11 +119,9 @@ class OldBookToBookMapping(odin.Mapping):
     from_obj = OldBook
     to_obj = Book
 
-    exclude_fields = ('',)
+    exclude_fields = ("",)
 
-    mappings = (
-        ('name', None, 'title'),
-    )
+    mappings = (("name", None, "title"),)
 
 
 class ChildResource(odin.Resource):
@@ -188,31 +190,34 @@ class FromToMapping(odin.Mapping):
     from_obj = FromResource
     to_obj = ToResource
 
-    exclude_fields = ('excluded1',)
+    exclude_fields = ("excluded1",)
 
     mappings = (
-        ('from_field1', None, 'to_field1'),
-        ('from_field2', int, 'to_field2'),
-        (('from_field3', 'from_field4'), sum_fields, 'to_field3'),
-        ('from_field1', None, 'same_but_different'),
+        ("from_field1", None, "to_field1"),
+        ("from_field2", int, "to_field2"),
+        (("from_field3", "from_field4"), sum_fields, "to_field3"),
+        ("from_field1", None, "same_but_different"),
     )
 
-    @odin.map_field(from_field=('from_field_c1', 'from_field_c2', 'from_field_c3'), to_field='to_field_c1')
+    @odin.map_field(
+        from_field=("from_field_c1", "from_field_c2", "from_field_c3"),
+        to_field="to_field_c1",
+    )
     def multi_to_one(self, *values):
-        return '-'.join(values)
+        return "-".join(values)
 
-    @odin.map_field(from_field='from_field_c4', to_field=('to_field_c2', 'to_field_c3'))
+    @odin.map_field(from_field="from_field_c4", to_field=("to_field_c2", "to_field_c3"))
     def one_to_multi(self, value):
-        return value.split('-', 1)
+        return value.split("-", 1)
 
     @odin.map_field
     def not_auto_c5(self, value):
         return value.upper()
 
-    @odin.map_list_field(to_field='array_string')
+    @odin.map_list_field(to_field="array_string")
     def comma_separated_string(self, value):
-        return value.split(',')
+        return value.split(",")
 
     @odin.assign_field
     def assigned_field(self):
-        return 'Foo'
+        return "Foo"

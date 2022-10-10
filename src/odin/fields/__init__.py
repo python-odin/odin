@@ -1,15 +1,11 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
-
 import copy
 import datetime
-import six
 import uuid
-
-from typing import Sequence, Tuple
+from functools import cached_property
+from typing import Sequence, Tuple, Any, Optional
 
 from odin import exceptions, datetimeutil, registration
-from odin.utils import getmeta, lazy_property
+from odin.utils import getmeta
 from odin.validators import (
     EMPTY_VALUES,
     MaxLengthValidator,
@@ -53,10 +49,6 @@ __all__ = (
 )
 
 
-if six.PY3:
-    long = int
-
-
 class NotProvided:
     pass
 
@@ -79,21 +71,33 @@ class Field(BaseField):
     data_type_name = None
     empty_values = EMPTY_VALUES
 
+    __slots__ = (
+        "null",
+        "default",
+        "use_default_if_not_provided",
+        "validators",
+        "is_attribute",
+        "key",
+        "choices",
+        "error_messages",
+        "resource",
+    )
+
     def __init__(
         self,
-        verbose_name=None,
-        verbose_name_plural=None,
-        name=None,
-        null=False,
-        choices=None,
-        use_default_if_not_provided=False,
+        verbose_name: str = None,
+        verbose_name_plural: str = None,
+        name: str = None,
+        null: bool = False,
+        choices: Optional[Sequence[Tuple[Any, str]]] = None,
+        use_default_if_not_provided: bool = False,
         default=NotProvided,
-        help_text="",
-        validators=None,
+        help_text: str = "",
+        validators: Sequence = None,
         error_messages=None,
-        is_attribute=False,
-        doc_text="",
-        key=False,
+        is_attribute: bool = False,
+        doc_text: str = "",
+        key: bool = False,
     ):
         """
         Initialisation of a Field.
@@ -111,21 +115,24 @@ class Field(BaseField):
             validation).
         :param is_attribute: Special flag for codecs that support attributes on nodes (ie XML)
         :param doc_text: Documentation for the field, replaces help text
-        :param key: Mark this field as a key field (used to generated a unique identifier).
+        :param key: Mark this field as a key field (used to generate a unique identifier).
 
         """
-        super(Field, self).__init__(
-            verbose_name, verbose_name_plural, name, doc_text or help_text
-        )
+        super().__init__(verbose_name, verbose_name_plural, name, doc_text or help_text)
 
-        self.null, self.choices = null, choices
-        self.default, self.use_default_if_not_provided = (
-            default,
-            use_default_if_not_provided,
-        )
+        self.null = null
+        self.default = default
+        self.use_default_if_not_provided = use_default_if_not_provided
         self.validators = self.default_validators + (validators or [])
         self.is_attribute = is_attribute
         self.key = key
+
+        # Check the choices match the spec
+        if choices and not all(
+            isinstance(choice, (tuple, list)) and len(choice) == 2 for choice in choices
+        ):
+            raise ValueError("`choices` is required to be a value, doc string pair")
+        self.choices = choices
 
         messages = {}
         for c in reversed(self.__class__.__mro__):
@@ -142,7 +149,7 @@ class Field(BaseField):
         memodict[id(self)] = obj
         return obj
 
-    @lazy_property
+    @cached_property
     def choice_values(self):
         """
         Choice values to allow choices to simplify checking if a choice is valid.
@@ -151,8 +158,7 @@ class Field(BaseField):
             return tuple(c[0] for c in self.choices)
 
     @property
-    def choices_doc_text(self):
-        # type: () -> Sequence[Tuple[str, str]]
+    def choices_doc_text(self) -> Sequence[Tuple[str, str]]:
         """
         Choices converted for documentation purposes.
         """
@@ -212,7 +218,7 @@ class Field(BaseField):
 
     def has_default(self):
         """
-        Returns a boolean of whether this field has a default value.
+        Returns a bool of whether this field has a default value.
         """
         return self.default is not NotProvided
 
@@ -246,7 +252,7 @@ class BooleanField(Field):
             # if value is 1 or 0 then it's equal to True or False, but we want
             # to return a true bool for semantic reasons.
             return bool(value)
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             lvalue = value.lower()
             if lvalue in self.true_strings:
                 return True
@@ -285,7 +291,7 @@ class StringField(Field):
             self.validators.append(MaxLengthValidator(max_length))
 
     def to_python(self, value):
-        if value is None or isinstance(value, six.string_types):
+        if value is None or isinstance(value, str):
             return value
         return str(value)
 
@@ -308,7 +314,7 @@ class ScalarField(Field):
     scalar_type = int
 
     def __init__(self, min_value=None, max_value=None, **options):
-        super(ScalarField, self).__init__(**options)
+        super().__init__(**options)
         self.min_value = min_value
         if min_value is not None:
             self.validators.append(MinValueValidator(min_value))
@@ -614,7 +620,7 @@ class TimeStampField(Field):
         if isinstance(value, datetime.datetime):
             return value
         try:
-            return datetime.datetime.fromtimestamp(long(value), tz=datetimeutil.utc)
+            return datetime.datetime.fromtimestamp(int(value), tz=datetimeutil.utc)
         except ValueError:
             pass
         msg = self.error_messages["invalid"]
@@ -623,8 +629,8 @@ class TimeStampField(Field):
     def prepare(self, value):
         if value in self.empty_values:
             return
-        if isinstance(value, six.integer_types):
-            return long(value)
+        if isinstance(value, int):
+            return int(value)
         if isinstance(value, datetime.datetime):
             return datetimeutil.to_timestamp(value)
 
@@ -663,7 +669,7 @@ class ListField(Field):
 
     def __init__(self, **options):
         options.setdefault("default", list)
-        super(ListField, self).__init__(**options)
+        super().__init__(**options)
 
     def to_python(self, value):
         if value is None:
@@ -690,8 +696,7 @@ class TypedListField(ListField):
         super(TypedListField, self).__init__(**options)
 
     @property
-    def choices_doc_text(self):
-        # type: () -> Sequence[Tuple[str, str]]
+    def choices_doc_text(self) -> Sequence[Tuple[Any, str]]:
         if self.choices:
             return self.choices
         if hasattr(self.field, "choices_doc_text"):
@@ -699,7 +704,7 @@ class TypedListField(ListField):
         return self.field.choices
 
     def to_python(self, value):
-        value = super(TypedListField, self).to_python(value)
+        value = super().to_python(value)
         if not value:
             return value
 
@@ -793,10 +798,10 @@ class TypedDictField(DictField):
     def __init__(self, value_field, key_field=StringField(), **options):
         self.key_field = key_field
         self.value_field = value_field
-        super(TypedDictField, self).__init__(**options)
+        super().__init__(**options)
 
     def to_python(self, value):
-        value = super(TypedDictField, self).to_python(value)
+        value = super().to_python(value)
         if not value:
             return value
 
@@ -826,7 +831,7 @@ class TypedDictField(DictField):
         return value_dict
 
     def validate(self, value):
-        super(TypedDictField, self).validate(value)
+        super().validate(value)
 
         if value in self.empty_values:
             return
@@ -927,7 +932,7 @@ class IPv6Field(StringField):
 
     def __init__(self, **options):
         options.setdefault("validators", []).append(validate_ipv6_address)
-        super(IPv6Field, self).__init__(**options)
+        super().__init__(**options)
 
 
 class IPv46Field(StringField):
@@ -942,7 +947,7 @@ class IPv46Field(StringField):
 
     def __init__(self, **options):
         options.setdefault("validators", []).append(validate_ipv46_address)
-        super(IPv46Field, self).__init__(**options)
+        super().__init__(**options)
 
 
 class UUIDField(Field):
@@ -955,7 +960,7 @@ class UUIDField(Field):
     data_type_name = "UUID"
 
     def __init__(self, **options):
-        super(UUIDField, self).__init__(**options)
+        super().__init__(**options)
 
     def to_python(self, value):
         if value is None:
@@ -964,7 +969,7 @@ class UUIDField(Field):
         if isinstance(value, uuid.UUID):
             return value
 
-        elif isinstance(value, six.binary_type):
+        elif isinstance(value, bytes):
             if len(value) == 16:
                 return uuid.UUID(bytes=value)
 
@@ -973,7 +978,7 @@ class UUIDField(Field):
             except UnicodeDecodeError as e:
                 raise exceptions.ValidationError(e.args[0], code="invalid")
 
-        elif isinstance(value, six.integer_types):
+        elif isinstance(value, int):
             try:
                 return uuid.UUID(int=value)
             except ValueError as e:
@@ -985,8 +990,8 @@ class UUIDField(Field):
             except ValueError as e:
                 raise exceptions.ValidationError(e.args[0], code="invalid")
 
-        elif not isinstance(value, six.text_type):
-            value = six.text_type(value)
+        elif not isinstance(value, str):
+            value = str(value)
 
         try:
             return uuid.UUID(value)

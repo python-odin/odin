@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Integration of the pint library to provide physical units.
 

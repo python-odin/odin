@@ -1,15 +1,14 @@
-from __future__ import absolute_import
 import datetime
 from odin.codecs import dict_codec
 from odin.datetimeutil import utc
 from .resources import *
 
 
-class TestDictCodec(object):
+class TestDictCodec:
     def test_dump(self):
         in_resource = Book(
-            title='Consider Phlebas',
-            isbn='0-333-45430-8',
+            title="Consider Phlebas",
+            isbn="0-333-45430-8",
             num_pages=471,
             rrp=19.50,
             fiction=True,
@@ -20,28 +19,30 @@ class TestDictCodec(object):
 
         actual = dict_codec.dump(in_resource)
         assert actual == {
-            '$': 'library.Book',
-            'authors': [{
-                '$': 'Author',
-                'name': "Iain M. Banks",
-            }],
-            'fiction': True,
-            'genre': "sci-fi",
-            'num_pages': 471,
-            'rrp': 19.50,
-            'isbn': '0-333-45430-8',
-            'title': 'Consider Phlebas',
-            'published': [],
-            'publisher': {
-                '$': 'Publisher',
-                'name': "Macmillan",
+            "$": "library.Book",
+            "authors": [
+                {
+                    "$": "Author",
+                    "name": "Iain M. Banks",
+                }
+            ],
+            "fiction": True,
+            "genre": "sci-fi",
+            "num_pages": 471,
+            "rrp": 19.50,
+            "isbn": "0-333-45430-8",
+            "title": "Consider Phlebas",
+            "published": [],
+            "publisher": {
+                "$": "Publisher",
+                "name": "Macmillan",
             },
         }
 
     def test_dump_no_type_field(self):
         in_resource = Book(
-            title='Consider Phlebas',
-            isbn='0-333-45430-8',
+            title="Consider Phlebas",
+            isbn="0-333-45430-8",
             num_pages=471,
             rrp=19.50,
             fiction=True,
@@ -52,32 +53,34 @@ class TestDictCodec(object):
 
         actual = dict_codec.dump(in_resource, include_type_field=False)
         assert actual == {
-            'authors': [{
-                'name': "Iain M. Banks",
-            }],
-            'fiction': True,
-            'genre': "sci-fi",
-            'num_pages': 471,
-            'rrp': 19.50,
-            'isbn': '0-333-45430-8',
-            'title': 'Consider Phlebas',
-            'published': [],
-            'publisher': {
-                'name': "Macmillan",
+            "authors": [
+                {
+                    "name": "Iain M. Banks",
+                }
+            ],
+            "fiction": True,
+            "genre": "sci-fi",
+            "num_pages": 471,
+            "rrp": 19.50,
+            "isbn": "0-333-45430-8",
+            "title": "Consider Phlebas",
+            "published": [],
+            "publisher": {
+                "name": "Macmillan",
             },
         }
 
     def test_dump_and_load_(self):
         in_resource = Book(
-            title='Consider Phlebas',
-            isbn='0-333-45430-8',
+            title="Consider Phlebas",
+            isbn="0-333-45430-8",
             num_pages=471,
             rrp=19.50,
             fiction=True,
             genre="sci-fi",
             authors=[Author(name="Iain M. Banks")],
             publisher=Publisher(name="Macmillan"),
-            published=[datetime.datetime(1987, 1, 1, tzinfo=utc)]
+            published=[datetime.datetime(1987, 1, 1, tzinfo=utc)],
         )
 
         d = dict_codec.dump(in_resource)

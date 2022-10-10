@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
 import pytest
+
 import odin
 from odin.fields import NotProvided
 from odin.resources import (
@@ -81,7 +80,7 @@ class ResourceG(odin.Resource):
     name = odin.StringField()
 
 
-class TestResource(object):
+class TestResource:
     def test_constructor_kwargs_only(self):
         r = Author(name="Foo")
         assert "Foo" == r.name
@@ -207,12 +206,12 @@ class TestResource(object):
         assert getmeta(target).user_data == {"custom": "my-custom-metadata"}
 
 
-class TestMetaOptions(object):
+class TestMetaOptions:
     def test_invalid_options(self):
         class Meta:
             random_val = 10
 
-        class NewResource(object):
+        class NewResource:
             pass
 
         target = ResourceOptions(Meta)
@@ -227,7 +226,7 @@ class TestMetaOptions(object):
                 fields = odin.StringField()
 
 
-class TestConstructionMethods(object):
+class TestConstructionMethods:
     def test_build_object_graph_empty_dict_no_clean(self):
         book = build_object_graph({}, Book, full_clean=False)
 
@@ -384,6 +383,11 @@ class TestConstructionMethods(object):
         )
 
         assert (
-            dict(title="Foo", isbn=NotProvided, num_pages=42, rrp=20.4,)
+            dict(
+                title="Foo",
+                isbn=NotProvided,
+                num_pages=42,
+                rrp=20.4,
+            )
             == book.to_dict()
         )

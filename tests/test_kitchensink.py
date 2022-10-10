@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Do load/dump tests on known valid and invalid documents.
 """
@@ -16,17 +15,25 @@ from .resources import *
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
-class TestKitchenSink(object):
+class TestKitchenSink:
     def test_dumps_with_valid_data(self):
-        book = Book(title="Consider Phlebas", isbn="0-333-45430-8", num_pages=471, rrp=19.50, genre="sci-fi", fiction=True,
-                    published=datetime.datetime(1987, 1, 1, tzinfo=utc))
+        book = Book(
+            title="Consider Phlebas",
+            isbn="0-333-45430-8",
+            num_pages=471,
+            rrp=19.50,
+            genre="sci-fi",
+            fiction=True,
+            published=datetime.datetime(1987, 1, 1, tzinfo=utc),
+        )
         book.publisher = Publisher(name="Macmillan")
         book.authors.append(Author(name="Iain M. Banks"))
 
         library = Library(name="Public Library", books=[book])
         actual = json_codec.dumps(library)
 
-        assertJSONEqual("""
+        assertJSONEqual(
+            """
 {
     "$": "Library",
     "name": "Public Library",
@@ -55,10 +62,18 @@ class TestKitchenSink(object):
     "subscribers": [],
     "book_count": 1
 }
-        """, actual)
+        """,
+            actual,
+        )
 
     def test_full_clean_invalid_data(self):
-        book = Book(title="Consider Phlebas", num_pages=471, rrp=19.50, genre="space opera", fiction=True)
+        book = Book(
+            title="Consider Phlebas",
+            num_pages=471,
+            rrp=19.50,
+            genre="space opera",
+            fiction=True,
+        )
         book.publisher = Publisher(name="Macmillan")
         book.authors.append(Author(name="Iain M. Banks"))
 
@@ -68,7 +83,9 @@ class TestKitchenSink(object):
             library.full_clean()
 
     def test_load_valid_data(self):
-        library = json_codec.load(open(os.path.join(FIXTURE_PATH_ROOT, "book-valid.json")))
+        library = json_codec.load(
+            open(os.path.join(FIXTURE_PATH_ROOT, "book-valid.json"))
+        )
 
         assert "Consider Phlebas" == library.books[0].title
 

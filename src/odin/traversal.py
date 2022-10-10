@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
-import six
 from odin.utils import getmeta
 
 from .exceptions import NoMatchError, MultipleMatchesError, InvalidPathError
 
 
-class NotSupplied(object):
+class NotSupplied:
     pass
 
 
@@ -21,7 +19,7 @@ def _split_atom(atom):
         return NotSupplied, NotSupplied, atom
 
 
-class TraversalPath(object):
+class TraversalPath:
     """
     A path through a resource structure.
     """
@@ -30,14 +28,14 @@ class TraversalPath(object):
     def parse(cls, path):
         if isinstance(path, TraversalPath):
             return path
-        if isinstance(path, six.string_types):
+        if isinstance(path, str):
             return cls(*[_split_atom(a) for a in path.split(".")])
 
     def __init__(self, *path):
         self._path = path
 
     def __repr__(self):
-        return "<TraversalPath: {}>".format(self)
+        return f"<TraversalPath: {self}>"
 
     def __str__(self):
         atoms = []
@@ -45,9 +43,9 @@ class TraversalPath(object):
             if value is NotSupplied:
                 atoms.append(field)
             elif key is NotSupplied:
-                atoms.append("{}[{}]".format(field, value))
+                atoms.append(f"{field}[{value}]")
             else:
-                atoms.append("{}{{{}={}}}".format(field, key, value))
+                atoms.append(f"{field}{{{key}={value}}}")
         return ".".join(atoms)
 
     def __hash__(self):
@@ -63,12 +61,12 @@ class TraversalPath(object):
             return TraversalPath(*(self._path + other._path))
 
         # Assume appending a field
-        if isinstance(other, six.string_types):
+        if isinstance(other, str):
             return TraversalPath(
                 *(self._path + tuple([(NotSupplied, NotSupplied, other)]))
             )
 
-        raise TypeError("Cannot add '{}' to a path.".format(other))
+        raise TypeError(f"Cannot add '{other}' to a path.")
 
     def __iter__(self):
         return iter(self._path)
@@ -83,7 +81,7 @@ class TraversalPath(object):
             try:
                 field = meta.field_map[attr]
             except KeyError:
-                raise InvalidPathError(self, "Unknown field {!r}".format(attr))
+                raise InvalidPathError(self, f"Unknown field {attr!r}")
 
             result = field.value_from_object(result)
             if value is NotSupplied:
@@ -96,7 +94,7 @@ class TraversalPath(object):
                     result = result[value]
                 except (KeyError, IndexError):
                     raise NoMatchError(
-                        self, "Could not find index {!r} in {}.".format(value, field)
+                        self, f"Could not find index {value!r} in {field}."
                     )
             else:
                 # Filter elements
@@ -106,23 +104,19 @@ class TraversalPath(object):
                 if len(results) == 0:
                     raise NoMatchError(
                         self,
-                        "Filter matched no values; {!r} == {!r} in {}.".format(
-                            key, value, field
-                        ),
+                        f"Filter matched no values; {key!r} == {value!r} in {field}.",
                     )
                 elif len(results) > 1:
                     raise MultipleMatchesError(
                         self,
-                        "Filter matched multiple values; {!r} == {!r}.".format(
-                            key, value
-                        ),
+                        f"Filter matched multiple values; {key!r} == {value!r}.",
                     )
                 else:
                     result = results[0]
         return result
 
 
-class ResourceTraversalIterator(object):
+class ResourceTraversalIterator:
     """
     Iterator for traversing (walking) a resource structure, including traversing composite fields to fully navigate a
     resource tree.
@@ -203,9 +197,6 @@ class ResourceTraversalIterator(object):
                 return next_resource
         else:
             raise StopIteration()
-
-    # Python 2.x compatibility
-    next = __next__
 
     @property
     def path(self):

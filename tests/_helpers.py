@@ -1,6 +1,5 @@
 import json
 import pytest
-import six
 
 
 def assertJSONEqual(raw, expected_data, msg=None):
@@ -10,13 +9,13 @@ def assertJSONEqual(raw, expected_data, msg=None):
     try:
         data = json.loads(raw)
     except ValueError:
-        pytest.fail("First argument is not valid JSON: %r" % raw)
+        pytest.fail(f"First argument is not valid JSON: {raw!r}")
     else:
-        if isinstance(expected_data, six.string_types):
+        if isinstance(expected_data, str):
             try:
                 expected_data = json.loads(expected_data)
             except ValueError:
-                pytest.fail("Second argument is not valid JSON: %r" % expected_data)
+                pytest.fail(f"Second argument is not valid JSON: {expected_data!r}")
 
         if data != expected_data:
             pytest.fail(msg)
