@@ -1,8 +1,9 @@
 import copy
 import datetime
+import enum
 import uuid
 from functools import cached_property
-from typing import Sequence, Tuple, Any, Optional
+from typing import Sequence, Tuple, Any, TypeVar, Optional, Type
 
 from odin import exceptions, datetimeutil, registration
 from odin.utils import getmeta
@@ -20,8 +21,32 @@ from odin.validators import (
 from .base import BaseField
 
 __all__ = (
+    "NotProvided",
     "BaseField",
     "Field",
+    "Boolean",
+    "String",
+    "Url",
+    "Integer",
+    "Float",
+    "Date",
+    "Time",
+    "NaiveTime",
+    "DateTime",
+    "NaiveDateTime",
+    "HttpDateTime",
+    "TimeStamp",
+    "Email",
+    "IPv4",
+    "IPv6",
+    "IPv46",
+    "List",
+    "UUID",
+    "Dict",
+    "TypedList",
+    "TypedDict",
+    "Enum",
+    # Backwards compatibility
     "BooleanField",
     "StringField",
     "UrlField",
@@ -47,7 +72,7 @@ __all__ = (
     "TypedListField",
     "TypedDictField",
     "TypedObjectField",
-    "NotProvided",
+    "EnumField",
 )
 
 
@@ -241,7 +266,7 @@ class Field(BaseField):
         setattr(obj, self.attname, data)
 
 
-class BooleanField(Field):
+class Boolean(Field):
     default_error_messages = {"invalid": "'%s' value must be either True or False."}
     true_strings = ("t", "true", "y", "yes", "on", "1", "✓")
     false_strings = ("f", "false", "n", "no", "off", "0")
@@ -264,7 +289,10 @@ class BooleanField(Field):
         raise exceptions.ValidationError(msg)
 
 
-class StringField(Field):
+BooleanField = Boolean
+
+
+class String(Field):
     """
     A string.
 
@@ -280,8 +308,8 @@ class StringField(Field):
 
     data_type_name = "String"
 
-    def __init__(self, max_length=None, empty=None, **options):
-        super(StringField, self).__init__(**options)
+    def __init__(self, max_length: int = None, empty: bool = None, **options):
+        super().__init__(**options)
         self.max_length = max_length
 
         # Mirror null is not explicitly defined
@@ -301,18 +329,24 @@ class StringField(Field):
         if not self.empty and value == "":
             raise exceptions.ValidationError(self.error_messages["null"])
 
-        super(StringField, self).validate(value)
+        super().validate(value)
 
 
-class UrlField(StringField):
+StringField = String
+
+
+class Url(String):
     data_type_name = "URL"
 
     def __init__(self, **options):
         options.setdefault("validators", []).append(validate_url)
-        super(UrlField, self).__init__(**options)
+        super().__init__(**options)
 
 
-class ScalarField(Field):
+UrlField = Url
+
+
+class Scalar(Field):
     scalar_type = int
 
     def __init__(self, min_value=None, max_value=None, **options):
@@ -334,19 +368,28 @@ class ScalarField(Field):
             raise exceptions.ValidationError(msg)
 
 
-class IntegerField(ScalarField):
+ScalarField = Scalar
+
+
+class Integer(Scalar):
     default_error_messages = {
         "invalid": "'%s' value must be a integer.",
     }
     data_type_name = "Integer"
 
 
-class FloatField(ScalarField):
+IntegerField = Integer
+
+
+class Float(Scalar):
     default_error_messages = {
         "invalid": "'%s' value must be a float.",
     }
     data_type_name = "Float"
     scalar_type = float
+
+
+FloatField = Float
 
 
 class _IsoFormatMixin(BaseField):
@@ -362,7 +405,7 @@ class _IsoFormatMixin(BaseField):
             return value.isoformat()
 
 
-class DateField(_IsoFormatMixin, Field):
+class Date(_IsoFormatMixin, Field):
     """
     Field that handles date values encoded as a string.
 
@@ -390,7 +433,10 @@ class DateField(_IsoFormatMixin, Field):
         raise exceptions.ValidationError(msg)
 
 
-class TimeField(_IsoFormatMixin, Field):
+DateField = Date
+
+
+class Time(_IsoFormatMixin, Field):
     """
     Field that handles time values encoded as a string.
 
@@ -408,8 +454,8 @@ class TimeField(_IsoFormatMixin, Field):
     }
     data_type_name = "ISO-8601 Time"
 
-    def __init__(self, assume_local=False, **options):
-        super(TimeField, self).__init__(**options)
+    def __init__(self, assume_local: bool = False, **options):
+        super().__init__(**options)
         self.assume_local = assume_local
 
     def to_python(self, value):
@@ -426,7 +472,10 @@ class TimeField(_IsoFormatMixin, Field):
         raise exceptions.ValidationError(msg)
 
 
-class NaiveTimeField(_IsoFormatMixin, Field):
+TimeField = Time
+
+
+class NaiveTime(_IsoFormatMixin, Field):
     """
     Field that handles time values encoded as a string.
 
@@ -446,7 +495,7 @@ class NaiveTimeField(_IsoFormatMixin, Field):
     data_type_name = "Naive ISO-8601 Time"
 
     def __init__(self, ignore_timezone=False, **options):
-        super(NaiveTimeField, self).__init__(**options)
+        super().__init__(**options)
         self.ignore_timezone = ignore_timezone
 
     def to_python(self, value):
@@ -478,7 +527,10 @@ class NaiveTimeField(_IsoFormatMixin, Field):
         return value
 
 
-class DateTimeField(_IsoFormatMixin, Field):
+NaiveTimeField = NaiveTime
+
+
+class DateTime(_IsoFormatMixin, Field):
     """
     Field that handles datetime values encoded as a string.
 
@@ -496,8 +548,8 @@ class DateTimeField(_IsoFormatMixin, Field):
     }
     data_type_name = "ISO-8601 DateTime"
 
-    def __init__(self, assume_local=False, **options):
-        super(DateTimeField, self).__init__(**options)
+    def __init__(self, assume_local: bool = False, **options):
+        super().__init__(**options)
         self.assume_local = assume_local
 
     def to_python(self, value):
@@ -514,7 +566,10 @@ class DateTimeField(_IsoFormatMixin, Field):
         raise exceptions.ValidationError(msg)
 
 
-class NaiveDateTimeField(_IsoFormatMixin, Field):
+DateTimeField = DateTime
+
+
+class NaiveDateTime(_IsoFormatMixin, Field):
     """
     Field that handles datetime values encoded as a string.
 
@@ -534,7 +589,7 @@ class NaiveDateTimeField(_IsoFormatMixin, Field):
     data_type_name = "Naive ISO-8601 DateTime"
 
     def __init__(self, ignore_timezone=False, **options):
-        super(NaiveDateTimeField, self).__init__(**options)
+        super().__init__(**options)
         self.ignore_timezone = ignore_timezone
 
     def to_python(self, value):
@@ -566,7 +621,10 @@ class NaiveDateTimeField(_IsoFormatMixin, Field):
         return value
 
 
-class HttpDateTimeField(Field):
+NaiveDateTimeField = NaiveDateTime
+
+
+class HttpDateTime(Field):
     """
     Field that handles datetime values encoded as a string.
 
@@ -603,7 +661,10 @@ class HttpDateTimeField(Field):
             return datetimeutil.to_http_datetime_string(value)
 
 
-class TimeStampField(Field):
+HttpDateTimeField = HttpDateTime
+
+
+class TimeStamp(Field):
     """
     Field that handles datetime values encoding as the number of seconds since the UNIX epoch.
 
@@ -637,7 +698,10 @@ class TimeStampField(Field):
             return datetimeutil.to_timestamp(value)
 
 
-class DictField(Field):
+TimeStampField = TimeStamp
+
+
+class Dict(Field):
     default_error_messages = {
         "invalid": "Must be a dict.",
     }
@@ -646,7 +710,7 @@ class DictField(Field):
 
     def __init__(self, **options):
         options.setdefault("default", dict)
-        super(DictField, self).__init__(**options)
+        super().__init__(**options)
 
     def to_python(self, value):
         if value is None:
@@ -659,10 +723,10 @@ class DictField(Field):
             raise exceptions.ValidationError(msg)
 
 
-ObjectField = DictField
+ObjectField = DictField = Dict
 
 
-class ListField(Field):
+class List(Field):
     default_error_messages = {
         "invalid": "Must be an array.",
     }
@@ -682,10 +746,10 @@ class ListField(Field):
         raise exceptions.ValidationError(msg)
 
 
-ArrayField = ListField
+ArrayField = ListField = List
 
 
-class TypedListField(ListField):
+class TypedList(List):
     @staticmethod
     def data_type_name(instance):
         type_name = instance.field.data_type_name
@@ -693,9 +757,9 @@ class TypedListField(ListField):
             type_name = type_name(instance.field)
         return "List<{0}>".format(type_name)
 
-    def __init__(self, field, **options):
+    def __init__(self, field: Field, **options):
         self.field = field
-        super(TypedListField, self).__init__(**options)
+        super().__init__(**options)
 
     @property
     def choices_doc_text(self) -> Sequence[Tuple[Any, str]]:
@@ -728,7 +792,7 @@ class TypedListField(ListField):
         """
         Validate each item against field
         """
-        super(TypedListField, self).validate(value)
+        super().validate(value)
         if value:
             field_validate = self.field.validate
 
@@ -748,7 +812,7 @@ class TypedListField(ListField):
         """
         Run validators against each item in the field
         """
-        super(TypedListField, self).run_validators(value)
+        super().run_validators(value)
         if value:
             field_run_validators = self.field.run_validators
 
@@ -771,10 +835,10 @@ class TypedListField(ListField):
         return value
 
 
-TypedArrayField = TypedListField
+TypedArrayField = TypedListField = TypedList
 
 
-class TypedDictField(DictField):
+class TypedDict(DictField):
     """
     Dict field with both key and value fixed to a specific types. By default the key field is assumed to be a string.
 
@@ -861,7 +925,7 @@ class TypedDictField(DictField):
             raise exceptions.ValidationError(value_errors)
 
     def run_validators(self, value):
-        super(TypedDictField, self).run_validators(value)
+        super().run_validators(value)
 
         if value in self.empty_values:
             return
@@ -889,10 +953,10 @@ class TypedDictField(DictField):
             raise exceptions.ValidationError(value_errors)
 
 
-TypedObjectField = TypedDictField
+TypedObjectField = TypedDictField = TypedDict
 
 
-class EmailField(StringField):
+class Email(String):
     """
     An Email address.
 
@@ -904,10 +968,13 @@ class EmailField(StringField):
 
     def __init__(self, **options):
         options.setdefault("validators", []).append(validate_email_address)
-        super(EmailField, self).__init__(**options)
+        super().__init__(**options)
 
 
-class IPv4Field(StringField):
+EmailField = Email
+
+
+class IPv4(String):
     """
     An IPv4 address.
 
@@ -919,10 +986,13 @@ class IPv4Field(StringField):
 
     def __init__(self, **options):
         options.setdefault("validators", []).append(validate_ipv4_address)
-        super(IPv4Field, self).__init__(**options)
+        super().__init__(**options)
 
 
-class IPv6Field(StringField):
+IPv4Field = IPv4
+
+
+class IPv6(String):
     """
     An IPv6 address.
 
@@ -937,7 +1007,10 @@ class IPv6Field(StringField):
         super().__init__(**options)
 
 
-class IPv46Field(StringField):
+IPv6Field = IPv6
+
+
+class IPv46(String):
     """
     An IPv4 or IPv6 address.
 
@@ -952,7 +1025,10 @@ class IPv46Field(StringField):
         super().__init__(**options)
 
 
-class UUIDField(Field):
+IPv46Field = IPv46
+
+
+class UUID(Field):
     """
     An universally unique identifier.
 
@@ -999,3 +1075,57 @@ class UUIDField(Field):
             return uuid.UUID(value)
         except ValueError as e:
             raise exceptions.ValidationError(e.args[0], code="invalid")
+
+
+UUIDField = UUID
+
+
+ET = TypeVar("ET", bound=enum.Enum)
+
+
+class Enum(Field):
+    """
+    Field for handling Python enums.
+    """
+
+    data_type_name = "Enum"
+
+    def __init__(self, enum_type: Type[ET], **options):
+
+        # Generate choices structure from choices
+        choices = options.pop("choices", None)
+        options["choices"] = tuple((e, e.name) for e in choices or enum_type)
+
+        super().__init__(**options)
+        self.enum_type = enum_type
+
+    @property
+    def choices_doc_text(self):
+        """
+        Choices converted for documentation purposes.
+        """
+        return tuple((v.value, n) for v, n in self.choices)
+
+    def to_python(self, value) -> Optional[ET]:
+        if value is None:
+            return
+
+        # Attempt to convert
+        try:
+            return self.enum_type(value)
+        except ValueError:
+            # If value is an empty string return None
+            # Do this check here to support enums that define an option using
+            # an empty string.
+            if value == "":
+                return
+            raise exceptions.ValidationError(
+                self.error_messages["invalid_choice"] % value
+            )
+
+    def prepare(self, value: Optional[ET]):
+        if (value is not None) and isinstance(value, self.enum_type):
+            return value.value
+
+
+EnumField = Enum

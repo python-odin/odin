@@ -5,10 +5,19 @@ from odin.fields import Field
 from odin.utils import value_in_choices
 from odin.validators import EMPTY_VALUES
 
-__all__ = ("CompositeField", "DictAs", "ObjectAs", "ListOf", "ArrayOf", "DictOf")
+__all__ = (
+    "Composite",
+    "DictAs",
+    "ObjectAs",
+    "ListOf",
+    "ArrayOf",
+    "DictOf",
+    # Backwards compatibility
+    "CompositeField",
+)
 
 
-class CompositeField(Field):
+class Composite(Field):
     """
     The base class for composite (or fields that contain other resources) eg DictAs/ListOf fields.
     """
@@ -34,7 +43,7 @@ class CompositeField(Field):
         if not options.get("null", False):
             options.setdefault("default", lambda: resource())
 
-        super(CompositeField, self).__init__(**options)
+        super().__init__(**options)
 
     def to_python(self, value):
         if value is None:
@@ -71,7 +80,10 @@ class CompositeField(Field):
         raise NotImplementedError()
 
 
-class DictAs(CompositeField):
+CompositeField = Composite
+
+
+class DictAs(Composite):
     """
     Treat a dictionary as a Resource.
     """
@@ -93,7 +105,7 @@ class DictAs(CompositeField):
 ObjectAs = DictAs
 
 
-class ListOf(CompositeField):
+class ListOf(Composite):
     """
     List of resources.
     """
@@ -131,7 +143,7 @@ class ListOf(CompositeField):
         if value is None:
             return None
         if isinstance(value, (list, bases.ResourceIterable)):
-            super_to_python = super(ListOf, self).to_python
+            super_to_python = super().to_python
 
             def process(val):
                 if val is None:
@@ -144,7 +156,7 @@ class ListOf(CompositeField):
 
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
-        super(CompositeField, self).validate(value)  # noqa
+        super(Composite, self).validate(value)  # noqa
         if value is not None:
             super_validate = super(ListOf, self).validate
             self._process_list(value, super_validate)
@@ -174,7 +186,7 @@ class ListOf(CompositeField):
 ArrayOf = ListOf
 
 
-class DictOf(CompositeField):
+class DictOf(Composite):
     """
     Dictionary of resources.
     """
@@ -216,7 +228,7 @@ class DictOf(CompositeField):
         if value is None:
             return None
         if isinstance(value, dict):
-            super_to_python = super(DictOf, self).to_python
+            super_to_python = super().to_python
 
             def process(val):
                 if val is None:
@@ -231,9 +243,9 @@ class DictOf(CompositeField):
 
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
-        super(CompositeField, self).validate(value)  # noqa
+        super(Composite, self).validate(value)  # noqa
         if value is not None:
-            super_validate = super(DictOf, self).validate
+            super_validate = super().validate
             self._process_dict(value, super_validate)
 
         if (value is not None) and (not value) and (not self.empty):

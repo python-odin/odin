@@ -1,8 +1,15 @@
+from typing import Any, Callable, Union, Sequence
+
 from odin.utils import force_tuple, getmeta
 
 from .base import BaseField
 
 __all__ = (
+    "Constant",
+    "Calculated",
+    "calculated",
+    "MultiPart",
+    # Backwards compatibility
     "ConstantField",
     "CalculatedField",
     "calculated_field",
@@ -10,7 +17,7 @@ __all__ = (
 )
 
 
-class VirtualField(BaseField):
+class Virtual(BaseField):
     """
     Base class for virtual fields. A virtual fields is treated like any other field during encoding/decoding (provided
     it can be written to).
@@ -20,13 +27,13 @@ class VirtualField(BaseField):
 
     def __init__(
         self,
-        verbose_name=None,
-        verbose_name_plural=None,
-        name=None,
-        data_type_name=None,
-        doc_text="",
-        is_attribute=False,
-        key=False,
+        verbose_name: str = None,
+        verbose_name_plural: str = None,
+        name: str = None,
+        data_type_name: str = None,
+        doc_text: str = "",
+        is_attribute: bool = False,
+        key: bool = False,
     ):
         """
         Initialisation of virtual field
@@ -59,12 +66,17 @@ class VirtualField(BaseField):
         setattr(cls, name, self)
 
 
-class ConstantField(VirtualField):
+VirtualField = Virtual
+
+
+class Constant(Virtual):
     """
     A field that provides a constant value.
     """
 
-    def __init__(self, value, *args, **kwargs):
+    __slots__ = ("value",)
+
+    def __init__(self, value: Any, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.value = value
 
@@ -72,15 +84,19 @@ class ConstantField(VirtualField):
         return self.value
 
 
-class CalculatedField(VirtualField):
+ConstantField = Constant
+
+
+class Calculated(VirtualField):
     """
     A field whose value is calculated by an expression.
 
     The expression should accept a single "self" parameter that is a Resource instance.
     """
 
-    def __init__(self, expr, *args, **kwargs):
-        assert callable(expr)
+    __slots__ = ("expr",)
+
+    def __init__(self, expr: Callable[[Any], Any], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.expr = expr
 
@@ -88,9 +104,12 @@ class CalculatedField(VirtualField):
         return self.expr(instance)
 
 
-def calculated_field(method=None, **kwargs):
+CalculatedField = Calculated
+
+
+def calculated(method=None, **kwargs):
     """
-    Converts an instance method into a calculated field.
+    Decorator that converts an instance method into a calculated field.
     """
 
     def inner(expr):
@@ -98,24 +117,29 @@ def calculated_field(method=None, **kwargs):
             doc_text = method.__doc__.strip()
             if doc_text:
                 kwargs.setdefault("doc_text", doc_text)
-        return CalculatedField(expr, **kwargs)
+        return Calculated(expr, **kwargs)
 
     return inner if method is None else inner(method)
 
 
-class MultiPartField(VirtualField):
+calculated_field = calculated
+
+
+class MultiPart(VirtualField):
     """
     A field whose value is the combination of several other fields.
 
     This field should be included after the field that make up the multipart value.
     """
 
-    def __init__(self, field_names, separator="", **kwargs):
+    __slots__ = ("field_names", "separator", "_fields")
+
+    def __init__(
+        self, field_names: Union[str, Sequence[str]], separator: str = "", **kwargs
+    ):
         """
         :param field_names: Name(s) of fields to make up key
-        :type field_names: str | tuple[str] | list[str]
         :param separator: Separator to use between values.
-        :type separator: str
         :param kwargs: Additional kwargs for VirtualField
 
         """
@@ -141,6 +165,7 @@ class MultiPartField(VirtualField):
         try:
             self._fields = tuple(meta.field_map[name] for name in self.field_names)
         except KeyError as ex:
-            raise AttributeError(
-                "Attribute {} not found on {!r}".format(ex, self.resource)
-            )
+            raise AttributeError(f"Attribute {ex} not found on {self.resource!r}")
+
+
+MultiPartField = MultiPart
