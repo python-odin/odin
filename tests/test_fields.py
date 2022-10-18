@@ -256,29 +256,31 @@ class TestVirtualField:
 
 
 class TestFields:
-    def assertValidatorIn(self, validatorClass, validators):
+    @staticmethod
+    def assert_validator_in(validator_class, validators):
         """
         Assert that the specified validator is in the validation list.
-        :param validatorClass:
+        :param validator_class:
         :param validators:
         """
         for v in validators:
-            if isinstance(v, validatorClass):
+            if isinstance(v, validator_class):
                 return
         raise AssertionError(
-            "Validator %r was not found in list of validators." % validatorClass
+            "Validator %r was not found in list of validators." % validator_class
         )
 
-    def assertValidatorNotIn(self, validatorClass, validators):
+    @staticmethod
+    def assert_validator_not_in(validator_class, validators):
         """
         Assert that the specified validator is not in the validation list.
-        :param validatorClass:
+        :param validator_class:
         :param validators:
         """
         for v in validators:
-            if isinstance(v, validatorClass):
+            if isinstance(v, validator_class):
                 raise AssertionError(
-                    "Validator %r was found in list of validators." % validatorClass
+                    "Validator %r was found in list of validators." % validator_class
                 )
 
     # BooleanField ############################################################
@@ -353,11 +355,11 @@ class TestFields:
     def test_stringfield(self):
         f = StringField()
         assert f.max_length is None
-        self.assertValidatorNotIn(MaxLengthValidator, f.validators)
+        self.assert_validator_not_in(MaxLengthValidator, f.validators)
 
         f = StringField(max_length=10)
         assert f.max_length == 10
-        self.assertValidatorIn(MaxLengthValidator, f.validators)
+        self.assert_validator_in(MaxLengthValidator, f.validators)
 
     @pytest.mark.parametrize(
         ("field", "empty_value"),
@@ -382,7 +384,7 @@ class TestFields:
         pytest.raises(ValidationError, f.clean, "eek")
         pytest.raises(ValidationError, f.clean, None)
         assert f.max_length == None
-        self.assertValidatorIn(RegexValidator, f.validators)
+        self.assert_validator_in(RegexValidator, f.validators)
 
     # IntegerField ############################################################
 
@@ -394,9 +396,9 @@ class TestFields:
         assert 123 == f.clean("123")
         assert 123 == f.clean(123.5)
         assert None == f.min_value
-        self.assertValidatorNotIn(MinValueValidator, f.validators)
+        self.assert_validator_not_in(MinValueValidator, f.validators)
         assert None == f.max_value
-        self.assertValidatorNotIn(MaxValueValidator, f.validators)
+        self.assert_validator_not_in(MaxValueValidator, f.validators)
 
     def test_integerfield_2(self):
         f = IntegerField(null=True)
@@ -406,9 +408,9 @@ class TestFields:
         assert 69 == f.clean("69")
         assert 69 == f.clean(69.5)
         assert None == f.min_value
-        self.assertValidatorNotIn(MinValueValidator, f.validators)
+        self.assert_validator_not_in(MinValueValidator, f.validators)
         assert None == f.max_value
-        self.assertValidatorNotIn(MaxValueValidator, f.validators)
+        self.assert_validator_not_in(MaxValueValidator, f.validators)
 
     def test_integerfield_3(self):
         f = IntegerField(min_value=50, max_value=100)
@@ -422,9 +424,9 @@ class TestFields:
         pytest.raises(ValidationError, f.clean, 30)
         pytest.raises(ValidationError, f.clean, 110)
         assert 50 == f.min_value
-        self.assertValidatorIn(MinValueValidator, f.validators)
+        self.assert_validator_in(MinValueValidator, f.validators)
         assert 100 == f.max_value
-        self.assertValidatorIn(MaxValueValidator, f.validators)
+        self.assert_validator_in(MaxValueValidator, f.validators)
 
     # FloatField ##############################################################
 
@@ -436,9 +438,9 @@ class TestFields:
         assert 123.5 == f.clean("123.5")
         assert 123.5 == f.clean(123.5)
         assert None == f.min_value
-        self.assertValidatorNotIn(MinValueValidator, f.validators)
+        self.assert_validator_not_in(MinValueValidator, f.validators)
         assert None == f.max_value
-        self.assertValidatorNotIn(MaxValueValidator, f.validators)
+        self.assert_validator_not_in(MaxValueValidator, f.validators)
 
     def test_floatfield_2(self):
         f = FloatField(null=True)
@@ -448,9 +450,9 @@ class TestFields:
         assert 69.5 == f.clean("69.5")
         assert 69.5 == f.clean(69.5)
         assert None == f.min_value
-        self.assertValidatorNotIn(MinValueValidator, f.validators)
+        self.assert_validator_not_in(MinValueValidator, f.validators)
         assert None == f.max_value
-        self.assertValidatorNotIn(MaxValueValidator, f.validators)
+        self.assert_validator_not_in(MaxValueValidator, f.validators)
 
     def test_floatfield_3(self):
         f = FloatField(min_value=50.5, max_value=100.4)
@@ -464,9 +466,9 @@ class TestFields:
         pytest.raises(ValidationError, f.clean, 30)
         pytest.raises(ValidationError, f.clean, 110)
         assert 50.5 == f.min_value
-        self.assertValidatorIn(MinValueValidator, f.validators)
+        self.assert_validator_in(MinValueValidator, f.validators)
         assert 100.4 == f.max_value
-        self.assertValidatorIn(MaxValueValidator, f.validators)
+        self.assert_validator_in(MaxValueValidator, f.validators)
 
     # DateField ###############################################################
 
@@ -920,14 +922,19 @@ class TestFields:
         (
             (TypedListField(IntegerField()), None),
             (
-                TypedListField(IntegerField(), choices=["these", "are", "bad"]),
-                ["these", "are", "bad"],
+                TypedListField(
+                    IntegerField(),
+                    choices=[("these", "1"), ("are", "2"), ("bad", "3")],
+                ),
+                [("these", "1"), ("are", "2"), ("bad", "3")],
             ),
-            (TypedListField(IntegerField(choices=(1, 2, 3))), (1, 2, 3)),
+            (
+                TypedListField(IntegerField(choices=((1, "1"), (2, "2"), (3, "3")))),
+                ((1, "1"), (2, "2"), (3, "3")),
+            ),
         ),
     )
     def test_typed_list_field__with_choices(self, target, expected):
-        f = TypedListField(DynamicTypeNameFieldTest(), null=True)
         assert target.choices_doc_text == expected
 
     @pytest.mark.parametrize("value", ([None], [10, 11, 3], ["Fifteen"]))

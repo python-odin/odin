@@ -141,7 +141,7 @@ def filter_fields(field_names, include=None, exclude=None, readonly=None):
 
 def getmeta(resource_or_instance):
     """
-    Get meta object from a resource or resource instance.
+    Get meta-object from a resource or resource instance.
 
     :param resource_or_instance: Resource or instance of a resource.
     :type resource_or_instance: odin.resources.ResourceType | odin.resources.ResourceBase

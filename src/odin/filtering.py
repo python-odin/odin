@@ -36,7 +36,7 @@ class FilterChain(FilterAtom):
         elif isinstance(other, FilterComparison):
             self._atoms.append(other)
             return self
-        raise TypeError("{} not supported for this operation".format(other))
+        raise TypeError(f"{other} not supported for this operation")
 
     def __call__(self, resource):
         return self.check_operator(a(resource) for a in self._atoms)
@@ -44,8 +44,8 @@ class FilterChain(FilterAtom):
     def __str__(self):
         if not self._atoms:
             return ""
-        pin = " {} ".format(self.operator_name)
-        return "({})".format(pin.join(str(a) for a in self._atoms))
+        pin = f" {self.operator_name} "
+        return f"({pin.join(str(a) for a in self._atoms)})"
 
 
 class And(FilterChain):
@@ -89,11 +89,9 @@ class FilterComparison(FilterAtom):
 
         if self.operation:
             op_name = getattr(self.operation, "name", self.operation.__name__)
-            return "{}({}) {} {}".format(
-                op_name, self.field, self.operator_symbols[0], value
-            )
+            return f"{op_name}({self.field}) {self.operator_symbols[0]} {value}"
         else:
-            return "{} {} {}".format(self.field, self.operator_symbols[0], value)
+            return f"{self.field} {self.operator_symbols[0]} {value}"
 
     def compare(self, value):
         raise NotImplementedError()

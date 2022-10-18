@@ -152,10 +152,10 @@ class ResourceAdapter:
         setattr(self._source, name, value)
 
     def __repr__(self):
-        return "<{}: {}>".format(self.__class__.__name__, self)
+        return f"<{self.__class__.__name__}: {self}>"
 
     def __str__(self):
-        return "{} resource adapter".format(self._meta.resource_name)
+        return f"{self._meta.resource_name} resource adapter"
 
     def to_dict(self, include_virtual=True):
         """
