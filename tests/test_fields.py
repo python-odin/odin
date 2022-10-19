@@ -1,9 +1,12 @@
+import pathlib
+
 import pytest
 import datetime
 import enum
 import uuid
 from copy import deepcopy
 
+import odin
 from odin.fields import *
 from odin.fields import Field, TimeStampField, NotProvided
 from odin.datetimeutil import utc, FixedTimezone
@@ -1316,3 +1319,20 @@ class TestEnumField:
     def test_choices_doc_text__with_sets(self, field, expected):
         """Use sets to handle random ordering in earlier Python releases"""
         assert set(field.choices_doc_text) == expected
+
+
+class TestPathField:
+    @pytest.mark.parametrize(
+        "value, expected",
+        (
+            (None, None),
+            ("abc", pathlib.Path("abc")),
+            ("/this/is/the/true/path", pathlib.Path("/this/is/the/true/path")),
+        ),
+    )
+    def test_to_python__valid(self, value, expected):
+        field = odin.PathField()
+
+        actual = field.to_python(value)
+
+        assert actual == expected

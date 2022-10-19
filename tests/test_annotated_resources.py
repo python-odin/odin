@@ -1,25 +1,14 @@
 import datetime
-import sys
-
-import pytest
+import json
 
 from odin.codecs import json_codec
 from odin.datetimeutil import utc
 from odin.utils import getmeta
 
-# Workaround to ensure testsuite works on Python < 3.6
-from tests._helpers import assertJSONEqual
-
-try:
-    from tests.new_resources import Book, Publisher, Author
-except SyntaxError:
-    if sys.version_info < (3, 6):
-        pytest.skip("Requires Python 3.6 or higher", allow_module_level=True)
-    else:
-        raise
+from tests.annotated_resources import Book, Publisher, Author, Library
 
 
-class TestNewResourceType:
+class TestAnnotatedResourceType:
     def test_fields_are_identified_in_correct_order(self):
         meta = getmeta(Book)
 
@@ -36,7 +25,7 @@ class TestNewResourceType:
         ]
 
 
-class TestNewKitchenSink:
+class TestAnnotatedKitchenSink:
     def test_dumps_with_valid_data(self):
         book = Book(
             title="Consider Phlebas",
@@ -45,22 +34,22 @@ class TestNewKitchenSink:
             rrp=19.50,
             genre="sci-fi",
             fiction=True,
-            # published=[datetime.datetime(1987, 1, 1, tzinfo=utc)],
+            published=[datetime.datetime(1987, 1, 1, tzinfo=utc)],
         )
         book.publisher = Publisher(name="Macmillan")
-        # book.authors.append(Author(name="Iain M. Banks"))
+        book.authors.append(Author(name="Iain M. Banks"))
 
-        # library = Library(name="Public Library", books=[book])
-        actual = json_codec.dumps(book)
+        library = Library(name="Public Library", books=[book])
+        actual = json_codec.dumps(library)
 
-        assertJSONEqual(
+        assert json.loads(actual) == json.loads(
             """
 {
-    "$": "Library",
+    "$": "new_library.Library",
     "name": "Public Library",
     "books": [
         {
-            "$": "library.Book",
+            "$": "new_library.Book",
             "publisher": {
                 "$": "Publisher",
                 "name": "Macmillan"
@@ -75,14 +64,13 @@ class TestNewKitchenSink:
                 }
             ],
             "fiction": true,
-            "published": "1987-01-01T00:00:00+00:00",
+            "published": ["1987-01-01T00:00:00+00:00"],
             "genre": "sci-fi",
             "rrp": 19.5
         }
     ],
-    "subscribers": [],
+    "subscribers": null,
     "book_count": 1
 }
-        """,
-            actual,
+        """
         )

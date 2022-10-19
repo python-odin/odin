@@ -1,31 +1,29 @@
-# -*- coding: utf-8 -*-
 import enum
 import uuid
 from datetime import datetime
 from typing import List, Optional
 
 import odin
-from odin.new_resource import NewResource, AbstractResource, Options
+from odin.annotated_resource import Options
 
 
-class Author(NewResource):
+class Author(odin.AResource):
     name: str
 
     class Meta:
-        name_space = None
+        namespace = None
 
 
-class Publisher(NewResource):
+class Publisher(odin.AResource):
     name: str
 
     class Meta:
-        name_space = None
+        namespace = None
 
 
-class LibraryBook(AbstractResource):
+class LibraryBook(odin.AResource, abstract=True):
     class Meta:
-        abstract = True
-        name_space = "new_library"
+        namespace = "new_library"
 
 
 class Book(LibraryBook):
@@ -33,9 +31,14 @@ class Book(LibraryBook):
         key_field_name = "isbn"
 
     title: str
-    isbn: str
+    isbn: str = odin.Options(
+        max_length=32,
+    )
     num_pages: Optional[int]
-    rrp: float = Options(20.4, use_default_if_not_provided=True)
+    rrp: float = odin.Options(
+        20.4,
+        use_default_if_not_provided=True,
+    )
     fiction: bool = True
     genre: str = Options(
         choices=(
@@ -47,7 +50,9 @@ class Book(LibraryBook):
         ),
     )
     published: List[datetime]
-    authors: List[Author] = Options(use_container=True)
+    authors: List[Author] = odin.Options(
+        use_container=True,
+    )
     publisher: Optional[Publisher]
 
     A_CONST = "Foo Bar"
@@ -67,3 +72,21 @@ class From(enum.Enum):
 class IdentifiableBook(Book):
     id: uuid.UUID
     purchased_from: From
+
+
+class Subscriber(odin.AResource):
+    name: str
+    address: str
+
+
+class Library(odin.AnnotatedResource):
+    name: str
+    books: List[LibraryBook]
+    subscribers: Optional[Subscriber]
+
+    @odin.calculated_field
+    def book_count(self):
+        return len(self.books)
+
+    class Meta:
+        namespace = "new_library"
