@@ -75,7 +75,7 @@ class Reader(bases.TypedResourceIterable):
         :param reader_kwargs: kwargs to pass to the csv_reader
 
         """
-        super(Reader, self).__init__(resource_type)
+        super().__init__(resource_type)
         self.full_clean = full_clean
         if error_callback:
             self.handle_validation_error = error_callback

@@ -30,7 +30,7 @@ class OdinPacker(msgpack.Packer):
 
     def __init__(self, include_virtual_fields=True, *args, **kwargs):
         kwargs.setdefault("default", self.default)
-        super(OdinPacker, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.include_virtual_fields = include_virtual_fields
 
     def default(self, o):

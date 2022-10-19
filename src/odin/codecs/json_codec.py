@@ -30,7 +30,7 @@ class OdinEncoder(json.JSONEncoder):
     def __init__(
         self, include_virtual_fields=True, include_type_field=True, *args, **kwargs
     ):
-        super(OdinEncoder, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.include_virtual_fields = include_virtual_fields
         self.include_type_field = include_type_field
 
@@ -45,7 +45,7 @@ class OdinEncoder(json.JSONEncoder):
             return list(o)
         elif o.__class__ in JSON_TYPES:
             return JSON_TYPES[o.__class__](o)
-        return super(OdinEncoder, self).default(o)
+        return super().default(o)
 
 
 def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
