@@ -28,9 +28,9 @@ jobs:
           rm -rf dist
           poetry build
           cd dist
-          echo "::set-output name=source::$(ls *.tar.gz)"
-          echo "::set-output name=wheel::$(ls *.whl)"
-          echo "::set-output name=version::$(poetry version -s)"
+          echo "source=$(ls *.tar.gz)" >> $GITHUB_OUTPUT
+          echo "wheel=$(ls *.whl)" >> $GITHUB_OUTPUT
+          echo "version=$(poetry version -s)" >> $GITHUB_OUTPUT
       
       - name: Create a Release
         id: create_release
