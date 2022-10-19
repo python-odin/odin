@@ -82,7 +82,7 @@ class Options:
         """
         if self.field_type:
             return self.field_type(**self._kwargs())
-        raise Exception("Field type could not be resolved")
+        raise ResourceDefError("Field type could not be resolved")
 
 
 SIMPLE_TYPE_MAP = {
