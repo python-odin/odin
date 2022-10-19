@@ -11,7 +11,7 @@ from odin.resources import Resource  # noqa
 from odin.adapters import ResourceAdapter  # noqa
 from odin.proxy import ResourceProxy  # noqa
 from odin.annotated_resource import *  # noqa
-from odin.annotated_resource.type_aliases import *  # noqa
+from odin.annotated_resource import type_aliases as types  # noqa
 
 __authors__ = "Tim Savage <tim@savage.company>"
 __copyright__ = "Copyright (C) 2021 Tim Savage"
