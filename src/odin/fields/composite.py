@@ -6,18 +6,16 @@ from odin.utils import value_in_choices
 from odin.validators import EMPTY_VALUES
 
 __all__ = (
-    "Composite",
+    "CompositeField",
     "DictAs",
     "ObjectAs",
     "ListOf",
     "ArrayOf",
     "DictOf",
-    # Backwards compatibility
-    "CompositeField",
 )
 
 
-class Composite(Field):
+class CompositeField(Field):
     """
     The base class for composite (or fields that contain other resources) eg DictAs/ListOf fields.
     """
@@ -80,10 +78,7 @@ class Composite(Field):
         raise NotImplementedError()
 
 
-CompositeField = Composite
-
-
-class DictAs(Composite):
+class DictAs(CompositeField):
     """
     Treat a dictionary as a Resource.
     """
@@ -105,7 +100,7 @@ class DictAs(Composite):
 ObjectAs = DictAs
 
 
-class ListOf(Composite):
+class ListOf(CompositeField):
     """
     List of resources.
     """
@@ -156,7 +151,7 @@ class ListOf(Composite):
 
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
-        super(Composite, self).validate(value)  # noqa
+        super(CompositeField, self).validate(value)  # noqa
         if value is not None:
             super_validate = super(ListOf, self).validate
             self._process_list(value, super_validate)
@@ -186,7 +181,7 @@ class ListOf(Composite):
 ArrayOf = ListOf
 
 
-class DictOf(Composite):
+class DictOf(CompositeField):
     """
     Dictionary of resources.
     """
@@ -201,7 +196,7 @@ class DictOf(Composite):
 
     def __init__(self, resource, empty=True, key_choices=None, **options):
         options.setdefault("default", dict)
-        super(DictOf, self).__init__(resource, **options)
+        super().__init__(resource, **options)
         self.empty = empty
         self.key_choices = key_choices
 
@@ -243,7 +238,7 @@ class DictOf(Composite):
 
     def validate(self, value):
         # Skip The direct super method and apply it to each list item.
-        super(Composite, self).validate(value)  # noqa
+        super(CompositeField, self).validate(value)  # noqa
         if value is not None:
             super_validate = super().validate
             self._process_dict(value, super_validate)

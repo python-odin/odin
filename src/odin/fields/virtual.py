@@ -5,11 +5,6 @@ from odin.utils import force_tuple, getmeta
 from .base import BaseField
 
 __all__ = (
-    "Constant",
-    "Calculated",
-    "calculated",
-    "MultiPart",
-    # Backwards compatibility
     "ConstantField",
     "CalculatedField",
     "calculated_field",
@@ -17,7 +12,7 @@ __all__ = (
 )
 
 
-class Virtual(BaseField):
+class VirtualField(BaseField):
     """
     Base class for virtual fields. A virtual fields is treated like any other field during encoding/decoding (provided
     it can be written to).
@@ -66,10 +61,7 @@ class Virtual(BaseField):
         setattr(cls, name, self)
 
 
-VirtualField = Virtual
-
-
-class Constant(Virtual):
+class ConstantField(VirtualField):
     """
     A field that provides a constant value.
     """
@@ -84,10 +76,7 @@ class Constant(Virtual):
         return self.value
 
 
-ConstantField = Constant
-
-
-class Calculated(VirtualField):
+class CalculatedField(VirtualField):
     """
     A field whose value is calculated by an expression.
 
@@ -104,10 +93,7 @@ class Calculated(VirtualField):
         return self.expr(instance)
 
 
-CalculatedField = Calculated
-
-
-def calculated(method=None, **kwargs):
+def calculated_field(method=None, **kwargs):
     """
     Decorator that converts an instance method into a calculated field.
     """
@@ -117,15 +103,12 @@ def calculated(method=None, **kwargs):
             doc_text = method.__doc__.strip()
             if doc_text:
                 kwargs.setdefault("doc_text", doc_text)
-        return Calculated(expr, **kwargs)
+        return CalculatedField(expr, **kwargs)
 
     return inner if method is None else inner(method)
 
 
-calculated_field = calculated
-
-
-class MultiPart(VirtualField):
+class MultiPartField(VirtualField):
     """
     A field whose value is the combination of several other fields.
 
@@ -166,6 +149,3 @@ class MultiPart(VirtualField):
             self._fields = tuple(meta.field_map[name] for name in self.field_names)
         except KeyError as ex:
             raise AttributeError(f"Attribute {ex} not found on {self.resource!r}")
-
-
-MultiPartField = MultiPart
