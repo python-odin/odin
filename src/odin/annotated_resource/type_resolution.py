@@ -194,7 +194,7 @@ def _resolve_field_from_sub_scripted_type(origin: Type, options: Options, type_)
         _resolve_mapping_from_sub_scripted_type(args, options)
 
     else:
-        raise Exception("Not supported")
+        raise ResourceDefError(f"Unable to resolve field for sub-scripted type {type_}")
 
 
 def _resolve_field_from_annotation(options: Options, type_):
