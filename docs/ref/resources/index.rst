@@ -9,4 +9,5 @@ Resource API reference. For introductory material, see `Creating Resources`.
 
    fields
    instances
+   annotated
    options

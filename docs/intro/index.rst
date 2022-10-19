@@ -8,6 +8,7 @@ Quick overview to get up to speed with Odin.
    :maxdepth: 1
 
    creating-resources
+   annotated-resources
    loading-and-saving-data
    mapping-between-resources
    polymorphism-and-abstract-resources

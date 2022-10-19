@@ -11,13 +11,13 @@ Given the following resources::
 
     class CalendarEvent(odin.Resource):
         name = odin.StringField()
-        start_date = odin.DateTimeField()
+        start_date: odin.DateTimeField()
 
-    class CalendarEventFrom(odin.Resource):
-        name = odin.StringField()
-        event_date = odin.DateTimeField()
-        event_hour = odin.IntegerField()
-        event_minute = odin.IntegerField()
+    class CalendarEventFrom(odin.AnnotatedResource):
+        name: str
+        event_date: datetime.date
+        event_hour: int
+        event_minute: int
 
 
 A mapping can be defined to map from a basic ``Event`` to the ``EventFrom``::

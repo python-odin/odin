@@ -10,6 +10,7 @@ First Steps
 Quick overview to get up to speed with Odin.
 
 * :doc:`intro/creating-resources`
+* :doc:`intro/annotated-resources`
 * :doc:`intro/loading-and-saving-data`
 * :doc:`intro/mapping-between-resources`
 
