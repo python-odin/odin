@@ -28,7 +28,12 @@ jobs:
 
     - name: Test with pytest
       run: |
-        poetry run pytest --junit-xml=reports/xunit-result-${{ matrix.python-version }}.xml --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml tests
+        poetry run pytest \
+          --cov=odin \
+          --cov-branch \
+          --junit-xml=reports/xunit-result-${{ matrix.python-version }}.xml \
+          --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml \
+          tests
 
     - name: Analyze with SonarCloud
       uses: sonarsource/sonarcloud-github-action@master

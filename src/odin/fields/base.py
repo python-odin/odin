@@ -6,7 +6,7 @@ class BaseField:
     creation_counter = 0
 
     def __init__(
-        self, verbose_name=None, verbose_name_plural=None, name=None, doc_text=""
+        self, verbose_name=None, verbose_name_plural=None, name=None, doc_text="",
     ):
         self.verbose_name, self.verbose_name_plural = verbose_name, verbose_name_plural
         self.name = name

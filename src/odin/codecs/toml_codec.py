@@ -85,7 +85,7 @@ class OdinEncoder(toml.TomlEncoder):
     def __init__(
         self, include_virtual_fields=True, include_type_field=True, *args, **kwargs
     ):
-        super(OdinEncoder, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.include_virtual_fields = include_virtual_fields
         self.include_type_field = include_type_field
 

@@ -50,6 +50,7 @@ Highlights
 **********
 
 * Class based declarative style
+* Class based annotations style! ✨ new in 2.0
 * Fields for building composite resources
 * Field and Resource level validation
 * Easy extension to support custom fields
@@ -83,8 +84,6 @@ Upcoming features
 * XML Codec (export only)
 * Complete documentation coverage
 * Improvements for CSV Codec (writing, reading multi resource CSV's)
-* Integration with other libraries (ie `Django <https://www.djangoproject.com/>`_ Models/Forms)
-* Integration with SQLAlchemy
 
 
 Requires
@@ -110,7 +109,9 @@ Requires
 Example
 *******
 
-**With definition**::
+**Definition**
+
+.. code-block:: python
 
     import odin
 
@@ -127,7 +128,27 @@ Example
         genre = odin.StringField()
         num_pages = odin.IntegerField()
 
-::
+**Using Annotations**
+
+.. code-block:: python
+
+    import odin
+
+    class Author(odin.AnnotatedResource):
+        name: str
+
+    class Publisher(odin.AnnotatedResource):
+        name: str
+        website: Optional[odin.Url]
+
+    class Book(odin.AnnotatedResource):
+        title: str
+        authors: List[Author]
+        publisher: Publisher
+        genre: str
+        num_pages: int
+
+**Usage**::
 
     >>> b = Book(
             title="Consider Phlebas",

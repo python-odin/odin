@@ -60,12 +60,12 @@ class ResourceOptions:
         self._cache = {}
 
     def __repr__(self):
-        return "<Options for {}>".format(self.resource_name)
+        return f"<Options for {self.resource_name}>"
 
     def contribute_to_class(self, cls, _):
         cls._meta = self
         self.name = cls.__name__
-        self.class_name = "{}.{}".format(cls.__module__, cls.__name__)
+        self.class_name = f"{cls.__module__}.{cls.__name__}"
 
         if self.meta:
             meta_attrs = {
@@ -95,8 +95,7 @@ class ResourceOptions:
             # Any leftover attributes must be invalid.
             if meta_attrs != {}:
                 raise TypeError(
-                    "'class Meta' got invalid attribute(s): %s"
-                    % ",".join(meta_attrs.keys())
+                    f"'class Meta' got invalid attribute(s): {','.join(meta_attrs.keys())}"
                 )
         del self.meta
 
@@ -117,8 +116,8 @@ class ResourceOptions:
         """
         if field.attname in RESERVED_FIELD_NAMES:
             raise ResourceDefError(
-                "`{}` is a reserved name. Use the `name` argument to specify "
-                "the name used for serialisation.".format(field.attname)
+                f"`{field.attname}` is a reserved name. Use the `name` argument "
+                f"to specify the name used for serialisation."
             )
         self.fields.append(field)
         if field.key:
@@ -140,7 +139,7 @@ class ResourceOptions:
         Full name of resource including namespace (if specified)
         """
         if self.name_space:
-            return "{}.{}".format(self.name_space, self.name)
+            return f"{self.name_space}.{self.name}"
         else:
             return self.name
 
