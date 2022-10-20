@@ -5,7 +5,7 @@ from odin.codecs import json_codec
 from odin.datetimeutil import utc
 from odin.utils import getmeta
 
-from tests.annotated_resources import Book, Publisher, Author, Library
+from tests.annotated_resources import Book, Publisher, Author, Library, IdentifiableBook
 
 
 class TestAnnotatedResourceType:
@@ -22,6 +22,25 @@ class TestAnnotatedResourceType:
             "published",
             "authors",
             "publisher",
+        ]
+
+
+class TestAnnotatedResource:
+    def test_fields_are_inherited_from_parent_resources(self):
+        meta = getmeta(IdentifiableBook)
+
+        assert [f.name for f in meta.fields] == [
+            "title",
+            "isbn",
+            "num_pages",
+            "rrp",
+            "fiction",
+            "genre",
+            "published",
+            "authors",
+            "publisher",
+            "id",
+            "purchased_from",
         ]
 
 

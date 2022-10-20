@@ -1,22 +1,17 @@
 """
-New Style Resources
+Annotated Resources
 ~~~~~~~~~~~~~~~~~~~
 
-New style resources make use of Python type annotations to simplify the
+Annotated resources make use of Python type annotations to simplify the
 definition of data structures.
 
-New style resources still utilise many of the existing classes eg
+Annotated resources still utilise many of the existing classes eg
 ``ResourceBase``, ``ResourceOptions`` and all existing fields. Allowing
 existing code (eg Mappings, Codecs) including custom implementations to be
 utilised unchanged.
 
-Example:
-
-.. code-block:: python
-
-
-
 """
+import copy
 from typing import Any, Dict, Tuple, Type, Optional, TypeVar, Iterable
 
 from odin import registration
@@ -28,6 +23,7 @@ from odin.resources import (
     NotProvided,
 )
 from .type_resolution import process_attribute, Options
+from ..exceptions import ResourceDefError
 
 __all__ = (
     "Options",
@@ -36,6 +32,7 @@ __all__ = (
     "AResource",
 )
 
+from ..utils import getmeta
 
 MOT = TypeVar("MOT", bound=ResourceOptions)
 
@@ -92,6 +89,45 @@ def _iterate_attrs(attrs: Dict[str, Any]) -> Iterable[Tuple[str, BaseField]]:
     yield from attrs.items()
 
 
+def _add_parent_fields_to_class(
+    new_class: "AnnotatedResourceType", new_meta: ResourceOptions, parents
+):
+    """
+    Iterate through parent attrs and yield fields
+    """
+    # All the fields of any type declared on this model
+    local_field_attr_names = {f.attname for f in new_meta.fields}
+    field_attr_names = set(local_field_attr_names)
+
+    for base, base_meta in (
+        (base, getmeta(base)) for base in parents if hasattr(base, "_meta")
+    ):
+        # Check for clashes between locally declared fields and those
+        # on the base classes (we cannot handle shadowed fields at the
+        # moment).
+        for field in base_meta.all_fields:
+            if field.attname in local_field_attr_names:
+                raise ResourceDefError(
+                    f"Local field {field.attname!r} in class {new_class.__name__!r} "
+                    f"clashes with field of the same name from base class {base.__name__!r}"
+                )
+
+        # Clone fields (but filter out fields already inherited)
+        for field in (
+            field for field in base_meta.fields if field.attname not in field_attr_names
+        ):
+            field_attr_names.add(field.attname)
+            new_class.add_to_class(field.attname, copy.deepcopy(field))
+
+        # Clone any virtual fields
+        for field in base_meta.virtual_fields:
+            new_class.add_to_class(field.attname, copy.deepcopy(field))
+
+        # Add to parents list
+        new_meta.parents += base_meta.parents
+        new_meta.parents.append(base)
+
+
 class AnnotatedResourceType(type):
     def __new__(
         mcs,
@@ -136,6 +172,8 @@ class AnnotatedResourceType(type):
         # Add all field attributes to the class.
         for name, field in _iterate_attrs(attrs):
             new_class.add_to_class(name, field)
+
+        _add_parent_fields_to_class(new_class, new_meta, parents)
 
         # Sort the fields
         if not new_meta.field_sorting:

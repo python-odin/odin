@@ -74,9 +74,13 @@ class IdentifiableBook(Book):
     purchased_from: From
 
 
-class Subscriber(odin.AResource):
-    name: str
-    address: str
+class Subscriber(odin.Resource):
+    """
+    Mixed resource types
+    """
+
+    name: str = odin.StringField()
+    address: str = odin.StringField()
 
 
 class Library(odin.AnnotatedResource):
