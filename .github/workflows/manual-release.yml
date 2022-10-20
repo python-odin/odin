@@ -4,9 +4,10 @@ name: Manual-Release
 on:
   workflow_dispatch:
     inputs:
-      publish:
-        description: 'Publish manual release to PyPI'
-        default: false
+      pre_release:
+        description: 'This is a pre-release'
+        default: true
+        type: boolean
 
 jobs:
   release:
@@ -42,7 +43,7 @@ jobs:
         with:
           tag_name: ${{ steps.build_package.outputs.version }}
           release_name: Release ${{ steps.build_package.outputs.version }}
-          prerelease: false
+          prerelease: ${{ inputs.pre_release }}
 
       - name: Attach Release Wheel
         uses: actions/upload-release-asset@v1
