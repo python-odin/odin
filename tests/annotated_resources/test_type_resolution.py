@@ -1,3 +1,4 @@
+import sys
 from typing import Optional, Union, List, Dict, Tuple
 
 import pytest
@@ -68,6 +69,9 @@ class TestOptions:
         ):
             target.init_field()
 
+    @pytest.mark.skipif(
+        sys.version_info < (3, 10), reason="requires python3.10 or higher"
+    )
     def test_init_field__where_field_has_invalid_args(self):
         target = type_resolution.Options(
             field_type=odin.StringField, my_invalid_arg="boom!"
@@ -79,6 +83,9 @@ class TestOptions:
         ):
             target.init_field()
 
+    @pytest.mark.skipif(
+        sys.version_info < (3, 10), reason="requires python3.10 or higher"
+    )
     def test_init_field__where_virtual_field_has_invalid_args(self):
         target = type_resolution.Options(
             field_type=odin.ConstantField, value="foo", my_invalid_arg="boom!"
@@ -90,6 +97,9 @@ class TestOptions:
         ):
             target.init_field()
 
+    @pytest.mark.skipif(
+        sys.version_info < (3, 10), reason="requires python3.10 or higher"
+    )
     def test_init_field__where_field_has_missing_required_arg(self):
         target = type_resolution.Options(field_type=odin.EnumField)
 
