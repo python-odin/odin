@@ -1,19 +1,23 @@
-class ResourceIterable:
+import abc
+from typing import Protocol
+
+
+class ResourceIterable(abc.ABC):
     """
     Iterable object that yields resources.
     """
 
+    @abc.abstractmethod
     def __iter__(self):
-        raise NotImplementedError()
+        """
+        Iterate resources
+        """
 
 
-class TypedResourceIterable(ResourceIterable):
+class TypedResourceIterable(ResourceIterable, abc.ABC):
     """
     Iterable object that yields a specific resource.
     """
 
     def __init__(self, resource_type):
         self.resource_type = resource_type
-
-    def __iter__(self):
-        raise NotImplementedError()

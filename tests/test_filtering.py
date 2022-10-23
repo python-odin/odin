@@ -71,6 +71,7 @@ class TestFilterChain:
             "(fiction == True AND rrp < 20 AND len(authors) == 1 AND genre != 'fantasy')"
             == str(flt)
         )
+        assert len(flt) == 4
 
     def test_combine_with_comparison(self):
         flt1 = filtering.And(
@@ -89,60 +90,55 @@ class TestFilterChain:
         pytest.raises(TypeError, lambda: flt1 + "abc")
 
 
+class FilterComparisonTest(filtering.FilterComparison):
+    operator_symbols = ["%"]
+
+
 class TestFilterComparison:
     def test_description(self):
-        comp = filtering.FilterComparison("foo", "bar")
-        comp.operator_symbols = ["%"]
+        comp = FilterComparisonTest("foo", "bar")
         assert "foo % 'bar'" == str(comp)
-        comp = filtering.FilterComparison("foo", 42)
-        comp.operator_symbols = ["%"]
+
+        comp = FilterComparisonTest("foo", 42)
         assert "foo % 42" == str(comp)
-        comp = filtering.FilterComparison("foo", "bar", any)
-        comp.operator_symbols = ["%"]
+
+        comp = FilterComparisonTest("foo", "bar", any)
         assert "any(foo) % 'bar'" == str(comp)
 
-    def test_equal_string(self):
+    def test_equal(self):
         comp = filtering.Equal("foo", "bar")
-        assert comp.compare("bar")
-        assert not comp.compare("eek")
         assert "foo == 'bar'" == str(comp)
-
-    def test_equal_integer(self):
-        comp = filtering.Equal("foo", 5)
-        assert comp.compare(5)
-        assert not comp.compare(6)
-        assert "foo == 5" == str(comp)
+        assert comp.compare_operator("bar", "bar")
 
     def test_not_equal(self):
         comp = filtering.NotEqual("foo", "bar")
-        assert comp.compare("eek")
-        assert not comp.compare("bar")
         assert "foo != 'bar'" == str(comp)
+        assert comp.compare_operator("bar", "eek")
 
     def test_less_than(self):
         comp = filtering.LessThan("foo", 5)
-        assert comp.compare(4)
-        assert not comp.compare(5)
-        assert not comp.compare(6)
         assert "foo < 5" == str(comp)
+        assert comp.compare_operator(4, 5)
+        assert not comp.compare_operator(5, 5)
+        assert not comp.compare_operator(6, 5)
 
     def test_less_than_or_equal(self):
         comp = filtering.LessThanOrEqual("foo", 5)
-        assert comp.compare(4)
-        assert comp.compare(5)
-        assert not comp.compare(6)
         assert "foo <= 5" == str(comp)
+        assert comp.compare_operator(4, 5)
+        assert comp.compare_operator(5, 5)
+        assert not comp.compare_operator(6, 5)
 
     def test_greater_than(self):
         comp = filtering.GreaterThan("foo", 5)
-        assert not comp.compare(4)
-        assert not comp.compare(5)
-        assert comp.compare(6)
         assert "foo > 5" == str(comp)
+        assert not comp.compare_operator(4, 5)
+        assert not comp.compare_operator(5, 5)
+        assert comp.compare_operator(6, 5)
 
     def test_greater_than_or_equal(self):
         comp = filtering.GreaterThanOrEqual("foo", 5)
-        assert not comp.compare(4)
-        assert comp.compare(5)
-        assert comp.compare(6)
         assert "foo >= 5" == str(comp)
+        assert not comp.compare_operator(4, 5)
+        assert comp.compare_operator(5, 5)
+        assert comp.compare_operator(6, 5)

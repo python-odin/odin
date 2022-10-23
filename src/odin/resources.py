@@ -340,8 +340,8 @@ class ResourceType(type):
             for field in base_meta.all_fields:
                 if field.attname in local_field_attnames:
                     raise Exception(
-                        "Local field {!r} in class {!r} clashes with field of similar name from "
-                        "base class {!r}".format(field.attname, name, base.__name__)
+                        f"Local field {field.attname!r} in class {name!r} clashes with "
+                        f"field of similar name from base class {base.__name__!r}"
                     )
             for field in base_meta.fields:
                 if field.attname not in field_attnames:
@@ -365,9 +365,7 @@ class ResourceType(type):
             for field_name in new_meta.key_field_names:
                 if field_name not in new_meta.field_map:
                     raise AttributeError(
-                        "Key field `{0}` does not exist on this resource.".format(
-                            field_name
-                        )
+                        f"Key field `{field_name}` does not exist on this resource."
                     )
 
         # Give fields an opportunity to do additional operations after the
@@ -401,8 +399,8 @@ class ResourceBase:
         meta = getmeta(self)
         if args_len > len(meta.init_fields):
             raise TypeError(
-                "This resource takes %s positional arguments but %s where given."
-                % (len(meta.init_fields), args_len)
+                f"This resource takes {len(meta.init_fields)} positional "
+                f"arguments but {args_len} where given."
             )
 
         # The ordering of the zip calls matter - zip throws StopIteration
@@ -430,15 +428,14 @@ class ResourceBase:
 
         if kwargs:
             raise TypeError(
-                "'%s' is an invalid keyword argument for this function"
-                % list(kwargs)[0]
+                f"'{list(kwargs)[0]}' is an invalid keyword argument for this function"
             )
 
     def __repr__(self):
-        return "<%s: %s>" % (self.__class__.__name__, self)
+        return f"<{self.__class__.__name__}: {self}>"
 
     def __str__(self):
-        return "%s resource" % getmeta(self).resource_name
+        return f"{getmeta(self).resource_name} resource"
 
     @classmethod
     def create_from_dict(cls, d, full_clean=False):
@@ -550,7 +547,7 @@ class ResourceBase:
                 errors[f.name] = e.messages
 
             # Check for resource level clean methods.
-            clean_method = getattr(self, "clean_%s" % f.attname, None)
+            clean_method = getattr(self, f"clean_{f.attname}", None)
             if callable(clean_method):
                 try:
                     raw_value = clean_method(raw_value)
@@ -656,16 +653,14 @@ def _resolve_type_from_resource(data, resource):
             # Fall back to try applying a prefix
             if not resource_type and name_space:
                 resource_type = registration.get_resource(
-                    "{}.{}".format(name_space, document_resource_name)
+                    f"{name_space}.{document_resource_name}"
                 )
         else:
             resource_type = registration.get_resource(resource_name)
 
         if not resource_type:
             raise exceptions.ResourceException(
-                "Resource {!r} is not registered.".format(
-                    document_resource_name or resource_name
-                )
+                f"Resource {document_resource_name or resource_name!r} is not registered."
             )
 
         if document_resource_name:

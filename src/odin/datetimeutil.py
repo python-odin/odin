@@ -94,7 +94,7 @@ class FixedTimezone(datetime.tzinfo):
     )
 
     @classmethod
-    def from_seconds(cls, seconds):
+    def from_seconds(cls, seconds: int) -> datetime.tzinfo:
         sign = "-" if seconds < 0 else ""
         minutes = abs(seconds // 60)
         hours = minutes // 60
@@ -108,7 +108,7 @@ class FixedTimezone(datetime.tzinfo):
         return cls(datetime.timedelta(hours=hours, minutes=minutes), name)
 
     @classmethod
-    def from_hours_minutes(cls, hours, minutes=0):
+    def from_hours_minutes(cls, hours: int, minutes: int = 0) -> datetime.tzinfo:
         sign = "-" if hours < 0 else ""
         hours = abs(hours)
         minutes = abs(minutes)
@@ -121,7 +121,9 @@ class FixedTimezone(datetime.tzinfo):
         return cls(datetime.timedelta(hours=hours, minutes=minutes), name)
 
     @classmethod
-    def from_groups(cls, groups, default_timezone=utc):
+    def from_groups(
+        cls, groups, default_timezone: datetime.tzinfo = utc
+    ) -> datetime.tzinfo:
         tz = groups["timezone"]
         if tz is None:
             return default_timezone
@@ -140,18 +142,18 @@ class FixedTimezone(datetime.tzinfo):
 
         return cls(datetime.timedelta(hours=hours, minutes=minutes), name)
 
-    def __init__(self, offset=None, name=None):
-        super(FixedTimezone, self).__init__()
+    def __init__(self, offset: datetime.timedelta = None, name: str = None):
+        super().__init__()
         self.offset = offset or ZERO
         self.name = name or ""
 
-    def utcoffset(self, _):
+    def utcoffset(self, _) -> datetime.timedelta:
         return self.offset
 
-    def dst(self, _):
+    def dst(self, _) -> datetime.timedelta:
         return ZERO
 
-    def tzname(self, _):
+    def tzname(self, _) -> str:
         return self.name
 
     def __str__(self):
@@ -161,7 +163,9 @@ class FixedTimezone(datetime.tzinfo):
         return f"<timezone {self.name!r} {self.offset!r}>"
 
     def __eq__(self, other):
-        return self.offset == other.offset
+        if isinstance(other, FixedTimezone):
+            return self.offset == other.offset
+        return NotImplemented
 
     # Pickle support
 
@@ -176,8 +180,9 @@ class FixedTimezone(datetime.tzinfo):
         self.name = state.get("name")
 
 
-def get_tz_aware_dt(dt, assumed_tz=local):
-    # type: (datetime.datetime, datetime.tzinfo) -> datetime.datetime
+def get_tz_aware_dt(
+    dt: datetime.datetime, assumed_tz: datetime.tzinfo = local
+) -> datetime.datetime:
     """
     Get a time zone aware date time from a supplied date time.
 
@@ -190,14 +195,14 @@ def get_tz_aware_dt(dt, assumed_tz=local):
         return dt.replace(tzinfo=assumed_tz)
 
 
-def now_utc():
+def now_utc() -> datetime.datetime:
     """
     Get now in UTC (with timezone set correctly).
     """
     return datetime.datetime.now(tz=utc)
 
 
-def now_local():
+def now_local() -> datetime.datetime:
     """
     Get now in the current local timezone.
     """
@@ -221,7 +226,7 @@ ISO8601_DATETIME_STRING_RE = re.compile(
 )
 
 
-def parse_iso_date_string(date_string):
+def parse_iso_date_string(date_string: str) -> datetime.date:
     """
     Parse a date in the string format defined in ISO 8601.
     """
@@ -234,7 +239,9 @@ def parse_iso_date_string(date_string):
         raise ValueError("Expected ISO 8601 formatted date string.")
 
 
-def parse_iso_time_string(time_string, default_timezone=utc):
+def parse_iso_time_string(
+    time_string: str, default_timezone: datetime.tzinfo = utc
+) -> datetime.time:
     """
     Parse a time in the string format defined by ISO 8601.
     """
@@ -259,7 +266,9 @@ def parse_iso_time_string(time_string, default_timezone=utc):
     )
 
 
-def parse_iso_datetime_string(datetime_string, default_timezone=utc):
+def parse_iso_datetime_string(
+    datetime_string: str, default_timezone: datetime.tzinfo = utc
+) -> datetime.datetime:
     """
     Parse a datetime in the string format defined by ISO 8601.
     """
@@ -287,8 +296,9 @@ def parse_iso_datetime_string(datetime_string, default_timezone=utc):
     )
 
 
-def to_ecma_datetime_string(dt, default_timezone=local):
-    # type: (datetime.datetime, datetime.tzinfo) -> str
+def to_ecma_datetime_string(
+    dt: datetime.datetime, default_timezone: datetime.tzinfo = local
+) -> str:
     """
     Convert a python datetime into the string format defined by ECMA-262.
 
@@ -304,7 +314,7 @@ def to_ecma_datetime_string(dt, default_timezone=local):
     )
 
 
-def parse_http_datetime_string(datetime_string):
+def parse_http_datetime_string(datetime_string: str) -> datetime.datetime:
     """
     Parse a datetime in the string format defined by ISO-1123 (or HTTP date time).
     """
@@ -337,8 +347,9 @@ HTTP_MONTH = [
 ]
 
 
-def to_http_datetime_string(dt, default_timezone=local):
-    # type: (datetime.datetime, datetime.tzinfo) -> str
+def to_http_datetime_string(
+    dt: datetime.datetime, default_timezone: datetime.tzinfo = local
+) -> str:
     """
     Convert a python datetime into the string format defined by ISO-1123 (or HTTP date time).
     """

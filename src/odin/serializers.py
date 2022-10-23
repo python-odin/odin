@@ -1,13 +1,14 @@
 import datetime
-from typing import Union
+from typing import Union, Callable, Any, Dict
 
 from odin import datetimeutil
 from odin.compatibility import deprecated
 
-STRING_TYPES = {}
+StringFormatter = Callable[[Any], str]
+STRING_TYPES: Dict[type, StringFormatter] = {}
 
 
-def register_string_type(data_type, serialise_method):
+def register_string_type(data_type: type, serialise_method: StringFormatter):
     """
     Register a data type serialise method that results in a string.
 
@@ -19,8 +20,7 @@ def register_string_type(data_type, serialise_method):
     STRING_TYPES[data_type] = serialise_method
 
 
-def date_iso_format(value):
-    # type: (datetime.date) -> str
+def date_iso_format(value: datetime.date) -> str:
     """
     Serialise a datetime.date to ISO string format.
     """
@@ -49,16 +49,14 @@ class DatetimeIsoFormat:
 TimeIsoFormat = DatetimeIsoFormat
 
 
-def datetime_iso_format(value):
-    # type: (datetime.datetime) -> str
+def datetime_iso_format(value: datetime.datetime) -> str:
     """
     Serialise a datetime.datetime to ISO string format.
     """
     return value.isoformat()
 
 
-def time_iso_format(value):
-    # type: (datetime.time) -> str
+def time_iso_format(value: datetime.time) -> str:
     """
     Serialise a datetime.time to ISO string format.
     """

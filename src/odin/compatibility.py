@@ -5,7 +5,7 @@ import inspect
 import warnings
 
 
-def deprecated(message, category=DeprecationWarning):
+def deprecated(message: str, category=DeprecationWarning):
     """
     Decorator for marking classes/functions as being deprecated and are to be removed in the future.
 

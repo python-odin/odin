@@ -39,7 +39,7 @@ class RegexValidator:
         """
         Generate str (used by sphinx for documentation)
         """
-        return self.__doc__ or "{}({})".format(type(self).__name__, self.regex.pattern)
+        return self.__doc__ or f"{type(self).__name__}({self.regex.pattern})"
 
 
 class URLValidator(RegexValidator):

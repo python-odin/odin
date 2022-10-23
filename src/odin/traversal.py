@@ -1,6 +1,9 @@
+from typing import Union
+
 from odin.utils import getmeta
 
 from .exceptions import NoMatchError, MultipleMatchesError, InvalidPathError
+from .resources import ResourceBase
 
 
 class NotSupplied:
@@ -25,7 +28,7 @@ class TraversalPath:
     """
 
     @classmethod
-    def parse(cls, path):
+    def parse(cls, path: Union["TraversalPath", str]):
         if isinstance(path, TraversalPath):
             return path
         if isinstance(path, str):
@@ -71,7 +74,7 @@ class TraversalPath:
     def __iter__(self):
         return iter(self._path)
 
-    def get_value(self, root_resource):
+    def get_value(self, root_resource: ResourceBase):
         """
         Get a value from a resource structure.
         """

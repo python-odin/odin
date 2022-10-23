@@ -1,11 +1,17 @@
 """
 Some helpful decorators.
 """
-from odin.resources import build_object_graph
+from typing import Dict, Any, Type
+
+from odin.resources import build_object_graph, ResourceBase
 
 
 def returns_resource(
-    func=None, codec=None, resource=None, full_clean=True, codec_opts=None
+    func=None,
+    codec=None,
+    resource: Type[ResourceBase] = None,
+    full_clean: bool = True,
+    codec_opts: Dict[str, Any] = None,
 ):
     """
     Apply to a function that returns data that can be converted into a resource (or resources).
@@ -15,6 +21,7 @@ def returns_resource(
 
     Note that this decorator can throw ``ValidationError`` exceptions.
 
+    :param func: Function being wrapped
     :param codec: Codec that should be used to convert data.
     :param resource: Resource to convert to (only required if the data does not contain a resource identifier).
     :param full_clean: Perform a full clean on the data post conversion.
