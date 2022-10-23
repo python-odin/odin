@@ -5,7 +5,7 @@ from odin.codecs import json_codec
 from odin.datetimeutil import utc
 from odin.utils import getmeta
 
-from tests.annotated_resources import Book, Publisher, Author, Library, IdentifiableBook
+from tests.resources_annotated import Book, Publisher, Author, Library, IdentifiableBook
 
 
 class TestAnnotatedResourceType:

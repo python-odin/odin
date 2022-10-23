@@ -1,8 +1,9 @@
 import datetime
 import enum
 import pathlib
+import typing
 import uuid
-from typing import Any, Sequence, Dict, Type, Union, Mapping, get_origin
+from typing import Any, Sequence, Dict, Type, Union, get_origin, List
 
 import odin
 from .type_aliases import Validator, Choices, Email, IPv4, IPv6, IPv46, Url
@@ -35,6 +36,7 @@ class Options:
     def __init__(
         self,
         default: Any = odin.NotProvided,
+        field_type: Type[odin.BaseField] = None,
         *,
         verbose_name: str = None,
         verbose_name_plural: str = None,
@@ -46,7 +48,6 @@ class Options:
         doc_text: str = "",
         is_attribute: bool = False,
         key: bool = False,
-        field_type: Type[odin.BaseField] = None,
         **extra_args: Any,
     ):
         self.field_type = field_type
@@ -76,12 +77,32 @@ class Options:
             final_args.update(self.field_args)
         return final_args
 
+    def _improve_error(self, ex: TypeError):
+        """
+        Attempt to provide more context for the error
+        """
+        message = str(ex)
+
+        for check in (
+            "Field.__init__()",
+            "VirtualField.__init__()",
+            f"{self.field_type.__name__}.__init__()",
+        ):
+            if message.startswith(check):
+                raise ResourceDefError(
+                    f"{self.field_type.__name__}.__init__(){message[len(check):]}"
+                )
+
     def init_field(self):
         """
         Instantiate field object
         """
         if self.field_type:
-            return self.field_type(**self._kwargs())
+            try:
+                return self.field_type(**self._kwargs())
+            except TypeError as ex:
+                self._improve_error(ex)
+                raise
         raise ResourceDefError("Field type could not be resolved")
 
 
@@ -136,44 +157,39 @@ def is_optional(type_: Union) -> bool:
     )  # pylint: disable=unidiomatic-typecheck
 
 
-def _resolve_sequence_from_sub_scripted_type(args: Sequence[Any], options: Options):
+def _resolve_list_from_sub_scripted_type(args: Sequence[Any], options: Options):
     """
     Handle the various types of sequence type
     """
     options.field_args["default"] = list
 
-    if args:
-        (field,) = args
-        if issubclass(field, ResourceBase):
-            options.field_args["resource"] = field
-            options.field_type = ListOf
-        else:
-            options.field_args["field"] = process_attribute(field)
-            options.field_type = TypedListField
-
+    (field,) = args
+    if issubclass(field, ResourceBase):
+        options.field_args["resource"] = field
+        options.field_type = ListOf
     else:
-        options.field_type = ListField
+        options.field_args["field"] = process_attribute(field)
+        options.field_type = TypedListField
 
 
-def _resolve_mapping_from_sub_scripted_type(args: Sequence[Any], options: Options):
+def _resolve_dict_from_sub_scripted_type(args: Sequence[Any], options: Options):
     """
     Handle the various types of sequence type
     """
     options.field_args["default"] = dict
 
-    if args:
-        key_field, value_field = args
-        if issubclass(value_field, ResourceBase):
-            options.field_args["resource"] = value_field
-            options.field_type = DictOf
-
-        else:
-            options.field_args["key_field"] = process_attribute(key_field)
-            options.field_args["value_field"] = process_attribute(value_field)
-            options.field_type = TypedDictField
+    key_field, value_field = args
+    # Use get origin to determine value is also sub-scripted. This is
+    # required as issubclass cannot be used on sub-scripted fields.
+    origin = get_origin(value_field)
+    if not origin and issubclass(value_field, ResourceBase):
+        options.field_args["resource"] = value_field
+        options.field_type = DictOf
 
     else:
-        options.field_type = DictField
+        options.field_args["key_field"] = process_attribute(key_field)
+        options.field_args["value_field"] = process_attribute(value_field)
+        options.field_type = TypedDictField
 
 
 def _resolve_field_from_sub_scripted_type(origin: Type, options: Options, type_):
@@ -186,12 +202,16 @@ def _resolve_field_from_sub_scripted_type(origin: Type, options: Options, type_)
         if is_optional(type_):
             options.field_args["null"] = True
             _resolve_field_from_annotation(options, args[0])
+        else:
+            raise ResourceDefError(
+                f"Unable to resolve field for sub-scripted type {type_}"
+            )
 
-    elif issubclass(origin, Sequence):
-        _resolve_sequence_from_sub_scripted_type(args, options)
+    elif issubclass(origin, List):
+        _resolve_list_from_sub_scripted_type(args, options)
 
-    elif issubclass(origin, Mapping):
-        _resolve_mapping_from_sub_scripted_type(args, options)
+    elif issubclass(origin, Dict):
+        _resolve_dict_from_sub_scripted_type(args, options)
 
     else:
         raise ResourceDefError(f"Unable to resolve field for sub-scripted type {type_}")
@@ -212,7 +232,7 @@ def _resolve_field_from_annotation(options: Options, type_):
         _resolve_field_from_type(options, type_)
 
     else:
-        raise ResourceDefError(f"Unable to resolve field for type {type_}")
+        raise ResourceDefError(f"Annotation is not a type instance {type_}")
 
 
 def process_attribute(

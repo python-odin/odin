@@ -3,6 +3,7 @@ import logging
 
 logging.getLogger("odin.registration").addHandler(logging.NullHandler())
 
+from odin import exceptions  # noqa
 from odin.fields import *  # noqa
 from odin.fields.composite import *  # noqa
 from odin.fields.virtual import *  # noqa
