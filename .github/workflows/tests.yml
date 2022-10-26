@@ -1,4 +1,4 @@
-name: Python package
+name: Run Tests
 
 on:
   push:
@@ -11,14 +11,14 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11-dev"]
+        python-version: [3.8, 3.9, "3.10", "3.11"]
         experimental: [false]
         include:
-          - python-version: "3.11"
+          - python-version: "3.11-dev"
             experimental: true
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
 
