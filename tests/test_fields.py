@@ -1,4 +1,5 @@
 import pathlib
+import re
 
 import pytest
 import datetime
@@ -1334,5 +1335,66 @@ class TestPathField:
         field = odin.PathField()
 
         actual = field.to_python(value)
+
+        assert actual == expected
+
+    @pytest.mark.parametrize("value", (123,))
+    def test_to_python__invalid(self, value):
+        field = odin.PathField()
+
+        with pytest.raises(ValidationError):
+            field.to_python(value)
+
+    @pytest.mark.parametrize(
+        "value, expected",
+        (
+            (None, None),
+            ("abc", None),
+            (pathlib.Path("abc"), "abc"),
+            (pathlib.Path("/this/is/the/true/path"), "/this/is/the/true/path"),
+        ),
+    )
+    def test_prepare(self, value, expected):
+        field = odin.PathField()
+
+        actual = field.prepare(value)
+
+        assert actual == expected
+
+
+class TestRegexField:
+    @pytest.mark.parametrize(
+        "value, expected",
+        (
+            (None, None),
+            ("simple[0-9](match)", re.compile("simple[0-9](match)")),
+        ),
+    )
+    def test_to_python__valid(self, value, expected):
+        field = odin.RegexField()
+
+        actual = field.to_python(value)
+
+        assert actual == expected
+
+    @pytest.mark.parametrize("value", (123, "invalid[0-9(expression)"))
+    def test_to_python__invalid(self, value):
+        field = odin.RegexField()
+
+        with pytest.raises(ValidationError):
+            field.to_python(value)
+
+    @pytest.mark.parametrize(
+        "value, expected",
+        (
+            (None, None),
+            ("simple[0-9](match)", None),
+            (re.compile("simple[0-9](match)"), "simple[0-9](match)"),
+        ),
+    )
+    def test_prepare(self, value, expected):
+        field = odin.RegexField()
+
+        actual = field.prepare(value)
 
         assert actual == expected

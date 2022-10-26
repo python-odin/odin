@@ -2,9 +2,10 @@ import copy
 import datetime
 import enum
 import pathlib
+import re
 import uuid
 from functools import cached_property
-from typing import Sequence, Tuple, Any, TypeVar, Optional, Type
+from typing import Sequence, Tuple, Any, TypeVar, Optional, Type, Union
 
 from odin import exceptions, datetimeutil, registration
 from odin.utils import getmeta
@@ -52,6 +53,7 @@ __all__ = (
     "TypedObjectField",
     "EnumField",
     "PathField",
+    "RegexField",
 )
 
 
@@ -1058,6 +1060,9 @@ class PathField(Field):
     Field for handling Python Paths
     """
 
+    default_error_messages = {
+        "invalid": "Value %s is not a valid path.",
+    }
     data_type_name = "Path"
 
     def to_python(self, value) -> Optional[pathlib.Path]:
@@ -1067,16 +1072,42 @@ class PathField(Field):
         # Attempt to convert
         try:
             return pathlib.Path(value)
-        except ValueError:
-            # If value is an empty string return None
-            # Do this check here to support enums that define an option using
-            # an empty string.
-            if value == "":
-                return
-            raise exceptions.ValidationError(
-                self.error_messages["invalid_choice"] % value
-            )
+        except (ValueError, TypeError):
+            raise exceptions.ValidationError(self.error_messages["invalid"] % value)
 
     def prepare(self, value: Optional[str]):
-        if isinstance(value, PathField):
-            return str(value)
+        if isinstance(value, pathlib.Path):
+            return value.as_posix()
+
+
+class RegexField(Field):
+    """
+    Field for handling regular expressions.
+
+    Note this field will compile a regular expression into a pattern.
+
+    Regular expressions use the Python syntax.
+    """
+
+    default_error_messages = {
+        "invalid": "Value '%s' is not a valid regular expression.",
+        "syntax": "Value '%s' contains invalid syntax: %s.",
+    }
+    data_type_name = "Regex"
+
+    def to_python(self, value) -> Optional[re.Pattern]:
+        if value is None:
+            return
+
+        try:
+            return re.compile(value)
+        except TypeError:
+            raise exceptions.ValidationError(self.error_messages["invalid"] % value)
+        except re.error as ex:
+            raise exceptions.ValidationError(
+                self.error_messages["syntax"] % (value, ex)
+            )
+
+    def prepare(self, value: Optional[re.Pattern]):
+        if isinstance(value, re.Pattern):
+            return value.pattern

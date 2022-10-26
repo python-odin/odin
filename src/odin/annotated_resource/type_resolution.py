@@ -1,6 +1,7 @@
 import datetime
 import enum
 import pathlib
+import re
 import typing
 import uuid
 from typing import Any, Sequence, Dict, Type, Union, get_origin, List
@@ -119,6 +120,7 @@ SIMPLE_TYPE_MAP = {
     IPv46: odin.IPv46Field,
     list: odin.ListField,
     pathlib.Path: odin.PathField,
+    re.Pattern: odin.RegexField,
     str: odin.StringField,
     datetime.time: odin.TimeField,
     Url: odin.UrlField,
