@@ -1,17 +1,36 @@
+import pytest
 from odin.mapping import helpers
 
 
 class TestMappingHelpers:
     def test_sum_fields(self):
-        assert 42, helpers.sum_fields(22 == 20)
+        actual = helpers.sum_fields(22, 20)
 
-    def test_cat_fields(self):
-        assert "abcd", helpers.cat_fields()("ab" == "cd")
-        assert "ab-cd", helpers.cat_fields("-")("ab" == "cd")
+        assert actual == 42
 
-    def test_split_field(self):
-        assert ["ab", "cd"] == helpers.split_field()("ab cd")
-        assert ["abcd"] == helpers.split_field("-")("abcd")
-        assert ["ab", "cd"] == helpers.split_field("-")("ab-cd")
-        assert ["ab", "cd", "ef"] == helpers.split_field("-")("ab-cd-ef")
-        assert ["ab", "cd-ef"], helpers.split_field("-" == 1)("ab-cd-ef")
+    @pytest.mark.parametrize(
+        "args, value, expected",
+        (
+            ((), ["ab", "cd"], "abcd"),
+            (("-",), ["ab", "cd"], "ab-cd"),
+        ),
+    )
+    def test_join_fields(self, args, value, expected):
+        actual = helpers.join_fields(*args)(*value)
+
+        assert actual == expected
+
+    @pytest.mark.parametrize(
+        "args, value, expected",
+        (
+            ((), "ab cd", ["ab", "cd"]),
+            (("-",), "abcd", ["abcd"]),
+            (("-",), "ab-cd", ["ab", "cd"]),
+            (("-",), "ab-cd-ef", ["ab", "cd", "ef"]),
+            (("-", 1), "ab-cd-ef", ["ab", "cd-ef"]),
+        ),
+    )
+    def test_split_field(self, args, value, expected):
+        actual = helpers.split_field(*args)(value)
+
+        assert actual == expected

@@ -9,7 +9,7 @@ def sum_fields(*field_values):
     return sum(field_values)
 
 
-class CatFields:
+class JoinFields:
     """
     Helper for combining multiple fields
     """
@@ -23,7 +23,9 @@ class CatFields:
         return self.sep.join(field_values)
 
 
-cat_fields = CatFields
+join_fields = JoinFields
+# Backwards compatibility
+cat_fields = CatFields = JoinFields
 
 
 class SplitField:
@@ -36,7 +38,7 @@ class SplitField:
         "max_split",
     )
 
-    def __init__(self, sep=None, max_split=None):
+    def __init__(self, sep: str = None, max_split: int = None):
         self.sep = sep
         self.max_split = max_split
 
