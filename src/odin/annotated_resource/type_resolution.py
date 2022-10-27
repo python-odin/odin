@@ -2,19 +2,17 @@ import datetime
 import enum
 import pathlib
 import re
-import typing
 import uuid
 from typing import Any, Sequence, Dict, Type, Union, get_origin, List
 
 import odin
+from .special_fields import AnyField
 from .type_aliases import Validator, Choices, Email, IPv4, IPv6, IPv46, Url
 from .. import ListOf, DictOf
 from ..exceptions import ResourceDefError
 from ..fields import (
     BaseField,
     Field,
-    ListField,
-    DictField,
     NotProvided,
     TypedListField,
     TypedDictField,
@@ -166,7 +164,7 @@ def _resolve_list_from_sub_scripted_type(args: Sequence[Any], options: Options):
     options.field_args["default"] = list
 
     (field,) = args
-    if issubclass(field, ResourceBase):
+    if field is not Any and issubclass(field, ResourceBase):
         options.field_args["resource"] = field
         options.field_type = ListOf
     else:
@@ -184,7 +182,7 @@ def _resolve_dict_from_sub_scripted_type(args: Sequence[Any], options: Options):
     # Use get origin to determine value is also sub-scripted. This is
     # required as issubclass cannot be used on sub-scripted fields.
     origin = get_origin(value_field)
-    if not origin and issubclass(value_field, ResourceBase):
+    if not (origin or value_field is Any) and issubclass(value_field, ResourceBase):
         options.field_args["resource"] = value_field
         options.field_type = DictOf
 
@@ -198,25 +196,26 @@ def _resolve_field_from_sub_scripted_type(origin: Type, options: Options, type_)
     """
     Resolve a field from a generic type
     """
-    args = type_.__args__
+    args = getattr(type_, "__args__", None)
+    if not args:
+        # This occurs with the plain List and Dict types which are essentially
+        # just the native list/dict types
+        if origin in (list, dict):
+            return _resolve_field_from_annotation(options, origin)
 
-    if origin is Union:
+    elif origin is Union:
+        # Use nested if as `issubclass` cannot be used with Generic types
         if is_optional(type_):
             options.field_args["null"] = True
-            _resolve_field_from_annotation(options, args[0])
-        else:
-            raise ResourceDefError(
-                f"Unable to resolve field for sub-scripted type {type_}"
-            )
+            return _resolve_field_from_annotation(options, args[0])
 
     elif issubclass(origin, List):
-        _resolve_list_from_sub_scripted_type(args, options)
+        return _resolve_list_from_sub_scripted_type(args, options)
 
     elif issubclass(origin, Dict):
-        _resolve_dict_from_sub_scripted_type(args, options)
+        return _resolve_dict_from_sub_scripted_type(args, options)
 
-    else:
-        raise ResourceDefError(f"Unable to resolve field for sub-scripted type {type_}")
+    raise ResourceDefError(f"Unable to resolve field for sub-scripted type {type_}")
 
 
 def _resolve_field_from_annotation(options: Options, type_):
@@ -232,6 +231,10 @@ def _resolve_field_from_annotation(options: Options, type_):
     # Is a basic type
     elif isinstance(type_, type):
         _resolve_field_from_type(options, type_)
+
+    # Special case
+    elif type_ is Any:
+        options.field_type = AnyField
 
     else:
         raise ResourceDefError(f"Annotation is not a type instance {type_}")

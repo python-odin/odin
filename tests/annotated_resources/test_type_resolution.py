@@ -1,10 +1,11 @@
 import sys
-from typing import Optional, Union, List, Dict, Tuple
+from typing import Optional, Union, List, Dict, Tuple, Any
 
 import pytest
 
 import odin
 from odin.annotated_resource import type_resolution
+from odin.annotated_resource.special_fields import AnyField
 
 from ..resources_annotated import From, Book
 
@@ -163,21 +164,10 @@ def test_is_optional(type_, expected):
     (
         (Optional[str], odin.StringField),
         (Union[str, None], odin.StringField),
-        (List[str], odin.TypedListField),
-        (List[From], odin.TypedListField),
+        (List, odin.ListField),
         (List[Book], odin.ListOf),
-        (
-            Dict[str, str],
-            odin.TypedDictField,
-        ),
-        (
-            Dict[str, From],
-            odin.TypedDictField,
-        ),
-        (
-            Dict[str, Book],
-            odin.DictOf,
-        ),
+        (Dict, odin.DictField),
+        (Dict[str, Book], odin.DictOf),
     ),
 )
 def test_resolve_field_from_sub_scripted_type__where_field_can_be_resolved(
@@ -192,10 +182,73 @@ def test_resolve_field_from_sub_scripted_type__where_field_can_be_resolved(
 
 
 @pytest.mark.parametrize(
+    "type_, expected_field",
+    (
+        (
+            List[str],
+            odin.StringField,
+        ),
+        (
+            List[From],
+            odin.EnumField,
+        ),
+        (
+            List[Any],
+            AnyField,
+        ),
+    ),
+)
+def test_resolve_field_from_sub_scripted_type__where_field_can_be_resolved_to_typed_list(
+    type_, expected_field
+):
+    options = type_resolution.Options()
+    origin = type_resolution.get_origin(type_)
+
+    type_resolution._resolve_field_from_sub_scripted_type(origin, options, type_)
+
+    assert options.field_type is odin.TypedListField
+    assert isinstance(options.field_args["field"], expected_field)
+
+
+@pytest.mark.parametrize(
+    "type_, expected_key_field, expected_value_field",
+    (
+        (
+            Dict[str, str],
+            odin.StringField,
+            odin.StringField,
+        ),
+        (
+            Dict[str, From],
+            odin.StringField,
+            odin.EnumField,
+        ),
+        (
+            Dict[str, Any],
+            odin.StringField,
+            AnyField,
+        ),
+    ),
+)
+def test_resolve_field_from_sub_scripted_type__where_field_can_be_resolved_to_typed_dict(
+    type_, expected_key_field, expected_value_field
+):
+    options = type_resolution.Options()
+    origin = type_resolution.get_origin(type_)
+
+    type_resolution._resolve_field_from_sub_scripted_type(origin, options, type_)
+
+    assert options.field_type is odin.TypedDictField
+    assert isinstance(options.field_args["key_field"], expected_key_field)
+    assert isinstance(options.field_args["value_field"], expected_value_field)
+
+
+@pytest.mark.parametrize(
     "type_",
     (
         Union[int, float],
         Tuple[int, float],
+        Tuple,
     ),
 )
 def test_resolve_field_from_sub_scripted_type__where_type_is_unsupported(type_):
@@ -311,3 +364,18 @@ def test_process_attribute__where_assumed_valid(
 
     assert isinstance(actual, expected_type)
     assert actual.default == expected_default
+
+
+class TestSpecialFields:
+    @pytest.mark.parametrize(
+        "target, value, expected",
+        (
+            (type_resolution.AnyField(), None, None),
+            (type_resolution.AnyField(), "abc", "abc"),
+            (type_resolution.AnyField(), 123, 123),
+        ),
+    )
+    def test_to_python(self, target, value, expected):
+        actual = target.to_python(value)
+
+        assert actual == expected
