@@ -2,12 +2,7 @@ from odin.utils import getmeta
 
 
 def generate_mapping_cache_name(from_obj, to_obj):
-    return "{}.{} > {}.{}".format(
-        from_obj.__module__,
-        from_obj.__name__,
-        to_obj.__module__,
-        to_obj.__name__,
-    )
+    return f"{from_obj.__module__}.{from_obj.__name__} > {to_obj.__module__}.{to_obj.__name__}"
 
 
 class ResourceCache:
