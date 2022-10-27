@@ -2,7 +2,6 @@ import arrow
 import datetime
 import pytest
 
-from odin.datetimeutil import utc
 from odin.exceptions import ValidationError
 
 try:
@@ -31,7 +30,9 @@ else:
                 ),
                 (
                     {},
-                    datetime.datetime(2013, 11, 24, 18, 43, 0, 0, utc),
+                    datetime.datetime(
+                        2013, 11, 24, 18, 43, 0, 0, datetime.timezone.utc
+                    ),
                     arrow.Arrow(2013, 11, 24, 18, 43),
                 ),
             ),

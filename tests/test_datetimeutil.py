@@ -5,15 +5,6 @@ from odin import datetimeutil
 
 
 class TestTimezones:
-    def test_utc(self):
-        assert datetime.timedelta(0) == datetimeutil.utc.utcoffset(
-            datetime.datetime.now()
-        )
-        assert "UTC" == datetimeutil.utc.tzname(datetime.datetime.now())
-        assert datetime.timedelta(0) == datetimeutil.utc.dst(datetime.datetime.now())
-        assert "UTC" == str(datetimeutil.utc)
-        assert "<timezone: UTC>" == repr(datetimeutil.utc)
-
     def test_fixed_timezone(self):
         target = datetimeutil.FixedTimezone.from_hours_minutes(10, 30)
 

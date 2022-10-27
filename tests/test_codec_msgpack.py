@@ -3,7 +3,6 @@ import datetime
 import os
 from io import BytesIO
 
-from odin.datetimeutil import utc
 from odin.codecs import msgpack_codec
 from .resources import *
 
@@ -51,7 +50,7 @@ class TestMsgPackCodec:
             genre="sci-fi",
             authors=[Author(name="Iain M. Banks")],
             publisher=Publisher(name="Macmillan"),
-            published=[datetime.datetime(1987, 1, 1, tzinfo=utc)],
+            published=[datetime.datetime(1987, 1, 1, tzinfo=datetime.timezone.utc)],
         )
 
         fp = BytesIO()

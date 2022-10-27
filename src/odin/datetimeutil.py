@@ -17,28 +17,8 @@ LOCAL_DST_OFFSET = (
 LOCAL_DST_DIFF = LOCAL_DST_OFFSET - LOCAL_STD_OFFSET
 
 
-class UTC(datetime.tzinfo):
-    """
-    UTC timezone.
-    """
-
-    def utcoffset(self, _):
-        return ZERO
-
-    def tzname(self, _):
-        return "UTC"
-
-    def dst(self, _):
-        return ZERO
-
-    def __str__(self):
-        return "UTC"
-
-    def __repr__(self):
-        return f"<timezone: {self}>"
-
-
-utc = UTC()
+# Keep for backwards compatibility
+utc = datetime.timezone.utc
 
 
 class LocalTimezone(datetime.tzinfo):

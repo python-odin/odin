@@ -39,8 +39,7 @@ class DatetimeIsoFormat:
     def __init__(self, default_timezone=datetimeutil.local):
         self.default_timezone = default_timezone
 
-    def __call__(self, value):
-        # type: (Union[datetime.time, datetime.datetime]) -> str
+    def __call__(self, value: Union[datetime.time, datetime.datetime]) -> str:
         if value.tzinfo is None:
             value = value.replace(tzinfo=self.default_timezone)
         return value.isoformat()
@@ -48,16 +47,6 @@ class DatetimeIsoFormat:
 
 TimeIsoFormat = DatetimeIsoFormat
 
-
-def datetime_iso_format(value: datetime.datetime) -> str:
-    """
-    Serialise a datetime.datetime to ISO string format.
-    """
-    return value.isoformat()
-
-
-def time_iso_format(value: datetime.time) -> str:
-    """
-    Serialise a datetime.time to ISO string format.
-    """
-    return value.isoformat()
+# Mapping for compatibility
+datetime_iso_format = datetime.datetime.isoformat
+time_iso_format = datetime.time.isoformat

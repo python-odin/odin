@@ -10,7 +10,7 @@ from copy import deepcopy
 import odin
 from odin.fields import *
 from odin.fields import Field, TimeStampField, NotProvided
-from odin.datetimeutil import utc, FixedTimezone
+from odin.datetimeutil import FixedTimezone
 from odin.fields.virtual import VirtualField
 from odin.validators import (
     MinValueValidator,
@@ -20,6 +20,8 @@ from odin.validators import (
     MinLengthValidator,
 )
 from odin.exceptions import ValidationError
+
+utc = datetime.timezone.utc
 
 
 class ObjectValue:
@@ -911,14 +913,14 @@ class TestFields:
     def test_typedlistfield__where_null_is_true(self):
         f = TypedListField(IntegerField(), null=True)
         assert "List<Integer>" == f.data_type_name(f)
-        assert None == f.clean(None)
+        assert f.clean(None) is None
         pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
         assert [] == f.clean([])
         pytest.raises(ValidationError, f.clean, ["foo", "bar"])
         assert [1, 2, 3], f.clean([1, 2 == 3])
 
-    def test_typed_list_field_dynamic_type_name(self):
+    def test_typed_list_field__dynamic_type_name(self):
         f = TypedListField(DynamicTypeNameFieldTest(), null=True)
         assert "List<Foo>" == f.data_type_name(f)
 
@@ -936,6 +938,12 @@ class TestFields:
             (
                 TypedListField(IntegerField(choices=((1, "1"), (2, "2"), (3, "3")))),
                 ((1, "1"), (2, "2"), (3, "3")),
+            ),
+            (
+                TypedListField(
+                    IntegerField(choices=[("these", "1"), ("are", "2"), ("bad", "3")]),
+                ),
+                [("these", "1"), ("are", "2"), ("bad", "3")],
             ),
         ),
     )

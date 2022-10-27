@@ -1,6 +1,5 @@
 import datetime
 from odin.codecs import dict_codec
-from odin.datetimeutil import utc
 from .resources import *
 
 
@@ -80,7 +79,7 @@ class TestDictCodec:
             genre="sci-fi",
             authors=[Author(name="Iain M. Banks")],
             publisher=Publisher(name="Macmillan"),
-            published=[datetime.datetime(1987, 1, 1, tzinfo=utc)],
+            published=[datetime.datetime(1987, 1, 1, tzinfo=datetime.timezone.utc)],
         )
 
         d = dict_codec.dump(in_resource)

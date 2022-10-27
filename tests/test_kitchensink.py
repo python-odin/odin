@@ -7,7 +7,6 @@ import pytest
 
 from odin.codecs import json_codec
 from odin import exceptions
-from odin.datetimeutil import utc
 from ._helpers import assertJSONEqual
 from .resources import *
 
@@ -24,7 +23,7 @@ class TestKitchenSink:
             rrp=19.50,
             genre="sci-fi",
             fiction=True,
-            published=datetime.datetime(1987, 1, 1, tzinfo=utc),
+            published=datetime.datetime(1987, 1, 1, tzinfo=datetime.timezone.utc),
         )
         book.publisher = Publisher(name="Macmillan")
         book.authors.append(Author(name="Iain M. Banks"))
