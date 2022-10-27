@@ -15,6 +15,7 @@
 - New fields for builtin Python types
   - odin.PathField
   - odin.RegexField
+- Use builtin datatime.timezone.utc instead of custom UTC instance
 
 1.8.1
 =====
