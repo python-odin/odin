@@ -5,6 +5,14 @@ import re
 import uuid
 from typing import Any, Sequence, Dict, Type, Union, get_origin, List
 
+try:
+    # Handle the change in typing between 3.8 and later releases
+    from typing import T, KT, VT
+except ImportError:
+    T = None
+    KT = None
+    VT = None
+
 import odin
 from .special_fields import AnyField
 from .type_aliases import Validator, Choices, Email, IPv4, IPv6, IPv46, Url
@@ -16,6 +24,8 @@ from ..fields import (
     NotProvided,
     TypedListField,
     TypedDictField,
+    ListField,
+    DictField,
 )
 from ..resources import ResourceBase
 
@@ -123,6 +133,7 @@ SIMPLE_TYPE_MAP = {
     datetime.time: odin.TimeField,
     Url: odin.UrlField,
     uuid.UUID: odin.UUIDField,
+    Any: AnyField,  # For Python 3.11
 }
 
 
@@ -164,9 +175,14 @@ def _resolve_list_from_sub_scripted_type(args: Sequence[Any], options: Options):
     options.field_args["default"] = list
 
     (field,) = args
-    if field is not Any and issubclass(field, ResourceBase):
+    # Required for Python 3.8
+    if field is T:
+        options.field_type = ListField
+
+    elif field is not Any and issubclass(field, ResourceBase):
         options.field_args["resource"] = field
         options.field_type = ListOf
+
     else:
         options.field_args["field"] = process_attribute(field)
         options.field_type = TypedListField
@@ -179,10 +195,15 @@ def _resolve_dict_from_sub_scripted_type(args: Sequence[Any], options: Options):
     options.field_args["default"] = dict
 
     key_field, value_field = args
-    # Use get origin to determine value is also sub-scripted. This is
+    # Required for Python 3.8
+    if key_field is KT and value_field is VT:
+        options.field_type = DictField
+
+    # Use get origin to determine if value is also sub-scripted. This is
     # required as issubclass cannot be used on sub-scripted fields.
-    origin = get_origin(value_field)
-    if not (origin or value_field is Any) and issubclass(value_field, ResourceBase):
+    elif not (get_origin(value_field) or value_field is Any) and issubclass(
+        value_field, ResourceBase
+    ):
         options.field_args["resource"] = value_field
         options.field_type = DictOf
 

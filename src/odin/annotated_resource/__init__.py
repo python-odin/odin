@@ -61,7 +61,7 @@ def _new_meta_instance(
     if new_meta.type_field is NotProvided:
         new_meta.type_field = DEFAULT_TYPE_FIELD
 
-    # Key field is inherited
+    # Key field names is inherited
     if base_meta and new_meta.key_field_names is None:
         new_meta.key_field_names = base_meta.key_field_names
 
