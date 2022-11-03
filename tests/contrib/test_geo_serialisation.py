@@ -1,8 +1,13 @@
-# -*- coding: utf-8 -*-
 import odin
 from odin.contrib.geo import (
-    LatitudeField, LongitudeField, LatLngField, PointField,
-    latitude, longitude, latlng, point
+    LatitudeField,
+    LongitudeField,
+    LatLngField,
+    PointField,
+    latitude,
+    longitude,
+    latlng,
+    point,
 )
 from odin.codecs import json_codec
 
@@ -23,7 +28,7 @@ class GeoResource(odin.Resource):
     point_b = PointField()
 
 
-class TestGeoSerialisation(object):
+class TestGeoSerialisation:
     def test_serialise(self):
         resource = GeoResource(
             lat_a=None,
@@ -35,14 +40,13 @@ class TestGeoSerialisation(object):
             latlng_a=None,
             latlng_b=latlng(23.67, -123.56),
             point_a=None,
-            point_b=point(66.66, -33.33)
+            point_b=point(66.66, -33.33),
         )
 
         actual = json_codec.dumps(resource, sort_keys=True)
 
         assert (
-            actual ==
-            '{"$": "odin.tests.GeoResource", '
+            actual == '{"$": "odin.tests.GeoResource", '
             '"lat_a": null, "lat_b": 23.67, "lat_c": -23.67, '
             '"latlng_a": null, "latlng_b": [23.67, -123.56], '
             '"lng_a": null, "lng_b": 123.56, "lng_c": -123.56, '

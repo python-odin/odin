@@ -1,18 +1,24 @@
-name: Python package
+name: Run Tests
 
 on:
   push:
     branches: [ development, feature/*, bugfix/*, release/* ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
+      fail-fast: true
       matrix:
-        python-version: [2.7, 3.6, 3.7, 3.8, 3.9]
+        python-version: [3.8, 3.9, "3.10", "3.11"]
+        experimental: [false]
+        include:
+          - python-version: "3.11-dev"
+            experimental: true
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
 
@@ -24,11 +30,16 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip poetry
-        poetry install -E toml -E yaml -E arrow -E msgpack --no-root
+        poetry install --all-extras --no-root
 
     - name: Test with pytest
       run: |
-        poetry run pytest --junit-xml=reports/xunit-result-${{ matrix.python-version }}.xml --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml tests
+        poetry run pytest \
+          --cov=odin \
+          --cov-branch \
+          --junit-xml=reports/xunit-result-${{ matrix.python-version }}.xml \
+          --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml \
+          tests
 
     - name: Analyze with SonarCloud
       uses: sonarsource/sonarcloud-github-action@master

@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
 import os
-import six
+from io import StringIO
+
 import pytest
 import odin
 import odin.exceptions
@@ -13,11 +13,15 @@ class Book(odin.Resource):
     title = odin.StringField(name="Title")
     num_pages = odin.IntegerField(name="Num Pages")
     rrp = odin.FloatField(name="RRP")
-    genre = odin.StringField(name="Genre", choices=(
-        ('sci-fi', 'Science Fiction'),
-        ('fantasy', 'Fantasy'),
-        ('others', 'Others'),
-    ), null=True)
+    genre = odin.StringField(
+        name="Genre",
+        choices=(
+            ("sci-fi", "Science Fiction"),
+            ("fantasy", "Fantasy"),
+            ("others", "Others"),
+        ),
+        null=True,
+    )
     author = odin.StringField(name="Author")
     publisher = odin.StringField(name="Publisher")
     language = odin.StringField(name="Language", null=True)
@@ -26,116 +30,132 @@ class Book(odin.Resource):
         self.extras = attrs
 
     def __eq__(self, other):
-        return (self.title == other.title
-                and self.num_pages == other.num_pages
-                and self.rrp == other.rrp
-                and (self.genre == other.genre
-                     or (not self.genre and not other.genre)
-                     )
-                and self.author == other.author
-                and self.publisher == other.publisher
-                and (self.language == other.language
-                     or (not self.language and not other.language)))
+        return (
+            self.title == other.title
+            and self.num_pages == other.num_pages
+            and self.rrp == other.rrp
+            and (self.genre == other.genre or (not self.genre and not other.genre))
+            and self.author == other.author
+            and self.publisher == other.publisher
+            and (
+                self.language == other.language
+                or (not self.language and not other.language)
+            )
+        )
 
 
-class TestCsvResourceReader(object):
-    def test_valid(self):
-        with open(os.path.join(FIXTURE_PATH_ROOT, "library-valid.csv")) as f:
-            books = [book for book in csv_codec.ResourceReader(f, Book)]
-
-        assert 6 == len(books)
-        assert "Consider Phlebas" == books[0].title
-
-    def test_invalid(self):
-        with open(os.path.join(FIXTURE_PATH_ROOT, "library-invalid.csv")) as f:
-            with pytest.raises(odin.exceptions.ValidationError):
-                books = [book for book in csv_codec.ResourceReader(f, Book)]
-
-
-class TestReader(object):
+class TestReader:
     def open_fixture(self, file_name):
         return open(os.path.join(FIXTURE_PATH_ROOT, file_name))
 
-    @pytest.mark.parametrize('fixture options'.split(), (
-        ('library-valid.csv', dict(includes_header=True)),
-        ('library-header-alt-order.csv', dict(includes_header=True)),
-        ('library-last-bad.csv', dict(includes_header=True)),
-        ('library-no-header.csv', dict(includes_header=False)),
-        ('library-lower-header.csv', dict(includes_header=True,
-                                          ignore_header_case=True)),
-        ('library-valid.csv', dict(includes_header=True, strict_fields=True)),
-    ))
+    @pytest.mark.parametrize(
+        "fixture options".split(),
+        (
+            ("library-valid.csv", dict(includes_header=True)),
+            ("library-header-alt-order.csv", dict(includes_header=True)),
+            ("library-last-bad.csv", dict(includes_header=True)),
+            ("library-no-header.csv", dict(includes_header=False)),
+            (
+                "library-lower-header.csv",
+                dict(includes_header=True, ignore_header_case=True),
+            ),
+            ("library-valid.csv", dict(includes_header=True, strict_fields=True)),
+        ),
+    )
     def test_valid_libraries(self, fixture, options):
         with self.open_fixture(fixture) as f:
             target = csv_codec.reader(f, Book, **options)
             library = list(target)
         assert len(library) == 6
         assert [book.title for book in library] == [
-            'Consider Phlebas',
-            'The Moonstone',
-            'Casino Royale',
-            'A Clockwork Orange',
-            'The Naked God',
-            'Equal Rites',
+            "Consider Phlebas",
+            "The Moonstone",
+            "Casino Royale",
+            "A Clockwork Orange",
+            "The Naked God",
+            "Equal Rites",
         ]
         assert [book.num_pages for book in library] == [
-            471, 462, 181, 139, 1256, 282,
+            471,
+            462,
+            181,
+            139,
+            1256,
+            282,
         ]
         assert [book.rrp for book in library] == [
-            19.5, 17.95, 9.95, 9.95, 19.95, 16.95,
+            19.5,
+            17.95,
+            9.95,
+            9.95,
+            19.95,
+            16.95,
         ]
         genres = [book.genre for book in library]
-        assert (
-            genres == ['sci-fi', 'others', 'others', 'others', 'sci-fi', 'fantasy']
-            or
-            genres == [None, None, None, None, None, None]
-        )
+        assert genres == [
+            "sci-fi",
+            "others",
+            "others",
+            "others",
+            "sci-fi",
+            "fantasy",
+        ] or genres == [None, None, None, None, None, None]
         assert [book.author for book in library] == [
-            'Iain M. Banks',
-            'Wilkie Collins',
-            'Ian Fleming',
-            'Anthony Burgess',
-            'Peter F. Hamilton',
-            'Terry Pratchett',
+            "Iain M. Banks",
+            "Wilkie Collins",
+            "Ian Fleming",
+            "Anthony Burgess",
+            "Peter F. Hamilton",
+            "Terry Pratchett",
         ]
         assert [book.publisher for book in library] == [
-            'Macmillan',
-            'Harper & Row',
-            'Penguin Books',
-            'Penguin Books',
-            'Macmillan',
-            'Corgi Books',
+            "Macmillan",
+            "Harper & Row",
+            "Penguin Books",
+            "Penguin Books",
+            "Macmillan",
+            "Corgi Books",
         ]
         assert [book.language for book in library] == [
-            'English', '', 'English', '', 'English', 'English'
+            "English",
+            "",
+            "English",
+            "",
+            "English",
+            "English",
         ]
 
     def test_extra_fields(self):
-        with self.open_fixture('library-header-alt-order.csv') as f:
+        with self.open_fixture("library-header-alt-order.csv") as f:
             target = csv_codec.reader(f, Book, includes_header=True)
             library = list(target)
 
-        assert all(book.extras == ['Other field'] for book in library)
+        assert all(book.extras == ["Other field"] for book in library)
 
     def test_headers_not_strict(self):
-        with self.open_fixture('library-header-alt-order.csv') as f:
+        with self.open_fixture("library-header-alt-order.csv") as f:
             with pytest.raises(odin.exceptions.CodecDecodeError) as result:
                 csv_codec.reader(f, Book, includes_header=True, strict_fields=True)
 
-            assert str(result.value) == 'Extra unknown fields: Else'
+            assert str(result.value) == "Extra unknown fields: Else"
 
     def test_default_empty_value_is_none(self):
-        with self.open_fixture('library-valid.csv') as f:
+        with self.open_fixture("library-valid.csv") as f:
             target = csv_codec.reader(f, Book, includes_header=True)
             target.default_empty_value = None
             library = list(target)
 
         assert [book.language for book in library] == [
-            'English', None, 'English', None, 'English', 'English'
+            "English",
+            None,
+            "English",
+            None,
+            "English",
+            "English",
         ]
 
     def test_error(self):
-        with self.open_fixture('library-invalid.csv') as f:
+        with self.open_fixture("library-invalid.csv") as f:
             target = csv_codec.reader(f, Book, includes_header=True)
 
             with pytest.raises(odin.exceptions.ValidationError):
@@ -147,8 +167,10 @@ class TestReader(object):
         def error_handler(_, idx):
             errors.append(idx)
 
-        with self.open_fixture('library-invalid.csv') as f:
-            target = csv_codec.reader(f, Book, includes_header=True, error_callback=error_handler)
+        with self.open_fixture("library-invalid.csv") as f:
+            target = csv_codec.reader(
+                f, Book, includes_header=True, error_callback=error_handler
+            )
             library = list(target)
 
         assert len(library) == 4
@@ -156,34 +178,39 @@ class TestReader(object):
         assert errors == [3, 5]
 
     def test_error_handler_returns_false(self):
-        with self.open_fixture('library-invalid.csv') as f:
-            target = csv_codec.reader(f, Book, includes_header=True, error_callback=lambda v, i: False)
+        with self.open_fixture("library-invalid.csv") as f:
+            target = csv_codec.reader(
+                f, Book, includes_header=True, error_callback=lambda v, i: False
+            )
 
             with pytest.raises(odin.exceptions.ValidationError):
                 list(target)
 
     def test_dumps(self):
-        with self.open_fixture('library-header-alt-order.csv') as f:
+        with self.open_fixture("library-header-alt-order.csv") as f:
             target = csv_codec.reader(f, Book, includes_header=True)
             expected_library = list(target)
 
-        actual_csv = six.StringIO(csv_codec.dumps(expected_library, include_header=True))
+        actual_csv = StringIO(csv_codec.dumps(expected_library, include_header=True))
 
         actual_library = list(csv_codec.reader(actual_csv, Book, includes_header=True))
 
-        assert sorted(actual_library, key=lambda x: x.num_pages) == sorted(expected_library, key=lambda x: x.num_pages)
+        assert sorted(actual_library, key=lambda x: x.num_pages) == sorted(
+            expected_library, key=lambda x: x.num_pages
+        )
 
-    def test_dump(self,
-                  tmpdir):
-        with self.open_fixture('library-header-alt-order.csv') as f:
+    def test_dump(self, tmpdir):
+        with self.open_fixture("library-header-alt-order.csv") as f:
             target = csv_codec.reader(f, Book, includes_header=True)
             expected_library = list(target)
 
-        temp_csv = os.path.join(str(tmpdir), 'dump_test.csv')
-        with open(temp_csv, 'w') as f:
+        temp_csv = os.path.join(str(tmpdir), "dump_test.csv")
+        with open(temp_csv, "w") as f:
             csv_codec.dump(f, expected_library, include_header=True)
 
-        with open(temp_csv, 'r') as f:
+        with open(temp_csv, "r") as f:
             actual_library = list(csv_codec.reader(f, Book, includes_header=True))
 
-        assert sorted(actual_library, key=lambda x: x.num_pages) == sorted(expected_library, key=lambda x: x.num_pages)
+        assert sorted(actual_library, key=lambda x: x.num_pages) == sorted(
+            expected_library, key=lambda x: x.num_pages
+        )

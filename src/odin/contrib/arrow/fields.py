@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import arrow
 import datetime
 
@@ -6,7 +5,7 @@ from odin import exceptions, datetimeutil
 from odin.fields import Field
 from odin.validators import EMPTY_VALUES
 
-__all__ = ('ArrowField',)
+__all__ = ("ArrowField",)
 
 
 class ArrowField(Field):
@@ -22,8 +21,9 @@ class ArrowField(Field):
     system timezone.
 
     """
+
     default_error_messages = {
-        'invalid': "Not a valid datetime string.",
+        "invalid": "Not a valid datetime string.",
     }
     data_type_name = "ISO-8601 DateTime"
 
@@ -47,7 +47,9 @@ class ArrowField(Field):
                 return arrow.Arrow.fromdatetime(value, default_timezone)
 
         try:
-            return arrow.Arrow.fromdatetime(datetimeutil.parse_iso_datetime_string(value, default_timezone))
+            return arrow.Arrow.fromdatetime(
+                datetimeutil.parse_iso_datetime_string(value, default_timezone)
+            )
         except ValueError:
             pass
 
@@ -55,5 +57,5 @@ class ArrowField(Field):
             return arrow.Arrow.fromdate(datetimeutil.parse_iso_date_string(value))
         except ValueError:
             pass
-        msg = self.error_messages['invalid']
+        msg = self.error_messages["invalid"]
         raise exceptions.ValidationError(msg)

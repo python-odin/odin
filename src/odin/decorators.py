@@ -1,11 +1,18 @@
-# -*- coding: utf-8 -*-
 """
 Some helpful decorators.
 """
-from odin.resources import build_object_graph
+from typing import Dict, Any, Type
+
+from odin.resources import build_object_graph, ResourceBase
 
 
-def returns_resource(func=None, codec=None, resource=None, full_clean=True, codec_opts=None):
+def returns_resource(
+    func=None,
+    codec=None,
+    resource: Type[ResourceBase] = None,
+    full_clean: bool = True,
+    codec_opts: Dict[str, Any] = None,
+):
     """
     Apply to a function that returns data that can be converted into a resource (or resources).
 
@@ -14,6 +21,7 @@ def returns_resource(func=None, codec=None, resource=None, full_clean=True, code
 
     Note that this decorator can throw ``ValidationError`` exceptions.
 
+    :param func: Function being wrapped
     :param codec: Codec that should be used to convert data.
     :param resource: Resource to convert to (only required if the data does not contain a resource identifier).
     :param full_clean: Perform a full clean on the data post conversion.
@@ -21,15 +29,17 @@ def returns_resource(func=None, codec=None, resource=None, full_clean=True, code
 
     :return: Resource, Array of resources or None.
     """
+
     def outer(func):  # noqa
         def inner(*args, **kwargs):
             data = func(*args, **kwargs)
             if codec:
                 opts = codec_opts or {}
-                opts.setdefault('full_clean', full_clean)
+                opts.setdefault("full_clean", full_clean)
                 return codec.loads(data, resource, **opts)
             else:
                 return build_object_graph(data, resource, full_clean)
+
         return inner
 
     return outer(func) if func else outer

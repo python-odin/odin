@@ -1,19 +1,24 @@
-# -*- coding: utf-8 -*-
-import six
+import abc
+import operator
+from typing import Callable, Iterable, Any, Sequence, Union
+
 from .exceptions import InvalidPathError
+from .resources import ResourceBase
 from .traversal import TraversalPath
 
 
-class FilterAtom(object):
+class FilterAtom(abc.ABC):
     """
     Base filter statement
     """
 
-    def __name__(self):
-        return self.__class__.__name__
+    __slots__ = ()
 
-    def __call__(self, resource):
-        raise NotImplementedError()
+    @abc.abstractmethod
+    def __call__(self, resource: ResourceBase) -> bool:
+        """
+        Call filter with a resource
+        """
 
     def any(self, collection):
         return any(self(r) for r in collection)
@@ -23,8 +28,14 @@ class FilterAtom(object):
 
 
 class FilterChain(FilterAtom):
+    """
+    Collection of filter atoms to match resources
+    """
+
+    __slots__ = ("_atoms",)
+
     operator_name = ""
-    check_operator = all
+    check_operator: Callable[[Iterable[bool]], bool] = all
 
     def __init__(self, *atoms):
         self._atoms = list(atoms)
@@ -38,43 +49,66 @@ class FilterChain(FilterAtom):
         elif isinstance(other, FilterComparison):
             self._atoms.append(other)
             return self
-        raise TypeError("{} not supported for this operation".format(other))
+        raise TypeError(f"{other} not supported for this operation")
 
-    def __call__(self, resource):
+    def __call__(self, resource: ResourceBase) -> bool:
         return self.check_operator(a(resource) for a in self._atoms)
 
     def __str__(self):
         if not self._atoms:
             return ""
-        pin = " {} ".format(self.operator_name)
-        return "({})".format(pin.join(str(a) for a in self._atoms))
+        pin = f" {self.operator_name} "
+        return f"({pin.join(str(a) for a in self._atoms)})"
 
 
 class And(FilterChain):
+    """
+    Chain of filters we all must match; logic AND
+    """
+
+    __slots__ = ()
+
     operator_name = "AND"
     check_operator = all
 
 
 class Or(FilterChain):
+    """
+    Chain of filters we any can match; logic OR
+    """
+
+    __slots__ = ()
+
     operator_name = "OR"
     check_operator = any
 
 
-class FilterComparison(FilterAtom):
+class FilterComparison(FilterAtom, abc.ABC):
     """
     Base class for filter operator atoms
     """
 
+    __slots__ = ("field", "value", "operation")
+
     # Symbol for this operator and alternatives. The first item is used when generating
     # a representation of the filter, the others are used for parsing queries.
-    operator_symbols = []
+    operator_symbols: Sequence[str] = []
+    compare_operator: Callable[[Any, Any], bool]
 
-    def __init__(self, field, value, operation=None):
+    def __init__(
+        self,
+        field: Union[TraversalPath, str],
+        value: Any,
+        operation: Callable[[Any], Any] = None,
+    ):
         self.field = TraversalPath.parse(field)
         self.value = value
         self.operation = operation
 
-    def __call__(self, resource):
+    def __call__(self, resource: ResourceBase) -> bool:
+        """
+        Call to the filter to compare a resource
+        """
         try:
             value = self.field.get_value(resource)
         except InvalidPathError:
@@ -82,62 +116,81 @@ class FilterComparison(FilterAtom):
         else:
             if self.operation:
                 value = self.operation(value)
-            return self.compare(value)
+            return self.compare_operator(value, self.value)
 
     def __str__(self):
         value = self.value
-        if isinstance(self.value, six.string_types):
-            value = "{!r}".format(value)
+        if isinstance(self.value, str):
+            value = f"{value!r}"
 
         if self.operation:
             op_name = getattr(self.operation, "name", self.operation.__name__)
-            return "{}({}) {} {}".format(
-                op_name, self.field, self.operator_symbols[0], value
-            )
+            return f"{op_name}({self.field}) {self.operator_symbols[0]} {value}"
         else:
-            return "{} {} {}".format(self.field, self.operator_symbols[0], value)
-
-    def compare(self, value):
-        raise NotImplementedError()
+            return f"{self.field} {self.operator_symbols[0]} {value}"
 
 
 class Equal(FilterComparison):
-    operator_symbols = ("==", "=", "eq")
+    """
+    Equal filter operator
+    """
 
-    def compare(self, value):
-        return value == self.value
+    __slots__ = ()
+
+    operator_symbols = ("==", "=", "eq")
+    compare_operator = operator.eq
 
 
 class NotEqual(FilterComparison):
-    operator_symbols = ("!=", "<>", "neq")
+    """
+    Not equal filter operator
+    """
 
-    def compare(self, value):
-        return value != self.value
+    __slots__ = ()
+
+    operator_symbols = ("!=", "<>", "neq")
+    compare_operator = operator.ne
 
 
 class LessThan(FilterComparison):
-    operator_symbols = ("<", "lt")
+    """
+    Less than filter operator
+    """
 
-    def compare(self, value):
-        return value < self.value
+    __slots__ = ()
+
+    operator_symbols = ("<", "lt")
+    compare_operator = operator.lt
 
 
 class LessThanOrEqual(FilterComparison):
-    operator_symbols = ("<=", "lte")
+    """
+    Less than or equal filter operator
+    """
 
-    def compare(self, value):
-        return value <= self.value
+    __slots__ = ()
+
+    operator_symbols = ("<=", "lte")
+    compare_operator = operator.le
 
 
 class GreaterThan(FilterComparison):
-    operator_symbols = (">", "gt")
+    """
+    Greater than filter operator
+    """
 
-    def compare(self, value):
-        return value > self.value
+    __slots__ = ()
+
+    operator_symbols = (">", "gt")
+    compare_operator = operator.gt
 
 
 class GreaterThanOrEqual(FilterComparison):
-    operator_symbols = (">=", "gte")
+    """
+    Greater than or equal filter operator
+    """
 
-    def compare(self, value):
-        return value >= self.value
+    __slots__ = ()
+
+    operator_symbols = (">=", "gte")
+    compare_operator = operator.ge

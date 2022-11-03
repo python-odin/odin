@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
 def sum_fields(*field_values):
     """
     Return a sum of fields
@@ -12,7 +9,7 @@ def sum_fields(*field_values):
     return sum(field_values)
 
 
-class CatFields(object):
+class JoinFields:
     """
     Helper for combining multiple fields
     """
@@ -26,10 +23,12 @@ class CatFields(object):
         return self.sep.join(field_values)
 
 
-cat_fields = CatFields
+join_fields = JoinFields
+# Backwards compatibility
+cat_fields = CatFields = JoinFields
 
 
-class SplitField(object):
+class SplitField:
     """
     Helper for splitting a field into multiple fields.
     """
@@ -39,7 +38,7 @@ class SplitField(object):
         "max_split",
     )
 
-    def __init__(self, sep=None, max_split=None):
+    def __init__(self, sep: str = None, max_split: int = None):
         self.sep = sep
         self.max_split = max_split
 
@@ -53,7 +52,7 @@ class SplitField(object):
 split_field = SplitField
 
 
-class ApplyMapping(object):
+class ApplyMapping:
     """
     Helper for applying a mapper.
 
@@ -83,7 +82,7 @@ class ApplyMapping(object):
 MapDictAs = MapListOf = ApplyMapping
 
 
-class NoOpMapper(object):
+class NoOpMapper:
     """
     Helper that provides the mapper interface performs no operation on the object.
 

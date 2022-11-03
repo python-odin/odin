@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division
-
 import math
-import six
 
 __all__ = ("latitude", "longitude", "latlng", "point")
 
@@ -53,14 +49,12 @@ class latitude(float):  # NoQA
     def __new__(cls, x):
         lat = float.__new__(cls, x)
         if lat > 90.0 or lat < -90.0:
-            raise ValueError("not in range -90.0 -> 90.0: '{}'".format(x))
+            raise ValueError(f"not in range -90.0 -> 90.0: '{x}'")
         return lat
 
-    def __unicode__(self):
-        result = u"{:02d}°{:02d}'{:02f}\"".format(*to_dms(self, True))
-        return result + (u"S" if self < 0 else u"N")
-
-    __str__ = __unicode__ if six.PY3 else float.__str__
+    def __str__(self):
+        result = "{:02d}°{:02d}'{:02f}\"".format(*to_dms(self, True))
+        return result + ("S" if self < 0 else "N")
 
 
 class longitude(float):  # NoQA
@@ -74,11 +68,9 @@ class longitude(float):  # NoQA
             raise ValueError("not in range -180.0 -> 180.0: '{}'".format(x))
         return lng
 
-    def __unicode__(self):
-        result = u"{:03d}°{:02d}'{:02f}\"".format(*to_dms(self, True))
-        return result + (u"W" if self < 0 else u"E")
-
-    __str__ = __unicode__ if six.PY3 else float.__str__
+    def __str__(self):
+        result = "{:03d}°{:02d}'{:02f}\"".format(*to_dms(self, True))
+        return result + ("W" if self < 0 else "E")
 
 
 class latlng(tuple):
@@ -93,7 +85,7 @@ class latlng(tuple):
         try:
             lat, lng = args
         except ValueError:
-            raise TypeError("latlng() takes 2 arguments ({} given)".format(len(args)))
+            raise TypeError(f"latlng() takes 2 arguments ({len(args)} given)")
         return tuple.__new__(cls, (latitude(lat), longitude(lng)))
 
     @property
@@ -105,12 +97,10 @@ class latlng(tuple):
         return self[1]
 
     def __repr__(self):
-        return "latlng({:02.4f}, {:03.4f})".format(*self)
+        return "latlng({!r}, {!r})".format(*self)
 
-    def __unicode__(self):
-        return u"(%s, %s)" % self
-
-    __str__ = __unicode__ if six.PY3 else tuple.__str__
+    def __str__(self):
+        return "({}, {})".format(*self)
 
 
 class point(tuple):
@@ -124,7 +114,7 @@ class point(tuple):
         if len(args) in (2, 3):
             return tuple.__new__(cls, (float(x) for x in args))
         else:
-            raise TypeError("point() takes 2-3 arguments ({} given)".format(len(args)))
+            raise TypeError(f"point() takes 2-3 arguments ({len(args)} given)")
 
     @property
     def x(self):

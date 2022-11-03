@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function
 from odin import exceptions
 from odin.fields import ScalarField
 from odin.validators import EMPTY_VALUES

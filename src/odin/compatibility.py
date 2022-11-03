@@ -5,7 +5,7 @@ import inspect
 import warnings
 
 
-def deprecated(message, category=DeprecationWarning):
+def deprecated(message: str, category=DeprecationWarning):
     """
     Decorator for marking classes/functions as being deprecated and are to be removed in the future.
 
@@ -20,9 +20,7 @@ def deprecated(message, category=DeprecationWarning):
 
             def wrapped_init(*args, **kwargs):
                 warnings.warn(
-                    "{} is deprecated and scheduled for removal. {}".format(
-                        obj.__name__, message
-                    ),
+                    f"{obj.__name__} is deprecated and scheduled for removal. {message}",
                     category=category,
                 )
                 return old_init(*args, **kwargs)
@@ -34,9 +32,7 @@ def deprecated(message, category=DeprecationWarning):
 
             def wrapped_func(*args, **kwargs):
                 warnings.warn(
-                    "{} is deprecated and scheduled for removal. {}".format(
-                        obj.__name__, message
-                    ),
+                    f"{obj.__name__} is deprecated and scheduled for removal. {message}",
                     category=category,
                 )
                 return obj(*args, **kwargs)

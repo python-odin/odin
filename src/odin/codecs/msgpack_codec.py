@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import datetime
 import uuid
 from typing import TextIO
@@ -31,7 +30,7 @@ class OdinPacker(msgpack.Packer):
 
     def __init__(self, include_virtual_fields=True, *args, **kwargs):
         kwargs.setdefault("default", self.default)
-        super(OdinPacker, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.include_virtual_fields = include_virtual_fields
 
     def default(self, o):
@@ -93,7 +92,7 @@ def dump(
     """
     Dump to a MessagePack encoded file.
 
-    :param include_virtual_fields: 
+    :param include_virtual_fields:
     :param resource: The root resource to dump to a MessagePack encoded file.
     :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :param fp: The file pointer that represents the output file.
@@ -110,7 +109,7 @@ def dumps(
     """
     Dump to a MessagePack encoded string.
 
-    :param include_virtual_fields: 
+    :param include_virtual_fields:
     :param resource: The root resource to dump to a MessagePack encoded file.
     :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :returns: MessagePack encoded string.

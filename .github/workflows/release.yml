@@ -28,9 +28,9 @@ jobs:
           rm -rf dist
           poetry build
           cd dist
-          echo "::set-output name=source::$(ls *.tar.gz)"
-          echo "::set-output name=wheel::$(ls *.whl)"
-          echo "::set-output name=version::$(poetry version -s)"
+          echo "source=$(ls *.tar.gz)" >> $GITHUB_OUTPUT
+          echo "wheel=$(ls *.whl)" >> $GITHUB_OUTPUT
+          echo "version=$(poetry version -s)" >> $GITHUB_OUTPUT
       
       - name: Create a Release
         id: create_release
@@ -62,6 +62,8 @@ jobs:
           asset_name: ${{ steps.build_package.outputs.source }}
           asset_content_type: application/x-tar+gzip
 
-      - name: Upload to PyPI
-        id: upload_to_pypi
-        run: poetry publish --username __token__ --password ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.5.0
+        with:
+            user: __token__
+            password: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}

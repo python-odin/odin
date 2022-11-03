@@ -1,14 +1,13 @@
-# -*- coding: utf-8 -*-
 from odin import exceptions
 
 
-class TestValidationException(object):
+class TestValidationException:
     def test_with_string(self):
         test_message = "Test message"
         target = exceptions.ValidationError(test_message)
 
         assert [test_message] == target.messages
-        assert not hasattr(target, 'message_dict')
+        assert not hasattr(target, "message_dict")
         assert "['Test message']" == str(target)
         assert "ValidationError(['Test message'])" == repr(target)
 
@@ -17,7 +16,7 @@ class TestValidationException(object):
         target = exceptions.ValidationError(test_message_list)
 
         assert test_message_list == target.messages
-        assert not hasattr(target, 'message_dict')
+        assert not hasattr(target, "message_dict")
         assert "['Test message', 'Test message 2']" == str(target)
         assert "ValidationError(['Test message', 'Test message 2'])" == repr(target)
 
@@ -29,14 +28,16 @@ class TestValidationException(object):
         target = exceptions.ValidationError(test_message_dict)
 
         assert test_message_dict == target.message_dict
-        assert [{
-            "Test Key 1": ["Test Message 1"],
-            "Test Key 2": ["Test Message 2"],
-        }] == target.messages
+        assert [
+            {
+                "Test Key 1": ["Test Message 1"],
+                "Test Key 2": ["Test Message 2"],
+            }
+        ] == target.messages
 
-        expected = {'Test Key 2': ['Test Message 2'], 'Test Key 1': ['Test Message 1']}
+        expected = {"Test Key 2": ["Test Message 2"], "Test Key 1": ["Test Message 1"]}
         assert expected == target.message_dict
-        assert(
-            "ValidationError({'Test Key 1': ['Test Message 1'], 'Test Key 2': ['Test Message 2']})" ==
-            repr(target)
+        assert (
+            "ValidationError({'Test Key 1': ['Test Message 1'], 'Test Key 2': ['Test Message 2']})"
+            == repr(target)
         )

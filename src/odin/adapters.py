@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
-
 from odin.utils import cached_property, field_iter_items, getmeta
 
 __all__ = ("ResourceAdapter",)
 
 
-class CurriedAdapter(object):
+class CurriedAdapter:
     """
     Curry wrapper for an Adapter to allow for pre-config of include/exclude and
     any other user defined arguments provided in kwargs.
@@ -23,7 +20,7 @@ class CurriedAdapter(object):
         return self.cls.apply_to(sources, **self.kwargs)
 
 
-class ResourceOptionsAdapter(object):
+class ResourceOptionsAdapter:
     """
     A lightweight wrapper for the *ResourceOptions* class that filters fields.
     """
@@ -81,7 +78,7 @@ class ResourceOptionsAdapter(object):
         return [f for f in self.fields if not f.is_attribute]
 
 
-class ResourceAdapter(object):
+class ResourceAdapter:
     """
     A lightweight wrapper that can be placed around a resource to filter out specific
     fields or to provide additional specific methods or calculated properties.
@@ -155,10 +152,10 @@ class ResourceAdapter(object):
         setattr(self._source, name, value)
 
     def __repr__(self):
-        return "<{}: {}>".format(self.__class__.__name__, self)
+        return f"<{self.__class__.__name__}: {self}>"
 
     def __str__(self):
-        return "{} resource adapter".format(self._meta.resource_name)
+        return f"{self._meta.resource_name} resource adapter"
 
     def to_dict(self, include_virtual=True):
         """

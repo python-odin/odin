@@ -1,3 +1,22 @@
+2.0
+===
+
+- Annotated Resources!
+  - Use annotations to define your resources including Aliases for Email, URL's and UUID's
+- Drop support for Python <3.8, officially tested on Python 3.8+
+- Removed a number of dependencies that where only required for Python <3.8 eg
+  (enum, six etc)
+- Removed deprecated features:
+  - odin.csv_codec.ResourceReader
+  - odin.serializers.DatetimeEcmaFormat
+- Improvements to typing and utilising of modern Python features
+- Fix bug in toml_codec that prevented the use of the include_type_field option.
+- Invalid choices now generate a ValueError exception
+- New fields for builtin Python types
+  - odin.PathField
+  - odin.RegexField
+- Use builtin datatime.timezone.utc instead of custom UTC instance
+
 1.8.1
 =====
 

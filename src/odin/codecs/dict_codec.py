@@ -1,5 +1,3 @@
-import six
-
 from odin import bases
 from odin import resources, ResourceAdapter
 from odin.utils import getmeta
@@ -8,7 +6,7 @@ from odin.utils import getmeta
 TYPE_SERIALIZERS = {}
 
 
-class OdinEncoder(object):
+class OdinEncoder:
     def __init__(self, include_virtual_fields=True, include_type_field=True):
         self.include_virtual_fields = include_virtual_fields
         self.include_type_field = include_type_field
@@ -67,7 +65,7 @@ def _make_encoder(_default):
         return [_encode(o) for o in lst]
 
     def _encode_dict(dct):
-        return {k: _encode(o) for k, o in six.iteritems(dct)}
+        return {k: _encode(o) for k, o in dct.items()}
 
     def _encode(o):
         if isinstance(o, (list, tuple)):
@@ -79,4 +77,5 @@ def _make_encoder(_default):
             if isinstance(o, (list, tuple, dict)):
                 return _encode(o)
             return o
+
     return _encode

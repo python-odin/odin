@@ -185,6 +185,7 @@ FloatField has two extra arguments:
 :py:attr:`FloatField.max_value`
     The maximum value of the field. The :py:attr:`max_value` value is enforced Odin’s validation.
 
+
 .. _field-boolean_field:
 
 BooleanField
@@ -192,6 +193,7 @@ BooleanField
 ``class BooleanField([**options])``
 
 A true/false field.
+
 
 .. _field-date_field:
 
@@ -201,6 +203,7 @@ DateField
 
 A :py:class:`date` field or date encoded in `ISO-8601 date string <https://en.wikipedia.org/wiki/ISO_8601#Dates>`_
 format.
+
 
 .. _field-time_field:
 
@@ -219,6 +222,7 @@ TimeField has an extra argument:
     be in the current system timezone. Similarly on decoding a time string the output :py:class:`time` will be converted
     to the current system timezone.
 
+
 .. _field-naive_time_field:
 
 NaiveTimeField
@@ -234,6 +238,7 @@ NaiveTimeField has an extra argument:
 :py:attr:`NaiveTimeField.ignore_timezone`
     Ignore any timezone information provided to the field during parsing. Will also actively strip out any timezone
     information when processing an existing time value.
+
 
 .. _field-date_time_field:
 
@@ -252,6 +257,7 @@ DateTimeField has an extra argument:
     are assumed to be in the current system timezone. Similarly on decoding a date time string the output
     :py:class:`datetime` will be converted to the current system timezone.
 
+
 .. _field-naive_date_time_field:
 
 NaiveDateTimeField
@@ -269,6 +275,7 @@ NaiveDateTimeField has an extra argument:
     Ignore any timezone information provided to the field during parsing. Will also actively strip out any timezone
     information when processing an existing datetime value.
 
+
 .. _field-http_date_time_field:
 
 HttpDateTimeField
@@ -276,6 +283,7 @@ HttpDateTimeField
 ``class HttpDateTimeField([**options])``
 
 A :py:class:`datetime` field or date encoded in ISO-1123 or HTTP datetime string format.
+
 
 .. _field-uuid_field:
 
@@ -287,13 +295,12 @@ A :py:class:`UUID` field.
 
 This field supports most accepted values for initializing a UUID except bytes_le.
 
+
 .. _field-enum_field:
 
 EnumField
 =========
 ``class EnumField(enum, [**options])``
-
-.. note:: This field requires Python >=3.4 or the *enum34* package.
 
 A :py:class:`enum.Enum` field that will convert to and from an enum and it's native type.
 
@@ -305,6 +312,49 @@ The :py:class:`enum.IntEnum` variant is also supported.
     Choices can be used with EnumField to specify a subset of options. A sequence
     of enum values should be used that will be converted to choice tuples by Odin.
 
+
+.. _field-path_field:
+
+PathField
+=========
+``class PathField([**options])``
+
+A :py:class:`pathlib.Path` field that will convert to and from a Path value and a string type.
+
+.. versionadded:: 2.0
+
+
+.. _field-url_field:
+
+UrlField
+========
+``class UrlField([**options])``
+
+Based on a string field, validates that the supplied value is a valid URL.
+
+
+.. _field-email_field:
+
+EmailField
+==========
+``class EmailField([**options])``
+
+Based on a string field, validates that the supplied value is a valid email address.
+
+
+.. _field-ip_field:
+
+IP Fields
+=========
+``class IPv4Field([**options])``
+``class IPv6Field([**options])``
+``class IPv46Field([**options])``
+
+Based on a string field, validates that the supplied value is a valid IP address.
+
+Use the ``IPv46Field`` to support either a v4 or v6 address.
+
+
 .. _field-array_field:
 
 ArrayField
@@ -314,6 +364,7 @@ ArrayField
 An array structure represented in Python by a *list* instance.
 
 .. note: The items in the array are not defined.
+
 
 .. _field-typed_array_field:
 
@@ -326,6 +377,7 @@ each entry in the array is validated against.
 
 :py:attr:`TypedArrayField.field`
     An instance of an odin field that is used to validate each entry in the array.
+
 
 .. _field-typed_dict_field:
 
@@ -341,6 +393,7 @@ field type that each item in the dict is validated against.
 
 :py:attr:`TypedDictField.value_field`
     An instance of an odin field that is used to validate each value in the dict; default is ``StringField``.
+
 
 .. _field-dict_field:
 
@@ -372,6 +425,7 @@ A child object. Requires a positional argument: the class that represents the ch
 .. note::
     A default `dict` is automatically assigned.
 
+
 .. _field-arrayof_field:
 
 ArrayOf field
@@ -382,6 +436,7 @@ A child list. Requires a positional argument: the class that represents a list o
 
 .. note::
     A default `list` is automatically assigned.
+
 
 .. _field-dictof_field:
 
@@ -410,8 +465,27 @@ Virtual fields share many of the options of regular fields:
  - :ref:`field-option-name`
  - :ref:`field-option-doc_text`
 
+
 .. _field-calculated_field:
 
-Calculated field
-================
+CalculatedField
+===============
 ``class CalculatedField(expr[, **options])``
+
+
+.. _field-constant_field:
+
+ConstantField
+=============
+``class ConstantField(value[, **options])``
+
+A fixed value that remains unchanged.
+
+
+.. _field-multipart_field:
+
+MultiPartField
+==============
+``class MultiPartField(field_names, separator=""[, **options])``
+
+A field that combines strings from other resource fields with a joining value.

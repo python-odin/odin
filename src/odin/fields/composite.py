@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-import six
 from odin import bases
 from odin import exceptions
 from odin.resources import create_resource_from_dict
@@ -7,7 +5,14 @@ from odin.fields import Field
 from odin.utils import value_in_choices
 from odin.validators import EMPTY_VALUES
 
-__all__ = ("CompositeField", "DictAs", "ObjectAs", "ListOf", "ArrayOf", "DictOf")
+__all__ = (
+    "CompositeField",
+    "DictAs",
+    "ObjectAs",
+    "ListOf",
+    "ArrayOf",
+    "DictOf",
+)
 
 
 class CompositeField(Field):
@@ -36,7 +41,7 @@ class CompositeField(Field):
         if not options.get("null", False):
             options.setdefault("default", lambda: resource())
 
-        super(CompositeField, self).__init__(**options)
+        super().__init__(**options)
 
     def to_python(self, value):
         if value is None:
@@ -49,7 +54,7 @@ class CompositeField(Field):
         raise exceptions.ValidationError(msg)
 
     def validate(self, value):
-        super(CompositeField, self).validate(value)
+        super().validate(value)
         if value not in EMPTY_VALUES:
             value.full_clean()
 
@@ -109,7 +114,7 @@ class ListOf(CompositeField):
 
     def __init__(self, resource, empty=True, **options):
         options.setdefault("default", list)
-        super(ListOf, self).__init__(resource, **options)
+        super().__init__(resource, **options)
         self.empty = empty
 
     @staticmethod
@@ -133,7 +138,7 @@ class ListOf(CompositeField):
         if value is None:
             return None
         if isinstance(value, (list, bases.ResourceIterable)):
-            super_to_python = super(ListOf, self).to_python
+            super_to_python = super().to_python
 
             def process(val):
                 if val is None:
@@ -191,7 +196,7 @@ class DictOf(CompositeField):
 
     def __init__(self, resource, empty=True, key_choices=None, **options):
         options.setdefault("default", dict)
-        super(DictOf, self).__init__(resource, **options)
+        super().__init__(resource, **options)
         self.empty = empty
         self.key_choices = key_choices
 
@@ -199,7 +204,7 @@ class DictOf(CompositeField):
         values = {}
         errors = {}
         key_choices = self.key_choices
-        for key, value in six.iteritems(value_dict):
+        for key, value in value_dict.items():
             if key_choices and not value_in_choices(key, key_choices):
                 msg = self.error_messages["invalid_key"] % value
                 raise exceptions.ValidationError(msg)
@@ -218,7 +223,7 @@ class DictOf(CompositeField):
         if value is None:
             return None
         if isinstance(value, dict):
-            super_to_python = super(DictOf, self).to_python
+            super_to_python = super().to_python
 
             def process(val):
                 if val is None:
@@ -235,7 +240,7 @@ class DictOf(CompositeField):
         # Skip The direct super method and apply it to each list item.
         super(CompositeField, self).validate(value)  # noqa
         if value is not None:
-            super_validate = super(DictOf, self).validate
+            super_validate = super().validate
             self._process_dict(value, super_validate)
 
         if (value is not None) and (not value) and (not self.empty):

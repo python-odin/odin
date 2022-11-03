@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from odin import registration
 
 NON_FIELD_ERRORS = "__all__"
@@ -29,13 +28,14 @@ class ValidationError(Exception):
         # See http://www.python.org/doc/current/tut/node10.html#handling
         if hasattr(self, "message_dict"):
             message_dict = self.message_dict
-            return "{%s}" % ", ".join(
-                "'%s': %r" % (key, message_dict[key]) for key in sorted(message_dict)
+            messages = ", ".join(
+                f"'{key}': {message_dict[key]!r}" for key in sorted(message_dict)
             )
+            return "{" + messages + "}"
         return repr(self.messages)
 
     def __repr__(self):
-        return "ValidationError({})".format(self)
+        return f"ValidationError({self})"
 
     @property
     def error_messages(self):
@@ -128,7 +128,7 @@ class TraversalError(Exception):
     """
 
     def __init__(self, path, *args, **kwargs):
-        super(TraversalError, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.path = path
 
 

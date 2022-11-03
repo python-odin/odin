@@ -1,16 +1,17 @@
-# -*- coding: utf-8 -*-
 import pytest
+
 from odin import decorators
 from odin.codecs import json_codec
 from odin.exceptions import ValidationError
 from .resources import Author
 
 
-class TestDecorators(object):
+class TestDecorators:
     def test_returns_resource(self):
         @decorators.returns_resource(resource=Author)
         def test():
             return {"name": "Foo"}
+
         target = test()
         assert "Foo" == target.name
 

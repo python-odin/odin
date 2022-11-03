@@ -1,0 +1,66 @@
+# Match release tags on master branch
+name: Manual-Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      pre_release:
+        description: 'This is a pre-release'
+        default: true
+        type: boolean
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    name: Build release package
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@master
+        name: Setup Python 3.8
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: python -m pip install -U poetry
+         
+      - name: Build Package
+        id: build_package
+        run: |
+          rm -rf dist
+          poetry build
+          cd dist
+          echo "source=$(ls *.tar.gz)" >> $GITHUB_OUTPUT
+          echo "wheel=$(ls *.whl)" >> $GITHUB_OUTPUT
+          echo "version=$(poetry version -s)" >> $GITHUB_OUTPUT
+
+      - name: Create a Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.build_package.outputs.version }}
+          release_name: Release ${{ steps.build_package.outputs.version }}
+          prerelease: ${{ inputs.pre_release }}
+
+      - name: Attach Release Wheel
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/${{ steps.build_package.outputs.wheel }}
+          asset_name: ${{ steps.build_package.outputs.wheel }}
+          asset_content_type: application/x-pywheel+zip
+
+      - name: Attach Release Source
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/${{ steps.build_package.outputs.source }}
+          asset_name: ${{ steps.build_package.outputs.source }}
+          asset_content_type: application/x-tar+gzip

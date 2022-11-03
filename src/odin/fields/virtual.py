@@ -1,11 +1,15 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
+from typing import Any, Callable, Union, Sequence
 
 from odin.utils import force_tuple, getmeta
 
 from .base import BaseField
 
-__all__ = ("ConstantField", "CalculatedField", "calculated_field", "MultiPartField")
+__all__ = (
+    "ConstantField",
+    "CalculatedField",
+    "calculated_field",
+    "MultiPartField",
+)
 
 
 class VirtualField(BaseField):
@@ -18,13 +22,13 @@ class VirtualField(BaseField):
 
     def __init__(
         self,
-        verbose_name=None,
-        verbose_name_plural=None,
-        name=None,
-        data_type_name=None,
-        doc_text="",
-        is_attribute=False,
-        key=False,
+        verbose_name: str = None,
+        verbose_name_plural: str = None,
+        name: str = None,
+        data_type_name: str = None,
+        doc_text: str = "",
+        is_attribute: bool = False,
+        key: bool = False,
     ):
         """
         Initialisation of virtual field
@@ -36,9 +40,7 @@ class VirtualField(BaseField):
         :param doc_text: Documentation for the field, replaces help text
         :param is_attribute: Special flag for codecs that support attributes on nodes (ie XML)
         """
-        super(VirtualField, self).__init__(
-            verbose_name, verbose_name_plural, name, doc_text
-        )
+        super().__init__(verbose_name, verbose_name_plural, name, doc_text)
 
         self.data_type_name = data_type_name
         self.is_attribute = is_attribute
@@ -64,8 +66,10 @@ class ConstantField(VirtualField):
     A field that provides a constant value.
     """
 
-    def __init__(self, value, *args, **kwargs):
-        super(ConstantField, self).__init__(*args, **kwargs)
+    __slots__ = ("value",)
+
+    def __init__(self, value: Any, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.value = value
 
     def __get__(self, instance, owner):
@@ -79,9 +83,10 @@ class CalculatedField(VirtualField):
     The expression should accept a single "self" parameter that is a Resource instance.
     """
 
-    def __init__(self, expr, *args, **kwargs):
-        assert callable(expr)
-        super(CalculatedField, self).__init__(*args, **kwargs)
+    __slots__ = ("expr",)
+
+    def __init__(self, expr: Callable[[Any], Any], *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.expr = expr
 
     def __get__(self, instance, owner):
@@ -90,7 +95,7 @@ class CalculatedField(VirtualField):
 
 def calculated_field(method=None, **kwargs):
     """
-    Converts an instance method into a calculated field.
+    Decorator that converts an instance method into a calculated field.
     """
 
     def inner(expr):
@@ -110,17 +115,19 @@ class MultiPartField(VirtualField):
     This field should be included after the field that make up the multipart value.
     """
 
-    def __init__(self, field_names, separator="", **kwargs):
+    __slots__ = ("field_names", "separator", "_fields")
+
+    def __init__(
+        self, field_names: Union[str, Sequence[str]], separator: str = "", **kwargs
+    ):
         """
         :param field_names: Name(s) of fields to make up key
-        :type field_names: str | tuple[str] | list[str]
         :param separator: Separator to use between values.
-        :type separator: str
         :param kwargs: Additional kwargs for VirtualField
 
         """
         kwargs.setdefault("data_type_name", "String")
-        super(MultiPartField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.field_names = force_tuple(field_names)
         self.separator = separator
         self._fields = None
@@ -141,6 +148,4 @@ class MultiPartField(VirtualField):
         try:
             self._fields = tuple(meta.field_map[name] for name in self.field_names)
         except KeyError as ex:
-            raise AttributeError(
-                "Attribute {} not found on {!r}".format(ex, self.resource)
-            )
+            raise AttributeError(f"Attribute {ex} not found on {self.resource!r}")
