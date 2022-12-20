@@ -3,10 +3,14 @@ import re
 import time
 from email.utils import parsedate_tz as parse_http_datetime
 from email.utils import formatdate as format_http_datetime  # noqa
+from typing import Union, Type
 
 
 class IgnoreTimezone:
     pass
+
+
+IgnorableTimezone = Union[datetime.tzinfo, Type[IgnoreTimezone]]
 
 
 ZERO = datetime.timedelta(0)
@@ -220,7 +224,7 @@ def parse_iso_date_string(date_string: str) -> datetime.date:
 
 
 def parse_iso_time_string(
-    time_string: str, default_timezone: datetime.tzinfo = utc
+    time_string: str, default_timezone: IgnorableTimezone = utc
 ) -> datetime.time:
     """
     Parse a time in the string format defined by ISO 8601.
@@ -247,7 +251,7 @@ def parse_iso_time_string(
 
 
 def parse_iso_datetime_string(
-    datetime_string: str, default_timezone: datetime.tzinfo = utc
+    datetime_string: str, default_timezone: IgnorableTimezone = utc
 ) -> datetime.datetime:
     """
     Parse a datetime in the string format defined by ISO 8601.
