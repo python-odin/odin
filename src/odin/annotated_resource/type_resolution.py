@@ -1,9 +1,10 @@
+"""Methods for resolving types to fields."""
 import datetime
 import enum
 import pathlib
 import re
 import uuid
-from typing import Any, Sequence, Dict, Type, Union, get_origin, List
+from typing import Any, Sequence, Dict, Type, Union, get_origin, List, Final
 
 try:
     # Handle the change in typing between 3.8 and later releases
@@ -27,13 +28,12 @@ from ..fields import (
     ListField,
     DictField,
 )
+from ..fields.virtual import ConstantField
 from ..resources import ResourceBase
 
 
 class Options:
-    """
-    Define options for a field
-    """
+    """Define options for a field"""
 
     __slots__ = (
         "field_type",
@@ -78,18 +78,14 @@ class Options:
         }
 
     def _kwargs(self):
-        """
-        Build kwargs used to instantiate field
-        """
+        """Build kwargs used to instantiate field"""
         final_args = self.base_args
         if issubclass(self.field_type, Field):
             final_args.update(self.field_args)
         return final_args
 
     def _improve_error(self, ex: TypeError):
-        """
-        Attempt to provide more context for the error
-        """
+        """Attempt to provide more context for the error"""
         message = str(ex)
 
         for check in (
@@ -103,16 +99,16 @@ class Options:
                 )
 
     def init_field(self):
-        """
-        Instantiate field object
-        """
+        """Instantiate field object"""
         if self.field_type:
             try:
                 return self.field_type(**self._kwargs())
             except TypeError as ex:
                 self._improve_error(ex)
                 raise
-        raise ResourceDefError("Field type could not be resolved")
+        raise ResourceDefError(
+            f"Field type `{self.base_args.get('name', 'Unknown!')}` could not be resolved"
+        )
 
 
 SIMPLE_TYPE_MAP = {
@@ -138,9 +134,7 @@ SIMPLE_TYPE_MAP = {
 
 
 def _resolve_field_from_type(options: Options, type_: type):
-    """
-    Resolve a field from a basic type
-    """
+    """Resolve a field from a basic type"""
     if field_type := SIMPLE_TYPE_MAP.get(type_, None):
         options.field_type = field_type
 
@@ -159,9 +153,7 @@ def _resolve_field_from_type(options: Options, type_: type):
 
 
 def is_optional(type_: Union) -> bool:
-    """
-    Field is an optional type
-    """
+    """Field is an optional type"""
     args = type_.__args__
     return (
         len(args) == 2 and type(None) in args
@@ -169,9 +161,7 @@ def is_optional(type_: Union) -> bool:
 
 
 def _resolve_list_from_sub_scripted_type(args: Sequence[Any], options: Options):
-    """
-    Handle the various types of sequence type
-    """
+    """Handle the various types of sequence type"""
     options.field_args["default"] = list
 
     (field,) = args
@@ -189,9 +179,7 @@ def _resolve_list_from_sub_scripted_type(args: Sequence[Any], options: Options):
 
 
 def _resolve_dict_from_sub_scripted_type(args: Sequence[Any], options: Options):
-    """
-    Handle the various types of sequence type
-    """
+    """Handle the various types of sequence type"""
     options.field_args["default"] = dict
 
     key_field, value_field = args
@@ -214,9 +202,7 @@ def _resolve_dict_from_sub_scripted_type(args: Sequence[Any], options: Options):
 
 
 def _resolve_field_from_sub_scripted_type(origin: Type, options: Options, type_):
-    """
-    Resolve a field from a generic type
-    """
+    """Resolve a field from a generic type"""
     args = getattr(type_, "__args__", None)
     if not args:
         # This occurs with the plain List and Dict types which are essentially
@@ -229,6 +215,17 @@ def _resolve_field_from_sub_scripted_type(origin: Type, options: Options, type_)
         if is_optional(type_):
             options.field_args["null"] = True
             return _resolve_field_from_annotation(options, args[0])
+        else:
+            pass  # Resolve
+
+    elif origin is Final:
+        # Constant
+        options.field_type = ConstantField
+        value = options.field_args["default"]
+        if value is NotProvided:
+            raise ResourceDefError(f"Final fields require a value")
+        options.base_args["value"] = value
+        return
 
     elif issubclass(origin, List):
         return _resolve_list_from_sub_scripted_type(args, options)
@@ -267,9 +264,7 @@ def process_attribute(
     *,
     _base_field: Type[BaseField] = BaseField,
 ) -> BaseField:
-    """
-    Process an individual attribute and generate a field based off values passed
-    """
+    """Process an individual attribute and generate a field based off values passed"""
 
     # Attribute is already a field object
     if isinstance(value, _base_field):
