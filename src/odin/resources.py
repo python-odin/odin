@@ -17,11 +17,13 @@ DEFAULT_TYPE_FIELD = "$"
 
 # Set of field names that cannot be used
 RESERVED_FIELD_NAMES = {
-    "fields",  # Causes a infinite-recursion with clean_fields being a builtin method
+    "fields",  # Causes an infinite-recursion with clean_fields being a builtin method
 }
 
 
 class ResourceOptions:
+    """Shared options used by resource instances."""
+
     META_OPTION_NAMES = (
         "name",
         "namespace",
@@ -63,6 +65,7 @@ class ResourceOptions:
         return f"<Options for {self.resource_name}>"
 
     def contribute_to_class(self, cls, _):
+        """Contribute option to a resource class."""
         cls._meta = self
         self.name = cls.__name__
         self.class_name = f"{cls.__module__}.{cls.__name__}"
@@ -111,9 +114,7 @@ class ResourceOptions:
         self._key_fields.append(field)
 
     def add_field(self, field):
-        """
-        Dynamically add a field.
-        """
+        """Dynamically add a field."""
         if field.attname in RESERVED_FIELD_NAMES:
             raise ResourceDefError(
                 f"`{field.attname}` is a reserved name. Use the `name` argument "
@@ -125,9 +126,7 @@ class ResourceOptions:
         cached_property.clear_caches(self)
 
     def add_virtual_field(self, field):
-        """
-        Dynamically add a virtual field.
-        """
+        """Dynamically add a virtual field."""
         self.virtual_fields.append(field)
         if field.key:
             self._add_key_field(field)
@@ -135,9 +134,7 @@ class ResourceOptions:
 
     @property
     def resource_name(self):
-        """
-        Full name of resource including namespace (if specified)
-        """
+        """Full name of resource including namespace (if specified)."""
         if self.name_space:
             return f"{self.name_space}.{self.name}"
         else:
@@ -145,23 +142,17 @@ class ResourceOptions:
 
     @lazy_property
     def all_fields(self):
-        """
-        All fields both standard and virtual.
-        """
+        """All fields both standard and virtual."""
         return tuple(self.fields + self.virtual_fields)
 
     @lazy_property
     def init_fields(self):
-        """
-        Fields used in the resource init
-        """
+        """Fields used in the resource init."""
         return self.fields
 
     @lazy_property
     def composite_fields(self):
-        """
-        All composite fields.
-        """
+        """All composite fields."""
         # Not the nicest solution but is a fairly safe way of detecting a composite field.
         return tuple(
             f for f in self.fields if (hasattr(f, "of") and issubclass(f.of, Resource))
@@ -169,11 +160,9 @@ class ResourceOptions:
 
     @lazy_property
     def container_fields(self):
-        """
-        All composite fields with the container flag.
+        """All composite fields with the container flag.
 
         Used by XML like codecs.
-
         """
         return tuple(
             f for f in self.composite_fields if getattr(f, "use_container", False)
@@ -185,23 +174,17 @@ class ResourceOptions:
 
     @lazy_property
     def parent_resource_names(self):
-        """
-        List of parent resource names.
-        """
+        """List of parent resource names."""
         return tuple(getmeta(p).resource_name for p in self.parents)
 
     @lazy_property
     def attribute_fields(self):
-        """
-        List of fields where is_attribute is True.
-        """
+        """List of fields where is_attribute is True."""
         return tuple(f for f in self.fields if f.is_attribute)
 
     @lazy_property
     def element_fields(self):
-        """
-        List of fields where is_attribute is False.
-        """
+        """List of fields where is_attribute is False."""
         return tuple(f for f in self.fields if not f.is_attribute)
 
     @lazy_property
@@ -210,17 +193,13 @@ class ResourceOptions:
 
     @lazy_property
     def key_field(self):
-        """
-        Field specified as the key field
-        """
+        """Field specified as the key field"""
         if self.key_fields:
             return self.key_fields[0]
 
     @lazy_property
     def key_fields(self):
-        """
-        Tuple of fields specified as the key fields
-        """
+        """Tuple of fields specified as the key fields"""
         # Key fields names in meta go first
         field_names = set(self.key_field_names) if self.key_field_names else set()
 
@@ -232,21 +211,15 @@ class ResourceOptions:
 
     @lazy_property
     def readonly_fields(self):
-        """
-        Fields that can only be read from.
-        """
+        """Fields that can only be read from."""
         return self.virtual_fields
 
     def check(self):
-        """
-        Run checks on meta data to ensure correctness
-        """
+        """Run checks on meta data to ensure correctness"""
 
 
 class ResourceType(type):
-    """
-    Metaclass for all Resources.
-    """
+    """Metaclass for all Resources."""
 
     meta_options = ResourceOptions
 
@@ -254,7 +227,7 @@ class ResourceType(type):
         super_new = super(ResourceType, mcs).__new__
 
         # attrs will never be empty for classes declared in the standard way
-        # (ie. with the `class` keyword). This is quite robust.
+        # (i.e. with the `class` keyword). This is quite robust.
         if name == "NewBase" and attrs == {}:
             return super_new(mcs, name, bases, attrs)
 
@@ -439,14 +412,11 @@ class ResourceBase:
 
     @classmethod
     def create_from_dict(cls, d, full_clean=False):
-        """
-        Create a resource instance from a dictionary.
-        """
+        """Create a resource instance from a dictionary."""
         return create_resource_from_dict(d, cls, full_clean)
 
     def to_dict(self, include_virtual=True):
-        """
-        Convert this resource into a `dict` of field_name/value pairs.
+        """Convert this resource into a `dict` of field_name/value pairs.
 
         .. note::
             This method is not recursive, it only operates on this single resource, any sub resources are returned as
@@ -454,15 +424,13 @@ class ResourceBase:
             converted into a type that can be serialised, these codecs then operate recursively on the returned `dict`.
 
         :param include_virtual: Include virtual fields when generating `dict`.
-
         """
         meta = getmeta(self)
         fields = meta.all_fields if include_virtual else meta.fields
         return {f.name: v for f, v in field_iter_items(self, fields)}
 
     def convert_to(self, to_resource, context=None, ignore_fields=None, **field_values):
-        """
-        Convert this resource into a specified resource.
+        """Convert this resource into a specified resource.
 
         A mapping must be defined for conversion between this resource and to_resource or an exception will be raised.
 
@@ -481,12 +449,10 @@ class ResourceBase:
         fields=None,
         ignore_not_provided=False,
     ):
-        """
-        Update the fields on an existing destination object.
+        """Update the fields on an existing destination object.
 
         A mapping must be defined for conversion between this resource and ``dest_obj`` type or an exception will be
         raised.
-
         """
         self.full_clean(ignore_fields, ignore_not_provided)
         mapping = registration.get_mapping(self.__class__, dest_obj.__class__)
@@ -495,20 +461,16 @@ class ResourceBase:
         )
 
     def extra_attrs(self, attrs):
-        """
-        Called during de-serialisation of data if there are any extra fields defined in the document.
+        """Called during de-serialisation of data if there are any extra fields defined in the document.
 
         This allows the resource to decide how to handle these fields. By default they are ignored.
         """
 
     def clean(self):
-        """
-        Chance to do more in depth validation.
-        """
+        """Chance to do more in depth validation."""
 
     def full_clean(self, exclude=None, ignore_not_provided=False):
-        """
-        Calls clean_fields, clean on the resource and raises ``ValidationError``
+        """Calls clean_fields, clean on the resource and raises ``ValidationError``
         for any errors that occurred.
         """
         errors = {}
@@ -576,8 +538,7 @@ def resolve_resource_type(resource):
 def create_resource_from_iter(
     i, resource, full_clean=True, default_to_not_provided=False
 ):
-    """
-    Create a resource from an iterable sequence
+    """Create a resource from an iterable sequence
 
     :param i: Iterable of values (it is assumed the values are in field order)
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
@@ -587,7 +548,6 @@ def create_resource_from_iter(
     :param default_to_not_provided: If an value is not supplied keep the value as NotProvided. This is used
         to support merging an updated value.
     :return: New instance of resource type specified in the *resource* param.
-
     """
     i = list(i)
     resource_type = resource
@@ -631,11 +591,9 @@ R = TypeVar("R")
 
 
 def _resolve_type_from_resource(data, resource):
-    """
-    Resolve resource type from resource(s)
+    """Resolve resource type from resource(s)
 
     If a data type is supplied check it is correct.
-
     """
     resource_type = None
 
@@ -684,9 +642,7 @@ def _resolve_type_from_resource(data, resource):
 
 
 def _resolve_type_from_data(data):
-    """
-    Resolve type entirely from data
-    """
+    """Resolve type entirely from data"""
     # No resource specified, rely on type field
     document_resource_name = data.pop(DEFAULT_TYPE_FIELD, None)
     if not document_resource_name:
@@ -703,14 +659,13 @@ def _resolve_type_from_data(data):
 
 
 def create_resource_from_dict(
-    d,  # type: Dict[str, Any]
-    resource=None,  # type: Type[R]
-    full_clean=True,  # type: bool
-    copy_dict=True,  # type: bool
-    default_to_not_provided=False,  # type: bool
+    d: Dict[str, Any],
+    resource: Type[R] = None,
+    full_clean: bool = True,
+    copy_dict: bool = True,
+    default_to_not_provided: bool = False,
 ):
-    """
-    Create a resource from a dict.
+    """Create a resource from a dict.
 
     :param d: dictionary of data.
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
@@ -720,7 +675,6 @@ def create_resource_from_dict(
     :param copy_dict: Use a copy of the input dictionary rather than destructively processing the input dict.
     :param default_to_not_provided: If an value is not supplied keep the value as NOT_PROVIDED. This is used
         to support merging an updated value.
-
     """
     if not isinstance(d, dict):
         raise TypeError("`d` must be a dict instance.")
@@ -774,8 +728,7 @@ def build_object_graph(
     copy_dict: bool = True,
     default_to_not_supplied: bool = False,
 ) -> R:
-    """
-    Generate an object graph from a dict
+    """Generate an object graph from a dict
 
     :param d: Dictionary to build from
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
@@ -785,7 +738,6 @@ def build_object_graph(
     :param default_to_not_supplied: If an value is not supplied keep the value as NOT_PROVIDED. This is used
         to support merging an updated value.
     :raises ValidationError: During building of the object graph and issues discovered are raised as a ValidationError.
-
     """
     if isinstance(d, dict):
         return create_resource_from_dict(
@@ -804,9 +756,7 @@ def build_object_graph(
 
 
 class ResourceIterable(bases.ResourceIterable):
-    """
-    Iterable that yields resources.
-    """
+    """Iterable that yields resources."""
 
     def __init__(self, sequence):
         self.sequence = sequence
