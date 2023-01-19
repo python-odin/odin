@@ -5,6 +5,7 @@ Annotated Resources
 -------------------
 
 - Final fields are now mapped to ConstantField and require a default value.
+- Fix issue where the Toml codec did not recognise annotated resources in dump and dumps functions.
 
 Breaking changes
 ----------------
