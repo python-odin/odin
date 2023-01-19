@@ -1,8 +1,8 @@
-from typing import Union, Sequence, Dict, Optional, Type, Any
+from typing import Union, Sequence, Dict, Optional, Type
 
-from odin import Resource
 from odin import resources, ResourceAdapter
 from odin.exceptions import CodecDecodeError
+from odin.resources import ResourceBase
 from odin.utils import getmeta
 
 try:
@@ -50,8 +50,7 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
 
 
 def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
-    """
-    Load a resource from a TOML encoded string.
+    """Load a resource from a TOML encoded string.
 
     If a ``resource`` value is supplied it is used as the base resource for the supplied YAML. If one is not supplied a
     resource type field ``$`` is used to obtain the type represented by the dictionary. A ``ValidationError`` will be
@@ -82,8 +81,14 @@ def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
 
 
 class OdinEncoder(toml.TomlEncoder):
+    """Encode that handles Odin types."""
+
     def __init__(
-        self, include_virtual_fields=True, include_type_field=True, *args, **kwargs
+        self,
+        include_virtual_fields: bool = True,
+        include_type_field: bool = True,
+        *args,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.include_virtual_fields = include_virtual_fields
@@ -97,16 +102,20 @@ class OdinEncoder(toml.TomlEncoder):
         return resource_dict
 
     def dump_value(self, v):
-        if isinstance(v, (Resource, ResourceAdapter)):
+        if isinstance(v, (ResourceBase, ResourceAdapter)):
             resource_dict = self.resource_to_dict(v)
             return self.dump_inline_table(resource_dict)
         if type(v) in TOML_TYPES:
             v = TOML_TYPES[type(v)](v)
-        return super(OdinEncoder, self).dump_value(v)
+        return super().dump_value(v)
 
 
 RT = Union[
-    Resource, ResourceAdapter, Sequence[Resource], Sequence[ResourceAdapter], Dict
+    ResourceBase,
+    ResourceAdapter,
+    Sequence[ResourceBase],
+    Sequence[ResourceAdapter],
+    Dict,
 ]
 
 
@@ -117,39 +126,39 @@ def dump(
     include_virtual_fields: bool = True,
     **kwargs
 ):
-    """
-    Dump to a TOML encoded file.
+    """Dump to a TOML encoded file.
 
     :param resource: The root resource to dump to a JSON encoded file.
     :param fp: The file pointer that represents the output file.
     :param encoder: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :param include_virtual_fields: Include virtual fields in the output
     :param kwargs: Additional keyword arguments for the encoder.
-
     """
     encoder = (encoder or OdinEncoder)(include_virtual_fields, **kwargs)
 
-    if isinstance(resource, (Resource, ResourceAdapter)):
+    if isinstance(resource, (ResourceBase, ResourceAdapter)):
         resource = encoder.resource_to_dict(resource)
 
     toml.dump(resource, fp, encoder)
 
 
-def dumps(resource, encoder=None, include_virtual_fields=True, **kwargs):
-    # type: (RT, Optional[Type[OdinEncoder]], bool, Any) -> str
-    """
-    Dump to a TOML encoded file.
+def dumps(
+    resource: RT,
+    encoder: Optional[Type[OdinEncoder]] = None,
+    include_virtual_fields: bool = True,
+    **kwargs
+) -> str:
+    """Dump to a TOML encoded file.
 
     :param resource: The root resource to dump to a JSON encoded file.
     :param encoder: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
     :param include_virtual_fields: Include virtual fields in the output
     :param kwargs: Additional keyword arguments for the encoder.
     :returns: TOML encoded string.
-
     """
     encoder = (encoder or OdinEncoder)(include_virtual_fields, **kwargs)
 
-    if isinstance(resource, (Resource, ResourceAdapter)):
+    if isinstance(resource, (ResourceBase, ResourceAdapter)):
         resource = encoder.resource_to_dict(resource)
 
     return toml.dumps(resource, encoder)
