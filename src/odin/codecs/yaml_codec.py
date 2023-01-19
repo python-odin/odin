@@ -1,3 +1,5 @@
+"""Codec to load/save Yaml documents."""
+from typing import TextIO, Union
 from io import StringIO
 
 from odin import bases
@@ -26,8 +28,8 @@ class OdinDumper(SafeDumper):
     def __init__(
         self,
         stream,
-        include_virtual_fields=True,
-        include_type_field=True,
+        include_virtual_fields: bool = True,
+        include_type_field: bool = True,
         *args,
         **kwargs
     ):
@@ -48,9 +50,13 @@ OdinDumper.add_multi_representer(ResourceAdapter, OdinDumper.represent_resource)
 OdinDumper.add_multi_representer(bases.ResourceIterable, OdinDumper.represent_list)
 
 
-def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
-    """
-    Load a resource from a YAML encoded file.
+def load(
+    fp: Union[TextIO, str],
+    resource: resources.ResourceBase = None,
+    full_clean: bool = True,
+    default_to_not_supplied: bool = False,
+):
+    """Load a resource from a YAML encoded file.
 
     If a ``resource`` value is supplied it is used as the base resource for the supplied YAML. I one is not supplied a
     resource type field ``$`` is used to obtain the type represented by the dictionary. A ``ValidationError`` will be
@@ -79,9 +85,8 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
 loads = load
 
 
-def dump(resource, fp, dumper=OdinDumper, **kwargs):
-    """
-    Dump to a YAML encoded file.
+def dump(resource: resources.ResourceBase, fp: TextIO, dumper=OdinDumper, **kwargs):
+    """Dump to a YAML encoded file.
 
     :param resource: The root resource to dump to a YAML encoded file.
     :param dumper: Dumper to use serializing to a string; default is the :py:class:`OdinDumper`.
@@ -94,9 +99,8 @@ def dump(resource, fp, dumper=OdinDumper, **kwargs):
         raise CodecEncodeError(str(ex))
 
 
-def dumps(resource, dumper=OdinDumper, **kwargs):
-    """
-    Dump to a YAML encoded string.
+def dumps(resource: resources.ResourceBase, dumper=OdinDumper, **kwargs) -> str:
+    """Dump to a YAML encoded string.
 
     :param resource: The root resource to dump to a YAML encoded file.
     :param dumper: Dumper to use serializing to a string; default is the :py:class:`OdinDumper`.

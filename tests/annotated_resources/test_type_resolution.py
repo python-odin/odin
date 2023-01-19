@@ -1,5 +1,5 @@
 import sys
-from typing import Optional, Union, List, Dict, Tuple, Any
+from typing import Optional, Union, List, Dict, Tuple, Any, Final
 
 import pytest
 
@@ -66,7 +66,8 @@ class TestOptions:
         target = type_resolution.Options()
 
         with pytest.raises(
-            odin.exceptions.ResourceDefError, match="Field type could not be resolved"
+            odin.exceptions.ResourceDefError,
+            match="Field type `None` could not be resolved",
         ):
             target.init_field()
 
@@ -379,3 +380,15 @@ class TestSpecialFields:
         actual = target.to_python(value)
 
         assert actual == expected
+
+    def test_constant_field__where_field_is_defined_correctly(self):
+        actual = type_resolution.process_attribute(Final[str], "foo")
+
+        assert isinstance(actual, odin.ConstantField)
+        assert actual.value == "foo"
+
+    def test_constant_field__where_value_is_missing(self):
+        with pytest.raises(
+            odin.exceptions.ResourceDefError, match="Final fields require a value"
+        ):
+            type_resolution.process_attribute(Final[str], odin.NotProvided)

@@ -1,3 +1,4 @@
+"""Codec to load/save Message Pack (msgpack) documents."""
 import datetime
 import uuid
 from typing import TextIO
@@ -9,7 +10,7 @@ except ImportError:
         "odin.codecs.msgpack_codec requires the 'msgpack-python' package."
     )  # noqa
 
-from odin import bases, Resource
+from odin import bases
 from odin import serializers, resources, ResourceAdapter
 from odin.utils import getmeta
 
@@ -24,11 +25,9 @@ CONTENT_TYPE = "application/x-msgpack"
 
 
 class OdinPacker(msgpack.Packer):
-    """
-    Encoder for Odin resources.
-    """
+    """Encoder for Odin resources."""
 
-    def __init__(self, include_virtual_fields=True, *args, **kwargs):
+    def __init__(self, include_virtual_fields: bool = True, *args, **kwargs):
         kwargs.setdefault("default", self.default)
         super().__init__(*args, **kwargs)
         self.include_virtual_fields = include_virtual_fields
@@ -45,9 +44,13 @@ class OdinPacker(msgpack.Packer):
             return TYPE_SERIALIZERS[o.__class__](o)
 
 
-def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
-    """
-    Load a from a MessagePack encoded file.
+def load(
+    fp: TextIO,
+    resource: resources.ResourceBase = None,
+    full_clean: bool = True,
+    default_to_not_supplied: bool = False,
+):
+    """Load a from a MessagePack encoded file.
 
     See :py:meth:`loads` for more details of the loading operation.
 
@@ -62,9 +65,13 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
     )
 
 
-def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
-    """
-    Load from a MessagePack encoded string/bytes.
+def loads(
+    s: str,
+    resource: resources.ResourceBase = None,
+    full_clean: bool = True,
+    default_to_not_supplied: bool = False,
+):
+    """Load from a MessagePack encoded string/bytes.
 
     If a ``resource`` value is supplied it is used as the base resource for the supplied MessagePack data. I one is not
     supplied a resource type field ``$`` is used to obtain the type represented by the dictionary. A ``ValidationError``
@@ -83,14 +90,13 @@ def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
 
 
 def dump(
-    resource,  # type: Resource
-    fp,  # type: TextIO,
+    resource: resources.ResourceBase,
+    fp: TextIO,
     cls=OdinPacker,
-    include_virtual_fields=True,  # type: bool
+    include_virtual_fields: bool = True,
     **kwargs
 ):
-    """
-    Dump to a MessagePack encoded file.
+    """Dump to a MessagePack encoded file.
 
     :param include_virtual_fields:
     :param resource: The root resource to dump to a MessagePack encoded file.
@@ -101,13 +107,12 @@ def dump(
 
 
 def dumps(
-    resource,  # type: Resource
+    resource: resources.ResourceBase,
     cls=OdinPacker,
-    include_virtual_fields=True,  # type: bool
+    include_virtual_fields: bool = True,
     **kwargs
 ):
-    """
-    Dump to a MessagePack encoded string.
+    """Dump to a MessagePack encoded string.
 
     :param include_virtual_fields:
     :param resource: The root resource to dump to a MessagePack encoded file.

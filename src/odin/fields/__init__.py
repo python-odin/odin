@@ -5,7 +5,7 @@ import pathlib
 import re
 import uuid
 from functools import cached_property
-from typing import Sequence, Tuple, Any, TypeVar, Optional, Type, Union
+from typing import Sequence, Tuple, Any, TypeVar, Optional, Type
 
 from odin import exceptions, datetimeutil, registration
 from odin.utils import getmeta

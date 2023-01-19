@@ -68,8 +68,8 @@ class ConstantField(VirtualField):
 
     __slots__ = ("value",)
 
-    def __init__(self, value: Any, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, value: Any, **kwargs):
+        super().__init__(**kwargs)
         self.value = value
 
     def __get__(self, instance, owner):
@@ -85,8 +85,8 @@ class CalculatedField(VirtualField):
 
     __slots__ = ("expr",)
 
-    def __init__(self, expr: Callable[[Any], Any], *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, expr: Callable[[Any], Any], **kwargs):
+        super().__init__(**kwargs)
         self.expr = expr
 
     def __get__(self, instance, owner):
