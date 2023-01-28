@@ -1,4 +1,5 @@
 """Mapping data between resources or other object types."""
+import abc
 from typing import (
     TypeVar,
     Union,
@@ -9,11 +10,13 @@ from typing import (
     NamedTuple,
     Iterable,
     Type,
+    Dict,
 )
+
 from odin import bases as base_types
 from odin import registration
-from odin.fields import NotProvided
-from odin.resources import Resource, ResourceBase
+from odin.fields import NotProvided, Field
+from odin.resources import ResourceBase
 from odin.fields.composite import ListOf, DictAs
 from odin.exceptions import MappingSetupError, MappingExecutionError
 from odin.mapping.helpers import MapListOf, MapDictAs, NoOpMapper
@@ -41,18 +44,18 @@ EMPTY_LIST = ()
 class FieldMapping(NamedTuple):
     """Field mapping definition"""
 
-    from_field: Optional[str]
-    action: Optional[Union[Action, BoundAction]]
-    to_field: Optional[str]
+    from_field: Union[None, str, Sequence[str]]
+    action: Union[None, Action, BoundAction]
+    to_field: Union[None, str, Sequence[str]]
     to_list: bool
     bind: bool
     skip_if_none: bool
 
 
 def define(
-    from_field: str = None,
-    action: Optional[Union[Action, BoundAction]] = None,
-    to_field: str = None,
+    from_field: Union[None, str, Sequence[str]] = None,
+    action: Union[None, Action, BoundAction] = None,
+    to_field: Union[None, str, Sequence[str]] = None,
     to_list: bool = False,
     bind: bool = False,
     skip_if_none: bool = False,
@@ -78,7 +81,13 @@ def define(
     )
 
 
-def assign(to_field, action, to_list=False, bind=True, skip_if_none=False):
+def assign(
+    to_field: Union[str, Sequence[str]],
+    action: Union[Action, BoundAction],
+    to_list=False,
+    bind=True,
+    skip_if_none=False,
+):
     """
     Helper method for defining an assignment mapping.
 
@@ -96,18 +105,18 @@ def assign(to_field, action, to_list=False, bind=True, skip_if_none=False):
     return FieldMapping(None, action, to_field, to_list, bind, skip_if_none)
 
 
-class FieldResolverBase:
+class FieldResolverBase(abc.ABC):
     """Base class for field resolver objects"""
 
     def __init__(self, obj):
         self.obj = obj
 
     @cached_property
-    def from_field_dict(self):
+    def from_field_dict(self) -> Dict[str, Optional[Field]]:
         """Property accessor for the attribute dict"""
         return self.get_from_field_dict()
 
-    def get_from_field_dict(self):
+    def get_from_field_dict(self) -> Dict[str, Optional[Field]]:
         """Return a field map of source fields consisting of an attribute and a Field object (if one is used).
 
         For resource objects the field object would be an Odin resource field, for Django models a model field etc. If
@@ -122,11 +131,11 @@ class FieldResolverBase:
         return self.get_field_dict()
 
     @cached_property
-    def to_field_dict(self):
+    def to_field_dict(self) -> Dict[str, Optional[Field]]:
         """Property accessor for the attribute dict"""
         return self.get_to_field_dict()
 
-    def get_to_field_dict(self):
+    def get_to_field_dict(self) -> Dict[str, Optional[Field]]:
         """Return a field map consisting of an attribute and a Field object (if one is used).
 
         For resource objects the field object would be an Odin resource field, for Django models a model field etc. If
@@ -139,7 +148,8 @@ class FieldResolverBase:
         """
         return self.get_field_dict()
 
-    def get_field_dict(self):
+    @abc.abstractmethod
+    def get_field_dict(self) -> Dict[str, Optional[Field]]:
         """Return a field map consisting of an attribute and a Field object (if one is used).
 
         For resource objects the field object would be an Odin resource field, for Django models a model field etc. If
@@ -150,7 +160,6 @@ class FieldResolverBase:
 
         :return: Dictionary
         """
-        raise NotImplementedError()
 
 
 class ResourceFieldResolver(FieldResolverBase):
@@ -580,7 +589,7 @@ class MappingBase:
 
     def default_action(self, value):
         """The default action used when mapping. This is a bit of a special case in that it defaults to being bound
-        and makes use of of :func:`functools.partial` to bind the from and to fields.
+        and makes use of :func:`functools.partial` to bind the from and to fields.
 
         :param value: The value to be mapped.
         :return: Mapped value.
