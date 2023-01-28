@@ -1,6 +1,16 @@
-import collections
-import typing
-from odin import bases
+"""Mapping data between resources or other object types."""
+from typing import (
+    TypeVar,
+    Union,
+    Sequence,
+    Optional,
+    Callable,
+    Any,
+    NamedTuple,
+    Iterable,
+    Type,
+)
+from odin import bases as base_types
 from odin import registration
 from odin.fields import NotProvided
 from odin.resources import Resource
@@ -11,37 +21,53 @@ from odin.utils import cached_property, getmeta
 
 __all__ = ("Mapping", "map_field", "map_list_field", "assign_field", "define", "assign")
 
+_V = TypeVar("_V")
+Action = Callable[[Any, ...], Optional[Any]]
+BoundAction = Callable[["Mapping", Any, ...], Optional[Any]]
 
-def force_tuple(value):
-    return value if isinstance(value, (list, tuple)) else (value,)
+
+def force_tuple(value: Union[_V, Sequence[_V]]) -> Sequence[_V]:
+    """Forces a value to be a tuple."""
+    if isinstance(value, tuple):
+        return value
+    if isinstance(value, list):
+        return tuple(value)
+    return (value,)
 
 
 EMPTY_LIST = ()
 
-FieldMapping = collections.namedtuple(
-    "FieldMapping",
-    ("from_field", "action", "to_field", "to_list", "bind", "skip_if_none"),
-)
+
+class FieldMapping(NamedTuple):
+    """Field mapping definition"""
+
+    from_field: Optional[str]
+    action: Optional[Union[Action, BoundAction]]
+    to_field: Optional[str]
+    to_list: bool
+    bind: bool
+    skip_if_none: bool
 
 
 def define(
-    from_field=None,
-    action=None,
-    to_field=None,
-    to_list=False,
-    bind=False,
-    skip_if_none=False,
+    from_field: str = None,
+    action: Optional[Union[Action, BoundAction]] = None,
+    to_field: str = None,
+    to_list: bool = False,
+    bind: bool = False,
+    skip_if_none: bool = False,
 ):
-    """
-    Helper method for defining a mapping.
+    """Helper method for defining a mapping.
 
-    :param from_field: Source field to map from.
-    :param action: Action callable to perform during mapping, accepted fields differ based on options.
-    :param to_field: Destination field to map to; if not specified the from_field
+    :param from_field: Source field or fields to map from.
+    :param action: Callable Action to perform during mapping, if the bind flag is
+        used the first parameter is the current mapping instance.
+    :param to_field: Destination field to map to; if not specified defaults to
+        the from_field
     :param to_list: Assume the result is a list (rather than a multi value tuple).
     :param bind: During the mapping operation the first parameter should be the mapping instance.
     :param skip_if_none: If the from field is :const:`None` do not include the field (this allows the destination
-        object to define it's own defaults etc)
+        object to define it's own defaults)
     :return: A mapping definition.
 
     """
@@ -139,12 +165,10 @@ registration.register_field_resolver(ResourceFieldResolver, Resource)
 
 
 class MappingMeta(type):
-    """
-    Metaclass for all Mappings
-    """
+    """Metaclass for all Mappings"""
 
     def __new__(mcs, name, bases, attrs):
-        super_new = super(MappingMeta, mcs).__new__
+        super_new = super().__new__
 
         # attrs will never be empty for classes declared in the standard way
         # (ie. with the `class` keyword). This is quite robust.
@@ -182,17 +206,13 @@ class MappingMeta(type):
             from_fields = registration.get_field_resolver(from_obj).from_field_dict
         except KeyError:
             raise MappingSetupError(
-                "`from_obj` {!r} does not have an attribute resolver defined.".format(
-                    from_obj
-                )
+                f"`from_obj` {from_obj!r} does not have an attribute resolver defined."
             )
         try:
             to_fields = registration.get_field_resolver(to_obj).to_field_dict
         except KeyError:
             raise MappingSetupError(
-                "`to_obj` {!r} does not have an attribute resolver defined.".format(
-                    to_obj
-                )
+                f"`to_obj` {to_obj!r} does not have an attribute resolver defined."
             )
 
         def attr_mapping_to_mapping_rule(m, def_type, ref):
@@ -333,9 +353,7 @@ class MappingMeta(type):
 
     @classmethod
     def generate_auto_mapping(mcs, name, from_fields, to_fields):
-        """
-        Generate the auto mapping between two fields.
-        """
+        """Generate the auto mapping between two fields."""
         from_field = from_fields[name]
         to_field = to_fields[name]
         name = force_tuple(name)
@@ -352,9 +370,7 @@ class MappingMeta(type):
 
     @classmethod
     def generate_list_to_list_mapping(mcs, name, from_field, to_field):
-        """
-        Generate a mapping of list to list objects.
-        """
+        """Generate a mapping of list to list objects."""
         try:
             mapping = registration.get_mapping(from_field.of, to_field.of)
             return FieldMapping(
@@ -390,13 +406,11 @@ class MappingMeta(type):
                 return define(name, MapDictAs(NoOpMapper), name, bind=True)
 
 
-class MappingResult(bases.TypedResourceIterable):
-    """
-    Iterator used lazily return a sequence from a mapping operation (used by ``Mapping.apply``).
-    """
+class MappingResult(base_types.TypedResourceIterable):
+    """Iterator used lazily return a sequence from a mapping operation (used by ``Mapping.apply``)."""
 
     def __init__(self, sequence, mapping, context=None, *mapping_options):
-        super(MappingResult, self).__init__(mapping.to_obj)
+        super().__init__(mapping.to_obj)
         self.sequence = sequence
         self.mapping = mapping
         self.context = context or {}
@@ -411,9 +425,8 @@ class MappingResult(bases.TypedResourceIterable):
         self.context["_loop_idx"].pop()
 
 
-class ImmediateResult(bases.ResourceIterable):
-    """
-    Immediately performs the mapping operation rather than delay.
+class ImmediateResult(base_types.ResourceIterable):
+    """Immediately performs the mapping operation rather than delay.
 
     This is useful if context is volatile.
     """
@@ -427,29 +440,25 @@ class ImmediateResult(bases.ResourceIterable):
 
 
 class CachingMappingResult(MappingResult):
-    """
-    Extends from the basic MappingResult to cache the results of a mapping operation and also provide methods and
+    """Extends from the basic MappingResult to cache the results of a mapping operation and also provide methods and
     abilities available to a list (len, indexing). The results are only evaluated when requested.
     """
 
     def __init__(self, *args, **kwargs):
-        super(CachingMappingResult, self).__init__(*args, **kwargs)
-        self._cache = None  # type: list
+        super().__init__(*args, **kwargs)
+        self._cache: Optional[list] = None
 
     def __iter__(self):
         if self._cache is None:
             self._cache = []
-            for item in super(CachingMappingResult, self).__iter__():
+            for item in super().__iter__():
                 self._cache.append(item)
                 yield item
         else:
-            # Python 2.x compatible (python 3 can use yield from)
-            for item in self._cache:
-                yield item
+            yield from self._cache
 
     @property
-    def items(self):
-        # type: () -> list
+    def items(self) -> list:
         if self._cache is None:
             list(iter(self))
         return self._cache
@@ -462,8 +471,8 @@ class CachingMappingResult(MappingResult):
 
 
 class MappingBase:
-    from_obj = None  # type: type
-    to_obj = None  # type: type
+    from_obj: type = None
+    to_obj: type = None
 
     # Pending deprecation, move to from_obj and to_obj terminology
     from_resource = None
@@ -479,7 +488,13 @@ class MappingBase:
     _mapping_rules = None
 
     @classmethod
-    def apply(cls, source_obj, context=None, allow_subclass=False, mapping_result=None):
+    def apply(
+        cls,
+        source_obj,
+        context=None,
+        allow_subclass: bool = False,
+        mapping_result: MappingResult = None,
+    ):
         """
         Apply conversion either a single resource or a list of resources using the mapping defined by this class.
 
@@ -510,22 +525,21 @@ class MappingBase:
                     return cls(source_obj, context, True).convert()
 
                 raise TypeError(
-                    "`source_resource` parameter must be an instance (or subclass instance) of {}".format(
-                        cls.from_obj
-                    )
+                    f"`source_resource` parameter must be an instance (or subclass instance) of {cls.from_obj}"
                 )
 
             raise TypeError(
-                "`source_resource` parameter must be an instance of {}".format(
-                    cls.from_obj
-                )
+                f"`source_resource` parameter must be an instance of {cls.from_obj}"
             )
 
     def __init__(
-        self, source_obj, context=None, allow_subclass=False, ignore_not_provided=False
+        self,
+        source_obj,
+        context=None,
+        allow_subclass: bool = False,
+        ignore_not_provided: bool = False,
     ):
-        """
-        Initialise instance of mapping.
+        """Initialise instance of mapping.
 
         :param source_obj: The source resource, this must be an instance of :py:attr:`Mapping.from_obj`.
         :param context: An optional context value, this can be any value you want to aid in mapping
@@ -535,16 +549,12 @@ class MappingBase:
         if allow_subclass:
             if not isinstance(source_obj, self.from_obj):
                 raise TypeError(
-                    "`source_resource` parameter must be an instance of subclass of {}".format(
-                        self.from_obj
-                    )
+                    f"`source_resource` parameter must be an instance of subclass of {self.from_obj}"
                 )
         else:
             if source_obj.__class__ is not self.from_obj:
                 raise TypeError(
-                    "`source_resource` parameter must be an instance of {}".format(
-                        self.from_obj
-                    )
+                    f"`source_resource` parameter must be an instance of {self.from_obj}"
                 )
         self.source = source_obj
         self.context = context or {}
@@ -552,8 +562,7 @@ class MappingBase:
 
     @property
     def loop_idx(self):
-        """
-        Index within a loop of this mapping (note loop might be for a parent object)
+        """Index within a loop of this mapping (note loop might be for a parent object)
         :returns: Index within the loop; or `None` if we are not currently in a loop.
         """
         loops = self.context.setdefault("_loop_idx", [])
@@ -561,30 +570,23 @@ class MappingBase:
 
     @property
     def loop_level(self):
-        """
-        How many layers of loops are we in?
-        """
+        """How many layers of loops are we in?"""
         return len(self.context.setdefault("_loop_idx", []))
 
     @property
     def in_loop(self):
-        """
-        Is this mapping currently in a loop?
-        """
+        """Is this mapping currently in a loop?"""
         return bool(self.context.setdefault("_loop_idx", []))
 
     def default_action(self, value):
-        """
-        The default action used when mapping. This is a bit of a special case in that it defaults to being bound
+        """The default action used when mapping. This is a bit of a special case in that it defaults to being bound
         and makes use of of :func:`functools.partial` to bind the from and to fields.
 
         :param value: The value to be mapped.
         :return: Mapped value.
 
         """
-        """
-        The default action that is applied for automatic mappings.
-        """
+
         return value
 
     def _apply_rule(self, mapping_rule):
@@ -609,21 +611,18 @@ class MappingBase:
                 else:
                     to_values = action(*from_values)
             except TypeError as ex:
-                raise MappingExecutionError(
-                    "{} applying rule {}".format(ex, mapping_rule)
-                )
+                raise MappingExecutionError(f"{ex} applying rule {mapping_rule}")
 
         if to_list:
-            if isinstance(to_values, typing.Iterable):
+            if isinstance(to_values, Iterable):
                 to_values = (list(to_values),)
         else:
             to_values = force_tuple(to_values)
 
         if len(to_fields) != len(to_values):
             raise MappingExecutionError(
-                "Rule expects {} fields ({} returned) applying rule {}".format(
-                    len(to_fields), len(to_values), mapping_rule
-                )
+                f"Rule expects {len(to_fields)} fields ({len(to_values)} returned) "
+                f"applying rule {mapping_rule}. The `to_list` option might need to be specified"
             )
 
         if skip_if_none:
@@ -641,20 +640,17 @@ class MappingBase:
             return result
 
     def create_object(self, **field_values):
-        """
-        Create an instance of target object, this method can be customise to handle custom object initialisation.
+        """Create an instance of target object, this method can be customised to handle
+        custom object initialisation.
 
         :param field_values: Dictionary of values for creating the target object.
-
         """
         return self.to_obj(**field_values)
 
     def convert(self, **field_values):
-        """
-        Convert the provided source into a destination object.
+        """Convert the provided source into a destination object.
 
         :param field_values: Initial field values (or fields not provided by source object);
-
         """
         values = field_values
 
@@ -665,13 +661,12 @@ class MappingBase:
 
     def update(
         self,
-        destination_obj,
-        ignore_fields=None,
+        destination_obj: Any,
+        ignore_fields: Sequence[str] = None,
         fields=None,
-        ignore_not_provided=False,
+        ignore_not_provided: bool = False,
     ):
-        """
-        Update an existing object with fields from the provided source object.
+        """Update an existing object with fields from the provided source object.
 
         :param destination_obj: The existing destination object.
         :param ignore_fields: A list of fields that should be ignored eg ID fields
@@ -692,9 +687,8 @@ class MappingBase:
 
         return destination_obj
 
-    def diff(self, destination_obj, ignore_not_provided=False):
-        """
-        Return all fields that are different.
+    def diff(self, destination_obj: Any, ignore_not_provided: bool = False):
+        """Return all fields that are different.
 
         :note: a full mapping operation is performed during the diffing process.
 
@@ -715,27 +709,21 @@ class MappingBase:
 
 
 class Mapping(MappingBase, metaclass=MappingMeta):
-    """
-    Definition of a mapping between two Objects.
-    """
+    """Definition of a mapping between two Objects."""
 
     exclude_fields = []
     mappings = []
 
 
 class DynamicMapping(MappingBase):
-    """
-    A mapping that is dynamically generated at run time.
-    """
+    """A mapping that is dynamically generated at run time."""
 
 
 class ImmediateMapping(MappingBase, metaclass=MappingMeta):
-    """
-    Definition of a mapping between two Objects.
+    """Definition of a mapping between two Objects.
 
     This version of the Mapping, defaults to returning an Immediate rather than
     a cached result object.
-
     """
 
     exclude_fields = []
@@ -744,9 +732,10 @@ class ImmediateMapping(MappingBase, metaclass=MappingMeta):
     default_mapping_result = ImmediateResult
 
 
-def map_field(func=None, from_field=None, to_field=None, to_list=False):
-    """
-    Field decorator for custom mappings.
+def map_field(
+    func=None, from_field: str = None, to_field: str = None, to_list: bool = False
+):
+    """Field decorator for custom mappings.
 
     :param func: Method being decorator is wrapping.
     :param from_field: Name of the field to map from; default is to use the function name.
@@ -764,8 +753,7 @@ def map_field(func=None, from_field=None, to_field=None, to_list=False):
 
 
 def map_list_field(*args, **kwargs):
-    """
-    Field decorator for custom mappings that return a single list.
+    """Field decorator for custom mappings that return a single list.
 
     This mapper also allows for returning an iterator or generator that will be converted into a list during the
     mapping operation.
@@ -776,9 +764,8 @@ def map_list_field(*args, **kwargs):
     return map_field(*args, **kwargs)
 
 
-def assign_field(func=None, to_field=None, to_list=False):
-    """
-    Field decorator for assigning a value to destination field without requiring a corresponding source field.
+def assign_field(func=None, to_field: str = None, to_list: bool = False):
+    """Field decorator for assigning a value to destination field without requiring a corresponding source field.
 
     Allows for the mapping to calculate a value based on the context or other information. Useful when a destination
     objects defaulting mechanism is not able to calculate a default that either applies or is suitable.
@@ -796,18 +783,17 @@ def assign_field(func=None, to_field=None, to_list=False):
 
 
 def mapping_factory(
-    from_obj,
-    to_obj,
-    base_mapping=Mapping,
-    generate_reverse=True,
+    from_obj: Any,
+    to_obj: Any,
+    base_mapping: Type[Mapping] = Mapping,
+    generate_reverse: bool = True,
     mappings=None,
     reverse_mappings=None,
     exclude_fields=None,
     reverse_exclude_fields=None,
     register_mappings=True,
 ):
-    """
-    Factory method for generating simple mappings between objects.
+    """Factory method for generating simple mappings between objects.
 
     A common use-case for this method is in generating mappings in baldr's ``model_resource_factory`` method that
     auto-generates resources from Django models.
@@ -827,12 +813,7 @@ def mapping_factory(
 
     """
     forward_mapping = type(
-        "{}{}To{}{}".format(
-            from_obj.__class__.__name__,
-            from_obj.__name__,
-            to_obj.__class__.__name__,
-            to_obj.__name__,
-        ),
+        f"{from_obj.__class__.__name__}{from_obj.__name__}To{to_obj.__class__.__name__}{to_obj.__name__}",
         (base_mapping,),
         {
             "from_obj": from_obj,
@@ -845,12 +826,7 @@ def mapping_factory(
 
     if generate_reverse:
         reverse_mapping = type(
-            "{}{}To{}{}".format(
-                to_obj.__class__.__name__,
-                to_obj.__name__,
-                from_obj.__class__.__name__,
-                from_obj.__name__,
-            ),
+            f"{to_obj.__class__.__name__}{to_obj.__name__}To{from_obj.__class__.__name__}{from_obj.__name__}",
             (base_mapping,),
             {
                 "from_obj": to_obj,
@@ -867,10 +843,13 @@ def mapping_factory(
 
 
 def forward_mapping_factory(
-    from_obj, to_obj, base_mapping=Mapping, mappings=None, exclude_fields=None
+    from_obj: Any,
+    to_obj: Any,
+    base_mapping: Type[Mapping] = Mapping,
+    mappings=None,
+    exclude_fields=None,
 ):
-    """
-    Factory method for generating simple forward mappings between objects.
+    """Factory method for generating simple forward mappings between objects.
 
     :param from_obj: Object to map from.
     :param to_obj: Object to map to.
@@ -886,17 +865,16 @@ def forward_mapping_factory(
 
 
 def dynamic_mapping_factory(
-    from_obj,
-    to_obj,
-    base_mapping=Mapping,
-    generate_reverse=False,
+    from_obj: Any,
+    to_obj: Any,
+    base_mapping: Type[Mapping] = Mapping,
+    generate_reverse: bool = False,
     mappings=None,
     reverse_mappings=None,
     exclude_fields=None,
     reverse_exclude_fields=None,
 ):
-    """
-    Factory method for generating a dynamic mapping. That is generated dynamically at run time (eg from
+    """Factory method for generating a dynamic mapping. That is generated dynamically at run time (eg from
     configuration the results of which are not registered for later use.
 
     :param from_obj: Object to map from.
