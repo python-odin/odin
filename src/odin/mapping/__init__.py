@@ -13,7 +13,7 @@ from typing import (
 from odin import bases as base_types
 from odin import registration
 from odin.fields import NotProvided
-from odin.resources import Resource
+from odin.resources import Resource, ResourceBase
 from odin.fields.composite import ListOf, DictAs
 from odin.exceptions import MappingSetupError, MappingExecutionError
 from odin.mapping.helpers import MapListOf, MapDictAs, NoOpMapper
@@ -161,7 +161,7 @@ class ResourceFieldResolver(FieldResolverBase):
         return getmeta(self.obj).field_map
 
 
-registration.register_field_resolver(ResourceFieldResolver, Resource)
+registration.register_field_resolver(ResourceFieldResolver, ResourceBase)
 
 
 class MappingMeta(type):
