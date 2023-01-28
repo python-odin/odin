@@ -42,9 +42,7 @@ def _new_meta_instance(
     meta_def: Optional[object],
     new_class: "AnnotatedResourceType",
 ) -> MOT:
-    """
-    Instantiate meta options instance and handle inheritance of required fields
-    """
+    """Instantiate meta options instance and handle inheritance of required fields."""
     base_meta = getattr(new_class, "_meta", None)
     new_meta = meta_options_type(meta_def)
     new_class.add_to_class("_meta", new_meta)
@@ -73,9 +71,7 @@ def _new_meta_instance(
 
 
 def _iterate_attrs(attrs: Dict[str, Any]) -> Iterable[Tuple[str, BaseField]]:
-    """
-    Iterate through attributes and combine with annotations
-    """
+    """Iterate through attributes and combine with annotations."""
     annotations = attrs.pop("__annotations__", None) or {}
 
     # Yield any annotations processed into field instances
@@ -92,9 +88,7 @@ def _iterate_attrs(attrs: Dict[str, Any]) -> Iterable[Tuple[str, BaseField]]:
 def _add_parent_fields_to_class(
     new_class: "AnnotatedResourceType", new_meta: ResourceOptions, parents
 ):
-    """
-    Iterate through parent attrs and yield fields
-    """
+    """Iterate through parent attrs and yield fields."""
     # All the fields of any type declared on this model
     local_field_attr_names = {f.attname for f in new_meta.fields}
     field_attr_names = set(local_field_attr_names)
@@ -207,9 +201,7 @@ class AnnotatedResourceType(type):
 class AnnotatedResource(
     ResourceBase, metaclass=AnnotatedResourceType, meta_options_type=ResourceOptions
 ):
-    """
-    New Style Resource utilising type annotations for defining fields
-    """
+    """New Style Resource utilising type annotations for defining fields."""
 
 
 AResource = AnnotatedResource
