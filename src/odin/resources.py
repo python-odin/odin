@@ -1,10 +1,21 @@
 import copy
-from typing import TypeVar, Dict, Any, Type, Optional
+from typing import (
+    TypeVar,
+    Dict,
+    Any,
+    Type,
+    Optional,
+    Tuple,
+    Union,
+    Sequence,
+    List,
+    cast,
+)
 
 from odin import bases
 from odin import exceptions, registration
 from odin.exceptions import ValidationError, ResourceDefError
-from odin.fields import NotProvided
+from odin.fields import NotProvided, BaseField, Field
 from odin.utils import (
     lazy_property,
     cached_property,
@@ -43,21 +54,21 @@ class ResourceOptions:
         self.meta = meta
         self.parents = []
 
-        self.fields = []
-        self._key_fields = []
-        self.virtual_fields = []
+        self.fields: List[Field] = []
+        self._key_fields: List[Field] = []
+        self.virtual_fields: List[BaseField] = []
 
-        self.name = None
-        self.class_name = None
-        self.name_space = NotProvided
-        self.verbose_name = None
-        self.verbose_name_plural = None
-        self.abstract = False
-        self.doc_group = None
-        self.type_field = NotProvided
-        self.key_field_names = None
+        self.name: Optional[str] = None
+        self.class_name: Optional[str] = None
+        self.name_space: Union[str, Type[NotProvided]] = NotProvided
+        self.verbose_name: Optional[str] = None
+        self.verbose_name_plural: Optional[str] = None
+        self.abstract: bool = False
+        self.doc_group: Optional[str] = None
+        self.type_field: Union[str, Type[NotProvided]] = NotProvided
+        self.key_field_names: Optional[Sequence[str]] = None
         self.field_sorting = NotProvided
-        self.user_data = None
+        self.user_data: Optional[Any] = None
 
         self._cache = {}
 
@@ -133,7 +144,7 @@ class ResourceOptions:
         cached_property.clear_caches(self)
 
     @property
-    def resource_name(self):
+    def resource_name(self) -> str:
         """Full name of resource including namespace (if specified)."""
         if self.name_space:
             return f"{self.name_space}.{self.name}"
@@ -141,17 +152,17 @@ class ResourceOptions:
             return self.name
 
     @lazy_property
-    def all_fields(self):
+    def all_fields(self) -> Sequence[BaseField]:
         """All fields both standard and virtual."""
-        return tuple(self.fields + self.virtual_fields)
+        return tuple(cast(BaseField, self.fields) + self.virtual_fields)
 
     @lazy_property
-    def init_fields(self):
+    def init_fields(self) -> Sequence[Field]:
         """Fields used in the resource init."""
         return self.fields
 
     @lazy_property
-    def composite_fields(self):
+    def composite_fields(self) -> Sequence[Field]:
         """All composite fields."""
         # Not the nicest solution but is a fairly safe way of detecting a composite field.
         return tuple(
@@ -159,7 +170,7 @@ class ResourceOptions:
         )
 
     @lazy_property
-    def container_fields(self):
+    def container_fields(self) -> Sequence[Field]:
         """All composite fields with the container flag.
 
         Used by XML like codecs.
@@ -169,7 +180,8 @@ class ResourceOptions:
         )
 
     @lazy_property
-    def field_map(self):
+    def field_map(self) -> Dict[str, Field]:
+        """Mapping of attribute name to field."""
         return {f.attname: f for f in self.fields}
 
     @lazy_property
@@ -178,27 +190,28 @@ class ResourceOptions:
         return tuple(getmeta(p).resource_name for p in self.parents)
 
     @lazy_property
-    def attribute_fields(self):
+    def attribute_fields(self) -> Sequence[Field]:
         """List of fields where is_attribute is True."""
         return tuple(f for f in self.fields if f.is_attribute)
 
     @lazy_property
-    def element_fields(self):
+    def element_fields(self) -> Sequence[Field]:
         """List of fields where is_attribute is False."""
         return tuple(f for f in self.fields if not f.is_attribute)
 
     @lazy_property
-    def element_field_map(self):
+    def element_field_map(self) -> Dict[str, Field]:
+        """Mapping of attribute name to field for element fields."""
         return {f.attname: f for f in self.element_fields}
 
     @lazy_property
-    def key_field(self):
-        """Field specified as the key field"""
+    def key_field(self) -> Field:
+        """Field specified as the key field."""
         if self.key_fields:
             return self.key_fields[0]
 
     @lazy_property
-    def key_fields(self):
+    def key_fields(self) -> Sequence[Field]:
         """Tuple of fields specified as the key fields"""
         # Key fields names in meta go first
         field_names = set(self.key_field_names) if self.key_field_names else set()
@@ -210,7 +223,7 @@ class ResourceOptions:
         return tuple(sorted((self.field_map[f] for f in field_names), key=hash))
 
     @lazy_property
-    def readonly_fields(self):
+    def readonly_fields(self) -> Sequence[BaseField]:
         """Fields that can only be read from."""
         return self.virtual_fields
 
@@ -527,7 +540,9 @@ class Resource(ResourceBase, metaclass=ResourceType):
     pass
 
 
-def resolve_resource_type(resource):
+def resolve_resource_type(
+    resource: Type[ResourceBase],
+) -> Tuple[Union[str, Type[ResourceBase]], str, str]:
     if isinstance(resource, type) and issubclass(resource, ResourceBase):
         meta = getmeta(resource)
         return meta.resource_name, meta.type_field, meta.name_space
