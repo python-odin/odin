@@ -10,3 +10,4 @@ Contents
    ref/index
    integration/index
    examples/index
+   change-history

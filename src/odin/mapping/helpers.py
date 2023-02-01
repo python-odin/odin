@@ -1,25 +1,29 @@
 def sum_fields(*field_values):
-    """
-    Return a sum of fields
+    """Return the sum of a number of fields.
 
-    :param field_values:
-    :return:
+    Example::
+
+        define(from_field=("field_a", "field_b"), action=sum_fields, to_field="field_total")
 
     """
     return sum(field_values)
 
 
 class JoinFields:
-    """
-    Helper for combining multiple fields
+    """Helper for combining multiple fields.
+
+    Example::
+
+        define(from_field=("field_a", "field_b"), action=JoinFields(sep=":"), to_field="field_joined")
+
     """
 
     __slots__ = ("sep",)
 
-    def __init__(self, sep=""):
+    def __init__(self, sep: str = ""):
         self.sep = sep
 
-    def __call__(self, *field_values):
+    def __call__(self, *field_values) -> str:
         return self.sep.join(field_values)
 
 
@@ -29,8 +33,12 @@ cat_fields = CatFields = JoinFields
 
 
 class SplitField:
-    """
-    Helper for splitting a field into multiple fields.
+    """Helper for splitting a field into multiple fields.
+
+    Example::
+
+        define(from_field="field_joined", action=SplitField(sep=":"), to_field=("field_a", "field_b"))
+
     """
 
     __slots__ = (
@@ -53,13 +61,13 @@ split_field = SplitField
 
 
 class ApplyMapping:
-    """
-    Helper for applying a mapper.
+    """Helper for applying a mapper.
 
     This helper should be used along with the bind flag so the context object can be maintained.
+
     """
 
-    def __init__(self, mapping, allow_subclass=False):
+    def __init__(self, mapping, allow_subclass: bool = False):
         self.mapping = mapping
         self.allow_subclass = allow_subclass
 
@@ -74,17 +82,14 @@ class ApplyMapping:
         )
 
     def __repr__(self):
-        return "<{}: {}.{}>".format(
-            self.__class__.__name__, self.mapping.__module__, self.mapping.__name__
-        )
+        return f"<{self.__class__.__name__}: {self.mapping.__module__}.{self.mapping.__name__}>"
 
 
 MapDictAs = MapListOf = ApplyMapping
 
 
 class NoOpMapper:
-    """
-    Helper that provides the mapper interface performs no operation on the object.
+    """Helper that provides the mapper interface performs no operation on the object.
 
     This is used with the MapListOf and MapDictAs fields when both contain the same Resource type.
     """

@@ -12,9 +12,9 @@ class SimpleFromResource(odin.Resource):
     title = odin.StringField()
 
 
-class SimpleToResource(odin.Resource):
-    title = odin.StringField()
-    title_count = odin.StringField()
+class SimpleToResource(odin.AnnotatedResource):
+    title: str
+    title_count: str
 
 
 class FakeToResource(odin.Resource):

@@ -238,3 +238,20 @@ resources.
 There is also the simpler method when only a forward mapping is desired.
 
     .. autofunction:: forward_mapping_factory
+
+
+Mapping Other Types
+===================
+
+Mappers can also be used to map other to and from other object types that are not odin Resources.
+
+.. tip:: There is worked example for :doc:`Django Models </integration/django/index>` in the integration section.
+
+For mapping rules to be determined the mapper must resolve which fields/attributes
+are available on a type that can be mapped. This is done using a field resolver
+that is associated with the type (or sub type) of the object to be mapped.
+
+The field resolver is a class inherited from ``FieldResolverBase`` that can resolve
+what fields are available. This class is them registered with Odins type registry.
+
+    .. autoclass:: FieldResolverBase

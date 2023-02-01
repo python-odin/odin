@@ -11,6 +11,7 @@ JSON data Odin provides the same ``load``, ``loads`` style interface.
    :maxdepth: 2
 
    csv_codec
+   dict_codec
    json_codec
    msgpack_codec
    toml_codec
