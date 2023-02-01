@@ -25,8 +25,8 @@ from odin.utils import cached_property, getmeta
 __all__ = ("Mapping", "map_field", "map_list_field", "assign_field", "define", "assign")
 
 _V = TypeVar("_V")
-Action = Callable[[Any, ...], Optional[Any]]
-BoundAction = Callable[["Mapping", Any, ...], Optional[Any]]
+Action = Callable[[Any, "..."], Optional[Any]]
+BoundAction = Callable[["Mapping", Any, "..."], Optional[Any]]
 
 
 def force_tuple(value: Union[_V, Sequence[_V]]) -> Sequence[_V]:
