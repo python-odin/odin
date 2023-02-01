@@ -42,6 +42,11 @@ class TestAnnotatedResource:
             "purchased_from",
         ]
 
+    def test_cached_properties_work_as_expected(self):
+        target = Publisher(name="Super Pub")
+
+        assert target.capitalised_name == "SUPER PUB"
+
 
 class TestAnnotatedKitchenSink:
     def test_dumps_with_valid_data(self):
@@ -63,13 +68,13 @@ class TestAnnotatedKitchenSink:
         assert json.loads(actual) == json.loads(
             """
 {
-    "$": "new_library.Library",
+    "$": "annotated.new_library.Library",
     "name": "Public Library",
     "books": [
         {
-            "$": "new_library.Book",
+            "$": "annotated.Book",
             "publisher": {
-                "$": "Publisher",
+                "$": "annotated.Publisher",
                 "name": "Macmillan"
             },
             "num_pages": 471,
@@ -77,7 +82,7 @@ class TestAnnotatedKitchenSink:
             "title": "Consider Phlebas",
             "authors": [
                 {
-                    "$": "Author",
+                    "$": "annotated.Author",
                     "name": "Iain M. Banks"
                 }
             ],

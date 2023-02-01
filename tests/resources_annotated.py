@@ -1,6 +1,7 @@
 import enum
 import uuid
 from datetime import datetime
+from functools import cached_property
 from typing import List, Optional
 
 import odin
@@ -11,23 +12,28 @@ class Author(odin.AResource):
     name: str
 
     class Meta:
-        namespace = None
+        namespace = "annotated"
 
 
 class Publisher(odin.AResource):
     name: str
 
     class Meta:
-        namespace = None
+        namespace = "annotated"
+
+    @cached_property
+    def capitalised_name(self):
+        return self.name.upper()
 
 
 class LibraryBook(odin.AResource, abstract=True):
     class Meta:
-        namespace = "new_library"
+        namespace = "annotated.new_library"
 
 
 class Book(LibraryBook):
     class Meta:
+        namespace = "annotated"
         key_field_name = "isbn"
 
     title: str
@@ -75,9 +81,7 @@ class IdentifiableBook(Book):
 
 
 class Subscriber(odin.Resource):
-    """
-    Mixed resource types
-    """
+    """Mixed resource types"""
 
     name: str = odin.StringField()
     address: str = odin.StringField()
@@ -93,4 +97,4 @@ class Library(odin.AnnotatedResource):
         return len(self.books)
 
     class Meta:
-        namespace = "new_library"
+        namespace = "annotated.new_library"

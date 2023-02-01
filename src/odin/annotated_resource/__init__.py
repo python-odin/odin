@@ -195,6 +195,8 @@ class AnnotatedResourceType(type):
         if hasattr(value, "contribute_to_class"):
             value.contribute_to_class(cls, name)
         else:
+            if hasattr(value, "__set_name__"):
+                value.__set_name__(cls, name)
             setattr(cls, name, value)
 
 

@@ -78,8 +78,8 @@ class TestTomlCodec:
             rrp=19.50,
             fiction=True,
             genre="sci-fi",
-            authors=[Author(name="Iain M. Banks")],
-            publisher=Publisher(name="Macmillan"),
+            authors=[resources_annotated.Author(name="Iain M. Banks")],
+            publisher=resources_annotated.Publisher(name="Macmillan"),
             published=[datetime.datetime(1987, 1, 1)],
         )
 
