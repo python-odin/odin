@@ -157,7 +157,7 @@ def getmeta(resource_or_instance):
     """Get metaobject from a resource or resource instance.
 
     :param resource_or_instance: Resource or instance of a resource.
-    :type resource_or_instance: odin.resources.ResourceType | odin.resources.ResourceBase
+    :type resource_or_instance: Type[odin.resources.ResourceBase] | odin.resources.ResourceBase
     :return: Meta options class
     :rtype: odin.resources.ResourceOptions
 
