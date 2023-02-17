@@ -64,6 +64,21 @@ Meta Options
 ``key_field_names``
     Similar to the ``key_field_name`` but for defining multi-part keys.
 
+``field_name_format``
+    Provide a function that can be used to format field names. Field names are used
+    to identify values when a resource serialised/deserialised.
+
+    For example to use *camelCase* names specify the following option:
+
+    .. code-block:: python
+
+        from odin.utils import snake_to_camel
+
+        class MyResource(Resource):
+            class Meta:
+                field_name_format = snake_to_camel
+
+
 ``field_sorting``
     Used to customise how fields are sorted (primarily affects the order fields will
     be exported during serialisation) during inheritance. The default behaviour is
@@ -75,7 +90,9 @@ Meta Options
     sorts the fields by the order they are defined.
 
     Supplying a callable allows for customisation of the field sorting eg sort by
-    name::
+    name:
+
+    .. code-block:: python
 
         def sort_by_name(fields):
             return sorted(fields, key=lambda f: f.name)
