@@ -3,6 +3,7 @@ import enum
 
 from odin.fields.virtual import CalculatedField
 from odin.mapping.helpers import sum_fields
+from odin.utils import snake_to_camel
 
 
 class Author(odin.Resource):
@@ -221,3 +222,18 @@ class FromToMapping(odin.Mapping):
     @odin.assign_field
     def assigned_field(self):
         return "Foo"
+
+
+class CamelCaseResource(odin.Resource):
+    class Meta:
+        namespace = "foo.bar"
+        field_sorting = True
+        field_name_format = snake_to_camel
+
+    full_name = odin.StringField()
+    year_of_birth = odin.IntegerField()
+
+
+class InheritedCamelCaseResource(CamelCaseResource):
+
+    email_address = odin.EmailField()

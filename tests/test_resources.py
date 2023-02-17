@@ -9,8 +9,8 @@ from odin.resources import (
     Resource,
 )
 from odin.exceptions import ValidationError, ResourceDefError
-from odin.utils import getmeta
-from .resources import Book, BookProxy, Library, Subscriber
+from odin.utils import getmeta, snake_to_camel
+from .resources import Book, BookProxy, Library, Subscriber, InheritedCamelCaseResource
 
 
 class Author(odin.Resource):
@@ -91,8 +91,8 @@ class TestResource:
 
     def test_constructor_args_only(self):
         r = Author("Foo")
-        assert "Foo" == r.name
-        assert None == r.country
+        assert r.name == "Foo"
+        assert r.country is None
 
     def test_constructor_args_excess(self):
         with pytest.raises(TypeError) as ex:
@@ -131,7 +131,7 @@ class TestResource:
         r.clean_fields()
 
         assert "Foo" == r.name
-        assert None == r.country
+        assert r.country is None
 
     def test_clean_fields_3(self):
         r = Author(name="Foo", country="England")
@@ -391,3 +391,16 @@ class TestConstructionMethods:
             )
             == book.to_dict()
         )
+
+    def test_inheritance_of_meta_options(self):
+        options = getmeta(InheritedCamelCaseResource)
+
+        assert options.resource_name == "foo.bar.InheritedCamelCaseResource"
+        assert options.field_name_format is snake_to_camel
+
+    def test_field_name_format(self):
+        options = getmeta(InheritedCamelCaseResource)
+
+        actual = [field.name for field in options.fields]
+
+        assert actual == ["fullName", "yearOfBirth", "emailAddress"]
