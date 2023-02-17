@@ -1,11 +1,11 @@
-from odin.utils import cached_property, field_iter_items, getmeta
+from functools import cached_property
+from odin.utils import field_iter_items, getmeta
 
 __all__ = ("ResourceAdapter",)
 
 
 class CurriedAdapter:
-    """
-    Curry wrapper for an Adapter to allow for pre-config of include/exclude and
+    """Curry wrapper for an Adapter to allow for pre-config of include/exclude and
     any other user defined arguments provided in kwargs.
     """
 
@@ -21,9 +21,7 @@ class CurriedAdapter:
 
 
 class ResourceOptionsAdapter:
-    """
-    A lightweight wrapper for the *ResourceOptions* class that filters fields.
-    """
+    """A lightweight wrapper for the *ResourceOptions* class that filters fields."""
 
     def __init__(self, options, include, exclude):
         self._wrapped = options
@@ -54,27 +52,22 @@ class ResourceOptionsAdapter:
 
     @cached_property
     def all_fields(self):
-        """
-        All fields both standard and virtual.
-        """
+        """All fields both standard and virtual."""
         return self.fields + self.virtual_fields
 
     @cached_property
     def field_map(self):
+        """Map of attribute name to field."""
         return {f.attname: f for f in self.fields}
 
     @property
     def attribute_fields(self):
-        """
-        List of fields where is_attribute is True.
-        """
+        """List of fields where is_attribute is True."""
         return [f for f in self.fields if f.is_attribute]
 
     @property
     def element_fields(self):
-        """
-        List of fields where is_attribute is False.
-        """
+        """List of fields where is_attribute is False."""
         return [f for f in self.fields if not f.is_attribute]
 
 
