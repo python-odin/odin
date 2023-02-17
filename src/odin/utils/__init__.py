@@ -249,7 +249,7 @@ def extract_fields_from_dict(d: Dict[str, Any], resource) -> Dict[str, Any]:
     return {f.name: d[f.name] for f in field_iter(resource) if f.name in d}
 
 
-def value_in_choices(value: Any, choices: List[Tuple[0, str]]) -> bool:
+def value_in_choices(value: Any, choices: List[Tuple[Any, str]]) -> bool:
     """Check if the value appears in the choices list (an iterable of tuples,
     the first value of which is the choice value).
 
