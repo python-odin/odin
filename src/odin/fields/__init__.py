@@ -5,7 +5,7 @@ import pathlib
 import re
 import uuid
 from functools import cached_property
-from typing import Sequence, Tuple, Any, TypeVar, Optional, Type
+from typing import Sequence, Tuple, Any, TypeVar, Optional, Type, Dict
 
 from odin import exceptions, datetimeutil, registration
 from odin.utils import getmeta
@@ -24,6 +24,7 @@ from .base import BaseField
 
 __all__ = (
     "NotProvided",
+    "NotProvidedType",
     "BaseField",
     "Field",
     "BooleanField",
@@ -61,14 +62,14 @@ class NotProvided:
     pass
 
 
+NotProvidedType = Type[NotProvided]
+
 # Backwards compatibility
 NOT_PROVIDED = NotProvided
 
 
 class Field(BaseField):
-    """
-    Base class for fields.
-    """
+    """Base class for fields."""
 
     default_validators = []
     default_error_messages = {
@@ -102,7 +103,7 @@ class Field(BaseField):
         default=NotProvided,
         help_text: str = "",
         validators: Sequence = None,
-        error_messages=None,
+        error_messages: Dict[str, str] = None,
         is_attribute: bool = False,
         doc_text: str = "",
         key: bool = False,
@@ -159,33 +160,32 @@ class Field(BaseField):
 
     @cached_property
     def choice_values(self):
-        """
-        Choice values to allow choices to simplify checking if a choice is valid.
-        """
+        """Choice values to allow choices to simplify checking if a choice is valid."""
         if self.choices is not None:
             return tuple(c[0] for c in self.choices)
 
     @property
     def choices_doc_text(self) -> Sequence[Tuple[str, str]]:
-        """
-        Choices converted for documentation purposes.
-        """
+        """Choices converted for documentation purposes."""
         return self.choices
 
-    def contribute_to_class(self, cls, name):
-        self.set_attributes_from_name(name)
+    def contribute_to_class(self, cls, name: str):
+        """Contribute value this field to a resource class."""
+        meta = getmeta(cls)
+        self.set_attributes_from_name(name, meta.field_name_format)
         self.resource = cls
-        getmeta(cls).add_field(self)
+        meta.add_field(self)
 
     def to_python(self, value):
         """
         Converts the input value into the expected Python data type, raising
-        odin.exceptions.ValidationError if the data can't be converted.
+        ``odin.exceptions.ValidationError`` if the data can't be converted.
         Returns the converted value. Subclasses should override this.
         """
         raise NotImplementedError()
 
     def run_validators(self, value):
+        """Execute validators against supplied value."""
         if value in self.empty_values:
             return
 
@@ -200,6 +200,7 @@ class Field(BaseField):
             raise exceptions.ValidationError(errors)
 
     def validate(self, value):
+        """Validate a supplied value."""
         if (
             self.choice_values
             and (value not in self.empty_values)
@@ -225,15 +226,11 @@ class Field(BaseField):
         return value
 
     def has_default(self):
-        """
-        Returns a bool of whether this field has a default value.
-        """
+        """Returns a bool of whether this field has a default value."""
         return self.default is not NotProvided
 
     def get_default(self):
-        """
-        Returns the default value for this field.
-        """
+        """Returns the default value for this field."""
         if self.has_default():
             if callable(self.default):
                 return self.default()
@@ -241,9 +238,7 @@ class Field(BaseField):
         return None
 
     def value_to_object(self, obj, data):
-        """
-        Assign a value to an object
-        """
+        """Assign a value to an object."""
         setattr(obj, self.attname, data)
 
 

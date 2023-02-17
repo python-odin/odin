@@ -10,14 +10,14 @@ from typing import (
     Sequence,
     List,
     cast,
+    Callable,
 )
 
 from odin import bases
 from odin import exceptions, registration
 from odin.exceptions import ValidationError, ResourceDefError
-from odin.fields import NotProvided, BaseField, Field
+from odin.fields import NotProvided, BaseField, Field, NotProvidedType
 from odin.utils import (
-    lazy_property,
     cached_property,
     field_iter_items,
     force_tuple,
@@ -46,11 +46,13 @@ class ResourceOptions:
         "type_field",
         "key_field_name",
         "key_field_names",
+        "field_name_format",
         "field_sorting",
         "user_data",
     )
 
     def __init__(self, meta):
+        """Initialise resource options."""
         self.meta = meta
         self.parents = []
 
@@ -65,9 +67,12 @@ class ResourceOptions:
         self.verbose_name_plural: Optional[str] = None
         self.abstract: bool = False
         self.doc_group: Optional[str] = None
-        self.type_field: Union[str, Type[NotProvided]] = NotProvided
+        self.type_field: Union[str, NotProvidedType] = NotProvided
         self.key_field_names: Optional[Sequence[str]] = None
-        self.field_sorting = NotProvided
+        self.field_name_format: Union[
+            Callable[[str], str], NotProvidedType
+        ] = NotProvided
+        self.field_sorting: Union[bool, NotProvidedType] = NotProvided
         self.user_data: Optional[Any] = None
 
         self._cache = {}
@@ -151,17 +156,17 @@ class ResourceOptions:
         else:
             return self.name
 
-    @lazy_property
+    @cached_property
     def all_fields(self) -> Sequence[BaseField]:
         """All fields both standard and virtual."""
         return tuple(cast(BaseField, self.fields) + self.virtual_fields)
 
-    @lazy_property
+    @cached_property
     def init_fields(self) -> Sequence[Field]:
         """Fields used in the resource init."""
         return self.fields
 
-    @lazy_property
+    @cached_property
     def composite_fields(self) -> Sequence[Field]:
         """All composite fields."""
         # Not the nicest solution but is a fairly safe way of detecting a composite field.
@@ -169,7 +174,7 @@ class ResourceOptions:
             f for f in self.fields if (hasattr(f, "of") and issubclass(f.of, Resource))
         )
 
-    @lazy_property
+    @cached_property
     def container_fields(self) -> Sequence[Field]:
         """All composite fields with the container flag.
 
@@ -179,38 +184,38 @@ class ResourceOptions:
             f for f in self.composite_fields if getattr(f, "use_container", False)
         )
 
-    @lazy_property
+    @cached_property
     def field_map(self) -> Dict[str, Field]:
         """Mapping of attribute name to field."""
         return {f.attname: f for f in self.fields}
 
-    @lazy_property
+    @cached_property
     def parent_resource_names(self):
         """List of parent resource names."""
         return tuple(getmeta(p).resource_name for p in self.parents)
 
-    @lazy_property
+    @cached_property
     def attribute_fields(self) -> Sequence[Field]:
         """List of fields where is_attribute is True."""
         return tuple(f for f in self.fields if f.is_attribute)
 
-    @lazy_property
+    @cached_property
     def element_fields(self) -> Sequence[Field]:
         """List of fields where is_attribute is False."""
         return tuple(f for f in self.fields if not f.is_attribute)
 
-    @lazy_property
+    @cached_property
     def element_field_map(self) -> Dict[str, Field]:
         """Mapping of attribute name to field for element fields."""
         return {f.attname: f for f in self.element_fields}
 
-    @lazy_property
+    @cached_property
     def key_field(self) -> Field:
         """Field specified as the key field."""
         if self.key_fields:
             return self.key_fields[0]
 
-    @lazy_property
+    @cached_property
     def key_fields(self) -> Sequence[Field]:
         """Tuple of fields specified as the key fields"""
         # Key fields names in meta go first
@@ -222,7 +227,7 @@ class ResourceOptions:
 
         return tuple(sorted((self.field_map[f] for f in field_names), key=hash))
 
-    @lazy_property
+    @cached_property
     def readonly_fields(self) -> Sequence[BaseField]:
         """Fields that can only be read from."""
         return self.virtual_fields
@@ -290,6 +295,12 @@ class ResourceType(type):
         # Key field is inherited
         if base_meta and new_meta.key_field_names is None:
             new_meta.key_field_names = base_meta.key_field_names
+
+        # Field name format is inherited
+        if new_meta.field_name_format is NotProvided:
+            new_meta.field_name_format = (
+                base_meta.field_name_format if base_meta else None
+            )
 
         # Field sorting is inherited
         if new_meta.field_sorting is NotProvided:

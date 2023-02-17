@@ -63,6 +63,10 @@ def _new_meta_instance(
     if base_meta and new_meta.key_field_names is None:
         new_meta.key_field_names = base_meta.key_field_names
 
+    # Field name format is inherited
+    if new_meta.field_name_format is NotProvided:
+        new_meta.field_name_format = base_meta.field_name_format if base_meta else None
+
     # Field sorting is inherited
     if new_meta.field_sorting is NotProvided:
         new_meta.field_sorting = base_meta.field_sorting if base_meta else False

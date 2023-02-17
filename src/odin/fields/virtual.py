@@ -55,9 +55,10 @@ class VirtualField(BaseField):
         raise AttributeError("Read only")
 
     def contribute_to_class(self, cls, name):
-        self.set_attributes_from_name(name)
+        meta = getmeta(cls)
+        self.set_attributes_from_name(name, meta.field_name_format)
         self.resource = cls
-        getmeta(cls).add_virtual_field(self)
+        meta.add_virtual_field(self)
         setattr(cls, name, self)
 
 
