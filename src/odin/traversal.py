@@ -23,9 +23,7 @@ def _split_atom(atom):
 
 
 class TraversalPath:
-    """
-    A path through a resource structure.
-    """
+    """A path through a resource structure."""
 
     @classmethod
     def parse(cls, path: Union["TraversalPath", str]):
@@ -75,9 +73,7 @@ class TraversalPath:
         return iter(self._path)
 
     def get_value(self, root_resource: ResourceBase):
-        """
-        Get a value from a resource structure.
-        """
+        """Get a value from a resource structure."""
         result = root_resource
         for value, key, attr in self:
             meta = getmeta(result)
@@ -120,9 +116,8 @@ class TraversalPath:
 
 
 class ResourceTraversalIterator:
-    """
-    Iterator for traversing (walking) a resource structure, including traversing composite fields to fully navigate a
-    resource tree.
+    """Iterator for traversing (walking) a resource structure, including traversing
+    composite fields to fully navigate a resource tree.
 
     This class has hooks that can be used by subclasses to customise the behaviour of the class:
 
@@ -202,9 +197,8 @@ class ResourceTraversalIterator:
             raise StopIteration()
 
     @property
-    def path(self):
-        """
-        Path to the current resource node in the tree structure.
+    def path(self) -> TraversalPath:
+        """Path to the current resource node in the tree structure.
 
         This path can be used to later traverse the tree structure to find get to the specified resource.
         """
@@ -212,13 +206,12 @@ class ResourceTraversalIterator:
         return TraversalPath(*self._path[1:])
 
     @property
-    def depth(self):
-        """
-        Depth of the current resource in the tree structure.
-        """
+    def depth(self) -> int:
+        """Depth of the current resource in the tree structure."""
         return len(self._path) - 1
 
     @property
     def current_resource(self):
+        """The current resource being traversed."""
         if self._resource_stack:
             return self._resource_stack[-1]

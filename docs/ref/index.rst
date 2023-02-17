@@ -13,3 +13,4 @@ API Reference
    adapters
    validators
    traversal
+   utils

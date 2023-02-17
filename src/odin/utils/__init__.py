@@ -1,5 +1,19 @@
 import re
-from typing import Iterable, Tuple, Union, Set, T, Sequence
+from typing import (
+    Iterable,
+    Tuple,
+    Union,
+    Set,
+    TypeVar,
+    Sequence,
+    Any,
+    List,
+    Dict,
+    Iterator,
+    Optional,
+)
+
+from odin.compatibility import deprecated
 
 _CAMEL_CASE_RE = re.compile(r"[A-Z]")
 _LOWER_UNDERSCORE_CASE_RE = re.compile(r"_([a-z])")
@@ -7,8 +21,7 @@ _LOWER_DASH_CASE_RE = re.compile(r"-([a-z])")
 
 
 def camel_to_lower_separated(s: str, sep: str) -> str:
-    """
-    Convert camel case representation into lower separated case ie:
+    """Convert camel case representation into lower separated case ie:
 
       backgroundColor -> background_color
 
@@ -18,29 +31,27 @@ def camel_to_lower_separated(s: str, sep: str) -> str:
     return _CAMEL_CASE_RE.sub(lambda m: sep + m.group(0).lower(), s).strip(sep)
 
 
-def camel_to_lower_underscore(s):
-    # type: (str) -> str
-    """
-    Convert camel case to lower underscore case.
+def camel_to_lower_underscore(s: str) -> str:
+    """Convert camel case to lower underscore case.
 
-        backgroundColor -> background_color
+    backgroundColor -> background_color
 
     """
     return camel_to_lower_separated(s, "_")
 
 
-def camel_to_lower_dash(s):
-    # type: (str) -> str
-    """
-    Convert camel case to lower dash case.
+camel_to_snake = camel_to_lower_underscore
 
-      backgroundColor -> background-color
+
+def camel_to_lower_dash(s: str) -> str:
+    """Convert camel case to lower dash case.
+
+    backgroundColor -> background-color
     """
     return camel_to_lower_separated(s, "-")
 
 
-def lower_underscore_to_camel(value):
-    # type: (str) -> str
+def lower_underscore_to_camel(value: str) -> str:
     """
     Convert lower underscore case to camel case
 
@@ -50,21 +61,20 @@ def lower_underscore_to_camel(value):
     return _LOWER_UNDERSCORE_CASE_RE.sub(lambda m: m.group(1).upper(), value.lower())
 
 
-def lower_dash_to_camel(value):
-    # type: (str) -> str
-    """
-    Convert lower dash case to camel case
+snake_to_camel = lower_underscore_to_camel
 
-      background-color -> backgroundColor
+
+def lower_dash_to_camel(value: str) -> str:
+    """Convert lower dash case to camel case
+
+    background-color -> backgroundColor
 
     """
     return _LOWER_DASH_CASE_RE.sub(lambda m: m.group(1).upper(), value.lower())
 
 
 class cached_property:  # noqa - Made to match property builtin
-    """
-    Acts like a standard class `property` except return values cached.
-    """
+    """Acts like a standard class `property` except return values cached."""
 
     @staticmethod
     def clear_caches(instance):
@@ -89,9 +99,9 @@ class cached_property:  # noqa - Made to match property builtin
         return value
 
 
+@deprecated("Use the standard library functools.cached_property")
 class lazy_property:  # noqa - Made to match the property builtin
-    """
-    The bottle cached property, requires a alternate name so as not to
+    """The bottle cached property, requires an alternate name so as not to
     clash with existing cached_property behaviour
     """
 
@@ -109,8 +119,12 @@ class lazy_property:  # noqa - Made to match the property builtin
 EMPTY = []
 
 
-def filter_fields(field_names, include=None, exclude=None, readonly=None):
-    # type: (Iterable[str], Iterable[str], Iterable[str], Iterable[str]) -> Tuple[Set[str], Set[str]]
+def filter_fields(
+    field_names: Iterable[str],
+    include: Iterable[str] = None,
+    exclude: Iterable[str] = None,
+    readonly: Iterable[str] = None,
+) -> Tuple[Set[str], Set[str]]:
     """
     Filter a field iterable using the include/exclude/readonly options
 
@@ -140,11 +154,10 @@ def filter_fields(field_names, include=None, exclude=None, readonly=None):
 
 
 def getmeta(resource_or_instance):
-    """
-    Get meta-object from a resource or resource instance.
+    """Get metaobject from a resource or resource instance.
 
     :param resource_or_instance: Resource or instance of a resource.
-    :type resource_or_instance: odin.resources.ResourceType | odin.resources.ResourceBase | odin.new_resources.NewResourceType
+    :type resource_or_instance: Type[odin.resources.ResourceBase] | odin.resources.ResourceBase
     :return: Meta options class
     :rtype: odin.resources.ResourceOptions
 
@@ -152,7 +165,7 @@ def getmeta(resource_or_instance):
     return getattr(resource_or_instance, "_meta")
 
 
-def field_iter(resource, include_virtual: bool = True):
+def field_iter(resource, include_virtual: bool = True) -> Iterator:
     """
     Return an iterator that yields fields from a resource.
 
@@ -168,12 +181,13 @@ def field_iter(resource, include_virtual: bool = True):
         return iter(meta.fields)
 
 
-def field_iter_items(resource, fields=None):
-    """
-    Return an iterator that yields fields and their values from a resource.
+def field_iter_items(
+    resource, fields: Optional[Sequence] = None
+) -> Iterator[Tuple[str, Any]]:
+    """Return an iterator that yields fields and their values from a resource.
 
     :param resource: Resource to iterate over.
-    :param fields: Fields to use; if :const:`None` defaults to all of the resources fields.
+    :param fields: Fields to use; if :const:`None` defaults to all the resources fields.
     :returns: an iterator that returns (field, value) tuples.
 
     """
@@ -184,9 +198,8 @@ def field_iter_items(resource, fields=None):
         yield f, f.prepare(f.value_from_object(resource))
 
 
-def virtual_field_iter_items(resource):
-    """
-    Return an iterator that yields virtual fields and their values from a resource.
+def virtual_field_iter_items(resource) -> Iterator[Tuple[str, Any]]:
+    """Return an iterator that yields virtual fields and their values from a resource.
 
     :param resource: Resource to iterate over.
     :returns: an iterator that returns (field, value) tuples.
@@ -196,9 +209,8 @@ def virtual_field_iter_items(resource):
     return field_iter_items(resource, meta.virtual_fields)
 
 
-def attribute_field_iter_items(resource):
-    """
-    Return an iterator that yields fields and their values from a resource that have the attribute flag set.
+def attribute_field_iter_items(resource) -> Iterator[Tuple[str, Any]]:
+    """Return an iterator that yields fields and their values from a resource that have the attribute flag set.
 
     :param resource: Resource to iterate over.
     :returns: an iterator that returns (field, value) tuples.
@@ -210,9 +222,8 @@ def attribute_field_iter_items(resource):
     return field_iter_items(resource, getmeta(resource).attribute_fields)
 
 
-def element_field_iter_items(resource):
-    """
-    Return an iterator that yields fields and their values from a resource that do not have the attribute flag set.
+def element_field_iter_items(resource) -> Iterator[Tuple[str, Any]]:
+    """Return an iterator that yields fields and their values from a resource that do not have the attribute flag set.
 
     :param resource: Resource to iterate over.
     :returns: an iterator that returns (field, value) tuples.
@@ -224,7 +235,7 @@ def element_field_iter_items(resource):
     return field_iter_items(resource, getmeta(resource).element_fields)
 
 
-def extract_fields_from_dict(d, resource):
+def extract_fields_from_dict(d: Dict[str, Any], resource) -> Dict[str, Any]:
     """
     Extract values from a dict that are defined on a resource.
 
@@ -238,34 +249,32 @@ def extract_fields_from_dict(d, resource):
     return {f.name: d[f.name] for f in field_iter(resource) if f.name in d}
 
 
-def value_in_choices(value, choices):
-    """
-    Check if the value appears in the choices list (a iterable of tuples, the first value of which is the choice value)
+def value_in_choices(value: Any, choices: List[Tuple[Any, str]]) -> bool:
+    """Check if the value appears in the choices list (an iterable of tuples,
+    the first value of which is the choice value).
 
-    :param value:
-    :param choices:
+    :param value: Value to search for
+    :param choices: List of choices
     :return: True if value is in the choices iterable.
-
     """
-    for choice in choices:
-        if value == choice[0]:
+    for choice, *_ in choices:
+        if value == choice:
             return True
     return False
 
 
-def iter_to_choices(i):
-    # type: (Iterable[T]) -> Sequence[Tuple[T, str]]
-    """
-    Convert an iterator of strings (or types that can be converted to strings) and convert these into choice value
-    pairs.
+_T = TypeVar("_T")
+
+
+def iter_to_choices(i: Iterable[_T]) -> Sequence[Tuple[_T, str]]:
+    """Convert an iterator of strings (or types that can be converted to strings)
+    and convert these into choice value pairs.
     """
     return tuple((v, str(v).title()) for v in i)
 
 
-def force_tuple(value):
-    # type: (Union[T, Sequence[T]]) -> Sequence[T]
-    """
-    Forces a value to be a tuple.
+def force_tuple(value: Union[_T, Sequence[_T]]) -> Sequence[_T]:
+    """Forces a value to be a tuple.
 
     Either by converting into a tuple (if is a list) or changing value to be a tuple.
 
@@ -279,10 +288,8 @@ def force_tuple(value):
     return (value,)
 
 
-def chunk(iterable, n):
-    # type: (Iterable[T], int) -> Iterable[Iterable[T]]
-    """
-    Return iterable of n items from an iterable.
+def chunk(iterable: Iterable[_T], n: int) -> Iterable[Iterable[_T]]:
+    """Return iterable of n items from an iterable.
 
     :param iterable: Iterable of items
     :param n: Size of iterable chunks to return.

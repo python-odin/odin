@@ -2,9 +2,16 @@ import datetime
 import json
 
 from odin.codecs import json_codec
-from odin.utils import getmeta
+from odin.utils import getmeta, snake_to_camel
 
-from tests.resources_annotated import Book, Publisher, Author, Library, IdentifiableBook
+from tests.resources_annotated import (
+    Book,
+    Publisher,
+    Author,
+    Library,
+    IdentifiableBook,
+    InheritedCamelCaseResource,
+)
 
 
 class TestAnnotatedResourceType:
@@ -46,6 +53,19 @@ class TestAnnotatedResource:
         target = Publisher(name="Super Pub")
 
         assert target.capitalised_name == "SUPER PUB"
+
+    def test_inheritance_of_meta_options(self):
+        options = getmeta(InheritedCamelCaseResource)
+
+        assert options.resource_name == "annotated.foo.bar.InheritedCamelCaseResource"
+        assert options.field_name_format is snake_to_camel
+
+    def test_field_name_format(self):
+        options = getmeta(InheritedCamelCaseResource)
+
+        actual = [field.name for field in options.fields]
+
+        assert actual == ["fullName", "yearOfBirth", "emailAddress"]
 
 
 class TestAnnotatedKitchenSink:

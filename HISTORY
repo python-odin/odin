@@ -1,3 +1,12 @@
+2.3
+===
+
+- Add meta option to specify how to format field names for serialisation. For example
+  support being able to specify camelCase.
+- Updates to documentation
+  - Add field_name_format meta option to docs
+  - Document odin.utils
+
 2.2
 ===
 

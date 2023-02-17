@@ -6,6 +6,7 @@ from typing import List, Optional
 
 import odin
 from odin.annotated_resource import Options
+from odin.utils import snake_to_camel
 
 
 class Author(odin.AResource):
@@ -98,3 +99,17 @@ class Library(odin.AnnotatedResource):
 
     class Meta:
         namespace = "annotated.new_library"
+
+
+class CamelCaseResource(odin.AnnotatedResource):
+    class Meta:
+        namespace = "annotated.foo.bar"
+        field_name_format = snake_to_camel
+
+    full_name: str
+    year_of_birth: str
+
+
+class InheritedCamelCaseResource(CamelCaseResource):
+
+    email_address: str
