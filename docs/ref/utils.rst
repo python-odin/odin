@@ -7,45 +7,45 @@ Collection of utilities for working with Odin as well as generic data manipulati
 Resources
 =========
 
-.. autofunc:: odin.utils.getmeta
+.. autofunction:: odin.utils.getmeta
 
-.. autofunc:: odin.utils.field_iter
+.. autofunction:: odin.utils.field_iter
 
-.. autofunc:: odin.utils.field_iter_items
+.. autofunction:: odin.utils.field_iter_items
 
-.. autofunc:: odin.utils.virtual_field_iter_items
+.. autofunction:: odin.utils.virtual_field_iter_items
 
-.. autofunc:: odin.utils.attribute_field_iter_items
+.. autofunction:: odin.utils.attribute_field_iter_items
 
-.. autofunc:: odin.utils.element_field_iter_items
+.. autofunction:: odin.utils.element_field_iter_items
 
-.. autofunc:: odin.utils.extract_fields_from_dict
+.. autofunction:: odin.utils.extract_fields_from_dict
 
 
 Name Manipulation
 =================
 
-.. autofunc:: odin.utils.camel_to_lower_separated
+.. autofunction:: odin.utils.camel_to_lower_separated
 
-.. autofunc:: odin.utils.camel_to_lower_underscore
+.. autofunction:: odin.utils.camel_to_lower_underscore
 
-.. autofunc:: odin.utils.camel_to_lower_dash
+.. autofunction:: odin.utils.camel_to_lower_dash
 
-.. autofunc:: odin.utils.lower_underscore_to_camel
+.. autofunction:: odin.utils.lower_underscore_to_camel
 
-.. autofunc:: odin.utils.lower_dash_to_camel
+.. autofunction:: odin.utils.lower_dash_to_camel
 
 
 Choice Generation
 =================
 
-.. autofunc:: odin.utils.value_in_choices
+.. autofunction:: odin.utils.value_in_choices
 
-.. autofunc:: odin.utils.iter_to_choices
+.. autofunction:: odin.utils.iter_to_choices
 
 
 
 Iterables
 =========
 
-.. autofunc:: odin.utils.chunk
+.. autofunction:: odin.utils.chunk
