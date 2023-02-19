@@ -32,3 +32,20 @@ Using the Book and Author resources presented in the :doc:`creating-resources` s
     deserialization of data.
 
 Similarly data can be deserialized back into an object graph using the :py:meth:`odin.codecs.json_codec.loads` method.
+
+
+Other file formats
+==================
+
+Odin includes codecs for many different file formats including:
+
+- :doc:`../ref/codecs/yaml_codec`
+- :doc:`../ref/codecs/toml_codec`
+- :doc:`../ref/codecs/msgpack_codec`
+- :doc:`../ref/codecs/xml_codec` [#f1]_
+
+Or using each resource as a row:
+
+- :doc:`../ref/codecs/csv_codec`
+
+.. [#f1] XML is write only
