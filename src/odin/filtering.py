@@ -8,9 +8,7 @@ from .traversal import TraversalPath
 
 
 class FilterAtom(abc.ABC):
-    """
-    Base filter statement
-    """
+    """Base filter statement"""
 
     __slots__ = ()
 

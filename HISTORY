@@ -1,3 +1,11 @@
+2.3.1
+=====
+
+Bug fix
+-------
+
+- ResourceOptions.composite_fields filtered composite field by Resource instead of ResourceBase.
+
 2.3
 ===
 

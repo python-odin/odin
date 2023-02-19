@@ -67,7 +67,7 @@ TEST_LIST_STRUCTURE = [
 
 class ResourceTraversalIteratorTest(traversal.ResourceTraversalIterator):
     def __init__(self, resource):
-        super(ResourceTraversalIteratorTest, self).__init__(resource)
+        super().__init__(resource)
         self.events = []
 
     def on_pre_enter(self):

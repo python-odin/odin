@@ -171,7 +171,9 @@ class ResourceOptions:
         """All composite fields."""
         # Not the nicest solution but is a fairly safe way of detecting a composite field.
         return tuple(
-            f for f in self.fields if (hasattr(f, "of") and issubclass(f.of, Resource))
+            f
+            for f in self.fields
+            if (hasattr(f, "of") and issubclass(f.of, ResourceBase))
         )
 
     @cached_property

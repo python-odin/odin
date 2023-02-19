@@ -1,4 +1,5 @@
-from typing import Union
+"""Traversal of a datastructure."""
+from typing import Union, Sequence, Iterable, Optional, Tuple, Type
 
 from odin.utils import getmeta
 
@@ -10,7 +11,13 @@ class NotSupplied:
     pass
 
 
-def _split_atom(atom):
+NotSuppliedType = Type[NotSupplied]
+OptionalStr = Union[str, NotSuppliedType]
+PathAtom = Tuple[OptionalStr, OptionalStr, str]
+
+
+def _split_atom(atom: str) -> PathAtom:
+    """Split a section of a path into lookups that can be used to navigate a path."""
     if "[" in atom:
         field, _, idx = atom.rstrip("]").partition("[")
         return idx, NotSupplied, field
@@ -26,19 +33,23 @@ class TraversalPath:
     """A path through a resource structure."""
 
     @classmethod
-    def parse(cls, path: Union["TraversalPath", str]):
+    def parse(cls, path: Union["TraversalPath", str]) -> Optional["TraversalPath"]:
+        """Parse a traversal path string."""
         if isinstance(path, TraversalPath):
             return path
         if isinstance(path, str):
             return cls(*[_split_atom(a) for a in path.split(".")])
 
-    def __init__(self, *path):
+    __slots__ = ("_path",)
+
+    def __init__(self, *path: PathAtom):
+        """Initialise traversal path"""
         self._path = path
 
     def __repr__(self):
         return f"<TraversalPath: {self}>"
 
-    def __str__(self):
+    def __str__(self) -> str:
         atoms = []
         for value, key, field in self._path:
             if value is NotSupplied:
@@ -49,15 +60,18 @@ class TraversalPath:
                 atoms.append(f"{field}{{{key}={value}}}")
         return ".".join(atoms)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
+        """Hash of the path."""
         return hash(self._path)
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
+        """Compare to another path."""
         if isinstance(other, TraversalPath):
             return hash(self) == hash(other)
         return NotImplemented
 
-    def __add__(self, other):
+    def __add__(self, other) -> "TraversalPath":
+        """Join paths together."""
         if isinstance(other, TraversalPath):
             return TraversalPath(*(self._path + other._path))
 
@@ -69,7 +83,8 @@ class TraversalPath:
 
         raise TypeError(f"Cannot add '{other}' to a path.")
 
-    def __iter__(self):
+    def __iter__(self) -> Iterable[PathAtom]:
+        """Iterate a path returning each element on the path."""
         return iter(self._path)
 
     def get_value(self, root_resource: ResourceBase):
@@ -126,7 +141,10 @@ class ResourceTraversalIterator:
 
     """
 
-    def __init__(self, resource):
+    __slots__ = ("_resource_iters", "_field_iters", "_path", "_resource_stack")
+
+    def __init__(self, resource: Union[ResourceBase, Sequence[ResourceBase]]):
+        """Initialise instance with the initial resource or sequence of resources."""
         if isinstance(resource, (list, tuple)):
             # Stack of resource iterators (starts initially with entries from the list)
             self._resource_iters = [iter([(i, r) for i, r in enumerate(resource)])]
@@ -139,10 +157,12 @@ class ResourceTraversalIterator:
         self._path = [(NotSupplied, NotSupplied, NotSupplied)]
         self._resource_stack = [None]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterable[ResourceBase]:
+        """Obtain an iterable instance."""
         return self
 
-    def __next__(self):
+    def __next__(self) -> ResourceBase:
+        """Get next resource instance."""
         if self._resource_iters:
             if self._field_iters:
                 # Check if the last entry in the field stack has any unprocessed fields.
@@ -211,7 +231,7 @@ class ResourceTraversalIterator:
         return len(self._path) - 1
 
     @property
-    def current_resource(self):
+    def current_resource(self) -> Optional[ResourceBase]:
         """The current resource being traversed."""
         if self._resource_stack:
             return self._resource_stack[-1]
