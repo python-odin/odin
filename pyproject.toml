@@ -40,6 +40,7 @@ toml = {version = "*", optional = true }
 pint = {version = "*", optional = true }
 arrow = {version = "*", optional = true }
 msgpack = {version = "*", optional = true }
+rich = {version = "*", optional = true }
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0"
@@ -52,3 +53,4 @@ msgpack = ["msgpack"]
 toml = ["toml"]
 pint = ["pint"]
 arrow = ["arrow"]
+rich = ["rich"]
