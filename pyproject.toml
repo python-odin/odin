@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "odin"
-version = "2.3.1"
+version = "2.4"
 description = "Data-structure definition/validation/traversal, mapping and serialisation toolkit for Python"
 authors = ["Tim Savage <tim@savage.company>"]
 license = "BSD-3-Clause"
@@ -31,6 +31,7 @@ packages = [
     { include = "odin", from = "src" },
     { include = "tests", format = "sdist" },
 ]
+include = ["src/odin/py.typed"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
