@@ -1,3 +1,14 @@
+2.4
+===
+
+- Add contrib.rich to provide pre-built rich integration for pretty resources on the CLI.
+- Improve ValidationError
+    - Add ``for_field`` class method to simplify creating an exception related to a specific field.
+    - Improve type annotations
+- Updates to documentation
+    - Add decorators to docs
+
+
 2.3.1
 =====
 
