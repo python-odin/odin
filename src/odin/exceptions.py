@@ -1,8 +1,9 @@
-from typing import Union, List, Dict
+"""Exceptions raised by Odin."""
+from typing import Union, List, Dict, Final
 
 from odin import registration
 
-NON_FIELD_ERRORS = "__all__"
+NON_FIELD_ERRORS: Final[str] = "__all__"
 
 
 class ValidationError(Exception):

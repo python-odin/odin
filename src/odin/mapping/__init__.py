@@ -741,9 +741,16 @@ class ImmediateMapping(MappingBase, metaclass=MappingMeta):
     default_mapping_result = ImmediateResult
 
 
+_F = TypeVar("_F", bound=Callable[..., Any])
+
+
 def map_field(
-    func=None, from_field: str = None, to_field: str = None, to_list: bool = False
-):
+    func: _F = None,
+    *,
+    from_field: str = None,
+    to_field: str = None,
+    to_list: bool = False,
+) -> Union[_F, Callable[[_F], _F]]:
     """Field decorator for custom mappings.
 
     :param func: Method being decorator is wrapping.
@@ -761,7 +768,12 @@ def map_field(
     return inner(func) if func else inner
 
 
-def map_list_field(*args, **kwargs):
+def map_list_field(
+    func: _F = None,
+    *,
+    from_field: str = None,
+    to_field: str = None,
+) -> Union[_F, Callable[[_F], _F]]:
     """Field decorator for custom mappings that return a single list.
 
     This mapper also allows for returning an iterator or generator that will be converted into a list during the
@@ -769,11 +781,15 @@ def map_list_field(*args, **kwargs):
 
     Parameters are identical to the :py:meth:`map_field` method except ``to_list`` which is forced to be True.
     """
-    kwargs["to_list"] = True
-    return map_field(*args, **kwargs)
+    return map_field(func, from_field=from_field, to_field=to_field, to_list=True)
 
 
-def assign_field(func=None, to_field: str = None, to_list: bool = False):
+def assign_field(
+    func: _F = None,
+    *,
+    to_field: str = None,
+    to_list: bool = False,
+) -> Union[_F, Callable[[_F], _F]]:
     """Field decorator for assigning a value to destination field without requiring a corresponding source field.
 
     Allows for the mapping to calculate a value based on the context or other information. Useful when a destination

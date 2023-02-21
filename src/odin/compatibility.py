@@ -6,8 +6,7 @@ import warnings
 
 
 def deprecated(message: str, category=DeprecationWarning):
-    """
-    Decorator for marking classes/functions as being deprecated and are to be removed in the future.
+    """Decorator for marking classes/functions as being deprecated and are to be removed in the future.
 
     :param message: Message provided.
     :param category: Category of warning, defaults to DeprecationWarning
