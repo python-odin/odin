@@ -144,7 +144,7 @@ class ResourceDocumenter(ModuleLevelDocumenter):
             "\n".join(details).split("\n"),  # Details
         )
 
-    def get_object_members(self, want_all: bool) -> tuple[bool, ObjectMembers]:
+    def get_object_members(self, want_all: bool) -> Tuple[bool, ObjectMembers]:
         pass  # Not required as this implementation replaces the document_members method that calls get_object_members
 
     def document_members(self, all_members: bool = False) -> None:
