@@ -2,7 +2,7 @@
 Physical Quantities with Pint
 #############################
 
-Additional resources fields that include a unit.
+Additional resources fields that include units.
 
 .. note::
 
@@ -10,14 +10,21 @@ Additional resources fields that include a unit.
 
         pip install pint
 
+
 Fields
 ******
 
-FloatField
-==========
+.. _field-pint_field:
 
-``class FloatField([max_length=None, **options])``
+ArrowField
+===========
 
-A float.
+``class ArrowField([assume_local: bool = False, **options])``
 
-FloatField has one extra argument:
+An amount.
+
+ArrowField has one extra argument:
+
+:py:attr:`ArrowField.assume_local`
+    Customise how naive (datetime values with no timezone) are handled and also how dates are decoded. If
+    ``assume_local`` is True naive dates are assumed to represent the current system timezone.
