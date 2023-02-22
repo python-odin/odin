@@ -5,8 +5,13 @@
 - Improve ValidationError
     - Add ``for_field`` class method to simplify creating an exception related to a specific field.
     - Improve type annotations
+- Improve error handling of Validator rendering in sphinx contrib.
+- Improve description of validators for documentation.
+- Improve type annotations in validators.
 - Updates to documentation
     - Add decorators to docs
+    - Additional docs for validators
+    - Additional docs for Sphinx extension
 
 
 2.3.1
