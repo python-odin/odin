@@ -11,8 +11,9 @@ This code lives in ``odin/contrib`` in the Odin distribution.
 .. toctree::
    :maxdepth: 1
 
-   doc_gen/index
+   sphinx/index
+   rich/index
+   arrow/index
    geo/index
    money/index
    pint/index
-   sphinx/index

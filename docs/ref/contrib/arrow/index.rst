@@ -1,20 +1,19 @@
-#############################
-Physical Quantities with Pint
-#############################
+#####
+Arrow
+#####
 
-Additional resources fields that include units.
+Better dates & times for Python
 
 .. note::
 
-    This contrib module depends on the `Pint units library <http://pint.readthedocs.org/>`_ this can be installed with::
+    This contrib module depends on the `Arrow <https://arrow.readthedocs.io/en/latest/>`_ library::
 
-        pip install pint
-
+        pip install arrow
 
 Fields
 ******
 
-.. _field-pint_field:
+.. _field-arrow_field:
 
 ArrowField
 ===========

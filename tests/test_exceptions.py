@@ -1,7 +1,24 @@
+import pytest
+
 from odin import exceptions
 
 
 class TestValidationException:
+    @pytest.mark.parametrize(
+        "message, expected",
+        (
+            ("This value is bad man", {"my_field": ["This value is bad man"]}),
+            (
+                ["Value to green", "Value to blue"],
+                {"my_field": ["Value to green", "Value to blue"]},
+            ),
+        ),
+    )
+    def test_for_field(self, message, expected):
+        target = exceptions.ValidationError.for_field("my_field", message)
+
+        assert target.error_messages == expected
+
     def test_with_string(self):
         test_message = "Test message"
         target = exceptions.ValidationError(test_message)

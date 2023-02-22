@@ -27,8 +27,8 @@ class ArrowField(Field):
     }
     data_type_name = "ISO-8601 DateTime"
 
-    def __init__(self, assume_local=False, **options):
-        super(ArrowField, self).__init__(**options)
+    def __init__(self, assume_local: bool = False, **options):
+        super().__init__(**options)
         self.assume_local = assume_local
 
     def to_python(self, value):

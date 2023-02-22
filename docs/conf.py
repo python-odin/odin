@@ -54,7 +54,7 @@ master_doc = "contents"
 
 # General information about the project.
 project = u"Odin"
-copyright = u"2021, Tim Savage"
+copyright = u"2023, Tim Savage"
 author = "Tim Savage <tim@savage.company>"
 
 # The version info for the project you're documenting, acts as replacement for

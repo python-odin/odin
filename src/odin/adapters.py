@@ -48,7 +48,7 @@ class ResourceOptionsAdapter:
         return getattr(self._wrapped, item)
 
     def __repr__(self):
-        return "<Options Adapter for {}>".format(self.resource_name)
+        return f"<Options Adapter for {self.resource_name}>"
 
     @cached_property
     def all_fields(self):
@@ -72,8 +72,7 @@ class ResourceOptionsAdapter:
 
 
 class ResourceAdapter:
-    """
-    A lightweight wrapper that can be placed around a resource to filter out specific
+    """A lightweight wrapper that can be placed around a resource to filter out specific
     fields or to provide additional specific methods or calculated properties.
 
     A good use case for an adapter is an API where you wish to filter out certain fields
@@ -113,24 +112,20 @@ class ResourceAdapter:
 
     @classmethod
     def curry(cls, include=None, exclude=None, **kwargs):
-        """
-        Creates an Adapter that has include and exclude (and any other options) preset.
+        """Creates an Adapter that has include and exclude (and any other options) preset.
 
         :param include: Fields that should be explicitly included on the adapter.
         :param exclude: Fields to explicitly exclude on the adapter.
         :param kwargs:
-
         """
         return CurriedAdapter(cls, include=include, exclude=exclude, **kwargs)
 
     def __init__(self, source, include=None, exclude=None, meta=None):
-        """
-        Initialise the adapter.
+        """Initialise the adapter.
 
         :param source: Source resource being wrapped.
         :param include: Fields that should be explicitly included on the adapter.
         :param exclude: Fields to explicitly exclude on the adapter.
-
         """
         self.__dict__["_source"] = source
 
@@ -151,8 +146,6 @@ class ResourceAdapter:
         return f"{self._meta.resource_name} resource adapter"
 
     def to_dict(self, include_virtual=True):
-        """
-        Convert this resource into a dict
-        """
+        """Convert this resource into a dict."""
         fields = self._meta.all_fields if include_virtual else self._meta.fields
         return {f.name: v for f, v in field_iter_items(self, fields)}

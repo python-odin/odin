@@ -5,7 +5,7 @@ from odin.exceptions import ValidationError
 
 
 class TestValidator:
-    def test_regex_validator(self):
+    def test_regex_validator__with_valid_values(self):
         target = validators.RegexValidator(
             r"^[a-z]{3}$", "Please enter 3 alpha characters.", "match_chars"
         )
@@ -19,35 +19,50 @@ class TestValidator:
         pytest.raises(ValidationError, target, "abcd")
         pytest.raises(ValidationError, target, "123")
 
-    def test_url(self):
-        validators.validate_url("http://www.djangoproject.com/")
-        validators.validate_url("http://localhost/")
-        validators.validate_url("http://example.com/")
-        validators.validate_url("http://www.example.com/")
-        validators.validate_url("http://www.example.com:8000/test")
-        validators.validate_url("http://valid-with-hyphens.com/")
-        validators.validate_url("http://subdomain.example.com/")
-        validators.validate_url("http://200.8.9.10/")
-        validators.validate_url("http://200.8.9.10:8000/test")
-        validators.validate_url("http://valid-----hyphens.com/")
-        validators.validate_url("http://example.com?something=value")
-        validators.validate_url(
-            "http://example.com/index.php?something=value&another=value2"
-        )
-        validators.validate_url("https://example.com/")
-        validators.validate_url("ftp://example.com/")
-        validators.validate_url("ftps://example.com/")
-        validators.validate_url("http://savage.company/")
+    @pytest.mark.parametrize(
+        "value",
+        (
+            "http://www.djangoproject.com/",
+            "http://localhost/",
+            "http://example.com/",
+            "http://www.example.com/",
+            "http://www.example.com:8000/test",
+            "http://valid-with-hyphens.com/",
+            "http://subdomain.example.com/",
+            "http://200.8.9.10/",
+            "http://200.8.9.10:8000/test",
+            "http://valid-----hyphens.com/",
+            "http://example.com?something=value",
+            "http://example.com/index.php?something=value&another=value2",
+            "https://example.com/",
+            "ftp://example.com/",
+            "ftps://example.com/",
+            "http://savage.company/",
+        ),
+    )
+    def test_validate_url__where_value_is_valid(self, value):
+        validators.validate_url(value)
 
-        pytest.raises(ValidationError, validators.validate_url, "foo")
-        pytest.raises(ValidationError, validators.validate_url, "http://")
-        pytest.raises(ValidationError, validators.validate_url, "http://example")
-        pytest.raises(ValidationError, validators.validate_url, "http://example.")
-        pytest.raises(ValidationError, validators.validate_url, "http://.com")
-        pytest.raises(ValidationError, validators.validate_url, "http://invalid-.com")
-        pytest.raises(ValidationError, validators.validate_url, "http://-invalid.com")
-        pytest.raises(ValidationError, validators.validate_url, "http://inv-.alid-.com")
-        pytest.raises(ValidationError, validators.validate_url, "http://inv-.-alid.com")
+    @pytest.mark.parametrize(
+        "value",
+        (
+            "foo",
+            "http://",
+            "http://example",
+            "http://example.",
+            "http://.com",
+            "http://invalid-.com",
+            "http://-invalid.com",
+            "http://inv-.alid-.com",
+            "http://inv-.-alid.com",
+        ),
+    )
+    def test_validate_url__where_value_is_not_valid(self, value):
+        with pytest.raises(ValidationError):
+            validators.validate_url(value)
+
+    def test_validate_url__string_representation(self):
+        assert str(validators.validate_url) == "Value is a valid URL."
 
     def test_max_value_validator(self):
         target = validators.MaxValueValidator(10)
@@ -55,19 +70,23 @@ class TestValidator:
         target(10)
         target(1)
         target(-10)
+        assert str(target) == 'Value is less than or equal to 10.'
         pytest.raises(ValidationError, target, 11)
 
     def test_min_value_validator(self):
         target = validators.MinValueValidator(10)
 
         target(10)
+        target(11)
+        assert str(target) == 'Value is greater than or equal to 10.'
         pytest.raises(ValidationError, target, 1)
         pytest.raises(ValidationError, target, -10)
-        target(11)
 
     def test_length_validator(self):
         target = validators.LengthValidator(10)
+
         target("1234567890")
+        assert str(target) == 'Values length is 10.'
         pytest.raises(ValidationError, target, "123456789")
         pytest.raises(ValidationError, target, "12345678901")
 
@@ -77,15 +96,17 @@ class TestValidator:
         target("123457890")
         target("12345")
         target("")
+        assert str(target) == 'Values length is at most 10.'
         pytest.raises(ValidationError, target, "12345678901")
 
     def test_min_length_validator(self):
         target = validators.MinLengthValidator(10)
 
+        target("12345678901")
+        assert str(target) == 'Values length is at least 10.'
         pytest.raises(ValidationError, target, "123457890")
         pytest.raises(ValidationError, target, "12345")
         pytest.raises(ValidationError, target, "")
-        target("12345678901")
 
 
 class TestSimpleValidator:
@@ -105,6 +126,13 @@ class TestSimpleValidator:
 
         pytest.raises(ValidationError, reflect_validator, False)
         reflect_validator(True)
+
+    def test_str__description(self):
+        @validators.simple_validator(description="Mirror Validator")
+        def reflect_validator(v):
+            return v
+
+        assert str(reflect_validator) == "Mirror Validator"
 
     def test_str__no_doc_text(self):
         @validators.simple_validator()
