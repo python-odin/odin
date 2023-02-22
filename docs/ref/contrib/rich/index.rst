@@ -1,8 +1,8 @@
-######################
-Better CLI's with Rich
-######################
+####
+Rich
+####
 
-Additional resources fields that include a unit.
+Better CLI's with Rich!
 
 .. note::
 
