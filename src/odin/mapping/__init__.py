@@ -480,8 +480,8 @@ class CachingMappingResult(MappingResult):
 
 
 class MappingBase:
-    from_obj: type = None
-    to_obj: type = None
+    from_obj: Optional[type] = None
+    to_obj: Optional[type] = None
 
     # Pending deprecation, move to from_obj and to_obj terminology
     from_resource = None
@@ -747,8 +747,8 @@ _F = TypeVar("_F", bound=Callable[..., Any])
 def map_field(
     func: _F = None,
     *,
-    from_field: str = None,
-    to_field: str = None,
+    from_field: Union[None, str, Sequence[str]] = None,
+    to_field: Union[None, str, Sequence[str]] = None,
     to_list: bool = False,
 ) -> Union[_F, Callable[[_F], _F]]:
     """Field decorator for custom mappings.
@@ -771,8 +771,8 @@ def map_field(
 def map_list_field(
     func: _F = None,
     *,
-    from_field: str = None,
-    to_field: str = None,
+    from_field: Union[None, str, Sequence[str]] = None,
+    to_field: Union[None, str, Sequence[str]] = None,
 ) -> Union[_F, Callable[[_F], _F]]:
     """Field decorator for custom mappings that return a single list.
 
@@ -787,7 +787,7 @@ def map_list_field(
 def assign_field(
     func: _F = None,
     *,
-    to_field: str = None,
+    to_field: Union[None, str, Sequence[str]] = None,
     to_list: bool = False,
 ) -> Union[_F, Callable[[_F], _F]]:
     """Field decorator for assigning a value to destination field without requiring a corresponding source field.

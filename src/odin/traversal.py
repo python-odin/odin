@@ -181,9 +181,8 @@ class ResourceTraversalIterator:
                 else:
                     self._field_iters.pop()
 
-            if self.current_resource:
-                if hasattr(self, "on_exit"):
-                    self.on_exit()
+            if self.current_resource and hasattr(self, "on_exit"):
+                self.on_exit()
 
             try:
                 key, next_resource = next(self._resource_iters[-1])

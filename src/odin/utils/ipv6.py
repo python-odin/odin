@@ -54,7 +54,7 @@ def is_valid_ipv6_address(ip_str):
         if hextet.count(".") == 3:
             # If we have an IPv4 mapped address, the IPv4 portion has to
             # be at the end of the IPv6 portion.
-            if not ip_str.split(":")[-1] == hextet:
+            if ip_str.split(":")[-1] != hextet:
                 return False
             try:
                 validate_ipv4_address(hextet)

@@ -3,7 +3,7 @@
 # A note: to use validators from the Django project install the baldr package. Baldr is an integration between Odin and
 # the Django framework, the integration includes support for handling the Django version of the ValidationError
 # exception within Odin.
-from typing import Callable, Any, Union, TypeVar
+from typing import Callable, Any, Union, TypeVar, Optional
 
 import re
 
@@ -19,7 +19,7 @@ class RegexValidator:
     regex = r""
     message = "Enter a valid value."
     code = "invalid"
-    description: str = None
+    description: Optional[str] = None
 
     def __init__(
         self,
