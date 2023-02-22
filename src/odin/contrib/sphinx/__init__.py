@@ -1,13 +1,26 @@
-import odin
+"""Sphinx integration to document resources."""
+from typing import Tuple, Any
 
+from sphinx.application import Sphinx
+from sphinx.ext.autodoc import (
+    Documenter,
+    ModuleLevelDocumenter,
+    bool_option,
+    ObjectMembers,
+)
+from sphinx.util import logging
+
+import odin
 from odin.resources import ResourceBase
 from odin.utils import field_iter, getmeta
-from sphinx.ext.autodoc import Documenter, ModuleLevelDocumenter, bool_option
+
+logger = logging.getLogger(__package__)
 
 
 def reference_to(obj):
+    """Generate a reference to a resource object."""
     if hasattr(obj, "_meta"):
-        return ":py:class:`{}`".format(getmeta(obj).name)
+        return f":py:class:`{getmeta(obj).name}`"
     return obj
 
 
@@ -22,9 +35,22 @@ class ResourceDocumenter(ModuleLevelDocumenter):
 
         .. autoodin-resource:: namespace.path.to.your.Resource
             :include_virtual:
+            :include_validators:
             :hide_choices:
 
-    To select API form use the *include_virtual* option.
+    **Options**
+
+    ``:include_virtual:``
+        Include virtual fields in the output documentation
+
+    ``:include_validators:``
+        Include a bullet point list of validators associated with each field.
+
+    ``:hide_choices:``
+        Don't include choices in documentation if a field has them.
+
+    ``:api_documentation:``
+        Generate documentation in *API form*.
 
     """
 
@@ -41,10 +67,14 @@ class ResourceDocumenter(ModuleLevelDocumenter):
     )
 
     @classmethod
-    def can_document_member(cls, member, *_):
-        return isinstance(member, type) and issubclass(member, ResourceBase)
+    def can_document_member(cls, member: Any, *_) -> bool:
+        """Called to see if a member can be documented by this Documenter."""
+        try:
+            return isinstance(member, type) and issubclass(member, ResourceBase)
+        except TypeError:
+            return False
 
-    def add_directive_header(self, _):
+    def add_directive_header(self, _: str):
         domain = getattr(self, "domain", "py")
         directive = getattr(self, "directivetype", self.objtype)
         source_name = self.get_sourcename()
@@ -55,12 +85,24 @@ class ResourceDocumenter(ModuleLevelDocumenter):
         else:
             name = self.format_name()
 
-        self.add_line(".. {}:{}:: {}".format(domain, directive, name), source_name)
+        self.add_line(f".. {domain}:{directive}:: {name}", source_name)
 
         if self.options.noindex:
             self.add_line("   :noindex:", source_name)
 
-    def build_field_triple(self, field):
+    def validator_description(self, validator):
+        """Generate a description of a validator."""
+        try:
+            return str(validator)
+        except Exception as ex:
+            logger.warning(
+                "Failed to render validator: %s",
+                ex,
+                location=(self.env.docname, self.directive.lineno),
+            )
+            logger.debug("Error rendering validator.", exc_info=True)
+
+    def build_field_triple(self, field) -> Tuple:
         """
         Build a field triple of (name, data_type, details)
 
@@ -83,7 +125,8 @@ class ResourceDocumenter(ModuleLevelDocumenter):
         if self.options.get("include_validators") and field.validators:
             details.append("\n\nValidation rules:\n")
             for validator in field.validators:
-                details.append(f"* {validator}")
+                description = self.validator_description(validator)
+                details.append(f"* {description}")
 
         # Generate the name of the type this field represents
         type_name = field.data_type_name
@@ -101,7 +144,10 @@ class ResourceDocumenter(ModuleLevelDocumenter):
             "\n".join(details).split("\n"),  # Details
         )
 
-    def document_members(self, all_members=False):
+    def get_object_members(self, want_all: bool) -> tuple[bool, ObjectMembers]:
+        pass  # Not required as this implementation replaces the document_members method that calls get_object_members
+
+    def document_members(self, all_members: bool = False) -> None:
         data_table = [
             self.build_field_triple(f)
             for f in field_iter(self.object, self.options.include_virtual)
@@ -121,22 +167,15 @@ class ResourceDocumenter(ModuleLevelDocumenter):
 
         def add_separator(char="-"):
             self.add_line(
-                "+{}+{}+{}+".format(
-                    char * name_len, char * data_type_len, char * details_len
-                ),
+                f"+{char * name_len}+{char * data_type_len}+{char * details_len}+",
                 "<odin_sphinx>",
             )
 
         def add_row_line(name, data_type, details):
             self.add_line(
-                "| {}{} | {}{} | {}{} |".format(
-                    name,
-                    " " * (name_len - len(name) - 2),
-                    data_type,
-                    " " * (data_type_len - len(data_type) - 2),
-                    details,
-                    " " * (details_len - len(details) - 2),
-                ),
+                f"| {name}{' ' * (name_len - len(name) - 2)} "
+                f"| {data_type}{' ' * (data_type_len - len(data_type) - 2)} "
+                f"| {details}{' ' * (details_len - len(details) - 2)} |",
                 "<odin_sphinx>",
             )
 
@@ -154,5 +193,6 @@ class ResourceDocumenter(ModuleLevelDocumenter):
             add_separator()
 
 
-def setup(app):
+def setup(app: Sphinx):
+    """Called by Sphinx to configure an integration."""
     app.add_autodocumenter(ResourceDocumenter)
