@@ -153,44 +153,46 @@ class ResourceDocumenter(ModuleLevelDocumenter):
             for f in field_iter(self.object, self.options.include_virtual)
         ]
 
-        # Calculate table column widths
-        name_len = 4
-        data_type_len = 9
-        details_len = 7
-        for name, data_type, details in data_table:
-            name_len = max(len(name), name_len)
-            data_type_len = max(len(data_type), data_type_len)
-            details_len = max(max(len(l) for l in details), details_len)
-        name_len += 2  # Padding
-        data_type_len += 2  # Padding
-        details_len += 2  # Padding
+        # Generate output if there is any.
+        if data_table:
+            # Calculate table column widths
+            name_len = 4
+            data_type_len = 9
+            details_len = 7
+            for name, data_type, details in data_table:
+                name_len = max(len(name), name_len)
+                data_type_len = max(len(data_type), data_type_len)
+                details_len = max(max(len(l) for l in details), details_len)
+            name_len += 2  # Padding
+            data_type_len += 2  # Padding
+            details_len += 2  # Padding
 
-        def add_separator(char="-"):
-            self.add_line(
-                f"+{char * name_len}+{char * data_type_len}+{char * details_len}+",
-                "<odin_sphinx>",
-            )
+            def add_separator(char="-"):
+                self.add_line(
+                    f"+{char * name_len}+{char * data_type_len}+{char * details_len}+",
+                    "<odin_sphinx>",
+                )
 
-        def add_row_line(name, data_type, details):
-            self.add_line(
-                f"| {name}{' ' * (name_len - len(name) - 2)} "
-                f"| {data_type}{' ' * (data_type_len - len(data_type) - 2)} "
-                f"| {details}{' ' * (details_len - len(details) - 2)} |",
-                "<odin_sphinx>",
-            )
+            def add_row_line(name, data_type, details):
+                self.add_line(
+                    f"| {name}{' ' * (name_len - len(name) - 2)} "
+                    f"| {data_type}{' ' * (data_type_len - len(data_type) - 2)} "
+                    f"| {details}{' ' * (details_len - len(details) - 2)} |",
+                    "<odin_sphinx>",
+                )
 
-        def add_row(name, data_type, details):
-            add_row_line(name, data_type, details.pop(0))
-            for line in details:
-                add_row_line("", "", line)
+            def add_row(name, data_type, details):
+                add_row_line(name, data_type, details.pop(0))
+                for line in details:
+                    add_row_line("", "", line)
 
-        # Generate table
-        add_separator()
-        add_row("Name", "Data type", ["Details"])
-        add_separator("=")
-        for row in data_table:
-            add_row(*row)
+            # Generate table
             add_separator()
+            add_row("Name", "Data type", ["Details"])
+            add_separator("=")
+            for row in data_table:
+                add_row(*row)
+                add_separator()
 
 
 def setup(app: Sphinx):
