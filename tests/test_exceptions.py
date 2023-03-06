@@ -58,3 +58,13 @@ class TestValidationException:
             "ValidationError({'Test Key 1': ['Test Message 1'], 'Test Key 2': ['Test Message 2']})"
             == repr(target)
         )
+
+
+class TestValidationErrors:
+    def test_messages(self):
+        target = exceptions.ValidationErrorCollection()
+
+        target.add_messages("foo")
+        target.add_messages("bar", "Bad bar")
+
+        assert target.messages == {"bar": ["Bad bar"]}

@@ -1,5 +1,5 @@
 """Exceptions raised by Odin."""
-from typing import Union, List, Dict, Final
+from typing import Union, List, Dict, Final, DefaultDict
 
 from odin import registration
 
@@ -84,6 +84,40 @@ class ValidationError(Exception):
         else:
             error_dict[NON_FIELD_ERRORS] = self.messages
         return error_dict
+
+
+class ValidationErrorCollection:
+    """Helper object for collecting errors."""
+
+    def __init__(self):
+        self.error_messages = DefaultDict[str, List[str]](list)
+
+    @property
+    def messages(self) -> Dict[str, List[str]]:
+        """Filtered messages that strips out empty messages."""
+        return {
+            field_name: messages
+            for field_name, messages in self.error_messages.items()
+            if messages
+        }
+
+    def add_messages(self, field_name: str, *messages):
+        """Append messages."""
+        self.error_messages[field_name].extend(messages)
+
+    def add_resource_messages(self, *messages):
+        """Append resource error."""
+        self.error_messages[NON_FIELD_ERRORS].extend(messages)
+
+    def raise_if_defined(self):
+        """Raise an exception if any are defined."""
+        errors = self.messages
+        if errors:
+            raise ValidationError(errors)
+
+    def exception(self) -> ValidationError:
+        """Generate an exception based on the validation messages added."""
+        return ValidationError(self.messages)
 
 
 def validation_error_handler(exception, field, errors):
