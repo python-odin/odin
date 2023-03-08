@@ -1,9 +1,11 @@
 """Integration with Rich for nicer CLI's!"""
+from rich.text import Text
 from typing import Iterable, Union
 
 from rich.tree import Tree
 
 from odin.exceptions import ValidationError, NON_FIELD_ERRORS
+from .theme import odin_theme
 
 
 def _all_str(iterable: Iterable) -> bool:
@@ -15,10 +17,12 @@ def _validation_error_to_tree(error_messages: Union[list, dict], tree: Tree):
     """Internal recursive method."""
 
     if isinstance(error_messages, dict):
-        for key, value in error_messages.items():
+        for name, value in error_messages.items():
 
             node = tree.add(
-                f"[yellow]:memo:" if key == NON_FIELD_ERRORS else f"[green]{key}"
+                f"[odin.resource.name]+"
+                if name == NON_FIELD_ERRORS
+                else f"[odin.field.name]{name}"
             )
 
             _validation_error_to_tree(value, node)
@@ -26,7 +30,7 @@ def _validation_error_to_tree(error_messages: Union[list, dict], tree: Tree):
     elif isinstance(error_messages, list):
         if _all_str(error_messages):
             for message in error_messages:
-                tree.add(f"[italic]{message}", guide_style="bold")
+                tree.add(f"[odin.field.error]{message}", guide_style="bold")
 
         else:
             for idx, value in enumerate(error_messages):
@@ -47,6 +51,8 @@ def validation_error_tree(error: ValidationError, *, tree: Tree = None) -> Tree:
         print(tree)
 
     """
-    tree = tree or Tree("[red bold]Validation Errors")
+    tree = tree or Tree(
+        "[red bold]Validation Errors",
+    )
     _validation_error_to_tree(error.error_messages, tree)
     return tree
