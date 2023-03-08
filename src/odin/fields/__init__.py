@@ -649,6 +649,10 @@ class DictField(Field):
         options.setdefault("default", dict)
         super().__init__(**options)
 
+    def __iter__(self):
+        # This does nothing but it does prevent inspections from complaining.
+        return None  # NoQA
+
     def to_python(self, value):
         if value is None:
             return value
@@ -673,6 +677,10 @@ class ListField(Field):
     def __init__(self, **options):
         options.setdefault("default", list)
         super().__init__(**options)
+
+    def __iter__(self):
+        # This does nothing but it does prevent inspections from complaining.
+        return None  # NoQA
 
     def to_python(self, value):
         if value is None:

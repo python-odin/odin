@@ -49,7 +49,7 @@ class CompositeField(Field):
         if isinstance(value, self.of):
             return value
         if isinstance(value, dict):
-            return create_resource_from_dict(value, self.of)
+            return create_resource_from_dict(value, self.of, full_clean=False)
         msg = self.error_messages["invalid"] % self.of
         raise exceptions.ValidationError(msg)
 
