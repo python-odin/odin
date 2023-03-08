@@ -2,6 +2,10 @@
 ===
 
 - Add ValidationErrorCollection helper for simplifying collection of errors in custom validation code.
+- Change behaviour of to_python method on a CompositeField to not do a full clean.
+  This is not required as this should be completed during the validation stage.
+  This prevents double validation and solves the issue of resources not being populated at all if
+  any contained field contains an error.
 
 2.4
 ===
