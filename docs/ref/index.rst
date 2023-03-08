@@ -14,4 +14,5 @@ API Reference
    validators
    traversal
    decorators
+   helpers
    utils
