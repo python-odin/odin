@@ -1,3 +1,8 @@
+2.5
+===
+
+- Add ValidationErrorCollection helper for simplifying collection of errors in custom validation code.
+
 2.4
 ===
 
