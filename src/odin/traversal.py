@@ -1,35 +1,126 @@
 """Traversal of a datastructure."""
-from typing import Union, Sequence, Iterable, Optional, Tuple, Type
+import itertools
+from typing import Union, Optional, NamedTuple, Sequence, cast, Iterable, List, Any
 
+import odin
+from odin.exceptions import InvalidPathError, NoMatchError, MultipleMatchesError
+from odin.resources import ResourceBase
 from odin.utils import getmeta
 
-from .exceptions import NoMatchError, MultipleMatchesError, InvalidPathError
-from .resources import ResourceBase
+
+class _NotSupplied:
+    """Placeholder"""
+
+    __slots__ = ()
 
 
-class NotSupplied:
-    pass
+NotSupplied = _NotSupplied()
+NotSuppliedString = Union[str, _NotSupplied]
 
 
-NotSuppliedType = Type[NotSupplied]
-OptionalStr = Union[str, NotSuppliedType]
-PathAtom = Tuple[OptionalStr, OptionalStr, str]
+class PathAtom(NamedTuple):
+    """Atom within a traversal path."""
+
+    @classmethod
+    def split(cls, atom: str) -> "PathAtom":
+        # Index/Key into attribute
+        if "[" in atom:
+            attr, _, key = atom.rstrip("]").partition("[")
+            return cls(key, NotSupplied, attr)
+
+        # Filter attributes
+        if "{" in atom:
+            attr, _, kv = atom.rstrip("}").partition("{")
+            key, _, value = kv.partition("=")
+            return cls(key, value, attr)
+
+        # Basic attribute
+        return cls(NotSupplied, NotSupplied, atom)
+
+    @classmethod
+    def create(
+        cls,
+        attr: str = "",
+        key: NotSuppliedString = NotSupplied,
+        value: NotSuppliedString = NotSupplied,
+    ) -> "PathAtom":
+        """Create a new PathAtom."""
+        return cls(key, value, attr)
+
+    key: NotSuppliedString
+    value: NotSuppliedString
+    attr: str
+
+    def __repr__(self):
+        return f"<PathAtom: {self}>"
+
+    def __str__(self):
+        key, value, attr = self
+
+        if key is NotSupplied:
+            return attr
+
+        if value is NotSupplied:
+            return f"{attr}[{key}]"
+
+        return f"{attr}{{{key}={value}}}"
+
+    @property
+    def is_indexed(self) -> bool:
+        """Indexes into a attribute."""
+        key, value, _ = self
+        return key is not NotSupplied and value is NotSupplied
+
+    @property
+    def is_filter(self) -> bool:
+        """This is a filter atom."""
+        _, value, _ = self
+        return value is not NotSupplied
+
+    def extract_element(self, resource: ResourceBase) -> Any:
+        """Extract an element from a resource instance"""
+        key, value, attr = self
+
+        try:
+            field = getmeta(resource).field_map[attr]
+        except KeyError:
+            raise InvalidPathError(self, f"Unknown field {attr!r}")
+        element = field.value_from_object(resource)
+
+        if key is NotSupplied:
+            # No additional lookup required
+            return element
+
+        elif value is NotSupplied:
+            # Index or key into element
+            key = cast(odin.CompositeField, field).key_to_python(key)
+            try:
+                return element[key]
+            except LookupError:
+                raise NoMatchError(self, f"Could not find index {key!r} in {field}.")
+
+        else:
+            # Filter elements
+            if isinstance(element, dict):
+                element = element.values()
+
+            values = tuple(r for r in element if getattr(r, key) == value)
+            if len(values) == 0:
+                raise NoMatchError(
+                    self,
+                    f"Filter matched no values; {key!r} == {value!r} in {field}.",
+                )
+
+            if len(values) > 1:
+                raise MultipleMatchesError(
+                    self,
+                    f"Filter matched multiple values; {key!r} == {value!r}.",
+                )
+
+            return values[0]
 
 
-def _split_atom(atom: str) -> PathAtom:
-    """Split a section of a path into lookups that can be used to navigate a path."""
-    if "[" in atom:
-        field, _, idx = atom.rstrip("]").partition("[")
-        return idx, NotSupplied, field
-    elif "{" in atom:
-        field, _, kv = atom.rstrip("}").partition("{")
-        key, _, value = kv.partition("=")
-        return value, key, field
-    else:
-        return NotSupplied, NotSupplied, atom
-
-
-class TraversalPath:
+class TraversalPath(tuple, Sequence[PathAtom]):
     """A path through a resource structure."""
 
     @classmethod
@@ -38,96 +129,47 @@ class TraversalPath:
         if isinstance(path, TraversalPath):
             return path
         if isinstance(path, str):
-            return cls(*[_split_atom(a) for a in path.split(".")])
+            return cls(PathAtom.split(a) for a in path.split(".")) if path else cls()
 
-    __slots__ = ("_path",)
-
-    def __init__(self, *path: PathAtom):
-        """Initialise traversal path"""
-        self._path = path
+    __slots__ = ()
 
     def __repr__(self):
         return f"<TraversalPath: {self}>"
 
     def __str__(self) -> str:
-        atoms = []
-        for value, key, field in self._path:
-            if value is NotSupplied:
-                atoms.append(field)
-            elif key is NotSupplied:
-                atoms.append(f"{field}[{value}]")
-            else:
-                atoms.append(f"{field}{{{key}={value}}}")
-        return ".".join(atoms)
+        return ".".join(str(a) for a in self)
 
-    def __hash__(self) -> int:
-        """Hash of the path."""
-        return hash(self._path)
-
-    def __eq__(self, other) -> bool:
-        """Compare to another path."""
-        if isinstance(other, TraversalPath):
-            return hash(self) == hash(other)
-        return NotImplemented
-
-    def __add__(self, other) -> "TraversalPath":
+    def __add__(self, other: Union["TraversalPath", str, PathAtom]) -> "TraversalPath":
         """Join paths together."""
         if isinstance(other, TraversalPath):
-            return TraversalPath(*(self._path + other._path))
+            return TraversalPath(itertools.chain(self, other))
 
-        # Assume appending a field
         if isinstance(other, str):
-            return TraversalPath(
-                *(self._path + tuple([(NotSupplied, NotSupplied, other)]))
-            )
+            other = PathAtom.split(other)
+
+        if isinstance(other, PathAtom):
+            return TraversalPath(itertools.chain(self, (other,)))
 
         raise TypeError(f"Cannot add '{other}' to a path.")
 
-    def __iter__(self) -> Iterable[PathAtom]:
-        """Iterate a path returning each element on the path."""
-        return iter(self._path)
+    @property
+    def parent(self) -> Optional["TraversalPath"]:
+        """Get parent item"""
+        if len(self) > 1:
+            return TraversalPath(self[:-1])
+
+    def iter_resource(self, root_resource: ResourceBase):
+        """Iterate over a resource document. Yielding each parent."""
+        current = root_resource
+        yield current
+
+        for atom in self:
+            current = atom.extract_element(current)
+            yield current
 
     def get_value(self, root_resource: ResourceBase):
-        """Get a value from a resource structure."""
-        result = root_resource
-        for value, key, attr in self:
-            meta = getmeta(result)
-            try:
-                field = meta.field_map[attr]
-            except KeyError:
-                raise InvalidPathError(self, f"Unknown field {attr!r}")
-
-            result = field.value_from_object(result)
-            if value is NotSupplied:
-                # Nothing is required
-                continue
-            elif key is NotSupplied:
-                # Index or key into element
-                value = field.key_to_python(value)
-                try:
-                    result = result[value]
-                except (KeyError, IndexError):
-                    raise NoMatchError(
-                        self, f"Could not find index {value!r} in {field}."
-                    )
-            else:
-                # Filter elements
-                if isinstance(result, dict):
-                    result = result.values()
-                results = tuple(r for r in result if getattr(r, key) == value)
-                if len(results) == 0:
-                    raise NoMatchError(
-                        self,
-                        f"Filter matched no values; {key!r} == {value!r} in {field}.",
-                    )
-                elif len(results) > 1:
-                    raise MultipleMatchesError(
-                        self,
-                        f"Filter matched multiple values; {key!r} == {value!r}.",
-                    )
-                else:
-                    result = results[0]
-        return result
+        """Get a value from a resource document."""
+        return tuple(self.iter_resource(root_resource))[-1]
 
 
 class ResourceTraversalIterator:
@@ -154,7 +196,7 @@ class ResourceTraversalIterator:
         # Stack of composite fields, found on each resource, each composite field is interrogated for resources.
         self._field_iters = []
         # The "path" to the current resource.
-        self._path = [(NotSupplied, NotSupplied, NotSupplied)]
+        self._path: List[PathAtom] = [PathAtom.create()]
         self._resource_stack = [None]
 
     def __iter__(self) -> Iterable[ResourceBase]:
@@ -163,57 +205,57 @@ class ResourceTraversalIterator:
 
     def __next__(self) -> ResourceBase:
         """Get next resource instance."""
-        if self._resource_iters:
-            if self._field_iters:
-                # Check if the last entry in the field stack has any unprocessed fields.
-                if self._field_iters[-1]:
-                    # Select the very last field in the field stack.
-                    field = self._field_iters[-1][0]
-                    # Request a list of resources along with keys from the composite field.
-                    self._resource_iters.append(
-                        field.item_iter_from_object(self.current_resource)
-                    )
-                    # Update the path
-                    self._path.append((NotSupplied, NotSupplied, field.name))
-                    self._resource_stack.append(None)
-                    # Remove the field from the list (and remove this field entry if it has been emptied)
-                    self._field_iters[-1].pop(0)
-                else:
-                    self._field_iters.pop()
-
-            if self.current_resource and hasattr(self, "on_exit"):
-                self.on_exit()
-
-            try:
-                key, next_resource = next(self._resource_iters[-1])
-            except StopIteration:
-                # End of the current list of resources pop this list off and get the next list.
-                self._path.pop()
-                self._resource_iters.pop()
-                self._resource_stack.pop()
-
-                return next(self)
-            else:
-                next_meta = getmeta(next_resource)
-                # If we have a key (ie DictOf, ListOf composite fields) update the path key field.
-                if key is not None:
-                    _, name, field = self._path[-1]
-                    if next_meta.key_field:
-                        key = next_meta.key_field.value_from_object(next_resource)
-                        name = next_meta.key_field.name
-                    self._path[-1] = (key, name, field)
-
-                # Get list of any composite fields for this resource (this is a cached field).
-                self._field_iters.append(list(next_meta.composite_fields))
-
-                # self.current_resource = next_resource
-                self._resource_stack[-1] = next_resource
-
-                if hasattr(self, "on_enter"):
-                    self.on_enter()
-                return next_resource
-        else:
+        if not self._resource_iters:
             raise StopIteration()
+
+        if self._field_iters:
+            # Check if the last entry in the field stack has any unprocessed fields.
+            if self._field_iters[-1]:
+                # Select the very last field in the field stack.
+                field = self._field_iters[-1][0]
+                # Request a list of resources along with keys from the composite field.
+                self._resource_iters.append(
+                    field.item_iter_from_object(self.current_resource)
+                )
+                # Update the path
+                self._path.append(PathAtom.create(field.attname))
+                self._resource_stack.append(None)
+                # Remove the field from the list (and remove this field entry if it has been emptied)
+                self._field_iters[-1].pop(0)
+            else:
+                self._field_iters.pop()
+
+        if self.current_resource and hasattr(self, "on_exit"):
+            self.on_exit()
+
+        try:
+            key, next_resource = next(self._resource_iters[-1])
+        except StopIteration:
+            # End of the current list of resources pop this list off and get the next list.
+            self._path.pop()
+            self._resource_iters.pop()
+            self._resource_stack.pop()
+            return next(self)
+
+        else:
+            next_meta = getmeta(next_resource)
+            # If we have a key (ie DictOf, ListOf composite fields) update the path key field.
+            if key is not None:
+                _, value, field = self._path[-1]
+                if next_meta.key_field:
+                    value = next_meta.key_field.value_from_object(next_resource)
+                    key = next_meta.key_field.attname
+                self._path[-1] = PathAtom(key, value, field)
+
+            # Get list of any composite fields for this resource (this is a cached field).
+            self._field_iters.append(list(next_meta.composite_fields))
+
+            # self.current_resource = next_resource
+            self._resource_stack[-1] = next_resource
+
+            if hasattr(self, "on_enter"):
+                self.on_enter()
+            return next_resource
 
     @property
     def path(self) -> TraversalPath:
@@ -222,7 +264,7 @@ class ResourceTraversalIterator:
         This path can be used to later traverse the tree structure to find get to the specified resource.
         """
         # The path is offset by one as the path includes the root to simplify next method.
-        return TraversalPath(*self._path[1:])
+        return TraversalPath(self._path[1:])
 
     @property
     def depth(self) -> int:

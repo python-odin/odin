@@ -71,13 +71,13 @@ class ResourceTraversalIteratorTest(traversal.ResourceTraversalIterator):
         self.events = []
 
     def on_pre_enter(self):
-        self.events.append("on_pre_enter: %s" % self.path)
+        self.events.append(f"on_pre_enter: {self.path}")
 
     def on_enter(self):
-        self.events.append("on_enter: %s" % self.path)
+        self.events.append(f"on_enter: {self.path}")
 
     def on_exit(self):
-        self.events.append("on_exit: %s" % self.path)
+        self.events.append(f"on_exit: {self.path}")
 
 
 class TestTraversal:
@@ -85,11 +85,9 @@ class TestTraversal:
         TEST_STRUCTURE.full_clean()
 
         resource_iter = ResourceTraversalIteratorTest(TEST_STRUCTURE)
-        resources = [
-            "%s %s %s" % (r, r.name, resource_iter.depth) for r in resource_iter
-        ]
+        resources = [f"{r} {r.name} {resource_iter.depth}" for r in resource_iter]
 
-        assert [
+        assert resource_iter.events == [
             "on_enter: ",
             "on_enter: level2",
             "on_exit: level2",
@@ -106,9 +104,9 @@ class TestTraversal:
             "on_exit: level2s[c].level3s{name=h}",
             "on_exit: level2s[c]",
             "on_exit: ",
-        ] == resource_iter.events
+        ]
 
-        assert [
+        assert resources == [
             "odin.traversal.Level1 resource a 0",
             "odin.traversal.Level2 resource b 1",
             "odin.traversal.Level2 resource c 1",
@@ -117,17 +115,15 @@ class TestTraversal:
             "odin.traversal.Level3 resource f 2",
             "odin.traversal.Level2 resource g 1",
             "odin.traversal.Level3 resource h 2",
-        ] == resources
+        ]
 
     def test_list_structure(self):
         TEST_STRUCTURE.full_clean()
 
         resource_iter = ResourceTraversalIteratorTest(TEST_LIST_STRUCTURE)
-        resources = [
-            "%s %s %s" % (r, r.name, resource_iter.depth) for r in resource_iter
-        ]
+        resources = [f"{r} {r.name} {resource_iter.depth}" for r in resource_iter]
 
-        assert [
+        assert resource_iter.events == [
             "on_enter: ",
             "on_enter: level2",
             "on_exit: level2",
@@ -160,9 +156,9 @@ class TestTraversal:
             "on_exit: level2s[c].level3s{name=p}",
             "on_exit: level2s[c]",
             "on_exit: ",
-        ] == resource_iter.events
+        ]
 
-        assert [
+        assert resources == [
             "odin.traversal.Level1 resource a 0",
             "odin.traversal.Level2 resource b 1",
             "odin.traversal.Level2 resource c 1",
@@ -179,47 +175,67 @@ class TestTraversal:
             "odin.traversal.Level3 resource n 2",
             "odin.traversal.Level2 resource o 1",
             "odin.traversal.Level3 resource p 2",
-        ] == resources
+        ]
 
 
 class TestTraversalPath:
-    def test_parse(self):
-        actual = traversal.TraversalPath.parse("level2")
-        assert (
-            traversal.TraversalPath(
-                (traversal.NotSupplied, traversal.NotSupplied, "level2"),
-            )
-            == actual
-        )
+    @pytest.mark.parametrize(
+        "path, expected",
+        (
+            (
+                "level2",
+                traversal.TraversalPath(
+                    (
+                        traversal.PathAtom(
+                            traversal.NotSupplied, traversal.NotSupplied, "level2"
+                        ),
+                    )
+                ),
+            ),
+            (
+                "level2.name",
+                traversal.TraversalPath(
+                    (
+                        traversal.PathAtom(
+                            traversal.NotSupplied, traversal.NotSupplied, "level2"
+                        ),
+                        traversal.PathAtom(
+                            traversal.NotSupplied, traversal.NotSupplied, "name"
+                        ),
+                    )
+                ),
+            ),
+            (
+                "level2s[b].level3s[1].name",
+                traversal.TraversalPath(
+                    (
+                        traversal.PathAtom("b", traversal.NotSupplied, "level2s"),
+                        traversal.PathAtom("1", traversal.NotSupplied, "level3s"),
+                        traversal.PathAtom(
+                            traversal.NotSupplied, traversal.NotSupplied, "name"
+                        ),
+                    )
+                ),
+            ),
+            (
+                "level2s[b].level3s{code=abc}.name",
+                traversal.TraversalPath(
+                    (
+                        traversal.PathAtom("b", traversal.NotSupplied, "level2s"),
+                        traversal.PathAtom("code", "abc", "level3s"),
+                        traversal.PathAtom(
+                            traversal.NotSupplied, traversal.NotSupplied, "name"
+                        ),
+                    )
+                ),
+            ),
+        ),
+    )
+    def test_parse(self, path, expected):
+        """Test parsing of traversal path strings into TraversalPath objects."""
 
-        actual = traversal.TraversalPath.parse("level2.name")
-        assert (
-            traversal.TraversalPath(
-                (traversal.NotSupplied, traversal.NotSupplied, "level2"),
-                (traversal.NotSupplied, traversal.NotSupplied, "name"),
-            )
-            == actual
-        )
-
-        actual = traversal.TraversalPath.parse("level2s[b].level3s[1].name")
-        assert (
-            traversal.TraversalPath(
-                ("b", traversal.NotSupplied, "level2s"),
-                ("1", traversal.NotSupplied, "level3s"),
-                (traversal.NotSupplied, traversal.NotSupplied, "name"),
-            )
-            == actual
-        )
-
-        actual = traversal.TraversalPath.parse("level2s[b].level3s{code=abc}.name")
-        assert (
-            traversal.TraversalPath(
-                ("b", traversal.NotSupplied, "level2s"),
-                ("abc", "code", "level3s"),
-                (traversal.NotSupplied, traversal.NotSupplied, "name"),
-            )
-            == actual
-        )
+        actual = traversal.TraversalPath.parse(path)
+        assert actual == expected
 
     def test_add(self):
         actual = traversal.TraversalPath.parse("level2") + "name"
@@ -230,39 +246,72 @@ class TestTraversalPath:
         ) + traversal.TraversalPath.parse("level3s[1].name")
         assert traversal.TraversalPath.parse("level2s[b].level3s[1].name") == actual
 
-    def test_valid_path(self):
-        assert "a" == traversal.TraversalPath.parse("name").get_value(TEST_STRUCTURE)
-        assert "b" == traversal.TraversalPath.parse("level2.name").get_value(
-            TEST_STRUCTURE
-        )
+    @pytest.mark.parametrize(
+        "path, expected",
+        (
+            ("name", "a"),
+            ("level2.name", "b"),
+        ),
+    )
+    def test_valid_path__with_simple_value(self, path, expected):
+        target = traversal.TraversalPath.parse(path)
+        actual = target.get_value(TEST_STRUCTURE)
 
-        r = traversal.TraversalPath.parse("level2s[b].level3s[1]").get_value(
-            TEST_STRUCTURE
-        )
-        assert isinstance(r, Level3)
-        assert "f" == r.name
+        assert actual == expected
 
-        r = traversal.TraversalPath.parse("level2s[b].level3s{name=f}").get_value(
-            TEST_STRUCTURE
-        )
-        assert isinstance(r, Level3)
-        assert "f" == r.name
+    @pytest.mark.parametrize(
+        "path, expected",
+        (
+            ("level2s[b].level3s[1]", "f"),
+            ("level2s[b].level3s{name=f}", "f"),
+            ("level2s{name=g}.level3s{name=h}", "h"),
+        ),
+    )
+    def test_valid_path__target_parent(self, path, expected):
+        target = traversal.TraversalPath.parse(path)
+        actual = target.get_value(TEST_STRUCTURE)
 
-        r = traversal.TraversalPath.parse("level2s{name=g}.level3s{name=h}").get_value(
-            TEST_STRUCTURE
-        )
-        assert isinstance(r, Level3)
-        assert "h" == r.name
+        assert isinstance(actual, Level3)
+        assert actual.name == expected
 
-    def test_invalid_path(self):
-        path = traversal.TraversalPath.parse("level2s[b].level3s[4]")
-        pytest.raises(NoMatchError, path.get_value, TEST_STRUCTURE)
+    @pytest.mark.parametrize(
+        "path, expected",
+        (
+            ("level2s[b].level3s[4]", NoMatchError),
+            ("level2s[b].level3s_sd[1]", InvalidPathError),
+            ("level2s[b].level3s{name=h}", NoMatchError),
+            ("level2s{label=not_empty}.level3s{name=h}", MultipleMatchesError),
+        ),
+    )
+    def test_invalid_path(self, path, expected):
+        target = traversal.TraversalPath.parse(path)
 
-        path = traversal.TraversalPath.parse("level2s[b].level3s_sd[1]")
-        pytest.raises(InvalidPathError, path.get_value, TEST_STRUCTURE)
+        pytest.raises(expected, target.get_value, TEST_STRUCTURE)
 
-        path = traversal.TraversalPath.parse("level2s[d].level3s{name=h}")
-        pytest.raises(NoMatchError, path.get_value, TEST_STRUCTURE)
+    @pytest.mark.parametrize(
+        "index, expected",
+        (
+            (0, (False, False)),
+            (1, (True, False)),
+            (2, (False, True)),
+        ),
+    )
+    def test_atom_properties(self, index, expected):
+        target = traversal.TraversalPath.parse("foo.bar[1].eek{name=h}")
 
-        path = traversal.TraversalPath.parse("level2s{label=not_empty}.level3s{name=h}")
-        pytest.raises(MultipleMatchesError, path.get_value, TEST_STRUCTURE)
+        assert (target[index].is_indexed, target[index].is_filter) == expected
+
+    @pytest.mark.parametrize(
+        "path, expected",
+        (
+            ("foo.bar[1].eek", "foo.bar[1]"),
+            ("foo.bar[1]", "foo"),
+            ("foo", None),
+            ("", None),
+        ),
+    )
+    def test_parent(self, path, expected):
+        target = traversal.TraversalPath.parse(path)
+        expected = traversal.TraversalPath.parse(expected) if expected else None
+
+        assert target.parent == expected
