@@ -1,3 +1,9 @@
+2.6
+===
+
+- Redesign of TraversalPath to make it more useful. Provides more information about the path to allow
+  it to be used in more ways that just for fetching a value from a document.
+
 2.5
 ===
 
