@@ -1,3 +1,5 @@
+from typing import Any, Iterator, Tuple
+
 from odin import bases
 from odin import exceptions
 from odin.resources import create_resource_from_dict
@@ -44,6 +46,7 @@ class CompositeField(Field):
         super().__init__(**options)
 
     def to_python(self, value):
+        """Convert raw value to a python value."""
         if value is None:
             return None
         if isinstance(value, self.of):
@@ -54,6 +57,7 @@ class CompositeField(Field):
         raise exceptions.ValidationError(msg)
 
     def validate(self, value):
+        """Validate the value."""
         super().validate(value)
         if value not in EMPTY_VALUES:
             value.full_clean()
@@ -79,9 +83,7 @@ class CompositeField(Field):
 
 
 class DictAs(CompositeField):
-    """
-    Treat a dictionary as a Resource.
-    """
+    """Treat a dictionary as a Resource."""
 
     default_error_messages = {
         "invalid": "Must be a dict of type ``%r``.",
@@ -101,9 +103,7 @@ ObjectAs = DictAs
 
 
 class ListOf(CompositeField):
-    """
-    List of resources.
-    """
+    """List of resources."""
 
     default_error_messages = {
         "invalid": "Must be a list of ``%r`` objects.",
@@ -113,6 +113,7 @@ class ListOf(CompositeField):
     data_type_name = "List of"
 
     def __init__(self, resource, empty=True, **options):
+        """Initialisation of a ListOf field."""
         options.setdefault("default", list)
         super().__init__(resource, **options)
         self.empty = empty
@@ -135,6 +136,7 @@ class ListOf(CompositeField):
         return values
 
     def to_python(self, value):
+        """Convert raw value to a python value."""
         if value is None:
             return None
         if isinstance(value, (list, bases.ResourceIterable)):
@@ -150,6 +152,7 @@ class ListOf(CompositeField):
         raise exceptions.ValidationError(msg)
 
     def validate(self, value):
+        """Validate the value."""
         # Skip The direct super method and apply it to each list item.
         super(CompositeField, self).validate(value)  # noqa
         if value is not None:
@@ -170,11 +173,7 @@ class ListOf(CompositeField):
                 yield i
 
     def key_to_python(self, key):
-        """
-        A to python method for the key value.
-        :param key:
-        :return:
-        """
+        """A to python method for the key value."""
         return int(key)
 
 
@@ -182,9 +181,7 @@ ArrayOf = ListOf
 
 
 class DictOf(CompositeField):
-    """
-    Dictionary of resources.
-    """
+    """Dictionary of resources."""
 
     default_error_messages = {
         "invalid": "Must be a dict of ``%r`` objects.",
@@ -195,6 +192,7 @@ class DictOf(CompositeField):
     data_type_name = "Dict of"
 
     def __init__(self, resource, empty=True, key_choices=None, **options):
+        """Initialise DictOf field."""
         options.setdefault("default", dict)
         super().__init__(resource, **options)
         self.empty = empty
@@ -220,6 +218,7 @@ class DictOf(CompositeField):
         return values
 
     def to_python(self, value):
+        """Convert raw value to a python type."""
         if value is None:
             return None
         if isinstance(value, dict):
@@ -237,6 +236,7 @@ class DictOf(CompositeField):
         raise exceptions.ValidationError(msg)
 
     def validate(self, value):
+        """Validate the value."""
         # Skip The direct super method and apply it to each list item.
         super(CompositeField, self).validate(value)  # noqa
         if value is not None:
@@ -250,16 +250,13 @@ class DictOf(CompositeField):
         # This does nothing but it does prevent inspections from complaining.
         return None  # NoQA
 
-    def item_iter_from_object(self, obj):
+    def item_iter_from_object(self, obj) -> Iterator[Tuple[str, Any]]:
+        """Iterate object returning key/value pairs"""
         resources = self.value_from_object(obj)
         if resources:
             for key in sorted(resources):
                 yield key, resources[key]
 
     def key_to_python(self, key):
-        """
-        A to python method for the key value.
-        :param key:
-        :return:
-        """
+        """A to python method for the key value."""
         return key

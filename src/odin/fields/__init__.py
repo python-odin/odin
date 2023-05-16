@@ -243,6 +243,8 @@ class Field(BaseField):
 
 
 class BooleanField(Field):
+    """Field that must contain a boolean value."""
+
     default_error_messages = {"invalid": "'%s' value must be either True or False."}
     true_strings = ("t", "true", "y", "yes", "on", "1", "✓")
     false_strings = ("f", "false", "n", "no", "off", "0")
@@ -306,6 +308,8 @@ class StringField(Field):
 
 
 class UrlField(StringField):
+    """Field that must create a URL."""
+
     data_type_name = "URL"
 
     def __init__(self, **options):
@@ -630,6 +634,7 @@ class TimeStampField(Field):
         raise exceptions.ValidationError(msg)
 
     def prepare(self, value):
+        """Prepare for value for serialisation"""
         if value in self.empty_values:
             return
         if isinstance(value, int):
@@ -695,6 +700,8 @@ ArrayField = ListField
 
 
 class TypedListField(ListField):
+    """Field that handles a list of a specific type."""
+
     @staticmethod
     def data_type_name(instance):
         type_name = instance.field.data_type_name
@@ -703,11 +710,13 @@ class TypedListField(ListField):
         return f"List<{type_name}>"
 
     def __init__(self, field: Field, **options):
+        """Initialise the typed list field."""
         self.field = field
         super().__init__(**options)
 
     @property
     def choices_doc_text(self) -> Sequence[Tuple[Any, str]]:
+        """Generate choices for documentation purposes."""
         if self.choices:
             return self.choices
         if hasattr(self.field, "choices_doc_text"):
@@ -715,6 +724,7 @@ class TypedListField(ListField):
         return self.field.choices
 
     def to_python(self, value):
+        """Convert the value to a list of the specified type."""
         value = super().to_python(value)
         if not value:
             return value
@@ -726,7 +736,7 @@ class TypedListField(ListField):
             try:
                 value_list.append(field_to_python(item))
             except exceptions.ValidationError as ve:
-                errors[idx] = ve.error_messages
+                errors[str(idx)] = ve.error_messages
 
         if errors:
             raise exceptions.ValidationError(errors)
@@ -734,9 +744,7 @@ class TypedListField(ListField):
         return value_list
 
     def validate(self, value):
-        """
-        Validate each item against field
-        """
+        """Validate each item against field"""
         super().validate(value)
         if value:
             field_validate = self.field.validate
@@ -746,7 +754,7 @@ class TypedListField(ListField):
                 try:
                     field_validate(item)
                 except exceptions.ValidationError as ve:
-                    errors[idx] = ve.error_messages
+                    errors[str(idx)] = ve.error_messages
 
             if errors:
                 raise exceptions.ValidationError(errors)
@@ -754,9 +762,7 @@ class TypedListField(ListField):
         return value
 
     def run_validators(self, value):
-        """
-        Run validators against each item in the field
-        """
+        """Run validators against each item in the field"""
         super().run_validators(value)
         if value:
             field_run_validators = self.field.run_validators
@@ -766,7 +772,7 @@ class TypedListField(ListField):
                 try:
                     field_run_validators(item)
                 except exceptions.ValidationError as ve:
-                    errors[idx] = ve.error_messages
+                    errors[str(idx)] = ve.error_messages
 
             if errors:
                 raise exceptions.ValidationError(errors)
@@ -774,6 +780,7 @@ class TypedListField(ListField):
         return value
 
     def prepare(self, value):
+        """Prepare list for serialisation."""
         if isinstance(value, (tuple, list)):
             prepare = self.field.prepare
             return [prepare(i) for i in value]
@@ -804,7 +811,7 @@ class TypedDictField(DictField):
         if callable(value_type_name):
             value_type_name = value_type_name(instance.value_field)
 
-        return "Dict<{0}, {1}>".format(key_type_name, value_type_name)
+        return f"Dict<{key_type_name}, {value_type_name}>"
 
     def __init__(self, value_field, key_field=StringField(), **options):
         self.key_field = key_field
@@ -812,6 +819,7 @@ class TypedDictField(DictField):
         super().__init__(**options)
 
     def to_python(self, value):
+        """Convert the value to a dict of the specified type."""
         value = super().to_python(value)
         if not value:
             return value
@@ -842,6 +850,7 @@ class TypedDictField(DictField):
         return value_dict
 
     def validate(self, value):
+        """Validate value."""
         super().validate(value)
 
         if value in self.empty_values:
@@ -897,83 +906,84 @@ class TypedDictField(DictField):
         if value_errors:
             raise exceptions.ValidationError(value_errors)
 
+    def prepare(self, value):
+        """Prepare list for serialisation."""
+        if isinstance(value, dict):
+            prepare_key = self.key_field.prepare
+            prepare_value = self.value_field.prepare
+            return {prepare_key(k): prepare_value(v) for k, v in value.items()}
+        return value
+
 
 TypedObjectField = TypedDictField
 
 
 class EmailField(StringField):
-    """
-    An Email address.
+    """An Email address.
 
     Validates that a string represents a valid Email address.
-
     """
 
     data_type_name = "Email"
 
     def __init__(self, **options):
+        """Initialise the field."""
         options.setdefault("validators", []).append(validate_email_address)
         super().__init__(**options)
 
 
 class IPv4Field(StringField):
-    """
-    An IPv4 address.
+    """An IPv4 address.
 
     Validates that a string represents a valid IPv4 address format.
-
     """
 
     data_type_name = "IPv4"
 
     def __init__(self, **options):
+        """Initialise the field."""
         options.setdefault("validators", []).append(validate_ipv4_address)
         super().__init__(**options)
 
 
 class IPv6Field(StringField):
-    """
-    An IPv6 address.
+    """An IPv6 address.
 
     Validates that a string represents a valid IPv6 address format.
-
     """
 
     data_type_name = "IPv6"
 
     def __init__(self, **options):
+        """Initialise the field."""
         options.setdefault("validators", []).append(validate_ipv6_address)
         super().__init__(**options)
 
 
 class IPv46Field(StringField):
-    """
-    An IPv4 or IPv6 address.
+    """An IPv4 or IPv6 address.
 
     Validates that a string represents a valid IPv4 or IPv6 address format.
-
     """
 
     data_type_name = "IPv46"
 
     def __init__(self, **options):
+        """Initialise the field."""
         options.setdefault("validators", []).append(validate_ipv46_address)
         super().__init__(**options)
 
 
 class UUIDField(Field):
-    """
-    An universally unique identifier.
+    """An universally unique identifier.
 
     Validates that the string represents a universally unique identifier.
     """
 
     data_type_name = "UUID"
 
-    def __init__(self, **options):
-        super().__init__(**options)
-
     def to_python(self, value):
+        """Convert the value to a UUID."""
         if value is None:
             return
 
@@ -1014,13 +1024,12 @@ ET = TypeVar("ET", bound=enum.Enum)
 
 
 class EnumField(Field):
-    """
-    Field for handling Python enums.
-    """
+    """Field for handling Python enums."""
 
     data_type_name = "Enum"
 
     def __init__(self, enum_type: Type[ET], **options):
+        """Initialise the field."""
 
         # Generate choices structure from choices
         choices = options.pop("choices", None)
@@ -1031,12 +1040,11 @@ class EnumField(Field):
 
     @property
     def choices_doc_text(self):
-        """
-        Choices converted for documentation purposes.
-        """
+        """Choices converted for documentation purposes."""
         return tuple((v.value, n) for v, n in self.choices)
 
     def to_python(self, value) -> Optional[ET]:
+        """Convert the value to an enum."""
         if value is None:
             return
 
@@ -1054,14 +1062,13 @@ class EnumField(Field):
             )
 
     def prepare(self, value: Optional[ET]):
+        """Prepare enum for serialisation."""
         if (value is not None) and isinstance(value, self.enum_type):
             return value.value
 
 
 class PathField(Field):
-    """
-    Field for handling Python Paths
-    """
+    """Field for handling Python Paths"""
 
     default_error_messages = {
         "invalid": "Value %s is not a valid path.",
@@ -1069,6 +1076,7 @@ class PathField(Field):
     data_type_name = "Path"
 
     def to_python(self, value) -> Optional[pathlib.Path]:
+        """Convert the value to a Path."""
         if value is None:
             return
 
@@ -1079,6 +1087,7 @@ class PathField(Field):
             raise exceptions.ValidationError(self.error_messages["invalid"] % value)
 
     def prepare(self, value: Optional[str]):
+        """Prepare path for serialisation."""
         if isinstance(value, pathlib.Path):
             return value.as_posix()
 
@@ -1099,6 +1108,7 @@ class RegexField(Field):
     data_type_name = "Regex"
 
     def to_python(self, value) -> Optional[re.Pattern]:
+        """Convert the value to a regular expression."""
         if value is None:
             return
 
@@ -1112,5 +1122,6 @@ class RegexField(Field):
             )
 
     def prepare(self, value: Optional[re.Pattern]):
+        """Prepare regular expression for serialisation."""
         if isinstance(value, re.Pattern):
             return value.pattern
