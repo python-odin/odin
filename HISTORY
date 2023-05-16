@@ -1,3 +1,12 @@
+2.7
+===
+
+Bug fixes
+---------
+
+- TypedDictField now includes a prepare method to ensure types are cast correctly for serailisation.
+
+
 2.6
 ===
 
