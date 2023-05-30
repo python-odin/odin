@@ -1,3 +1,18 @@
+2.8
+===
+
+Changes
+-------
+
+- Change behaviour of create_resource_from_dict to not raise Validation errors
+  from ``field.to_python`` when ``full_clean`` is ``False``.
+
+  Allows for invalid documents to still be loaded with invalid data to allow
+  for correction of data and to prevent data loss.
+
+- Introduce Pre-commit, PyUpgrade, isort, ruff and black.
+
+
 2.7
 ===
 
