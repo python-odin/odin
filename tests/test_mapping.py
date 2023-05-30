@@ -29,7 +29,7 @@ class SimpleFromTo(odin.Mapping):
     @odin.map_field(from_field="title")
     def title_count(self, value):
         if self.in_loop:
-            return "%s: %s" % (self.loop_idx, value)
+            return f"{self.loop_idx}: {value}"
         else:
             return value
 
@@ -525,8 +525,8 @@ class TestSubClassMapping:
                 Resource A          -->         Mapping A-X         -->           Resource X
                     |                                |                                |
                _____|_____                      _____|_____                      _____|_____
-              /           \                    /           \                    /           \
-             /            \                   /            \                   /            \
+              /           \\                    /           \\                    /           \
+             /            \\                   /            \\                   /            \
         Resource B    Resource C         Mapping B-Y   Mapping C-Z        Resource Y    Resource Z
 
     Define a mapping that can handle a list of *Resource A* and *Resource B* objects being mapped by an abstract mapping

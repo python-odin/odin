@@ -66,17 +66,17 @@ def dump(
         )  # Encode attributes
         for f, v in attribute_field_iter_items(resource)
     )
-    fp.write("<{}{}>{}".format(meta.name, attributes, line_ending))
+    fp.write(f"<{meta.name}{attributes}>{line_ending}")
 
     # Write any element fields
     for field, value in element_field_iter_items(resource):
         if isinstance(field, composite.ListOf):
             if field.use_container:
-                fp.write("<{}>{}".format(field.name, line_ending))
+                fp.write(f"<{field.name}>{line_ending}")
             for v in value:
                 dump(fp, v, line_ending)
             if field.use_container:
-                fp.write("</{}>{}".format(field.name, line_ending))
+                fp.write(f"</{field.name}>{line_ending}")
 
         elif isinstance(field, composite.DictAs):
             if value is not None:
@@ -108,7 +108,7 @@ def dump(
                 )
             )
 
-    fp.write("</{}>{}".format(meta.name, line_ending))
+    fp.write(f"</{meta.name}>{line_ending}")
 
 
 def dumps(resource, **kwargs):

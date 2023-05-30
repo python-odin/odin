@@ -65,7 +65,7 @@ class longitude(float):  # NoQA
     def __new__(cls, x):
         lng = float.__new__(cls, x)
         if lng > 180.0 or lng < -180.0:
-            raise ValueError("not in range -180.0 -> 180.0: '{}'".format(x))
+            raise ValueError(f"not in range -180.0 -> 180.0: '{x}'")
         return lng
 
     def __str__(self):

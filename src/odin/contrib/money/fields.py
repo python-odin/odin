@@ -18,7 +18,7 @@ class AmountField(ScalarField):
     data_type_name = "Amount"
 
     def __init__(self, allowed_currencies=None, **kwargs):
-        super(AmountField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.allowed_currencies = allowed_currencies
 
     def to_python(self, value):
@@ -34,7 +34,7 @@ class AmountField(ScalarField):
             raise exceptions.ValidationError(msg)
 
     def validate(self, value):
-        super(AmountField, self).validate(value)
+        super().validate(value)
         if (
             self.allowed_currencies
             and (value not in EMPTY_VALUES)

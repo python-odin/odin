@@ -101,7 +101,7 @@ class Reader(bases.TypedResourceIterable):
             # Handle strict fields
             if self.strict_fields and self.extra_field_names:
                 raise CodecDecodeError(
-                    "Extra unknown fields: {0}".format(",".join(self.extra_field_names))
+                    "Extra unknown fields: {}".format(",".join(self.extra_field_names))
                 )
 
         # Built in counters

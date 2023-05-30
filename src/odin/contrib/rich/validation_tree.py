@@ -18,7 +18,6 @@ def _validation_error_to_tree(error_messages: Union[list, dict], tree: Tree):
 
     if isinstance(error_messages, dict):
         for name, value in error_messages.items():
-
             node = tree.add(
                 f"[odin.resource.name]+"
                 if name == NON_FIELD_ERRORS

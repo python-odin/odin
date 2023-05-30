@@ -208,7 +208,7 @@ class TestReader:
         with open(temp_csv, "w") as f:
             csv_codec.dump(f, expected_library, include_header=True)
 
-        with open(temp_csv, "r") as f:
+        with open(temp_csv) as f:
             actual_library = list(csv_codec.reader(f, Book, includes_header=True))
 
         assert sorted(actual_library, key=lambda x: x.num_pages) == sorted(

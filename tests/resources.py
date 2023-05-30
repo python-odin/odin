@@ -235,5 +235,4 @@ class CamelCaseResource(odin.Resource):
 
 
 class InheritedCamelCaseResource(CamelCaseResource):
-
     email_address = odin.EmailField()

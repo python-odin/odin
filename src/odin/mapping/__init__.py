@@ -444,8 +444,7 @@ class ImmediateResult(base_types.ResourceIterable):
         self.sequence = list(MappingResult(*args, **kwargs))
 
     def __iter__(self):
-        for item in self.sequence:
-            yield item
+        yield from self.sequence
 
 
 class CachingMappingResult(MappingResult):

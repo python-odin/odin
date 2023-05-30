@@ -34,9 +34,7 @@ class CompositeField(Field):
 
         """
         if not hasattr(resource, "_meta"):
-            raise TypeError(
-                "{!r} is not a valid type for a related field.".format(resource)
-            )
+            raise TypeError(f"{resource!r} is not a valid type for a related field.")
         self.of = resource
         self.use_container = use_container
 
@@ -156,21 +154,20 @@ class ListOf(CompositeField):
         # Skip The direct super method and apply it to each list item.
         super(CompositeField, self).validate(value)  # noqa
         if value is not None:
-            super_validate = super(ListOf, self).validate
+            super_validate = super().validate
             self._process_list(value, super_validate)
 
         if (value is not None) and (not value) and (not self.empty):
             raise exceptions.ValidationError(self.error_messages["empty"])
 
     def __iter__(self):
-        # This does nothing but it does prevent inspections from complaining.
+        # This does nothing, but it does prevent inspections from complaining.
         return None  # NoQA
 
     def item_iter_from_object(self, obj):
         resources = self.value_from_object(obj)
         if resources:
-            for i in enumerate(resources):
-                yield i
+            yield from enumerate(resources)
 
     def key_to_python(self, key):
         """A to python method for the key value."""
