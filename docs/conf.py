@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Odin documentation build configuration file, created by
 # sphinx-quickstart on Tue Aug 20 18:57:24 2013.
@@ -11,8 +10,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
 import os
+import sys
 
 HERE = os.path.dirname(__file__)
 
@@ -53,8 +52,8 @@ source_suffix = ".rst"
 master_doc = "contents"
 
 # General information about the project.
-project = u"Odin"
-copyright = u"2023, Tim Savage"
+project = "Odin"
+copyright = "2023, Tim Savage"
 author = "Tim Savage <tim@savage.company>"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -205,8 +204,8 @@ latex_documents = [
     (
         "index",
         "Odin.tex",
-        u"Odin Documentation",
-        u"Tim Savage \\textless{}tim@savage.company\\textgreater{}",
+        "Odin Documentation",
+        "Tim Savage \\textless{}tim@savage.company\\textgreater{}",
         "manual",
     ),
 ]
@@ -236,7 +235,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [("index", "odin", u"Odin Documentation", [author], 1)]
+man_pages = [("index", "odin", "Odin Documentation", [author], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -251,7 +250,7 @@ texinfo_documents = [
     (
         "index",
         "Odin",
-        u"Odin Documentation",
+        "Odin Documentation",
         author,
         "Odin",
         "One line description of project.",

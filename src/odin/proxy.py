@@ -7,14 +7,14 @@ The resource proxy is an object that provides an alternate interface to a shadow
 This could be as a means of providing a summary object, or for adding additional properties.
 
 """
-from typing import List, Union, Optional
+from typing import Optional
 
 from odin import registration
 from odin.bases import TypedResourceIterable
-from odin.resources import ResourceOptions, ResourceBase
-from odin.utils import getmeta, filter_fields, lazy_property
+from odin.resources import ResourceBase, ResourceOptions
+from odin.utils import filter_fields, getmeta, lazy_property
 
-EMPTY = tuple()
+EMPTY = ()
 
 
 class FieldProxyDescriptor:
@@ -29,13 +29,13 @@ class FieldProxyDescriptor:
         self.readonly = readonly
 
     def __get__(self, instance, owner):
-        shadow = getattr(instance, "_shadow")
+        shadow = instance._shadow
         return getattr(shadow, self.attname)
 
     def __set__(self, instance, value):
         if self.readonly:
             raise AttributeError("can't set attribute")
-        shadow = getattr(instance, "_shadow")
+        shadow = instance._shadow
         return setattr(shadow, self.attname, value)
 
     def contribute_to_class(self, cls, name):
@@ -62,7 +62,7 @@ class ResourceProxyOptions(ResourceOptions):
     )
 
     def __init__(self, meta):
-        super(ResourceProxyOptions, self).__init__(meta)
+        super().__init__(meta)
         self.resource = None
         self.shadow = None
         self.include = []
@@ -70,7 +70,7 @@ class ResourceProxyOptions(ResourceOptions):
         self.readonly = []
 
     def __repr__(self):
-        return "<Proxy of {!r}>".format(getmeta(self.resource))
+        return f"<Proxy of {getmeta(self.resource)!r}>"
 
     def contribute_to_class(self, cls, _):
         cls._meta = self
@@ -148,7 +148,7 @@ class ResourceProxyType(type):
     meta_options = ResourceProxyOptions
 
     def __new__(mcs, name, bases, attrs):
-        super_new = super(ResourceProxyType, mcs).__new__
+        super_new = super().__new__
 
         # attrs will never be empty for classes declared in the standard way
         # (ie. with the `class` keyword). This is quite robust.
@@ -240,7 +240,7 @@ class ResourceProxyIter(TypedResourceIterable):
 
     def __init__(self, objects, resource_type):
         # type: (Union[List[ResourceBase]], ResourceProxyBase) -> None
-        super(ResourceProxyIter, self).__init__(resource_type)
+        super().__init__(resource_type)
         self.objects = objects
 
     def __iter__(self):
@@ -270,7 +270,7 @@ class ResourceProxyBase(ResourceBase):
         if shadow is None:
             # Create a new instance
             self._shadow = meta.resource()
-            super(ResourceProxyBase, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
         else:
             self._shadow = shadow
 

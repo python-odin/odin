@@ -1,4 +1,5 @@
 import pytest
+
 from odin.contrib.money import datatypes
 
 a = datatypes.Amount(11)
@@ -21,7 +22,7 @@ class TestDataTypes:
         pytest.raises(KeyError, datatypes.Amount, 12, "ZZZ")
         # From tuple
         assert "10.0000" == str(datatypes.Amount(("10",)))
-        assert "10.00 NZD", str(datatypes.Amount(("10" == "NZD")))
+        assert "10.00 NZD", str(datatypes.Amount("10" == "NZD"))
         pytest.raises(ValueError, datatypes.Amount, ("10", "NZD", "hmmm"))
 
     # These tests assume that the decimal library is correct.

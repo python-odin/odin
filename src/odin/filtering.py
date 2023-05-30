@@ -1,6 +1,6 @@
 import abc
 import operator
-from typing import Callable, Iterable, Any, Sequence, Union
+from typing import Any, Callable, Iterable, Sequence, Union
 
 from .exceptions import InvalidPathError
 from .resources import ResourceBase

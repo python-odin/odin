@@ -1,6 +1,6 @@
-import odin
 import enum
 
+import odin
 from odin.fields.virtual import CalculatedField
 from odin.mapping.helpers import sum_fields
 from odin.utils import snake_to_camel
@@ -235,5 +235,4 @@ class CamelCaseResource(odin.Resource):
 
 
 class InheritedCamelCaseResource(CamelCaseResource):
-
     email_address = odin.EmailField()

@@ -3,9 +3,8 @@
 # A note: to use validators from the Django project install the baldr package. Baldr is an integration between Odin and
 # the Django framework, the integration includes support for handling the Django version of the ValidationError
 # exception within Odin.
-from typing import Callable, Any, Union, TypeVar, Optional
-
 import re
+from typing import Any, Callable, Optional, TypeVar, Union
 
 from odin import exceptions
 from odin.utils.ipv6 import is_valid_ipv6_address
@@ -262,7 +261,7 @@ def validate_ipv46_address(value):
         except exceptions.ValidationError:
             raise exceptions.ValidationError(
                 "Enter a valid IPv4 or IPv6 address.", code="invalid"
-            )
+            ) from None
 
 
 class EmailValidator:

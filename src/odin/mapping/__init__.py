@@ -1,25 +1,25 @@
 """Mapping data between resources or other object types."""
 import abc
 from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    NamedTuple,
+    Optional,
+    Sequence,
+    Type,
     TypeVar,
     Union,
-    Sequence,
-    Optional,
-    Callable,
-    Any,
-    NamedTuple,
-    Iterable,
-    Type,
-    Dict,
 )
 
 from odin import bases as base_types
 from odin import registration
-from odin.fields import NotProvided, Field
+from odin.exceptions import MappingExecutionError, MappingSetupError
+from odin.fields import Field, NotProvided
+from odin.fields.composite import DictAs, ListOf
+from odin.mapping.helpers import MapDictAs, MapListOf, NoOpMapper
 from odin.resources import ResourceBase
-from odin.fields.composite import ListOf, DictAs
-from odin.exceptions import MappingSetupError, MappingExecutionError
-from odin.mapping.helpers import MapListOf, MapDictAs, NoOpMapper
 from odin.utils import cached_property, getmeta
 
 __all__ = ("Mapping", "map_field", "map_list_field", "assign_field", "define", "assign")
@@ -216,13 +216,13 @@ class MappingMeta(type):
         except KeyError:
             raise MappingSetupError(
                 f"`from_obj` {from_obj!r} does not have an attribute resolver defined."
-            )
+            ) from None
         try:
             to_fields = registration.get_field_resolver(to_obj).to_field_dict
         except KeyError:
             raise MappingSetupError(
                 f"`to_obj` {to_obj!r} does not have an attribute resolver defined."
-            )
+            ) from None
 
         def attr_mapping_to_mapping_rule(m, def_type, ref):
             """Parse, validate and normalise defined mapping rules so rules can be executed without having to perform
@@ -239,7 +239,7 @@ class MappingMeta(type):
                 except ValueError:
                     raise MappingSetupError(
                         f"Bad mapping definition `{m}` in {def_type} `{ref}`."
-                    )
+                    ) from None
 
             if map_from is None:
                 is_assignment = True
@@ -300,8 +300,8 @@ class MappingMeta(type):
         # Generate mapping rules.
         mapping_rules = []
 
-        # Check that from_obj is a sub_class (or same class) as any `parent.from_obj`. This is important for mapping
-        # sub class lists and resolving mappings.
+        # Check that from_obj is a sub_class (or same class) as any `parent.from_obj`.
+        # This is important for mapping subclass lists and resolving mappings.
         base_parents = [p for p in parents if hasattr(p, "_subs")]
         for p in base_parents:
             if not issubclass(from_obj, p.from_obj):
@@ -330,7 +330,7 @@ class MappingMeta(type):
             # decorators.
             if hasattr(attr, "_mapping"):
                 mapping_rule = attr_mapping_to_mapping_rule(
-                    getattr(attr, "_mapping"), "custom mapping", attr
+                    attr._mapping, "custom mapping", attr
                 )
                 mapping_rules.append(mapping_rule)
                 remove_from_unmapped_fields(mapping_rule)
@@ -354,7 +354,7 @@ class MappingMeta(type):
             registration.register_mapping(mapper)
             mapper = registration.get_mapping(from_obj, to_obj)
 
-            # Register mapping with parents mapping objects as a sub class.
+            # Register mapping with parents mapping objects as a subclass.
             for parent in base_parents:
                 parent._subs[from_obj] = mapper
 
@@ -444,8 +444,7 @@ class ImmediateResult(base_types.ResourceIterable):
         self.sequence = list(MappingResult(*args, **kwargs))
 
     def __iter__(self):
-        for item in self.sequence:
-            yield item
+        yield from self.sequence
 
 
 class CachingMappingResult(MappingResult):
@@ -620,7 +619,9 @@ class MappingBase:
                 else:
                     to_values = action(*from_values)
             except TypeError as ex:
-                raise MappingExecutionError(f"{ex} applying rule {mapping_rule}")
+                raise MappingExecutionError(
+                    f"{ex} applying rule {mapping_rule}"
+                ) from None
 
         if to_list:
             if isinstance(to_values, Iterable):

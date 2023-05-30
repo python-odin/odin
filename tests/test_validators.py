@@ -70,7 +70,7 @@ class TestValidator:
         target(10)
         target(1)
         target(-10)
-        assert str(target) == 'Value is less than or equal to 10.'
+        assert str(target) == "Value is less than or equal to 10."
         pytest.raises(ValidationError, target, 11)
 
     def test_min_value_validator(self):
@@ -78,7 +78,7 @@ class TestValidator:
 
         target(10)
         target(11)
-        assert str(target) == 'Value is greater than or equal to 10.'
+        assert str(target) == "Value is greater than or equal to 10."
         pytest.raises(ValidationError, target, 1)
         pytest.raises(ValidationError, target, -10)
 
@@ -86,7 +86,7 @@ class TestValidator:
         target = validators.LengthValidator(10)
 
         target("1234567890")
-        assert str(target) == 'Values length is 10.'
+        assert str(target) == "Values length is 10."
         pytest.raises(ValidationError, target, "123456789")
         pytest.raises(ValidationError, target, "12345678901")
 
@@ -96,14 +96,14 @@ class TestValidator:
         target("123457890")
         target("12345")
         target("")
-        assert str(target) == 'Values length is at most 10.'
+        assert str(target) == "Values length is at most 10."
         pytest.raises(ValidationError, target, "12345678901")
 
     def test_min_length_validator(self):
         target = validators.MinLengthValidator(10)
 
         target("12345678901")
-        assert str(target) == 'Values length is at least 10.'
+        assert str(target) == "Values length is at least 10."
         pytest.raises(ValidationError, target, "123457890")
         pytest.raises(ValidationError, target, "12345")
         pytest.raises(ValidationError, target, "")
@@ -272,7 +272,7 @@ def test_validate_email_valid(value, kwargs):
         (".foo@bar.com", None),
         ("foo@corpau", None),
         ("foo@localhost", {"whitelist": ""}),
-        ("foo@{0}.com".format("a" * 64), None),
+        ("foo@{}.com".format("a" * 64), None),
         ("foo@[::ff::0]", None),
     ),
 )

@@ -8,12 +8,12 @@ def generate_mapping_cache_name(from_obj, to_obj):
 class ResourceCache:
     # Use the Borg pattern to share state between all instances. Details at
     # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/66531.
-    __shared_state = dict(
-        resources={},
-        mappings={},
-        field_resolvers=set(),
-        validation_error_handlers={},
-    )
+    __shared_state = {
+        "resources": {},
+        "mappings": {},
+        "field_resolvers": set(),
+        "validation_error_handlers": {},
+    }
 
     def __init__(self):
         self.__dict__ = self.__shared_state

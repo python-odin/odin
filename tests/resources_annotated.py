@@ -111,5 +111,4 @@ class CamelCaseResource(odin.AnnotatedResource):
 
 
 class InheritedCamelCaseResource(CamelCaseResource):
-
     email_address: str

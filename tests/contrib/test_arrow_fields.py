@@ -1,5 +1,6 @@
-import arrow
 import datetime
+
+import arrow
 import pytest
 
 from odin.exceptions import ValidationError

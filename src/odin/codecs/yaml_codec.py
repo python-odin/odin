@@ -1,9 +1,8 @@
 """Codec to load/save Yaml documents."""
-from typing import TextIO, Union
 from io import StringIO
+from typing import TextIO, Union
 
-from odin import bases
-from odin import resources, ResourceAdapter
+from odin import ResourceAdapter, bases, resources
 from odin.exceptions import CodecEncodeError
 from odin.utils import getmeta
 
@@ -12,12 +11,13 @@ try:
 except ImportError:
     raise ImportError(  # pragma: no cover
         "odin.codecs.yaml_codec requires the 'pyyaml' package."
-    )
+    ) from None
 
 try:
-    from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
+    from yaml import CSafeDumper as SafeDumper
+    from yaml import CSafeLoader as SafeLoader
 except ImportError:
-    from yaml import SafeLoader, SafeDumper  # pragma: no cover
+    from yaml import SafeDumper, SafeLoader  # pragma: no cover
 
 
 YAML_TYPES = {}
@@ -96,7 +96,7 @@ def dump(resource: resources.ResourceBase, fp: TextIO, dumper=OdinDumper, **kwar
     try:
         yaml.dump(resource, fp, Dumper=dumper, **kwargs)
     except ValueError as ex:
-        raise CodecEncodeError(str(ex))
+        raise CodecEncodeError(str(ex)) from ex
 
 
 def dumps(resource: resources.ResourceBase, dumper=OdinDumper, **kwargs) -> str:

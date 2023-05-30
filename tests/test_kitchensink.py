@@ -1,17 +1,15 @@
 """
 Do load/dump tests on known valid and invalid documents.
 """
-import os
 import datetime
+
 import pytest
 
-from odin.codecs import json_codec
 from odin import exceptions
+from odin.codecs import json_codec
+
 from ._helpers import assertJSONEqual
 from .resources import *
-
-
-FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 class TestKitchenSink:
@@ -65,7 +63,9 @@ class TestKitchenSink:
             actual,
         )
 
-    def test_full_clean_invalid_data(self):
+    def test_full_clean_invalid_data(
+        self,
+    ):
         book = Book(
             title="Consider Phlebas",
             num_pages=471,
@@ -81,13 +81,31 @@ class TestKitchenSink:
         with pytest.raises(exceptions.ValidationError):
             library.full_clean()
 
-    def test_load_valid_data(self):
-        library = json_codec.load(
-            open(os.path.join(FIXTURE_PATH_ROOT, "book-valid.json"))
-        )
+    def test_load_valid_data(self, fixture_path):
+        with (fixture_path / "book-valid.json").open() as fp:
+            library = json_codec.load(fp)
 
         assert "Consider Phlebas" == library.books[0].title
 
-    def test_load_invalid_data(self):
+    def test_load_invalid_data(self, fixture_path):
+        with pytest.raises(exceptions.ValidationError), (
+            fixture_path / "book-invalid.json"
+        ).open() as fp:
+            json_codec.load(fp)
+
+    def test_load_with_invalid_nested_data__where_full_clean_is_false(
+        self, fixture_path
+    ):
+        """Load a nested data file where data in nested resources is in-valid.
+
+        This test is to ensure that the nested resources are still loaded, and
+        invalid data is not removed and can be reported.
+        """
+        with (fixture_path / "library-invalid-nested.json").open() as fp:
+            library = json_codec.load(fp, full_clean=False)
+
+        assert library.books[1].isbn is None
+        assert library.books[3].rrp == "nineteen dollars fifty cents"
+
         with pytest.raises(exceptions.ValidationError):
-            json_codec.load(open(os.path.join(FIXTURE_PATH_ROOT, "book-invalid.json")))
+            library.full_clean()

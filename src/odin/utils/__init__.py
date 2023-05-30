@@ -1,16 +1,16 @@
 import re
 from typing import (
-    Iterable,
-    Tuple,
-    Union,
-    Set,
-    TypeVar,
-    Sequence,
     Any,
-    List,
     Dict,
+    Iterable,
     Iterator,
+    List,
     Optional,
+    Sequence,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
 )
 
 from odin.compatibility import deprecated
@@ -162,7 +162,7 @@ def getmeta(resource_or_instance):
     :rtype: odin.resources.ResourceOptions
 
     """
-    return getattr(resource_or_instance, "_meta")
+    return resource_or_instance._meta
 
 
 def field_iter(resource, include_virtual: bool = True) -> Iterator:

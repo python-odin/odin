@@ -1,7 +1,8 @@
-import arrow
 import datetime
 
-from odin import exceptions, datetimeutil
+import arrow
+
+from odin import datetimeutil, exceptions
 from odin.fields import Field
 from odin.validators import EMPTY_VALUES
 

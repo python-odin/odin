@@ -19,10 +19,10 @@ from io import StringIO
 
 from odin import bases
 from odin.datastructures import CaseLessStringList
+from odin.exceptions import CodecDecodeError, ValidationError
 from odin.fields import NotProvided
 from odin.resources import create_resource_from_iter
 from odin.utils import getmeta, lazy_property
-from odin.exceptions import CodecDecodeError, ValidationError
 
 CONTENT_TYPE = "text/csv"
 
@@ -101,7 +101,7 @@ class Reader(bases.TypedResourceIterable):
             # Handle strict fields
             if self.strict_fields and self.extra_field_names:
                 raise CodecDecodeError(
-                    "Extra unknown fields: {0}".format(",".join(self.extra_field_names))
+                    "Extra unknown fields: {}".format(",".join(self.extra_field_names))
                 )
 
         # Built in counters

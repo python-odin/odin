@@ -19,9 +19,8 @@ from io import StringIO
 from typing import TextIO
 from xml.sax import saxutils
 
-from odin import serializers, Resource
-from odin import fields
-from odin.fields import composite, StringField
+from odin import fields, serializers
+from odin.fields import StringField, composite
 from odin.utils import attribute_field_iter_items, element_field_iter_items, getmeta
 
 XML_TYPES = {
@@ -49,7 +48,7 @@ def _serialize_to_string(value):
 def dump(
     fp: TextIO,
     resource,  # type: Resource
-    line_ending="",  # type: str
+    line_ending: str = "",
 ):
     """
     Dump a resource to a file like object.
@@ -61,22 +60,20 @@ def dump(
 
     # Write container and any attributes
     attributes = "".join(
-        " {}={}".format(
-            f.name, saxutils.quoteattr(_serialize_to_string(v))
-        )  # Encode attributes
+        f" {f.name}={saxutils.quoteattr(_serialize_to_string(v))}"  # Encode attributes
         for f, v in attribute_field_iter_items(resource)
     )
-    fp.write("<{}{}>{}".format(meta.name, attributes, line_ending))
+    fp.write(f"<{meta.name}{attributes}>{line_ending}")
 
     # Write any element fields
     for field, value in element_field_iter_items(resource):
         if isinstance(field, composite.ListOf):
             if field.use_container:
-                fp.write("<{}>{}".format(field.name, line_ending))
+                fp.write(f"<{field.name}>{line_ending}")
             for v in value:
                 dump(fp, v, line_ending)
             if field.use_container:
-                fp.write("</{}>{}".format(field.name, line_ending))
+                fp.write(f"</{field.name}>{line_ending}")
 
         elif isinstance(field, composite.DictAs):
             if value is not None:
@@ -85,30 +82,19 @@ def dump(
         elif isinstance(field, fields.ArrayField):
             for v in value:
                 fp.write(
-                    "<{}>{}</{}>{}".format(
-                        field.name, _serialize_to_string(v), field.name, line_ending
-                    )
+                    f"<{field.name}>{_serialize_to_string(v)}</{field.name}>{line_ending}"
                 )
 
         elif isinstance(field, TextField):
             if value is not None:
-                fp.write(
-                    "{}{}".format(
-                        saxutils.escape(_serialize_to_string(value)), line_ending
-                    )
-                )
+                fp.write(f"{saxutils.escape(_serialize_to_string(value))}{line_ending}")
 
         else:
             fp.write(
-                "<{}>{}</{}>{}".format(
-                    field.name,
-                    saxutils.escape(_serialize_to_string(value)),
-                    field.name,
-                    line_ending,
-                )
+                f"<{field.name}>{saxutils.escape(_serialize_to_string(value))}</{field.name}>{line_ending}"
             )
 
-    fp.write("</{}>{}".format(meta.name, line_ending))
+    fp.write(f"</{meta.name}>{line_ending}")
 
 
 def dumps(resource, **kwargs):

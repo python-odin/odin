@@ -1,6 +1,6 @@
-from typing import Union, Sequence, Dict, Optional, Type
+from typing import Dict, Optional, Sequence, Type, Union
 
-from odin import resources, ResourceAdapter
+from odin import ResourceAdapter, resources
 from odin.exceptions import CodecDecodeError
 from odin.resources import ResourceBase
 from odin.utils import getmeta
@@ -10,7 +10,7 @@ try:
 except ImportError:  # pragma: no cover
     raise ImportError(  # pragma: no cover
         "odin.codecs.toml_codec requires the 'toml' package."
-    )
+    ) from None
 
 
 TOML_TYPES = {}
@@ -39,7 +39,8 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
     try:
         data = toml.load(fp)
     except toml.TomlDecodeError as ex:
-        raise CodecDecodeError(str(ex))
+        raise CodecDecodeError(str(ex)) from ex
+
     return resources.build_object_graph(
         data,
         resource,
@@ -70,7 +71,8 @@ def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
     try:
         data = toml.loads(s)
     except toml.TomlDecodeError as ex:
-        raise CodecDecodeError(str(ex))
+        raise CodecDecodeError(str(ex)) from ex
+
     return resources.build_object_graph(
         data,
         resource,
@@ -105,6 +107,7 @@ class OdinEncoder(toml.TomlEncoder):
         if isinstance(v, (ResourceBase, ResourceAdapter)):
             resource_dict = self.resource_to_dict(v)
             return self.dump_inline_table(resource_dict)
+
         if type(v) in TOML_TYPES:
             v = TOML_TYPES[type(v)](v)
         return super().dump_value(v)

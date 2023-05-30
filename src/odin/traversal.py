@@ -1,9 +1,9 @@
 """Traversal of a datastructure."""
 import itertools
-from typing import Union, Optional, NamedTuple, Sequence, cast, Iterable, List, Any
+from typing import Any, Iterable, List, NamedTuple, Optional, Sequence, Union, cast
 
 import odin
-from odin.exceptions import InvalidPathError, NoMatchError, MultipleMatchesError
+from odin.exceptions import InvalidPathError, MultipleMatchesError, NoMatchError
 from odin.resources import ResourceBase
 from odin.utils import getmeta
 
@@ -84,7 +84,7 @@ class PathAtom(NamedTuple):
         try:
             field = getmeta(resource).field_map[attr]
         except KeyError:
-            raise InvalidPathError(self, f"Unknown field {attr!r}")
+            raise InvalidPathError(self, f"Unknown field {attr!r}") from None
         element = field.value_from_object(resource)
 
         if key is NotSupplied:
@@ -97,7 +97,9 @@ class PathAtom(NamedTuple):
             try:
                 return element[key]
             except LookupError:
-                raise NoMatchError(self, f"Could not find index {key!r} in {field}.")
+                raise NoMatchError(
+                    self, f"Could not find index {key!r} in {field}."
+                ) from None
 
         else:
             # Filter elements

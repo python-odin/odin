@@ -1,7 +1,7 @@
 try:
     import arrow
 except ImportError:
-    raise ImportError("The arrow package is not installed.")
+    raise ImportError("The arrow package is not installed.") from None
 
 try:
     from odin.codecs.json_codec import JSON_TYPES

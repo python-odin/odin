@@ -5,12 +5,15 @@ from pint import errors
 from odin import exceptions
 from odin.fields import Field
 from odin.validators import EMPTY_VALUES
+
 from .units import registry
 
 __all__ = ("FloatField",)
 
 
 class PintField(Field, ABC):
+    """Base class for Pint fields."""
+
     def __init__(self, units: str, **kwargs):
         super().__init__(**kwargs)
 
@@ -39,8 +42,8 @@ class PintField(Field, ABC):
 
         try:
             return value.to(self.units)
-        except errors.DimensionalityError as de:
-            raise exceptions.ValidationError(de)
+        except errors.DimensionalityError as ex:
+            raise exceptions.ValidationError(str(ex)) from None
 
     def to_magnitude(self, value):
         raise NotImplementedError()
@@ -52,14 +55,17 @@ class FloatField(PintField):
     }
     data_type_name = "Float"
 
-    def to_magnitude(self, value):
+    def to_magnitude(self, value) -> float:
+        """Convert value to a float."""
         try:
             return float(value)
+
         except ValueError:
             msg = self.error_messages["invalid"] % value
-            raise exceptions.ValidationError(msg)
+            raise exceptions.ValidationError(msg) from None
 
     def to_python(self, value):
+        """Convert value to a float."""
         if value in EMPTY_VALUES:
             return None
         return self.to_quantity(value)

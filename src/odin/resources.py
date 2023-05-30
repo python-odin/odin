@@ -1,28 +1,22 @@
 import copy
 from typing import (
-    TypeVar,
-    Dict,
     Any,
-    Type,
-    Optional,
-    Tuple,
-    Union,
-    Sequence,
-    List,
-    cast,
     Callable,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    cast,
 )
 
-from odin import bases
-from odin import exceptions, registration
-from odin.exceptions import ValidationError, ResourceDefError
-from odin.fields import NotProvided, BaseField, Field, NotProvidedType
-from odin.utils import (
-    cached_property,
-    field_iter_items,
-    force_tuple,
-    getmeta,
-)
+from odin import bases, exceptions, registration
+from odin.exceptions import ResourceDefError, ValidationError
+from odin.fields import BaseField, Field, NotProvided, NotProvidedType
+from odin.utils import cached_property, field_iter_items, force_tuple, getmeta
 
 DEFAULT_TYPE_FIELD = "$"
 
@@ -244,7 +238,7 @@ class ResourceType(type):
     meta_options = ResourceOptions
 
     def __new__(mcs, name, bases, attrs):
-        super_new = super(ResourceType, mcs).__new__
+        super_new = super().__new__
 
         # attrs will never be empty for classes declared in the standard way
         # (i.e. with the `class` keyword). This is quite robust.
@@ -701,7 +695,7 @@ def create_resource_from_dict(
         be a parent(s) of any resource defined by the dict.
     :param full_clean: Perform a full clean as part of the creation.
     :param copy_dict: Use a copy of the input dictionary rather than destructively processing the input dict.
-    :param default_to_not_provided: If an value is not supplied keep the value as NOT_PROVIDED. This is used
+    :param default_to_not_provided: If a value is not supplied keep the value as NOT_PROVIDED. This is used
         to support merging an updated value.
     """
     if not isinstance(d, dict):
@@ -732,7 +726,7 @@ def create_resource_from_dict(
         attrs.append(value)
 
     # Stop if there are any errors
-    if errors:
+    if errors and full_clean:
         raise ValidationError(errors)
 
     # Create the new instance
@@ -763,7 +757,7 @@ def build_object_graph(
         resource. If a list is supplied the first item will be used if a resource type is not supplied.
     :param full_clean: Perform a full clean once built; default is True
     :param copy_dict: Clone the dict before doing build; default is True
-    :param default_to_not_supplied: If an value is not supplied keep the value as NOT_PROVIDED. This is used
+    :param default_to_not_supplied: If a value is not supplied keep the value as NOT_PROVIDED. This is used
         to support merging an updated value.
     :raises ValidationError: During building of the object graph and issues discovered are raised as a ValidationError.
     """
@@ -790,5 +784,4 @@ class ResourceIterable(bases.ResourceIterable):
         self.sequence = sequence
 
     def __iter__(self):
-        for item in self.sequence:
-            yield item
+        yield from self.sequence

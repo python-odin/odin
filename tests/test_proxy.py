@@ -1,8 +1,8 @@
 import pytest
 
+from odin import proxy
 from odin.resources import create_resource_from_dict
 from odin.utils import getmeta
-from odin import proxy
 
 from .resources import Book, BookProxy
 

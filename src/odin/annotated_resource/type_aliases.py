@@ -1,5 +1,5 @@
 """Type aliases for string formatted types."""
-from typing import Callable, Union, Any, Sequence, Tuple
+from typing import Any, Callable, Sequence, Tuple, Union
 
 __all__ = (
     "Email",

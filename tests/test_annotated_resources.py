@@ -3,14 +3,13 @@ import json
 
 from odin.codecs import json_codec
 from odin.utils import getmeta, snake_to_camel
-
 from tests.resources_annotated import (
-    Book,
-    Publisher,
     Author,
-    Library,
+    Book,
     IdentifiableBook,
     InheritedCamelCaseResource,
+    Library,
+    Publisher,
 )
 
 

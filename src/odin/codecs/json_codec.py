@@ -2,8 +2,7 @@ import datetime
 import typing
 import uuid
 
-from odin import bases
-from odin import serializers, resources, ResourceAdapter
+from odin import ResourceAdapter, bases, resources, serializers
 from odin.exceptions import CodecDecodeError, CodecEncodeError
 from odin.utils import getmeta
 
@@ -41,10 +40,13 @@ class OdinEncoder(json.JSONEncoder):
             if self.include_type_field:
                 obj[meta.type_field] = meta.resource_name
             return obj
+
         elif isinstance(o, LIST_TYPES):
             return list(o)
+
         elif o.__class__ in JSON_TYPES:
             return JSON_TYPES[o.__class__](o)
+
         return super().default(o)
 
 
@@ -89,7 +91,7 @@ def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
             json.loads(s), resource, full_clean, False, default_to_not_supplied
         )
     except (ValueError, TypeError) as ex:
-        raise CodecDecodeError(str(ex))
+        raise CodecDecodeError(str(ex)) from ex
 
 
 def dump(resource, fp, cls=OdinEncoder, **kwargs):
@@ -104,7 +106,7 @@ def dump(resource, fp, cls=OdinEncoder, **kwargs):
     try:
         json.dump(resource, fp, cls=cls, **kwargs)
     except ValueError as ex:
-        raise CodecEncodeError(str(ex))
+        raise CodecEncodeError(str(ex)) from ex
 
 
 def dumps(resource, cls=OdinEncoder, **kwargs):
@@ -119,4 +121,4 @@ def dumps(resource, cls=OdinEncoder, **kwargs):
     try:
         return json.dumps(resource, cls=cls, **kwargs)
     except ValueError as ex:
-        raise CodecEncodeError(str(ex))
+        raise CodecEncodeError(str(ex)) from ex

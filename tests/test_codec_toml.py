@@ -3,8 +3,10 @@ import os
 from io import StringIO
 
 import pytest
+
 from odin.codecs import toml_codec
 from odin.exceptions import CodecDecodeError, ValidationError
+
 from . import resources_annotated
 from .resources import *
 

@@ -1,11 +1,9 @@
 """Integration with Rich for nicer CLI's!"""
-from rich.text import Text
 from typing import Iterable, Union
 
 from rich.tree import Tree
 
-from odin.exceptions import ValidationError, NON_FIELD_ERRORS
-from .theme import odin_theme
+from odin.exceptions import NON_FIELD_ERRORS, ValidationError
 
 
 def _all_str(iterable: Iterable) -> bool:
@@ -18,9 +16,8 @@ def _validation_error_to_tree(error_messages: Union[list, dict], tree: Tree):
 
     if isinstance(error_messages, dict):
         for name, value in error_messages.items():
-
             node = tree.add(
-                f"[odin.resource.name]+"
+                "[odin.resource.name]+"
                 if name == NON_FIELD_ERRORS
                 else f"[odin.field.name]{name}"
             )

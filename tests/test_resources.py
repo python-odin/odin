@@ -1,16 +1,17 @@
 import pytest
 
 import odin
+from odin.exceptions import ResourceDefError, ValidationError
 from odin.fields import NotProvided
 from odin.resources import (
+    Resource,
     ResourceOptions,
     build_object_graph,
     create_resource_from_dict,
-    Resource,
 )
-from odin.exceptions import ValidationError, ResourceDefError
 from odin.utils import getmeta, snake_to_camel
-from .resources import Book, BookProxy, Library, Subscriber, InheritedCamelCaseResource
+
+from .resources import Book, BookProxy, InheritedCamelCaseResource, Library, Subscriber
 
 
 class Author(odin.Resource):
@@ -230,66 +231,60 @@ class TestConstructionMethods:
     def test_build_object_graph_empty_dict_no_clean(self):
         book = build_object_graph({}, Book, full_clean=False)
 
-        assert (
-            dict(
-                title=None,
-                isbn=None,
-                num_pages=None,
-                rrp=20.4,
-                fiction=None,
-                genre=None,
-                published=None,
-                authors=None,
-                publisher=None,
-            )
-            == book.to_dict()
-        )
+        assert {
+            "title": None,
+            "isbn": None,
+            "num_pages": None,
+            "rrp": 20.4,
+            "fiction": None,
+            "genre": None,
+            "published": None,
+            "authors": None,
+            "publisher": None,
+        } == book.to_dict()
 
     def test_build_object_graph_empty_dict(self):
         with pytest.raises(ValidationError) as ctx:
             build_object_graph({}, Book)
 
-        assert (
-            dict(
-                title=["This field cannot be null."],
-                isbn=["This field cannot be null."],
-                num_pages=["This field cannot be null."],
-                fiction=["This field cannot be null."],
-                genre=["This field cannot be null."],
-                published=["This field cannot be null."],
-                authors=["List cannot contain null entries."],
-            )
-            == ctx.value.error_messages
-        )
+        assert {
+            "title": ["This field cannot be null."],
+            "isbn": ["This field cannot be null."],
+            "num_pages": ["This field cannot be null."],
+            "fiction": ["This field cannot be null."],
+            "genre": ["This field cannot be null."],
+            "published": ["This field cannot be null."],
+            "authors": ["List cannot contain null entries."],
+        } == ctx.value.error_messages
 
     def test_build_object_graph_from_list(self):
         books = build_object_graph(
-            [dict(title="Book1"), dict(title="Book2")], Book, full_clean=False
+            [{"title": "Book1"}, {"title": "Book2"}], Book, full_clean=False
         )
 
         assert [
-            dict(
-                title="Book1",
-                isbn=None,
-                num_pages=None,
-                rrp=20.4,
-                fiction=None,
-                genre=None,
-                published=None,
-                authors=None,
-                publisher=None,
-            ),
-            dict(
-                title="Book2",
-                isbn=None,
-                num_pages=None,
-                rrp=20.4,
-                fiction=None,
-                genre=None,
-                published=None,
-                authors=None,
-                publisher=None,
-            ),
+            {
+                "title": "Book1",
+                "isbn": None,
+                "num_pages": None,
+                "rrp": 20.4,
+                "fiction": None,
+                "genre": None,
+                "published": None,
+                "authors": None,
+                "publisher": None,
+            },
+            {
+                "title": "Book2",
+                "isbn": None,
+                "num_pages": None,
+                "rrp": 20.4,
+                "fiction": None,
+                "genre": None,
+                "published": None,
+                "authors": None,
+                "publisher": None,
+            },
         ] == [book.to_dict() for book in books]
 
     def test_build_nested_objects(self):
@@ -359,20 +354,17 @@ class TestConstructionMethods:
             default_to_not_provided=True,
         )
 
-        assert (
-            dict(
-                title="Foo",
-                isbn=NotProvided,
-                num_pages=42,
-                rrp=NotProvided,
-                fiction=NotProvided,
-                genre=NotProvided,
-                published=NotProvided,
-                authors=NotProvided,
-                publisher=NotProvided,
-            )
-            == book.to_dict()
-        )
+        assert {
+            "title": "Foo",
+            "isbn": NotProvided,
+            "num_pages": 42,
+            "rrp": NotProvided,
+            "fiction": NotProvided,
+            "genre": NotProvided,
+            "published": NotProvided,
+            "authors": NotProvided,
+            "publisher": NotProvided,
+        } == book.to_dict()
 
     def test_create_resource_from_dict__with_proxy(self):
         book = create_resource_from_dict(
@@ -382,15 +374,12 @@ class TestConstructionMethods:
             default_to_not_provided=True,
         )
 
-        assert (
-            dict(
-                title="Foo",
-                isbn=NotProvided,
-                num_pages=42,
-                rrp=20.4,
-            )
-            == book.to_dict()
-        )
+        assert {
+            "title": "Foo",
+            "isbn": NotProvided,
+            "num_pages": 42,
+            "rrp": 20.4,
+        } == book.to_dict()
 
     def test_inheritance_of_meta_options(self):
         options = getmeta(InheritedCamelCaseResource)

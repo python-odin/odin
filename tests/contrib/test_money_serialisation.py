@@ -1,7 +1,6 @@
 import odin
-from odin.contrib.money import AmountField
-from odin.contrib.money import Amount
 from odin.codecs import json_codec
+from odin.contrib.money import Amount, AmountField
 
 
 class AmountResource(odin.Resource):
@@ -29,6 +28,6 @@ class TestMoneySerialisation:
             '{"$": "odin.tests.AmountResource", "a": null, "b": 10, "c": [23.66, "AUD"]}'
         )
 
-        assert None == resource.a
+        assert None is resource.a
         assert Amount(10) == resource.b
         assert Amount(23.66, "AUD") == resource.c

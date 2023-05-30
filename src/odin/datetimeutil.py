@@ -1,9 +1,9 @@
 import datetime
 import re
 import time
-from email.utils import parsedate_tz as parse_http_datetime
 from email.utils import formatdate as format_http_datetime  # noqa
-from typing import Union, Type, Dict
+from email.utils import parsedate_tz as parse_http_datetime
+from typing import Dict, Type, Union
 
 
 class IgnoreTimezone:
@@ -222,7 +222,7 @@ def parse_iso_date_string(date_string: str) -> datetime.date:
     try:
         return datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
     except ValueError:
-        raise ValueError("Expected ISO 8601 formatted date string.")
+        raise ValueError("Expected ISO 8601 formatted date string.") from None
 
 
 def parse_iso_time_string(

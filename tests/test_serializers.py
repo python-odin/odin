@@ -1,7 +1,6 @@
 import datetime
 
-from odin import datetimeutil
-from odin import serializers
+from odin import datetimeutil, serializers
 
 
 class TestSerializer:

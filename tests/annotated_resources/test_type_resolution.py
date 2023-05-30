@@ -1,5 +1,5 @@
 import sys
-from typing import Optional, Union, List, Dict, Tuple, Any, Final
+from typing import Any, Dict, Final, List, Optional, Tuple, Union
 
 import pytest
 
@@ -7,7 +7,7 @@ import odin
 from odin.annotated_resource import type_resolution
 from odin.annotated_resource.special_fields import AnyField
 
-from ..resources_annotated import From, Book
+from ..resources_annotated import Book, From
 
 
 class NonsenseField(odin.Field):

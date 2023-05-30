@@ -1,6 +1,7 @@
 import pytest
 
 import odin
+
 from . import resources
 
 

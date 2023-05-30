@@ -1,5 +1,6 @@
-import pytest
 import datetime
+
+import pytest
 
 from odin import datetimeutil
 

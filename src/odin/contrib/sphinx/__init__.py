@@ -1,12 +1,12 @@
 """Sphinx integration to document resources."""
-from typing import Tuple, Any
+from typing import Any, Tuple
 
 from sphinx.application import Sphinx
 from sphinx.ext.autodoc import (
     Documenter,
     ModuleLevelDocumenter,
-    bool_option,
     ObjectMembers,
+    bool_option,
 )
 from sphinx.util import logging
 
@@ -162,7 +162,7 @@ class ResourceDocumenter(ModuleLevelDocumenter):
             for name, data_type, details in data_table:
                 name_len = max(len(name), name_len)
                 data_type_len = max(len(data_type), data_type_len)
-                details_len = max(max(len(l) for l in details), details_len)
+                details_len = max(max(len(value) for value in details), details_len)
             name_len += 2  # Padding
             data_type_len += 2  # Padding
             details_len += 2  # Padding

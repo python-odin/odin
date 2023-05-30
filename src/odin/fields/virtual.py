@@ -1,4 +1,4 @@
-from typing import Any, Callable, Union, Sequence
+from typing import Any, Callable, Sequence, Union
 
 from odin.utils import force_tuple, getmeta
 
@@ -149,4 +149,6 @@ class MultiPartField(VirtualField):
         try:
             self._fields = tuple(meta.field_map[name] for name in self.field_names)
         except KeyError as ex:
-            raise AttributeError(f"Attribute {ex} not found on {self.resource!r}")
+            raise AttributeError(
+                f"Attribute {ex} not found on {self.resource!r}"
+            ) from None

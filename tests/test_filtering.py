@@ -1,10 +1,10 @@
-import pytest
 import os
 
-from odin import filtering
-from odin.traversal import TraversalPath
-from odin.codecs import json_codec
+import pytest
 
+from odin import filtering
+from odin.codecs import json_codec
+from odin.traversal import TraversalPath
 
 # Open library fixture
 with open(os.path.join(os.path.dirname(__file__), "fixtures", "library.json")) as f:

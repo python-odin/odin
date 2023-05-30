@@ -1,7 +1,8 @@
-from odin import bases
-from odin import exceptions
-from odin.resources import create_resource_from_dict
+from typing import Any, Iterator, Tuple
+
+from odin import bases, exceptions
 from odin.fields import Field
+from odin.resources import create_resource_from_dict
 from odin.utils import value_in_choices
 from odin.validators import EMPTY_VALUES
 
@@ -32,9 +33,7 @@ class CompositeField(Field):
 
         """
         if not hasattr(resource, "_meta"):
-            raise TypeError(
-                "{!r} is not a valid type for a related field.".format(resource)
-            )
+            raise TypeError(f"{resource!r} is not a valid type for a related field.")
         self.of = resource
         self.use_container = use_container
 
@@ -44,6 +43,7 @@ class CompositeField(Field):
         super().__init__(**options)
 
     def to_python(self, value):
+        """Convert raw value to a python value."""
         if value is None:
             return None
         if isinstance(value, self.of):
@@ -54,6 +54,7 @@ class CompositeField(Field):
         raise exceptions.ValidationError(msg)
 
     def validate(self, value):
+        """Validate the value."""
         super().validate(value)
         if value not in EMPTY_VALUES:
             value.full_clean()
@@ -79,9 +80,7 @@ class CompositeField(Field):
 
 
 class DictAs(CompositeField):
-    """
-    Treat a dictionary as a Resource.
-    """
+    """Treat a dictionary as a Resource."""
 
     default_error_messages = {
         "invalid": "Must be a dict of type ``%r``.",
@@ -101,9 +100,7 @@ ObjectAs = DictAs
 
 
 class ListOf(CompositeField):
-    """
-    List of resources.
-    """
+    """List of resources."""
 
     default_error_messages = {
         "invalid": "Must be a list of ``%r`` objects.",
@@ -113,6 +110,7 @@ class ListOf(CompositeField):
     data_type_name = "List of"
 
     def __init__(self, resource, empty=True, **options):
+        """Initialisation of a ListOf field."""
         options.setdefault("default", list)
         super().__init__(resource, **options)
         self.empty = empty
@@ -135,6 +133,7 @@ class ListOf(CompositeField):
         return values
 
     def to_python(self, value):
+        """Convert raw value to a python value."""
         if value is None:
             return None
         if isinstance(value, (list, bases.ResourceIterable)):
@@ -150,31 +149,27 @@ class ListOf(CompositeField):
         raise exceptions.ValidationError(msg)
 
     def validate(self, value):
+        """Validate the value."""
         # Skip The direct super method and apply it to each list item.
         super(CompositeField, self).validate(value)  # noqa
         if value is not None:
-            super_validate = super(ListOf, self).validate
+            super_validate = super().validate
             self._process_list(value, super_validate)
 
         if (value is not None) and (not value) and (not self.empty):
             raise exceptions.ValidationError(self.error_messages["empty"])
 
     def __iter__(self):
-        # This does nothing but it does prevent inspections from complaining.
+        # This does nothing, but it does prevent inspections from complaining.
         return None  # NoQA
 
     def item_iter_from_object(self, obj):
         resources = self.value_from_object(obj)
         if resources:
-            for i in enumerate(resources):
-                yield i
+            yield from enumerate(resources)
 
     def key_to_python(self, key):
-        """
-        A to python method for the key value.
-        :param key:
-        :return:
-        """
+        """A to python method for the key value."""
         return int(key)
 
 
@@ -182,9 +177,7 @@ ArrayOf = ListOf
 
 
 class DictOf(CompositeField):
-    """
-    Dictionary of resources.
-    """
+    """Dictionary of resources."""
 
     default_error_messages = {
         "invalid": "Must be a dict of ``%r`` objects.",
@@ -195,6 +188,7 @@ class DictOf(CompositeField):
     data_type_name = "Dict of"
 
     def __init__(self, resource, empty=True, key_choices=None, **options):
+        """Initialise DictOf field."""
         options.setdefault("default", dict)
         super().__init__(resource, **options)
         self.empty = empty
@@ -220,6 +214,7 @@ class DictOf(CompositeField):
         return values
 
     def to_python(self, value):
+        """Convert raw value to a python type."""
         if value is None:
             return None
         if isinstance(value, dict):
@@ -237,6 +232,7 @@ class DictOf(CompositeField):
         raise exceptions.ValidationError(msg)
 
     def validate(self, value):
+        """Validate the value."""
         # Skip The direct super method and apply it to each list item.
         super(CompositeField, self).validate(value)  # noqa
         if value is not None:
@@ -250,16 +246,13 @@ class DictOf(CompositeField):
         # This does nothing but it does prevent inspections from complaining.
         return None  # NoQA
 
-    def item_iter_from_object(self, obj):
+    def item_iter_from_object(self, obj) -> Iterator[Tuple[str, Any]]:
+        """Iterate object returning key/value pairs"""
         resources = self.value_from_object(obj)
         if resources:
             for key in sorted(resources):
                 yield key, resources[key]
 
     def key_to_python(self, key):
-        """
-        A to python method for the key value.
-        :param key:
-        :return:
-        """
+        """A to python method for the key value."""
         return key

@@ -1,7 +1,7 @@
 """Helpful decorators."""
-from typing import Dict, Any, Type, Callable, TypeVar, Union
+from typing import Any, Callable, Dict, Type, TypeVar, Union
 
-from odin.resources import build_object_graph, ResourceBase
+from odin.resources import ResourceBase, build_object_graph
 
 _F = TypeVar("_F", bound=Callable[..., Any])
 

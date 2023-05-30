@@ -8,12 +8,10 @@ try:
 except ImportError:
     raise ImportError(
         "odin.codecs.msgpack_codec requires the 'msgpack-python' package."
-    )  # noqa
+    ) from None  # noqa
 
-from odin import bases
-from odin import serializers, resources, ResourceAdapter
+from odin import ResourceAdapter, bases, resources, serializers
 from odin.utils import getmeta
-
 
 TYPE_SERIALIZERS = {
     datetime.date: serializers.date_iso_format,
@@ -38,8 +36,10 @@ class OdinPacker(msgpack.Packer):
             obj = o.to_dict(self.include_virtual_fields)
             obj[meta.type_field] = meta.resource_name
             return obj
+
         elif isinstance(o, bases.ResourceIterable):
             return list(o)
+
         elif o.__class__ in TYPE_SERIALIZERS:
             return TYPE_SERIALIZERS[o.__class__](o)
 

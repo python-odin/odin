@@ -4,32 +4,48 @@ import enum
 import pathlib
 import re
 import uuid
-from typing import Any, Sequence, Dict, Type, Union, get_origin, List, Final
+from typing import Any, Dict, Final, List, Sequence, Type, Union, get_origin
 
 try:
     # Handle the change in typing between 3.8 and later releases
-    from typing import T, KT, VT
+    from typing import KT, VT, T
 except ImportError:
     T = None
     KT = None
     VT = None
 
 import odin
-from .special_fields import AnyField
-from .type_aliases import Validator, Choices, Email, IPv4, IPv6, IPv46, Url
-from .. import ListOf, DictOf
+
 from ..exceptions import ResourceDefError
 from ..fields import (
     BaseField,
-    Field,
-    NotProvided,
-    TypedListField,
-    TypedDictField,
-    ListField,
+    BooleanField,
+    DateField,
+    DateTimeField,
     DictField,
+    EmailField,
+    Field,
+    FloatField,
+    IntegerField,
+    IPv4Field,
+    IPv6Field,
+    IPv46Field,
+    ListField,
+    NotProvided,
+    PathField,
+    RegexField,
+    StringField,
+    TimeField,
+    TypedDictField,
+    TypedListField,
+    UrlField,
+    UUIDField,
 )
+from ..fields.composite import DictOf, ListOf
 from ..fields.virtual import ConstantField
 from ..resources import ResourceBase
+from .special_fields import AnyField
+from .type_aliases import Choices, Email, IPv4, IPv6, IPv46, Url, Validator
 
 
 class Options:
@@ -44,8 +60,8 @@ class Options:
 
     def __init__(
         self,
-        default: Any = odin.NotProvided,
-        field_type: Type[odin.BaseField] = None,
+        default: Any = NotProvided,
+        field_type: Type[BaseField] = None,
         *,
         verbose_name: str = None,
         verbose_name_plural: str = None,
@@ -112,23 +128,23 @@ class Options:
 
 
 SIMPLE_TYPE_MAP = {
-    bool: odin.BooleanField,
-    datetime.date: odin.DateField,
-    datetime.datetime: odin.DateTimeField,
-    dict: odin.DictField,
-    Email: odin.EmailField,
-    float: odin.FloatField,
-    int: odin.IntegerField,
-    IPv4: odin.IPv4Field,
-    IPv6: odin.IPv6Field,
-    IPv46: odin.IPv46Field,
-    list: odin.ListField,
-    pathlib.Path: odin.PathField,
-    re.Pattern: odin.RegexField,
-    str: odin.StringField,
-    datetime.time: odin.TimeField,
-    Url: odin.UrlField,
-    uuid.UUID: odin.UUIDField,
+    bool: BooleanField,
+    datetime.date: DateField,
+    datetime.datetime: DateTimeField,
+    dict: DictField,
+    Email: EmailField,
+    float: FloatField,
+    int: IntegerField,
+    IPv4: IPv4Field,
+    IPv6: IPv6Field,
+    IPv46: IPv46Field,
+    list: ListField,
+    pathlib.Path: PathField,
+    re.Pattern: RegexField,
+    str: StringField,
+    datetime.time: TimeField,
+    Url: UrlField,
+    uuid.UUID: UUIDField,
     Any: AnyField,  # For Python 3.11
 }
 
@@ -223,7 +239,7 @@ def _resolve_field_from_sub_scripted_type(origin: Type, options: Options, type_)
         options.field_type = ConstantField
         value = options.field_args["default"]
         if value is NotProvided:
-            raise ResourceDefError(f"Final fields require a value")
+            raise ResourceDefError("Final fields require a value")
         options.base_args["value"] = value
         return
 

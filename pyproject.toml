@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "odin"
-version = "2.6"
+version = "2.8"
 description = "Data-structure definition/validation/traversal, mapping and serialisation toolkit for Python"
 authors = ["Tim Savage <tim@savage.company>"]
 license = "BSD-3-Clause"
@@ -54,3 +54,31 @@ toml = ["toml"]
 pint = ["pint"]
 arrow = ["arrow"]
 rich = ["rich"]
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    # "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+# Assume Python 3.8.
+target-version = "py38"
+
+[tool.ruff.per-file-ignores]
+"tests/test_adapters.py" = ["F403", "F405"]
+"tests/test_codec*.py" = ["F403", "F405"]
+"tests/test_fields.py" = ["F403", "F405"]
+"tests/test_kitchensink.py" = ["F403", "F405"]
+"tests/test_mapping.py" = ["F403", "F405"]

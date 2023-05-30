@@ -2,7 +2,7 @@ import pytest
 
 import odin
 from odin.exceptions import ValidationError
-from odin.fields.composite import DictAs, ArrayOf, DictOf
+from odin.fields.composite import ArrayOf, DictAs, DictOf
 
 
 class ExampleResource(odin.Resource):

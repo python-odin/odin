@@ -2,6 +2,7 @@ import os
 from datetime import date
 
 from odin.codecs import xml_codec
+
 from .resources import *
 
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
