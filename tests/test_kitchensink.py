@@ -2,7 +2,6 @@
 Do load/dump tests on known valid and invalid documents.
 """
 import datetime
-import os
 
 import pytest
 

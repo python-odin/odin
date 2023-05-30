@@ -7,14 +7,14 @@ The resource proxy is an object that provides an alternate interface to a shadow
 This could be as a means of providing a summary object, or for adding additional properties.
 
 """
-from typing import List, Optional, Union
+from typing import Optional
 
 from odin import registration
 from odin.bases import TypedResourceIterable
 from odin.resources import ResourceBase, ResourceOptions
 from odin.utils import filter_fields, getmeta, lazy_property
 
-EMPTY = tuple()
+EMPTY = ()
 
 
 class FieldProxyDescriptor:
@@ -29,13 +29,13 @@ class FieldProxyDescriptor:
         self.readonly = readonly
 
     def __get__(self, instance, owner):
-        shadow = getattr(instance, "_shadow")
+        shadow = instance._shadow
         return getattr(shadow, self.attname)
 
     def __set__(self, instance, value):
         if self.readonly:
             raise AttributeError("can't set attribute")
-        shadow = getattr(instance, "_shadow")
+        shadow = instance._shadow
         return setattr(shadow, self.attname, value)
 
     def contribute_to_class(self, cls, name):

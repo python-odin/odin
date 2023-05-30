@@ -239,7 +239,7 @@ def _resolve_field_from_sub_scripted_type(origin: Type, options: Options, type_)
         options.field_type = ConstantField
         value = options.field_args["default"]
         if value is NotProvided:
-            raise ResourceDefError(f"Final fields require a value")
+            raise ResourceDefError("Final fields require a value")
         options.base_args["value"] = value
         return
 

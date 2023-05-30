@@ -34,33 +34,33 @@ class Level1(odin.Resource):
 TEST_STRUCTURE = Level1(
     name="a",
     level2=Level2(name="b", level3s=[]),
-    level2s=dict(
-        a=Level2(name="c", level3s=[]),
-        b=Level2(
+    level2s={
+        "a": Level2(name="c", level3s=[]),
+        "b": Level2(
             name="d", label="not_empty", level3s=[Level3(name="e"), Level3(name="f")]
         ),
-        c=Level2(name="g", label="not_empty", level3s=[Level3(name="h")]),
-    ),
+        "c": Level2(name="g", label="not_empty", level3s=[Level3(name="h")]),
+    },
 )
 
 TEST_LIST_STRUCTURE = [
     Level1(
         name="a",
         level2=Level2(name="b", level3s=[]),
-        level2s=dict(
-            a=Level2(name="c", level3s=[]),
-            b=Level2(name="d", level3s=[Level3(name="e"), Level3(name="f")]),
-            c=Level2(name="g", level3s=[Level3(name="h")]),
-        ),
+        level2s={
+            "a": Level2(name="c", level3s=[]),
+            "b": Level2(name="d", level3s=[Level3(name="e"), Level3(name="f")]),
+            "c": Level2(name="g", level3s=[Level3(name="h")]),
+        },
     ),
     Level1(
         name="i",
         level2=Level2(name="j", level3s=[]),
-        level2s=dict(
-            a=Level2(name="k", level3s=[]),
-            b=Level2(name="l", level3s=[Level3(name="m"), Level3(name="n")]),
-            c=Level2(name="o", level3s=[Level3(name="p")]),
-        ),
+        level2s={
+            "a": Level2(name="k", level3s=[]),
+            "b": Level2(name="l", level3s=[Level3(name="m"), Level3(name="n")]),
+            "c": Level2(name="o", level3s=[Level3(name="p")]),
+        },
     ),
 ]
 

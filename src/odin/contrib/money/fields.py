@@ -8,9 +8,7 @@ __all__ = ("AmountField",)
 
 
 class AmountField(ScalarField):
-    """
-    Field that contains a monetary amount (with an optional currency).
-    """
+    """Field that contains a monetary amount (with an optional currency)."""
 
     default_error_messages = {
         "invalid": "'%s' value must be a (amount, currency).",
@@ -23,6 +21,7 @@ class AmountField(ScalarField):
         self.allowed_currencies = allowed_currencies
 
     def to_python(self, value):
+        """Convert value to an Amount."""
         if value in EMPTY_VALUES:
             return
         if isinstance(value, Amount):
@@ -30,11 +29,13 @@ class AmountField(ScalarField):
 
         try:
             return Amount(value)
+
         except (ValueError, TypeError):
             msg = self.error_messages["invalid"] % value
-            raise exceptions.ValidationError(msg)
+            raise exceptions.ValidationError(msg) from None
 
     def validate(self, value):
+        """Validate value."""
         super().validate(value)
         if (
             self.allowed_currencies
@@ -45,6 +46,7 @@ class AmountField(ScalarField):
             raise exceptions.ValidationError(msg)
 
     def prepare(self, value):
+        """Prepare value for serialization."""
         if value in EMPTY_VALUES:
             return
         return float(value), value.currency.code

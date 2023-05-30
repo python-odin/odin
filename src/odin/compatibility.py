@@ -21,6 +21,7 @@ def deprecated(message: str, category=DeprecationWarning):
                 warnings.warn(
                     f"{obj.__name__} is deprecated and scheduled for removal. {message}",
                     category=category,
+                    stacklevel=2,
                 )
                 return old_init(*args, **kwargs)
 
@@ -33,6 +34,7 @@ def deprecated(message: str, category=DeprecationWarning):
                 warnings.warn(
                     f"{obj.__name__} is deprecated and scheduled for removal. {message}",
                     category=category,
+                    stacklevel=2,
                 )
                 return obj(*args, **kwargs)
 

@@ -1,12 +1,10 @@
 import math
+from typing import Tuple
 
 __all__ = ("latitude", "longitude", "latlng", "point")
 
-from typing import Tuple
 
-
-def to_dms(value, absolute=False):
-    # type: (float, bool) -> Tuple[float, float, float]
+def to_dms(value: float, absolute: bool = False) -> Tuple[float, float, float]:
     """
     Split a float value into DMS (degree, minute, second) parts
 
@@ -24,8 +22,7 @@ def to_dms(value, absolute=False):
     return (-degree if invert else degree), minute, second
 
 
-def to_dm(value, absolute=False):
-    # type: (float, bool) -> Tuple[float, float]
+def to_dm(value: float, absolute: bool = False) -> Tuple[float, float]:
     """
     Split a float value into DM (degree, minute) parts
 
@@ -85,7 +82,7 @@ class latlng(tuple):
         try:
             lat, lng = args
         except ValueError:
-            raise TypeError(f"latlng() takes 2 arguments ({len(args)} given)")
+            raise TypeError(f"latlng() takes 2 arguments ({len(args)} given)") from None
         return tuple.__new__(cls, (latitude(lat), longitude(lng)))
 
     @property
@@ -129,7 +126,7 @@ class point(tuple):
         try:
             return self[2]
         except IndexError:
-            raise AttributeError("2D points do not include a z axis.")
+            raise AttributeError("2D points do not include a z axis.") from None
 
     @property
     def is_3d(self):

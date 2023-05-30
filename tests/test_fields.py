@@ -166,7 +166,7 @@ class TestField:
         target.set_attributes_from_name("test_name")
 
         an_obj = ObjectValue()
-        setattr(an_obj, "test_name", "test_value")
+        an_obj.test_name = "test_value"
 
         actual = target.value_from_object(an_obj)
         assert "test_value" == actual
@@ -390,7 +390,7 @@ class TestFields:
         assert "http://www.github.com" == f.clean("http://www.github.com")
         pytest.raises(ValidationError, f.clean, "eek")
         pytest.raises(ValidationError, f.clean, None)
-        assert f.max_length == None
+        assert f.max_length is None
         self.assert_validator_in(RegexValidator, f.validators)
 
     # IntegerField ############################################################
@@ -402,21 +402,21 @@ class TestFields:
         assert 123 == f.clean(123)
         assert 123 == f.clean("123")
         assert 123 == f.clean(123.5)
-        assert None == f.min_value
+        assert None is f.min_value
         self.assert_validator_not_in(MinValueValidator, f.validators)
-        assert None == f.max_value
+        assert None is f.max_value
         self.assert_validator_not_in(MaxValueValidator, f.validators)
 
     def test_integerfield_2(self):
         f = IntegerField(null=True)
-        assert None == f.clean(None)
+        assert None is f.clean(None)
         pytest.raises(ValidationError, f.clean, "abc")
         assert 69 == f.clean(69)
         assert 69 == f.clean("69")
         assert 69 == f.clean(69.5)
-        assert None == f.min_value
+        assert None is f.min_value
         self.assert_validator_not_in(MinValueValidator, f.validators)
-        assert None == f.max_value
+        assert None is f.max_value
         self.assert_validator_not_in(MaxValueValidator, f.validators)
 
     def test_integerfield_3(self):
@@ -444,9 +444,9 @@ class TestFields:
         assert 123 == f.clean(123)
         assert 123.5 == f.clean("123.5")
         assert 123.5 == f.clean(123.5)
-        assert None == f.min_value
+        assert None is f.min_value
         self.assert_validator_not_in(MinValueValidator, f.validators)
-        assert None == f.max_value
+        assert None is f.max_value
         self.assert_validator_not_in(MaxValueValidator, f.validators)
 
     def test_floatfield_2(self):
@@ -456,9 +456,9 @@ class TestFields:
         assert 69 == f.clean(69)
         assert 69.5 == f.clean("69.5")
         assert 69.5 == f.clean(69.5)
-        assert None == f.min_value
+        assert None is f.min_value
         self.assert_validator_not_in(MinValueValidator, f.validators)
-        assert None == f.max_value
+        assert None is f.max_value
         self.assert_validator_not_in(MaxValueValidator, f.validators)
 
     def test_floatfield_3(self):
@@ -883,7 +883,7 @@ class TestFields:
 
     def test_listfield__where_null_is_true(self):
         f = ListField(null=True)
-        assert None == f.clean(None)
+        assert None is f.clean(None)
         pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
         assert [] == f.clean([])
@@ -970,7 +970,7 @@ class TestFields:
     def test_typeddictfield_2(self):
         f = TypedDictField(IntegerField(), null=True)
         assert "Dict<String, Integer>" == f.data_type_name(f)
-        assert None == f.clean(None)
+        assert None is f.clean(None)
         pytest.raises(ValidationError, f.clean, "abc")
         pytest.raises(ValidationError, f.clean, 123)
         assert {} == f.clean({})

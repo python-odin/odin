@@ -62,7 +62,9 @@ class Amount(tuple):
             try:
                 value = decimal.Decimal(value)
             except decimal.InvalidOperation:
-                raise ValueError(f"value is not a valid numerical amount: {value}")
+                raise ValueError(
+                    f"value is not a valid numerical amount: {value}"
+                ) from None
 
         if currency is None:
             currency = DEFAULT_CURRENCY

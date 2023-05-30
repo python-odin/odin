@@ -84,7 +84,7 @@ class PathAtom(NamedTuple):
         try:
             field = getmeta(resource).field_map[attr]
         except KeyError:
-            raise InvalidPathError(self, f"Unknown field {attr!r}")
+            raise InvalidPathError(self, f"Unknown field {attr!r}") from None
         element = field.value_from_object(resource)
 
         if key is NotSupplied:
@@ -97,7 +97,9 @@ class PathAtom(NamedTuple):
             try:
                 return element[key]
             except LookupError:
-                raise NoMatchError(self, f"Could not find index {key!r} in {field}.")
+                raise NoMatchError(
+                    self, f"Could not find index {key!r} in {field}."
+                ) from None
 
         else:
             # Filter elements

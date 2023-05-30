@@ -335,9 +335,10 @@ class ScalarField(Field):
             return
         try:
             return self.scalar_type(value)
+
         except (TypeError, ValueError):
             msg = self.error_messages["invalid"] % value
-            raise exceptions.ValidationError(msg)
+            raise exceptions.ValidationError(msg) from None
 
 
 class IntegerField(ScalarField):
@@ -665,9 +666,10 @@ class DictField(Field):
         try:
             val = dict(value)
             return val
+
         except (TypeError, ValueError):
             msg = self.error_messages["invalid"]
-            raise exceptions.ValidationError(msg)
+            raise exceptions.ValidationError(msg) from None
 
 
 ObjectField = DictField
@@ -828,18 +830,18 @@ class TypedDictField(DictField):
         value_dict = {}
         key_errors = []
         value_errors = {}
-        for key, value in value.items():
+        for key, val in value.items():
             try:
                 key = self.key_field.to_python(key)
             except exceptions.ValidationError as ve:
                 key_errors += ve.error_messages
 
-            # If we have key errors no point checking values any more.
+            # If we have key errors no point checking values.
             if key_errors:
                 continue
 
             try:
-                value_dict[key] = self.value_field.to_python(value)
+                value_dict[key] = self.value_field.to_python(val)
             except exceptions.ValidationError as ve:
                 value_errors[key] = ve.error_messages
 
@@ -859,18 +861,19 @@ class TypedDictField(DictField):
 
         key_errors = []
         value_errors = {}
-        for key, value in value.items():
+        for key, val in value.items():
             try:
                 self.key_field.validate(key)
             except exceptions.ValidationError as ve:
                 key_errors += ve.error_messages
 
-            # If we have key errors no point checking values any more.
+            # If we have key errors no point checking values
             if key_errors:
                 continue
 
             try:
-                self.value_field.validate(value)
+                self.value_field.validate(val)
+
             except exceptions.ValidationError as ve:
                 value_errors[key] = ve.error_messages
 
@@ -880,6 +883,7 @@ class TypedDictField(DictField):
             raise exceptions.ValidationError(value_errors)
 
     def run_validators(self, value):
+        """Run validators against value."""
         super().run_validators(value)
 
         if value in self.empty_values:
@@ -887,18 +891,18 @@ class TypedDictField(DictField):
 
         key_errors = []
         value_errors = {}
-        for key, value in value.items():
+        for key, val in value.items():
             try:
                 key = self.key_field.run_validators(key)
             except exceptions.ValidationError as ve:
                 key_errors += ve.error_messages
 
-            # If we have key errors no point checking values any more.
+            # If we have key errors no point checking values.
             if key_errors:
                 continue
 
             try:
-                self.value_field.run_validators(value)
+                self.value_field.run_validators(val)
             except exceptions.ValidationError as ve:
                 value_errors[key] = ve.error_messages
 
@@ -998,19 +1002,19 @@ class UUIDField(Field):
             try:
                 value = value.decode("utf-8")
             except UnicodeDecodeError as e:
-                raise exceptions.ValidationError(e.args[0], code="invalid")
+                raise exceptions.ValidationError(e.args[0], code="invalid") from None
 
         elif isinstance(value, int):
             try:
                 return uuid.UUID(int=value)
             except ValueError as e:
-                raise exceptions.ValidationError(e.args[0], code="invalid")
+                raise exceptions.ValidationError(e.args[0], code="invalid") from None
 
         elif isinstance(value, (tuple, list)):
             try:
                 return uuid.UUID(fields=value)
             except ValueError as e:
-                raise exceptions.ValidationError(e.args[0], code="invalid")
+                raise exceptions.ValidationError(e.args[0], code="invalid") from None
 
         elif not isinstance(value, str):
             value = str(value)
@@ -1018,7 +1022,7 @@ class UUIDField(Field):
         try:
             return uuid.UUID(value)
         except ValueError as e:
-            raise exceptions.ValidationError(e.args[0], code="invalid")
+            raise exceptions.ValidationError(e.args[0], code="invalid") from None
 
 
 ET = TypeVar("ET", bound=enum.Enum)
@@ -1060,7 +1064,7 @@ class EnumField(Field):
                 return
             raise exceptions.ValidationError(
                 self.error_messages["invalid_choice"] % value
-            )
+            ) from None
 
     def prepare(self, value: Optional[ET]):
         """Prepare enum for serialisation."""
@@ -1084,8 +1088,11 @@ class PathField(Field):
         # Attempt to convert
         try:
             return pathlib.Path(value)
+
         except (ValueError, TypeError):
-            raise exceptions.ValidationError(self.error_messages["invalid"] % value)
+            raise exceptions.ValidationError(
+                self.error_messages["invalid"] % value
+            ) from None
 
     def prepare(self, value: Optional[str]):
         """Prepare path for serialisation."""
@@ -1115,12 +1122,16 @@ class RegexField(Field):
 
         try:
             return re.compile(value)
+
         except TypeError:
-            raise exceptions.ValidationError(self.error_messages["invalid"] % value)
+            raise exceptions.ValidationError(
+                self.error_messages["invalid"] % value
+            ) from None
+
         except re.error as ex:
             raise exceptions.ValidationError(
                 self.error_messages["syntax"] % (value, ex)
-            )
+            ) from None
 
     def prepare(self, value: Optional[re.Pattern]):
         """Prepare regular expression for serialisation."""

@@ -72,7 +72,7 @@ class TestResourceAdapter:
         book = Book(title="Foo", isbn="abc123", rrp=123.45, num_pages=10, fiction=True)
         target = adapters.ResourceAdapter(book)
 
-        actual = list((f.name, str(v)) for f, v in field_iter_items(target))
+        actual = [(f.name, str(v)) for f, v in field_iter_items(target)]
         assert [
             ("title", "Foo"),
             ("isbn", "abc123"),

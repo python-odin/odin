@@ -8,7 +8,7 @@ HERE = Path(__file__).parent
 SRC = HERE.parent / "src"
 sys.path.insert(0, SRC.as_posix())
 
-import odin.datetimeutil
+import odin.datetimeutil  # noqa
 
 ARE_YOU_EXPERIENCED = datetime.date(1967, 5, 12)
 MWT = odin.datetimeutil.FixedTimezone(-6, "Mountain War Time")

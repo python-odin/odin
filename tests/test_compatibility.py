@@ -14,7 +14,8 @@ class TestDeprecated:
 
         # Compare the message values
         assert [
-            str(m.message) for m in sorted(warning_log, key=lambda l: str(l.message))
+            str(m.message)
+            for m in sorted(warning_log, key=lambda log: str(log.message))
         ] == [
             "deprecated_function is deprecated and scheduled for removal. No longer used.",
         ]
@@ -29,7 +30,8 @@ class TestDeprecated:
 
         # Compare the message values
         assert [
-            str(m.message) for m in sorted(warning_log, key=lambda l: str(l.message))
+            str(m.message)
+            for m in sorted(warning_log, key=lambda log: str(log.message))
         ] == [
             "DeprecatedClass is deprecated and scheduled for removal. No longer used.",
         ]

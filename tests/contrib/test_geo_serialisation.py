@@ -62,13 +62,13 @@ class TestGeoSerialisation:
             '"point_a": null, "point_b": [66.66, -33.33]}'
         )
 
-        assert None == resource.lat_a
+        assert None is resource.lat_a
         assert latitude(23.67) == resource.lat_b
         assert latitude(-23.67) == resource.lat_c
-        assert None == resource.lng_a
+        assert None is resource.lng_a
         assert longitude(123.56) == resource.lng_b
         assert longitude(-123.56) == resource.lng_c
-        assert None == resource.latlng_a
+        assert None is resource.latlng_a
         assert latlng(23.67, -123.56) == resource.latlng_b
-        assert None == resource.point_a
+        assert None is resource.point_a
         assert point(66.66, -33.33) == resource.point_b

@@ -222,7 +222,7 @@ def parse_iso_date_string(date_string: str) -> datetime.date:
     try:
         return datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
     except ValueError:
-        raise ValueError("Expected ISO 8601 formatted date string.")
+        raise ValueError("Expected ISO 8601 formatted date string.") from None
 
 
 def parse_iso_time_string(

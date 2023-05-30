@@ -11,7 +11,7 @@ try:
 except ImportError:
     raise ImportError(  # pragma: no cover
         "odin.codecs.yaml_codec requires the 'pyyaml' package."
-    )
+    ) from None
 
 try:
     from yaml import CSafeDumper as SafeDumper
@@ -96,7 +96,7 @@ def dump(resource: resources.ResourceBase, fp: TextIO, dumper=OdinDumper, **kwar
     try:
         yaml.dump(resource, fp, Dumper=dumper, **kwargs)
     except ValueError as ex:
-        raise CodecEncodeError(str(ex))
+        raise CodecEncodeError(str(ex)) from ex
 
 
 def dumps(resource: resources.ResourceBase, dumper=OdinDumper, **kwargs) -> str:

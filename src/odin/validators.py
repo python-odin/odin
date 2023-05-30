@@ -261,7 +261,7 @@ def validate_ipv46_address(value):
         except exceptions.ValidationError:
             raise exceptions.ValidationError(
                 "Enter a valid IPv4 or IPv6 address.", code="invalid"
-            )
+            ) from None
 
 
 class EmailValidator:

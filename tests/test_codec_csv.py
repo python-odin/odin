@@ -52,15 +52,15 @@ class TestReader:
     @pytest.mark.parametrize(
         "fixture options".split(),
         (
-            ("library-valid.csv", dict(includes_header=True)),
-            ("library-header-alt-order.csv", dict(includes_header=True)),
-            ("library-last-bad.csv", dict(includes_header=True)),
-            ("library-no-header.csv", dict(includes_header=False)),
+            ("library-valid.csv", {"includes_header": True}),
+            ("library-header-alt-order.csv", {"includes_header": True}),
+            ("library-last-bad.csv", {"includes_header": True}),
+            ("library-no-header.csv", {"includes_header": False}),
             (
                 "library-lower-header.csv",
-                dict(includes_header=True, ignore_header_case=True),
+                {"includes_header": True, "ignore_header_case": True},
             ),
-            ("library-valid.csv", dict(includes_header=True, strict_fields=True)),
+            ("library-valid.csv", {"includes_header": True, "strict_fields": True}),
         ),
     )
     def test_valid_libraries(self, fixture, options):

@@ -22,9 +22,10 @@ class LatitudeField(ScalarField):
             return
         try:
             return latitude(value)
+
         except (ValueError, TypeError):
             msg = self.error_messages["invalid"] % value
-            raise exceptions.ValidationError(msg)
+            raise exceptions.ValidationError(msg) from None
 
 
 class LongitudeField(ScalarField):
@@ -42,9 +43,10 @@ class LongitudeField(ScalarField):
             return
         try:
             return longitude(value)
+
         except (ValueError, TypeError):
             msg = self.error_messages["invalid"] % value
-            raise exceptions.ValidationError(msg)
+            raise exceptions.ValidationError(msg) from None
 
 
 class LatLngField(Field):
@@ -62,9 +64,10 @@ class LatLngField(Field):
             return
         try:
             return latlng(value)
+
         except (ValueError, TypeError):
             msg = self.error_messages["invalid"] % value
-            raise exceptions.ValidationError(msg)
+            raise exceptions.ValidationError(msg) from None
 
 
 class PointField(Field):
@@ -82,6 +85,7 @@ class PointField(Field):
             return
         try:
             return point(value)
+
         except (ValueError, TypeError):
             msg = self.error_messages["invalid"] % value
-            raise exceptions.ValidationError(msg)
+            raise exceptions.ValidationError(msg) from None
