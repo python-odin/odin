@@ -1,7 +1,8 @@
 from odin import exceptions
 from odin.fields import Field, ScalarField
 from odin.validators import EMPTY_VALUES
-from .datatypes import latitude, longitude, latlng, point
+
+from .datatypes import latitude, latlng, longitude, point
 
 __all__ = ("LatitudeField", "LongitudeField", "LatLngField", "PointField")
 

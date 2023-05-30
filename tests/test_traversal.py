@@ -2,7 +2,7 @@ import pytest
 
 import odin
 from odin import traversal
-from odin.exceptions import NoMatchError, InvalidPathError, MultipleMatchesError
+from odin.exceptions import InvalidPathError, MultipleMatchesError, NoMatchError
 
 
 class Level3(odin.Resource):

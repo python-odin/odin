@@ -1,4 +1,5 @@
 from functools import cached_property
+
 from odin.utils import field_iter_items, getmeta
 
 __all__ = ("ResourceAdapter",)

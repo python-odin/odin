@@ -1,4 +1,5 @@
 import warnings
+
 from odin.compatibility import deprecated
 
 

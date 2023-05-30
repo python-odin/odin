@@ -3,6 +3,7 @@ import pytest
 from odin import decorators
 from odin.codecs import json_codec
 from odin.exceptions import ValidationError
+
 from .resources import Author
 
 

@@ -3,7 +3,7 @@ import pytest
 from odin.exceptions import ValidationError
 
 try:
-    from odin.contrib.pint.fields import PintField, FloatField
+    from odin.contrib.pint.fields import FloatField, PintField
     from odin.contrib.pint.units import registry
 except ImportError:
     pass  # Pint is not available to pypy

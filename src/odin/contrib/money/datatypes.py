@@ -1,5 +1,4 @@
 import decimal
-
 from collections import namedtuple
 
 __all__ = ("Currency", "set_default_currency", "Amount", "NO_CURRENCY")

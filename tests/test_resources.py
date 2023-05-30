@@ -1,16 +1,17 @@
 import pytest
 
 import odin
+from odin.exceptions import ResourceDefError, ValidationError
 from odin.fields import NotProvided
 from odin.resources import (
+    Resource,
     ResourceOptions,
     build_object_graph,
     create_resource_from_dict,
-    Resource,
 )
-from odin.exceptions import ValidationError, ResourceDefError
 from odin.utils import getmeta, snake_to_camel
-from .resources import Book, BookProxy, Library, Subscriber, InheritedCamelCaseResource
+
+from .resources import Book, BookProxy, InheritedCamelCaseResource, Library, Subscriber
 
 
 class Author(odin.Resource):

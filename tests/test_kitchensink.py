@@ -1,12 +1,14 @@
 """
 Do load/dump tests on known valid and invalid documents.
 """
-import os
 import datetime
+import os
+
 import pytest
 
-from odin.codecs import json_codec
 from odin import exceptions
+from odin.codecs import json_codec
+
 from ._helpers import assertJSONEqual
 from .resources import *
 

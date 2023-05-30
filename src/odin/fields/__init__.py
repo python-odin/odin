@@ -5,21 +5,22 @@ import pathlib
 import re
 import uuid
 from functools import cached_property
-from typing import Sequence, Tuple, Any, TypeVar, Optional, Type, Dict
+from typing import Any, Dict, Optional, Sequence, Tuple, Type, TypeVar
 
-from odin import exceptions, datetimeutil, registration
+from odin import datetimeutil, exceptions, registration
 from odin.utils import getmeta
 from odin.validators import (
     EMPTY_VALUES,
     MaxLengthValidator,
-    MinValueValidator,
     MaxValueValidator,
-    validate_url,
+    MinValueValidator,
+    validate_email_address,
     validate_ipv4_address,
     validate_ipv6_address,
     validate_ipv46_address,
-    validate_email_address,
+    validate_url,
 )
+
 from .base import BaseField
 
 __all__ = (

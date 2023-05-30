@@ -1,9 +1,10 @@
 import pytest
-from odin.contrib.geo.datatypes import latitude, longitude, latlng, point
+
+from odin.contrib.geo.datatypes import latitude, latlng, longitude, point
 from odin.contrib.geo.fields import (
     LatitudeField,
-    LongitudeField,
     LatLngField,
+    LongitudeField,
     PointField,
 )
 from odin.exceptions import ValidationError

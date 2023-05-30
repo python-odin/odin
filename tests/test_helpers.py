@@ -3,6 +3,7 @@ import pytest
 from odin import helpers
 from odin.exceptions import ValidationError
 from odin.utils import getmeta
+
 from .resources import Author
 
 

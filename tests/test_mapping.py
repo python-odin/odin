@@ -1,10 +1,12 @@
-import pytest
 import datetime
 
-from odin.exceptions import MappingSetupError, MappingExecutionError
+import pytest
+
+from odin.exceptions import MappingExecutionError, MappingSetupError
 from odin.fields import NotProvided
-from odin.mapping import MappingResult, FieldMapping
+from odin.mapping import FieldMapping, MappingResult
 from odin.mapping.helpers import MapDictAs, MapListOf, NoOpMapper
+
 from .resources import *
 
 

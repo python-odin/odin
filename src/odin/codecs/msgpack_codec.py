@@ -10,10 +10,8 @@ except ImportError:
         "odin.codecs.msgpack_codec requires the 'msgpack-python' package."
     )  # noqa
 
-from odin import bases
-from odin import serializers, resources, ResourceAdapter
+from odin import ResourceAdapter, bases, resources, serializers
 from odin.utils import getmeta
-
 
 TYPE_SERIALIZERS = {
     datetime.date: serializers.date_iso_format,

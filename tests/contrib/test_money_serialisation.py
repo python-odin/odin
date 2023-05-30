@@ -1,7 +1,6 @@
 import odin
-from odin.contrib.money import AmountField
-from odin.contrib.money import Amount
 from odin.codecs import json_codec
+from odin.contrib.money import Amount, AmountField
 
 
 class AmountResource(odin.Resource):

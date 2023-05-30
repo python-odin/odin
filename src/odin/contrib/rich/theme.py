@@ -2,8 +2,8 @@
 from typing import Dict
 
 from rich import get_console
-from rich.theme import Theme
 from rich.style import Style
+from rich.theme import Theme
 
 ODIN_STYLES: Dict[str, Style] = {
     "odin.resource.name": Style(color="bright_cyan"),

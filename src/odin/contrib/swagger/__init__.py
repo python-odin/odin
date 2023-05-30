@@ -1,8 +1,8 @@
 """
 Tools for generating Swagger Specification from resources.
 """
-from odin.utils import getmeta
 from odin import fields
+from odin.utils import getmeta
 
 SWAGGER_SPEC_TYPE_MAPPING = {
     fields.IntegerField: "integer",

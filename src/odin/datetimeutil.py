@@ -1,9 +1,9 @@
 import datetime
 import re
 import time
-from email.utils import parsedate_tz as parse_http_datetime
 from email.utils import formatdate as format_http_datetime  # noqa
-from typing import Union, Type, Dict
+from email.utils import parsedate_tz as parse_http_datetime
+from typing import Dict, Type, Union
 
 
 class IgnoreTimezone:

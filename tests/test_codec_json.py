@@ -1,9 +1,10 @@
-import uuid
 import datetime
 import os
+import uuid
 from io import StringIO
 
 from odin.codecs import json_codec
+
 from .resources import *
 
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")

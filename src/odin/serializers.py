@@ -1,5 +1,5 @@
 import datetime
-from typing import Union, Callable, Any, Dict
+from typing import Any, Callable, Dict, Union
 
 from odin import datetimeutil
 from odin.compatibility import deprecated

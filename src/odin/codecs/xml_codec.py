@@ -19,9 +19,8 @@ from io import StringIO
 from typing import TextIO
 from xml.sax import saxutils
 
-from odin import serializers, Resource
-from odin import fields
-from odin.fields import composite, StringField
+from odin import Resource, fields, serializers
+from odin.fields import StringField, composite
 from odin.utils import attribute_field_iter_items, element_field_iter_items, getmeta
 
 XML_TYPES = {

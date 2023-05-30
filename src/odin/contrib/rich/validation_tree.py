@@ -1,10 +1,11 @@
 """Integration with Rich for nicer CLI's!"""
-from rich.text import Text
 from typing import Iterable, Union
 
+from rich.text import Text
 from rich.tree import Tree
 
-from odin.exceptions import ValidationError, NON_FIELD_ERRORS
+from odin.exceptions import NON_FIELD_ERRORS, ValidationError
+
 from .theme import odin_theme
 
 

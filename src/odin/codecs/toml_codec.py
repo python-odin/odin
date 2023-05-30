@@ -1,6 +1,6 @@
-from typing import Union, Sequence, Dict, Optional, Type
+from typing import Dict, Optional, Sequence, Type, Union
 
-from odin import resources, ResourceAdapter
+from odin import ResourceAdapter, resources
 from odin.exceptions import CodecDecodeError
 from odin.resources import ResourceBase
 from odin.utils import getmeta

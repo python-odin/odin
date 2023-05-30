@@ -1,4 +1,4 @@
-from typing import Any, Callable, Union, Sequence
+from typing import Any, Callable, Sequence, Union
 
 from odin.utils import force_tuple, getmeta
 

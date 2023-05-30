@@ -1,16 +1,16 @@
 import re
 from typing import (
-    Iterable,
-    Tuple,
-    Union,
-    Set,
-    TypeVar,
-    Sequence,
     Any,
-    List,
     Dict,
+    Iterable,
     Iterator,
+    List,
     Optional,
+    Sequence,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
 )
 
 from odin.compatibility import deprecated

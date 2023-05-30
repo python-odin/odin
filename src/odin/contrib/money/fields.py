@@ -1,6 +1,7 @@
 from odin import exceptions
 from odin.fields import ScalarField
 from odin.validators import EMPTY_VALUES
+
 from .datatypes import Amount
 
 __all__ = ("AmountField",)

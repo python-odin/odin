@@ -3,6 +3,7 @@ import os
 from io import StringIO
 
 from odin.codecs import yaml_codec
+
 from .resources import *
 
 FIXTURE_PATH_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")

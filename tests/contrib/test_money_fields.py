@@ -1,6 +1,6 @@
 import pytest
-from odin.contrib.money import AmountField
-from odin.contrib.money import Amount
+
+from odin.contrib.money import Amount, AmountField
 from odin.exceptions import ValidationError
 
 a = Amount(11)

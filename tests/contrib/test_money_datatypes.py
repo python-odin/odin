@@ -1,4 +1,5 @@
 import pytest
+
 from odin.contrib.money import datatypes
 
 a = datatypes.Amount(11)

@@ -19,10 +19,10 @@ from io import StringIO
 
 from odin import bases
 from odin.datastructures import CaseLessStringList
+from odin.exceptions import CodecDecodeError, ValidationError
 from odin.fields import NotProvided
 from odin.resources import create_resource_from_iter
 from odin.utils import getmeta, lazy_property
-from odin.exceptions import CodecDecodeError, ValidationError
 
 CONTENT_TYPE = "text/csv"
 

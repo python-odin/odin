@@ -1,25 +1,25 @@
-import pathlib
-import re
-
-import pytest
 import datetime
 import enum
+import pathlib
+import re
 import uuid
 from copy import deepcopy
 
+import pytest
+
 import odin
-from odin.fields import *
-from odin.fields import Field, TimeStampField, NotProvided
 from odin.datetimeutil import FixedTimezone
+from odin.exceptions import ValidationError
+from odin.fields import *
+from odin.fields import Field, NotProvided, TimeStampField
 from odin.fields.virtual import VirtualField
 from odin.validators import (
-    MinValueValidator,
-    MaxValueValidator,
     MaxLengthValidator,
-    RegexValidator,
+    MaxValueValidator,
     MinLengthValidator,
+    MinValueValidator,
+    RegexValidator,
 )
-from odin.exceptions import ValidationError
 
 utc = datetime.timezone.utc
 

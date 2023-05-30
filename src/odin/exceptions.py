@@ -1,5 +1,5 @@
 """Exceptions raised by Odin."""
-from typing import Union, List, Dict, Final
+from typing import Dict, Final, List, Union
 
 from odin import registration
 

@@ -1,15 +1,15 @@
 import odin
+from odin.codecs import json_codec
 from odin.contrib.geo import (
     LatitudeField,
-    LongitudeField,
     LatLngField,
+    LongitudeField,
     PointField,
     latitude,
-    longitude,
     latlng,
+    longitude,
     point,
 )
-from odin.codecs import json_codec
 
 
 class GeoResource(odin.Resource):

@@ -1,28 +1,22 @@
 import copy
 from typing import (
-    TypeVar,
-    Dict,
     Any,
-    Type,
-    Optional,
-    Tuple,
-    Union,
-    Sequence,
-    List,
-    cast,
     Callable,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    cast,
 )
 
-from odin import bases
-from odin import exceptions, registration
-from odin.exceptions import ValidationError, ResourceDefError
-from odin.fields import NotProvided, BaseField, Field, NotProvidedType
-from odin.utils import (
-    cached_property,
-    field_iter_items,
-    force_tuple,
-    getmeta,
-)
+from odin import bases, exceptions, registration
+from odin.exceptions import ResourceDefError, ValidationError
+from odin.fields import BaseField, Field, NotProvided, NotProvidedType
+from odin.utils import cached_property, field_iter_items, force_tuple, getmeta
 
 DEFAULT_TYPE_FIELD = "$"
 

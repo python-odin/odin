@@ -12,18 +12,19 @@ utilised unchanged.
 
 """
 import copy
-from typing import Any, Dict, Tuple, Type, Optional, TypeVar, Iterable
+from typing import Any, Dict, Iterable, Optional, Tuple, Type, TypeVar
 
 from odin import registration
 from odin.fields import BaseField
 from odin.resources import (
-    ResourceBase,
-    ResourceOptions,
     DEFAULT_TYPE_FIELD,
     NotProvided,
+    ResourceBase,
+    ResourceOptions,
 )
-from .type_resolution import process_attribute, Options
+
 from ..exceptions import ResourceDefError
+from .type_resolution import Options, process_attribute
 
 __all__ = (
     "Options",

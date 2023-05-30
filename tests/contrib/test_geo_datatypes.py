@@ -1,4 +1,5 @@
 import pytest
+
 from odin.contrib.geo import datatypes
 
 

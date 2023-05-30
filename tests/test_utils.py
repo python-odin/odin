@@ -1,7 +1,8 @@
 import pytest
 
-from odin.utils import getmeta
 from odin import utils
+from odin.utils import getmeta
+
 from .resources import Book
 
 

@@ -5,7 +5,7 @@ Helpers
 A collection of useful convenience methods.
 """
 
-from typing import Union, List, Dict, DefaultDict
+from typing import DefaultDict, Dict, List, Union
 
 from odin import BaseField
 from odin.exceptions import NON_FIELD_ERRORS, ValidationError

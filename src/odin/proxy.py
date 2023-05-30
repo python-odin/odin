@@ -7,12 +7,12 @@ The resource proxy is an object that provides an alternate interface to a shadow
 This could be as a means of providing a summary object, or for adding additional properties.
 
 """
-from typing import List, Union, Optional
+from typing import List, Optional, Union
 
 from odin import registration
 from odin.bases import TypedResourceIterable
-from odin.resources import ResourceOptions, ResourceBase
-from odin.utils import getmeta, filter_fields, lazy_property
+from odin.resources import ResourceBase, ResourceOptions
+from odin.utils import filter_fields, getmeta, lazy_property
 
 EMPTY = tuple()
 

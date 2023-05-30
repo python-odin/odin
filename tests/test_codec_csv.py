@@ -2,6 +2,7 @@ import os
 from io import StringIO
 
 import pytest
+
 import odin
 import odin.exceptions
 from odin.codecs import csv_codec

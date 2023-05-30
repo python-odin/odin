@@ -2,8 +2,7 @@ import datetime
 import typing
 import uuid
 
-from odin import bases
-from odin import serializers, resources, ResourceAdapter
+from odin import ResourceAdapter, bases, resources, serializers
 from odin.exceptions import CodecDecodeError, CodecEncodeError
 from odin.utils import getmeta
 

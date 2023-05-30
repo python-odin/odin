@@ -1,9 +1,8 @@
 from typing import Any, Iterator, Tuple
 
-from odin import bases
-from odin import exceptions
-from odin.resources import create_resource_from_dict
+from odin import bases, exceptions
 from odin.fields import Field
+from odin.resources import create_resource_from_dict
 from odin.utils import value_in_choices
 from odin.validators import EMPTY_VALUES
 

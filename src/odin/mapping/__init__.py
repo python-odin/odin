@@ -1,25 +1,25 @@
 """Mapping data between resources or other object types."""
 import abc
 from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    NamedTuple,
+    Optional,
+    Sequence,
+    Type,
     TypeVar,
     Union,
-    Sequence,
-    Optional,
-    Callable,
-    Any,
-    NamedTuple,
-    Iterable,
-    Type,
-    Dict,
 )
 
 from odin import bases as base_types
 from odin import registration
-from odin.fields import NotProvided, Field
+from odin.exceptions import MappingExecutionError, MappingSetupError
+from odin.fields import Field, NotProvided
+from odin.fields.composite import DictAs, ListOf
+from odin.mapping.helpers import MapDictAs, MapListOf, NoOpMapper
 from odin.resources import ResourceBase
-from odin.fields.composite import ListOf, DictAs
-from odin.exceptions import MappingSetupError, MappingExecutionError
-from odin.mapping.helpers import MapListOf, MapDictAs, NoOpMapper
 from odin.utils import cached_property, getmeta
 
 __all__ = ("Mapping", "map_field", "map_list_field", "assign_field", "define", "assign")

@@ -1,12 +1,12 @@
 """Sphinx integration to document resources."""
-from typing import Tuple, Any
+from typing import Any, Tuple
 
 from sphinx.application import Sphinx
 from sphinx.ext.autodoc import (
     Documenter,
     ModuleLevelDocumenter,
-    bool_option,
     ObjectMembers,
+    bool_option,
 )
 from sphinx.util import logging
 
