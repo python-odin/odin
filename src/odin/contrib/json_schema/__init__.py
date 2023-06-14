@@ -1,6 +1,6 @@
 """JSON schema support for Odin."""
 import json
-from typing import Any, Dict, Final, Sequence, TextIO, Type
+from typing import Any, Dict, Final, List, Sequence, TextIO, Type, Union
 
 import odin
 from odin.registration import get_child_resources
@@ -13,8 +13,11 @@ SCHEMA_DIALECT: Final[str] = "https://json-schema.org/draft/2020-12/schema"
 class JSONSchema:
     """JSON Schema representation of an Odin resource."""
 
-    def __init__(self, resource: Type[ResourceBase]):
+    def __init__(
+        self, resource: Type[ResourceBase], *, require_type_field: bool = True
+    ):
         self.resource = resource
+        self.require_type_field = require_type_field
 
         self.defs = {}
 
@@ -44,7 +47,8 @@ class JSONSchema:
     def _required_fields(self, meta: ResourceOptions) -> Sequence[str]:
         """Get a list of required fields."""
         required = [field.name for field in meta.fields if not field.null]
-        required.append(meta.type_field)
+        if self.require_type_field:
+            required.append(meta.type_field)
         return required
 
     def _fields_to_properties(self, meta: ResourceOptions) -> Dict[str, Any]:
@@ -61,13 +65,31 @@ class JSONSchema:
             return self._composite_field_to_schema(field)
 
         schema = {
-            "type": "string",
+            "type": self._field_type(field),
             "description": field.doc_text or "",
         }
         if field.choices:
             schema["enum"] = tuple(str(value) for value in field.choice_values)
 
         return schema
+
+    def _field_type(self, field: odin.Field) -> Union[str, List[str]]:
+        """Get the type of a field."""
+
+        if isinstance(field, odin.ListField):
+            type_name = "array"
+        elif isinstance(field, odin.IntegerField):
+            type_name = "integer"
+        elif isinstance(field, odin.FloatField):
+            type_name = "number"
+        elif isinstance(field, odin.BooleanField):
+            type_name = "boolean"
+        elif isinstance(field, odin.DictField):
+            type_name = "object"
+        else:
+            type_name = "string"
+
+        return [type_name, "null"] if field.null else type_name
 
     def _composite_field_to_schema(self, field: odin.CompositeField) -> Dict[str, Any]:
         """Convert a composite field to a JSON schema."""
