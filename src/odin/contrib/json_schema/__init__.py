@@ -1,13 +1,40 @@
 """JSON schema support for Odin."""
 import json
-from typing import Any, Dict, Final, List, Sequence, TextIO, Type, Union
+from typing import Any, Dict, Final, List, Sequence, TextIO, Tuple, Type, Union
 
 import odin
+import odin.validators
 from odin.registration import get_child_resources
 from odin.resources import ResourceBase, ResourceOptions
 from odin.utils import getmeta
 
 SCHEMA_DIALECT: Final[str] = "https://json-schema.org/draft/2020-12/schema"
+FIELD_SCHEMAS = {
+    odin.StringField: ("string", {}),
+    odin.BooleanField: ("boolean", {}),
+    odin.IntegerField: ("integer", {}),
+    odin.FloatField: ("number", {}),
+    odin.ListField: ("array", {}),
+    odin.DictField: ("object", {}),
+    odin.DateField: ("string", {"format": "date"}),
+    odin.TimeField: ("string", {"format": "time"}),
+    odin.DateTimeField: ("string", {"format": "date-time"}),
+    odin.EmailField: ("string", {"format": "email"}),
+    odin.IPv4Field: ("string", {"format": "ipv4"}),
+    odin.IPv6Field: ("string", {"format": "ipv6"}),
+    odin.IPv46Field: ("string", {"format": ["ipv4", "ipv6"]}),
+    odin.PathField: ("string", {}),
+    odin.RegexField: ("string", {"format": "regex"}),
+    odin.UrlField: ("string", {"format": "uri"}),
+    odin.UUIDField: ("string", {"format": "uuid"}),
+}
+VALIDATOR_SCHEMAS = {
+    odin.validators.MaxValueValidator: {},
+    odin.validators.MinValueValidator: {},
+    odin.validators.LengthValidator: {},
+    odin.validators.MaxLengthValidator: {},
+    odin.validators.MinLengthValidator: {},
+}
 
 
 class JSONSchema:
@@ -60,36 +87,52 @@ class JSONSchema:
 
     def _field_to_schema(self, field: odin.Field) -> Dict[str, Any]:
         """Convert a field to a JSON schema."""
-
         if isinstance(field, odin.CompositeField):
-            return self._composite_field_to_schema(field)
+            schema = self._composite_field_to_schema(field)
 
-        schema = {
-            "type": self._field_type(field),
-            "description": field.doc_text or "",
-        }
+        else:
+            type_def, extra_schema = self._field_type(field)
+            schema = {"type": type_def}
+            schema.update(extra_schema)
+
+        if field.doc_text:
+            schema["description"] = field.doc_text
         if field.choices:
-            schema["enum"] = tuple(str(value) for value in field.choice_values)
+            schema.setdefault("enum", field.choice_values)
 
         return schema
 
-    def _field_type(self, field: odin.Field) -> Union[str, List[str]]:
+    def _field_type(
+        self, field: odin.Field
+    ) -> Tuple[Union[str, List[str]], Dict[str, Any]]:
         """Get the type of a field."""
 
-        if isinstance(field, odin.ListField):
-            type_name = "array"
-        elif isinstance(field, odin.IntegerField):
-            type_name = "integer"
-        elif isinstance(field, odin.FloatField):
-            type_name = "number"
-        elif isinstance(field, odin.BooleanField):
-            type_name = "boolean"
-        elif isinstance(field, odin.DictField):
-            type_name = "object"
-        else:
-            type_name = "string"
+        field_type = type(field)
+        if field_type in FIELD_SCHEMAS:
+            type_name, schema = FIELD_SCHEMAS[field_type]
 
-        return [type_name, "null"] if field.null else type_name
+        elif isinstance(field, odin.EnumField):
+            type_name = "string"
+            schema = {"enum": tuple(str(item.value) for item in field.enum_type)}
+
+        elif isinstance(field, odin.TypedListField):
+            type_name = "array"
+            schema = {"items": self._field_to_schema(field.field)}
+
+        elif isinstance(field, odin.TypedDictField):
+            type_name = "object"
+            schema = {"additionalProperties": self._field_to_schema(field.value_field)}
+
+        else:
+            for field_type, field_info in FIELD_SCHEMAS.items():
+                if isinstance(field, field_type):
+                    type_name, schema = field_info
+                    break
+
+            else:
+                raise ValueError(f"Unknown field type: {field_type}")
+
+        return ([type_name, "null"] if field.null else type_name), schema
 
     def _composite_field_to_schema(self, field: odin.CompositeField) -> Dict[str, Any]:
         """Convert a composite field to a JSON schema."""
@@ -106,10 +149,7 @@ class JSONSchema:
         else:
             schema = self._schema_def(field.of)
 
-        if isinstance(field, odin.DictAs):
-            pass
-
-        elif isinstance(field, odin.ListOf):
+        if isinstance(field, odin.ListOf):
             schema = {"type": "array", "items": schema}
 
         elif isinstance(field, odin.DictOf):
