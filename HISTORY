@@ -1,3 +1,12 @@
+2.8.1
+=====
+
+Changes
+-------
+
+- Add beta contrib package for generating a JSON Schema from an Odin resource.
+
+
 2.8
 ===
 
