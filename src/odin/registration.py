@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from odin.utils import getmeta
 
 
@@ -10,6 +12,7 @@ class ResourceCache:
     # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/66531.
     __shared_state = {
         "resources": {},
+        "resource_subclasses": {},
         "mappings": {},
         "field_resolvers": set(),
         "validation_error_handlers": {},
@@ -33,7 +36,7 @@ class ResourceCache:
             if resource_name != class_name:
                 self.resources[class_name] = resource
 
-    def get_resource(self, resource_name):
+    def get_resource(self, resource_name: str):
         """
         Get a resource by name.
 
@@ -43,6 +46,19 @@ class ResourceCache:
 
         """
         return self.resources.get(resource_name.lower())
+
+    def get_child_resources(self, resource: type) -> Sequence[type]:
+        """
+        Get subclasses of a resource.
+        """
+        resource_subclasses = self.resource_subclasses.get(resource)
+        if resource_subclasses is None:
+            self.resource_subclasses[resource] = resource_subclasses = {
+                child
+                for child in self.resources.values()
+                if issubclass(child, resource)
+            }
+        return resource_subclasses
 
     def register_mapping(self, mapping):
         """
@@ -132,6 +148,7 @@ cache = ResourceCache()
 
 register_resources = cache.register_resources
 get_resource = cache.get_resource
+get_child_resources = cache.get_child_resources
 
 register_mapping = cache.register_mapping
 get_mapping = cache.get_mapping
