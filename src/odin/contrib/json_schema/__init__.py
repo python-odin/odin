@@ -35,6 +35,7 @@ VALIDATOR_SCHEMAS = {
     odin.validators.MaxLengthValidator: {},
     odin.validators.MinLengthValidator: {},
 }
+JSON_SCHEMA_METHOD: Final[str] = "as_json_schema"
 
 
 class JSONSchema:
@@ -108,7 +109,11 @@ class JSONSchema:
         """Get the type of a field."""
 
         field_type = type(field)
-        if field_type in FIELD_SCHEMAS:
+
+        if method := getattr(field, JSON_SCHEMA_METHOD, None):
+            type_name, schema = method()
+
+        elif field_type in FIELD_SCHEMAS:
             type_name, schema = FIELD_SCHEMAS[field_type]
 
         elif isinstance(field, odin.EnumField):
@@ -140,12 +145,15 @@ class JSONSchema:
         # Handle abstract resources
         child_resources = get_child_resources(field.of)
         if child_resources:
-            schema = {
-                "oneOf": [
-                    self._schema_def(child_resource)
-                    for child_resource in child_resources
-                ]
-            }
+            if len(child_resources) == 1:
+                schema = self._schema_def(child_resources[0])
+            else:
+                schema = {
+                    "oneOf": [
+                        self._schema_def(child_resource)
+                        for child_resource in child_resources
+                    ]
+                }
         else:
             schema = self._schema_def(field.of)
 
