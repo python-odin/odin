@@ -1,3 +1,16 @@
+2.9
+===
+
+Changes
+-------
+
+- Add support for delayed resolution of types for composite fields. This
+  allows for tree structures to be defined.
+
+  Use ``DictAs.delayed(lambda: CurrentResource)`` to define a composite field that
+  uses the current resource as the type for the dict.
+
+
 2.8.1
 =====
 
