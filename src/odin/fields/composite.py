@@ -1,4 +1,7 @@
-from typing import Any, Iterator, Tuple
+"""Composite fields for handling collections of resources."""
+import abc
+from functools import cached_property
+from typing import Any, Callable, Iterator, Tuple
 
 from odin import bases, exceptions
 from odin.fields import Field
@@ -16,14 +19,30 @@ __all__ = (
 )
 
 
-class CompositeField(Field):
-    """
-    The base class for composite (or fields that contain other resources) eg DictAs/ListOf fields.
-    """
+class CompositeField(Field, metaclass=abc.ABCMeta):
+    """The base class for composite.
+
+    Fields that contain other resources eg DictAs/ListOf fields."""
+
+    @classmethod
+    def delayed(cls, resource_callable: Callable[[], Any], **options):
+        """Create a delayed resource field.
+
+        This is used in the case of tree structures where a resource may reference itself.
+
+        This should be used with a lambda function to avoid referencing an incomplete type.
+
+        .. code-block:: python
+
+            class Category(odin.Resource):
+                name = odin.StringField()
+                child_categories = odin.DictAs.delayed(lambda: Category)
+
+        """
+        return cls(resource_callable, **options)
 
     def __init__(self, resource, use_container=False, **options):
-        """
-        Initialisation of a CompositeField.
+        """Initialisation of a CompositeField.
 
         :param resource:
         :param use_container: Special flag for codecs that support containers or just multiple instances of a
@@ -32,15 +51,36 @@ class CompositeField(Field):
         :param options: Additional options passed to :py:class:`odin.fields.Field` super class.
 
         """
+
         if not hasattr(resource, "_meta"):
-            raise TypeError(f"{resource!r} is not a valid type for a related field.")
-        self.of = resource
+            if callable(resource):
+                # Delayed resolution of the resource type.
+                self._of = resource
+            else:
+                # Keep this pattern so old behaviour remains.
+                raise TypeError(
+                    f"{resource!r} is not a valid type for a related field."
+                )
+        else:
+            self._of = resource
         self.use_container = use_container
 
         if not options.get("null", False):
-            options.setdefault("default", lambda: resource())
+            options.setdefault("default", lambda: self.of())
 
         super().__init__(**options)
+
+    @cached_property
+    def of(self):
+        """Return the resource type."""
+        resource = self._of
+        if not hasattr(resource, "_meta") and callable(resource):
+            resource = resource()
+            if not hasattr(resource, "_meta"):
+                raise TypeError(
+                    f"{resource!r} is not a valid type for a related field."
+                )
+        return resource
 
     def to_python(self, value):
         """Convert raw value to a python value."""
@@ -59,24 +99,16 @@ class CompositeField(Field):
         if value not in EMPTY_VALUES:
             value.full_clean()
 
+    @abc.abstractmethod
     def item_iter_from_object(self, obj):
-        """
-        Return an iterator of items (resource, idx) from composite field.
+        """Return an iterator of items (resource, idx) from composite field.
 
         For single items (eg ``DictAs`` will return a list a single item (resource, None))
-
-        :param obj:
-        :return:
         """
-        raise NotImplementedError()
 
+    @abc.abstractmethod
     def key_to_python(self, key):
-        """
-        A to python method for the key value.
-        :param key:
-        :return:
-        """
-        raise NotImplementedError()
+        """A to python method for the key value."""
 
 
 class DictAs(CompositeField):
@@ -243,7 +275,7 @@ class DictOf(CompositeField):
             raise exceptions.ValidationError(self.error_messages["empty"], code="empty")
 
     def __iter__(self):
-        # This does nothing but it does prevent inspections from complaining.
+        # This does nothing, it does prevent inspections from complaining.
         return None  # NoQA
 
     def item_iter_from_object(self, obj) -> Iterator[Tuple[str, Any]]:

@@ -53,9 +53,23 @@ class TestFields:
 
     # DictAs ##################################################################
 
-    def test_dictas_ensure_is_resource(self):
+    def test_dictas__where_a_resource_is_not_supplied(self):
         with pytest.raises(TypeError):
             DictAs("an item")
+
+    def test_dictas__where_resource_resolution_is_delayed(self):
+        target = DictAs.delayed(lambda: ExampleResource, null=True)
+
+        assert target.of is ExampleResource
+        assert target.null is True
+
+    def test_dictas__where_resource_resolution_is_delayed_but_a_resource_is_not_supplied(
+        self,
+    ):
+        target = DictAs.delayed(lambda: "an item", null=True)
+
+        with pytest.raises(TypeError):
+            assert target.of
 
     def test_dictas_1(self):
         f = DictAs(ExampleResource)
