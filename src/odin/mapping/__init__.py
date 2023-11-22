@@ -515,7 +515,9 @@ class MappingBase:
             specified is returned.
 
         """
-        context = context or {}
+        if context is None:
+            context = {}
+
         mapping_result = mapping_result or cls.default_mapping_result
         context.setdefault("_loop_idx", [])
 
