@@ -2,7 +2,7 @@
 Loading and saving data
 #######################
 
-Saving and loaded of resources is handled by codecs for each format.
+Saving and loading of resources is handled by codecs for each format.
 
 JSON data
 =========
