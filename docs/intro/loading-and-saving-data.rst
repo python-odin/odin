@@ -8,7 +8,7 @@ JSON data
 =========
 
 JSON data is loaded and saved using the :py:mod:`odin.codecs.json_codec` module. This module exposes an API that is very
-similar to Pythons built in :py:mod:`json` module.
+similar to Python's built in :py:mod:`json` module.
 
 Using the Book and Author resources presented in the :doc:`creating-resources` section::
 
