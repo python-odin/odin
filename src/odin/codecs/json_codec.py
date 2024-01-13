@@ -52,7 +52,7 @@ class OdinEncoder(json.JSONEncoder):
 
 def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
     """
-    Load a from a JSON encoded file.
+    Load from a JSON encoded file.
 
     See :py:meth:`loads` for more details of the loading operation.
 
