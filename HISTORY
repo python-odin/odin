@@ -1,3 +1,24 @@
+2.10rc1
+=======
+
+Changes
+-------
+
+- Simplify the internals of the Resource metaclass to make it easier to understand
+  and maintain. Greater sharing of code between Resource and AnnotatedResource
+
+  This change has not effect on the public API.
+
+  Removes some compatibility code with versions prior to Python 3.8.
+
+- Support shadowing of fields on a resource. To enabled this feature set the
+  ``allow_field_shadowing`` meta option to ``True``. This allows for fields to be
+  overridden on a resource.
+
+  ResourceObjects now includes a shadow_fields listing all fields shadowed by this
+  resource.
+
+
 2.9
 ===
 
