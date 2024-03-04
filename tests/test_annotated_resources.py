@@ -10,6 +10,7 @@ from tests.resources_annotated import (
     InheritedCamelCaseResource,
     Library,
     Publisher,
+    AltBook,
 )
 
 
@@ -32,9 +33,13 @@ class TestAnnotatedResourceType:
 
 class TestAnnotatedResource:
     def test_fields_are_inherited_from_parent_resources(self):
-        meta = getmeta(IdentifiableBook)
+        target = getmeta(IdentifiableBook)
 
-        assert [f.name for f in meta.fields] == [
+        actual = target.fields
+
+        assert [f.name for f in actual] == [
+            "id",
+            "purchased_from",
             "title",
             "isbn",
             "num_pages",
@@ -44,8 +49,6 @@ class TestAnnotatedResource:
             "published",
             "authors",
             "publisher",
-            "id",
-            "purchased_from",
         ]
 
     def test_cached_properties_work_as_expected(self):
@@ -64,7 +67,15 @@ class TestAnnotatedResource:
 
         actual = [field.name for field in options.fields]
 
-        assert actual == ["fullName", "yearOfBirth", "emailAddress"]
+        assert actual == ["emailAddress", "fullName", "yearOfBirth"]
+
+    def test_shadow_fields_are_identified(self):
+        target = getmeta(AltBook)
+
+        actual = target.shadow_fields
+
+        assert isinstance(actual, tuple)
+        assert [f.name for f in actual] == ["title"]
 
 
 class TestAnnotatedKitchenSink:

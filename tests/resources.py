@@ -29,6 +29,7 @@ class LibraryBook(odin.Resource):
 class Book(LibraryBook):
     class Meta:
         key_field_name = "isbn"
+        allow_field_shadowing = True
 
     title = odin.StringField()
     isbn = odin.StringField()
@@ -52,6 +53,17 @@ class Book(LibraryBook):
         if other:
             return vars(self) == vars(other)
         return False
+
+
+class AltBook(Book):
+    """A special case of book.
+
+    This is a special case of book that has a limit on the length of the title.
+
+    And to test overriding fields.
+    """
+
+    title = odin.StringField(max_length=10)
 
 
 class From(enum.Enum):
