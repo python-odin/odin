@@ -85,7 +85,7 @@ Meta Options
     to sort fields in the child resource before appending the fields from the parent
     resource(s).
 
-    Settings this option to ``True`` will cause field sorting to happen after all of
+    Setting this option to ``True`` will cause field sorting to happen after all of
     the fields have been attached using the default sort method. The default method
     sorts the fields by the order they are defined.
 
@@ -113,3 +113,9 @@ Meta Options
                 user_data = {
                     "custom": "my-custom-value",
                 }
+
+``allow_field_shadowing``
+    Allow fields to be shadow fields with the same name in a parent resource.
+
+    Setting this option to ``True`` will allow fields to be shadowed without an exception
+    being raised. The default behaviour is to raise an exception if a field is shadowed.
