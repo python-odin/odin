@@ -501,7 +501,7 @@ class MappingBase:
         source_obj,
         context=None,
         allow_subclass: bool = False,
-        mapping_result: MappingResult = None,
+        mapping_result: Type[MappingResult] = None,
     ):
         """
         Apply conversion either a single resource or a list of resources using the mapping defined by this class.
@@ -621,11 +621,13 @@ class MappingBase:
             except TypeError as ex:
                 raise MappingExecutionError(
                     f"{ex} applying rule {mapping_rule}"
-                ) from None
+                ) from ex
 
         if to_list:
             if isinstance(to_values, Iterable):
                 to_values = (list(to_values),)
+            else:
+                to_values = (to_values,)
         else:
             to_values = force_tuple(to_values)
 
