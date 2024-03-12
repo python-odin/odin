@@ -36,6 +36,7 @@ class Book(LibraryBook):
     class Meta:
         namespace = "annotated"
         key_field_name = "isbn"
+        allow_field_shadowing = True
 
     title: str
     isbn: str = odin.Options(
@@ -68,6 +69,17 @@ class Book(LibraryBook):
         if other:
             return vars(self) == vars(other)
         return False
+
+
+class AltBook(Book):
+    """A special case of book.
+
+    This is a special case of book that has a limit on the length of the title.
+
+    And to test overriding fields.
+    """
+
+    title: str = odin.Options(max_length=10)
 
 
 class From(enum.Enum):

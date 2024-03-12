@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "odin"
-version = "2.9.0"
+version = "2.10rc1"
 description = "Data-structure definition/validation/traversal, mapping and serialisation toolkit for Python"
 authors = ["Tim Savage <tim@savage.company>"]
 license = "BSD-3-Clause"
@@ -55,30 +55,40 @@ pint = ["pint"]
 arrow = ["arrow"]
 rich = ["rich"]
 
-[tool.isort]
-profile = "black"
-
 [tool.ruff]
-select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    # "I",  # isort
-    "C",  # flake8-comprehensions
-    "B",  # flake8-bugbear
-]
-ignore = [
-    "E501",  # line too long, handled by black
-    "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex
-]
+# Same as Black.
+line-length = 88
+indent-width = 4
 
-# Assume Python 3.8.
+# Assume Python 3.8
 target-version = "py38"
 
-[tool.ruff.per-file-ignores]
-"tests/test_adapters.py" = ["F403", "F405"]
-"tests/test_codec*.py" = ["F403", "F405"]
-"tests/test_fields.py" = ["F403", "F405"]
-"tests/test_kitchensink.py" = ["F403", "F405"]
-"tests/test_mapping.py" = ["F403", "F405"]
+[tool.ruff.lint]
+select = ["N", "F", "I", "UP", "PL", "A", "G", "S", "E", "SIM", "B"]
+ignore = [
+    "N818",  # Exception name should be named with an Error suffix
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**.py" = [
+    "S101", # asserts allowed in tests...
+    "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
+    "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
+    # The below are debateable
+    "PLR2004", # Magic value used in comparison, ...
+    "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
+]
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 117
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+

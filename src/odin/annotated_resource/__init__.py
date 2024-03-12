@@ -11,19 +11,20 @@ existing code (eg Mappings, Codecs) including custom implementations to be
 utilised unchanged.
 
 """
-import copy
-from typing import Any, Dict, Iterable, Optional, Tuple, Type, TypeVar
+
+from typing import Any, Dict, Iterable, Tuple, Type
 
 from odin import registration
 from odin.fields import BaseField
 from odin.resources import (
-    DEFAULT_TYPE_FIELD,
+    MOT,
     NotProvided,
     ResourceBase,
     ResourceOptions,
+    _add_parent_fields_to_class,
+    _new_meta_instance,
 )
 
-from ..exceptions import ResourceDefError
 from .type_resolution import Options, process_attribute
 
 __all__ = (
@@ -32,47 +33,6 @@ __all__ = (
     "AnnotatedResource",
     "AResource",
 )
-
-from ..utils import getmeta
-
-MOT = TypeVar("MOT", bound=ResourceOptions)
-
-
-def _new_meta_instance(
-    meta_options_type: Type[MOT],
-    meta_def: Optional[object],
-    new_class: "AnnotatedResourceType",
-) -> MOT:
-    """Instantiate meta options instance and handle inheritance of required fields."""
-    base_meta = getattr(new_class, "_meta", None)
-    new_meta = meta_options_type(meta_def)
-    new_class.add_to_class("_meta", new_meta)
-
-    # Namespace is inherited
-    if base_meta and new_meta.name_space is NotProvided:
-        new_meta.name_space = base_meta.name_space
-    if new_meta.name_space is NotProvided:
-        new_meta.name_space = new_class.__module__
-
-    # Type field is inherited and default if not provided
-    if base_meta and new_meta.type_field is NotProvided:
-        new_meta.type_field = base_meta.type_field
-    if new_meta.type_field is NotProvided:
-        new_meta.type_field = DEFAULT_TYPE_FIELD
-
-    # Key field names is inherited
-    if base_meta and new_meta.key_field_names is None:
-        new_meta.key_field_names = base_meta.key_field_names
-
-    # Field name format is inherited
-    if new_meta.field_name_format is NotProvided:
-        new_meta.field_name_format = base_meta.field_name_format if base_meta else None
-
-    # Field sorting is inherited
-    if new_meta.field_sorting is NotProvided:
-        new_meta.field_sorting = base_meta.field_sorting if base_meta else False
-
-    return new_meta
 
 
 def _iterate_attrs(attrs: Dict[str, Any]) -> Iterable[Tuple[str, BaseField]]:
@@ -88,43 +48,6 @@ def _iterate_attrs(attrs: Dict[str, Any]) -> Iterable[Tuple[str, BaseField]]:
 
     # Process any leftover fields
     yield from attrs.items()
-
-
-def _add_parent_fields_to_class(
-    new_class: "AnnotatedResourceType", new_meta: ResourceOptions, parents
-):
-    """Iterate through parent attrs and yield fields."""
-    # All the fields of any type declared on this model
-    local_field_attr_names = {f.attname for f in new_meta.fields}
-    field_attr_names = set(local_field_attr_names)
-
-    for base, base_meta in (
-        (base, getmeta(base)) for base in parents if hasattr(base, "_meta")
-    ):
-        # Check for clashes between locally declared fields and those
-        # on the base classes (we cannot handle shadowed fields at the
-        # moment).
-        for field in base_meta.all_fields:
-            if field.attname in local_field_attr_names:
-                raise ResourceDefError(
-                    f"Local field {field.attname!r} in class {new_class.__name__!r} "
-                    f"clashes with field of the same name from base class {base.__name__!r}"
-                )
-
-        # Clone fields (but filter out fields already inherited)
-        for field in (
-            field for field in base_meta.fields if field.attname not in field_attr_names
-        ):
-            field_attr_names.add(field.attname)
-            new_class.add_to_class(field.attname, copy.deepcopy(field))
-
-        # Clone any virtual fields
-        for field in base_meta.virtual_fields:
-            new_class.add_to_class(field.attname, copy.deepcopy(field))
-
-        # Add to parents list
-        new_meta.parents += base_meta.parents
-        new_meta.parents.append(base)
 
 
 class AnnotatedResourceType(type):
@@ -175,8 +98,11 @@ class AnnotatedResourceType(type):
         _add_parent_fields_to_class(new_class, new_meta, parents)
 
         # Sort the fields
-        if not new_meta.field_sorting:
-            new_meta.fields = sorted(new_meta.fields, key=hash)
+        if new_meta.field_sorting:
+            if callable(new_meta.field_sorting):
+                new_meta.fields = new_meta.field_sorting(new_meta.fields)
+            else:
+                new_meta.fields = sorted(new_meta.fields, key=hash)
 
         # Give fields an opportunity to do additional operations after the
         # resource is full populated and ready.

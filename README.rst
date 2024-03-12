@@ -21,7 +21,7 @@ Odin also comes with built in serialisation tools for importing and exporting da
 |         |    :alt: Python package                                                                                     |
 +---------+-------------------------------------------------------------------------------------------------------------+
 | Quality | .. image:: https://sonarcloud.io/api/project_badges/measure?project=python-odin_odin&metric=sqale_rating    |
-|         |    :target: https://sonarcloud.io/dashboard?id=python-odin/odin                                             |
+|         |    :target: https://sonarcloud.io/dashboard?id=python-odin_odin                                             |
 |         |    :alt: Maintainability                                                                                    |
 |         | .. image:: https://sonarcloud.io/api/project_badges/measure?project=python-odin_odin&metric=security_rating |
 |         |    :target: https://sonarcloud.io/project/security_hotspots                                                 |

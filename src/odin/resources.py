@@ -43,6 +43,7 @@ class ResourceOptions:
         "field_name_format",
         "field_sorting",
         "user_data",
+        "allow_field_shadowing",
     )
 
     def __init__(self, meta):
@@ -68,6 +69,7 @@ class ResourceOptions:
         ] = NotProvided
         self.field_sorting: Union[bool, NotProvidedType] = NotProvided
         self.user_data: Optional[Any] = None
+        self.allow_field_shadowing: Union[bool, NotProvidedType] = NotProvided
 
         self._cache = {}
 
@@ -120,6 +122,32 @@ class ResourceOptions:
         if not self.verbose_name_plural:
             self.verbose_name_plural = self.verbose_name + "s"
 
+    def inherit_from(self, base: "ResourceOptions"):
+        """Inherit options from a base meta options instance."""
+        if base:
+            # Namespace is inherited and default if not provided
+            if self.name_space is NotProvided:
+                self.name_space = base.name_space
+
+            # Type field is inherited and default if not provided
+            if self.type_field is NotProvided:
+                self.type_field = base.type_field
+
+            # Key field is inherited
+            if self.key_field_names is None:
+                self.key_field_names = base.key_field_names
+
+        if self.allow_field_shadowing is NotProvided:
+            self.allow_field_shadowing = base.allow_field_shadowing if base else False
+
+        # Field name format is inherited
+        if self.field_name_format is NotProvided:
+            self.field_name_format = base.field_name_format if base else None
+
+        # Field sorting is inherited
+        if self.field_sorting is NotProvided:
+            self.field_sorting = base.field_sorting if base else False
+
     def _add_key_field(self, field):
         self._key_fields.append(field)
 
@@ -159,6 +187,11 @@ class ResourceOptions:
     def init_fields(self) -> Sequence[Field]:
         """Fields used in the resource init."""
         return self.fields
+
+    @cached_property
+    def shadow_fields(self) -> Sequence[Field]:
+        """Fields that are shadowing fields on base classes."""
+        return tuple(f for f in self.fields if hasattr(f, "_shadow"))
 
     @cached_property
     def composite_fields(self) -> Sequence[Field]:
@@ -232,6 +265,75 @@ class ResourceOptions:
         """Run checks on meta data to ensure correctness"""
 
 
+MOT = TypeVar("MOT", bound=ResourceOptions)
+
+
+def _new_meta_instance(
+    meta_options_type: Type[MOT],
+    meta_def: Optional[object],
+    new_class: "ResourceType",
+) -> MOT:
+    """Instantiate meta options instance and handle inheritance of required fields."""
+    base_meta = getattr(new_class, "_meta", None)
+    new_meta = meta_options_type(meta_def)
+    new_class.add_to_class("_meta", new_meta)
+    new_meta.inherit_from(base_meta)
+
+    # Namespace is inherited
+    if new_meta.name_space is NotProvided:
+        new_meta.name_space = new_class.__module__
+
+    # Type field is inherited and default if not provided
+    if new_meta.type_field is NotProvided:
+        new_meta.type_field = DEFAULT_TYPE_FIELD
+
+    return new_meta
+
+
+def _add_parent_fields_to_class(
+    new_class: "ResourceType", new_meta: ResourceOptions, parents
+):
+    """Iterate through parent attrs and yield fields."""
+    # All the fields of any type declared on this model
+    field_attr_names = {f.attname for f in new_meta.fields}
+    added_attr_names = set()
+
+    for base, base_meta in (
+        (base, getmeta(base)) for base in parents if hasattr(base, "_meta")
+    ):
+        # Check for locally declared fields that are shadowing fields on the base class
+        shadow_fields = field_attr_names.intersection(
+            f.attname for f in base_meta.all_fields
+        )
+        if shadow_fields:
+            if new_meta.allow_field_shadowing:
+                for field in (
+                    f for f in base_meta.fields if f.attname in shadow_fields
+                ):
+                    field._shadow = field
+            else:
+                raise Exception(
+                    f"Local field{'s' if len(shadow_fields) > 2 else ''} "
+                    f"{', '.join(repr(f) for f in shadow_fields)} in class {new_meta.name!r} "
+                    f"clashes with field from base class {base.__name__!r}"
+                )
+
+        # Clone fields (but filter out fields already inherited)
+        for field in (
+            field for field in base_meta.fields if field.attname not in added_attr_names
+        ):
+            added_attr_names.add(field.attname)
+            new_class.add_to_class(field.attname, copy.deepcopy(field))
+
+        # Clone any virtual fields
+        for field in base_meta.virtual_fields:
+            new_class.add_to_class(field.attname, copy.deepcopy(field))
+
+        # Add to parents list
+        new_meta.parents += base_meta.parents
+        new_meta.parents.append(base)
+
+
 class ResourceType(type):
     """Metaclass for all Resources."""
 
@@ -256,51 +358,12 @@ class ResourceType(type):
             return super_new(mcs, name, bases, attrs)
 
         # Create the class.
-        module = attrs.pop("__module__")
-        new_attrs = {"__module__": module}
+        new_class = super_new(mcs, name, bases, {"__module__": attrs.pop("__module__")})
 
-        # Required for https://bugs.python.org/issue23722
-        class_cell = attrs.pop("__classcell__", None)
-        if class_cell is not None:
-            new_attrs["__classcell__"] = class_cell
-        new_class = super_new(mcs, name, bases, new_attrs)
-
-        attr_meta = attrs.pop("Meta", None)
-        abstract = getattr(attr_meta, "abstract", False)
-        if not attr_meta:
-            meta = getattr(new_class, "Meta", None)
-        else:
-            meta = attr_meta
-        base_meta = getattr(new_class, "_meta", None)
-
-        new_meta = mcs.meta_options(meta)
-        new_class.add_to_class("_meta", new_meta)
-
-        # Namespace is inherited and default if not provided
-        if base_meta and new_meta.name_space is NotProvided:
-            new_meta.name_space = base_meta.name_space
-        if new_meta.name_space is NotProvided:
-            new_meta.name_space = module
-
-        # Type field is inherited and default if not provided
-        if base_meta and new_meta.type_field is NotProvided:
-            new_meta.type_field = base_meta.type_field
-        if new_meta.type_field is NotProvided:
-            new_meta.type_field = DEFAULT_TYPE_FIELD
-
-        # Key field is inherited
-        if base_meta and new_meta.key_field_names is None:
-            new_meta.key_field_names = base_meta.key_field_names
-
-        # Field name format is inherited
-        if new_meta.field_name_format is NotProvided:
-            new_meta.field_name_format = (
-                base_meta.field_name_format if base_meta else None
-            )
-
-        # Field sorting is inherited
-        if new_meta.field_sorting is NotProvided:
-            new_meta.field_sorting = base_meta.field_sorting if base_meta else False
+        # Create new meta instance
+        new_meta = _new_meta_instance(
+            mcs.meta_options, attrs.pop("Meta", None), new_class
+        )
 
         # Bail out early if we have already created this class.
         r = registration.get_resource(new_meta.resource_name)
@@ -311,40 +374,7 @@ class ResourceType(type):
         for obj_name, obj in attrs.items():
             new_class.add_to_class(obj_name, obj)
 
-        # Sort the fields
-        if not new_meta.field_sorting:
-            new_meta.fields = sorted(new_meta.fields, key=hash)
-
-        # All the fields of any type declared on this model
-        local_field_attnames = {f.attname for f in new_meta.fields}
-        field_attnames = set(local_field_attnames)
-
-        for base in parents:
-            try:
-                base_meta = base._meta
-            except AttributeError:
-                # Things without _meta aren't functional models, so they're
-                # uninteresting parents.
-                continue
-
-            # Check for clashes between locally declared fields and those
-            # on the base classes (we cannot handle shadowed fields at the
-            # moment).
-            for field in base_meta.all_fields:
-                if field.attname in local_field_attnames:
-                    raise Exception(
-                        f"Local field {field.attname!r} in class {name!r} clashes with "
-                        f"field of similar name from base class {base.__name__!r}"
-                    )
-            for field in base_meta.fields:
-                if field.attname not in field_attnames:
-                    field_attnames.add(field.attname)
-                    new_class.add_to_class(field.attname, copy.deepcopy(field))
-            for field in base_meta.virtual_fields:
-                new_class.add_to_class(field.attname, copy.deepcopy(field))
-
-            new_meta.parents += base_meta.parents
-            new_meta.parents.append(base)
+        _add_parent_fields_to_class(new_class, new_meta, parents)
 
         # Sort the fields
         if new_meta.field_sorting:
@@ -354,12 +384,11 @@ class ResourceType(type):
                 new_meta.fields = sorted(new_meta.fields, key=hash)
 
         # If a key_field is defined ensure it exists
-        if new_meta.key_field_names:
-            for field_name in new_meta.key_field_names:
-                if field_name not in new_meta.field_map:
-                    raise AttributeError(
-                        f"Key field `{field_name}` does not exist on this resource."
-                    )
+        for field_name in new_meta.key_field_names or ():
+            if field_name not in new_meta.field_map:
+                raise AttributeError(
+                    f"Key field `{field_name}` does not exist on this resource."
+                )
 
         # Give fields an opportunity to do additional operations after the
         # resource is full populated and ready.
@@ -367,7 +396,7 @@ class ResourceType(type):
             if hasattr(field, "on_resource_ready"):
                 field.on_resource_ready()
 
-        if abstract:
+        if new_meta.abstract:
             return new_class
 
         # Register resource
@@ -544,7 +573,7 @@ class ResourceBase:
 
 
 class Resource(ResourceBase, metaclass=ResourceType):
-    pass
+    """Resource object"""
 
 
 def resolve_resource_type(
@@ -655,9 +684,7 @@ def _resolve_type_from_resource(data, resource):
 
     if not resource_type:
         raise exceptions.ResourceException(
-            "Incoming resource does not match [{}]".format(
-                ", ".join(r for r, t in resources)
-            )
+            f"Incoming resource does not match [{', '.join(r for r, t in resources)}]"
         )
 
     return resource_type

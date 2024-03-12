@@ -11,7 +11,14 @@ from odin.resources import (
 )
 from odin.utils import getmeta, snake_to_camel
 
-from .resources import Book, BookProxy, InheritedCamelCaseResource, Library, Subscriber
+from .resources import (
+    Book,
+    BookProxy,
+    InheritedCamelCaseResource,
+    Library,
+    Subscriber,
+    AltBook,
+)
 
 
 class Author(odin.Resource):
@@ -226,6 +233,14 @@ class TestMetaOptions:
             class InvalidFieldsResource(Resource):
                 fields = odin.StringField()
 
+    def test_shadow_fields_are_identified(self):
+        target = getmeta(AltBook)
+
+        actual = target.shadow_fields
+
+        assert isinstance(actual, tuple)
+        assert [f.name for f in actual] == ["title"]
+
 
 class TestConstructionMethods:
     def test_build_object_graph_empty_dict_no_clean(self):
@@ -393,3 +408,13 @@ class TestConstructionMethods:
         actual = [field.name for field in options.fields]
 
         assert actual == ["fullName", "yearOfBirth", "emailAddress"]
+
+    def test_shadowing(self):
+        actual = AltBook(title="Foo", isbn="123456")
+
+        getmeta(actual)
+
+        book = Book(title="Foo", isbn="123456")
+
+        assert book.isbn == "123456"
+        assert book.title == "Foo"
