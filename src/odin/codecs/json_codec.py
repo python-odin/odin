@@ -1,15 +1,11 @@
 import datetime
+import json
 import typing
 import uuid
 
 from odin import ResourceAdapter, bases, resources, serializers
 from odin.exceptions import CodecDecodeError, CodecEncodeError
 from odin.utils import getmeta
-
-try:
-    import simplejson as json
-except ImportError:
-    import json
 
 LIST_TYPES = (bases.ResourceIterable, typing.ValuesView, typing.KeysView)
 JSON_TYPES = {
