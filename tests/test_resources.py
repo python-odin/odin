@@ -18,6 +18,7 @@ from .resources import (
     Library,
     Subscriber,
     AltBook,
+    LibraryBook
 )
 
 
@@ -241,6 +242,19 @@ class TestMetaOptions:
         assert isinstance(actual, tuple)
         assert [f.name for f in actual] == ["title"]
 
+    def test_abstract_option_is_set_for_abstract_resources(self):
+        target = getmeta(LibraryBook)
+
+        actual = target.abstract
+
+        assert actual is True
+
+    def test_abstract_option_is_clear_for_non_abstract_resources(self):
+        target = getmeta(Book)
+
+        actual = target.abstract
+
+        assert actual is False
 
 class TestConstructionMethods:
     def test_build_object_graph_empty_dict_no_clean(self):
