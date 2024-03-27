@@ -1,6 +1,12 @@
 2.10rc2
 =======
 
+Changes
+-------
+
+- Remove simplejson as a fallback. Is no longer required with Python 3.8 plus and
+  has worse performance that the builtin json module.
+
 Bugfix
 ------
 
