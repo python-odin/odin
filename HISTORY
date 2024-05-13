@@ -1,23 +1,11 @@
-2.10rc2
-=======
+2.10
+====
 
 Changes
 -------
 
 - Remove simplejson as a fallback. Is no longer required with Python 3.8 plus and
   has worse performance that the builtin json module.
-
-Bugfix
-------
-
-- ResourceOptions.abstract flag was not being set for abstract AnnotatedResrouces.
-
-
-2.10rc1
-=======
-
-Changes
--------
 
 - Simplify the internals of the Resource metaclass to make it easier to understand
   and maintain. Greater sharing of code between Resource and AnnotatedResource
@@ -32,6 +20,12 @@ Changes
 
   ResourceObjects now includes a shadow_fields listing all fields shadowed by this
   resource.
+
+
+Bugfix
+------
+
+- ResourceOptions.abstract flag was not being set for abstract AnnotatedResrouces.
 
 
 2.9
