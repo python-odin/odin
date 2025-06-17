@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 from functools import cached_property
-from typing import List, Optional
+from typing import List, Optional, Annotated
 
 import odin
 from odin.annotated_resource import Options
@@ -43,25 +43,25 @@ class Book(LibraryBook):
         max_length=32,
     )
     num_pages: Optional[int]
-    rrp: float = odin.Options(
-        20.4,
-        use_default_if_not_provided=True,
-    )
+    rrp: Annotated[float, Options(use_default_if_not_provided=True)] = 20.4
     fiction: bool = True
-    genre: str = Options(
-        choices=(
-            ("sci-fi", "Science Fiction"),
-            ("fantasy", "Fantasy"),
-            ("biography", "Biography"),
-            ("others", "Others"),
-            ("computers-and-tech", "Computers & technology"),
+    genre: Annotated[
+        str,
+        Options(
+            choices=(
+                ("sci-fi", "Science Fiction"),
+                ("fantasy", "Fantasy"),
+                ("biography", "Biography"),
+                ("others", "Others"),
+                ("computers-and-tech", "Computers & technology"),
+            ),
         ),
-    )
-    published: List[datetime]
+    ]
+    published: list[datetime]
     authors: List[Author] = odin.Options(
         use_container=True,
     )
-    publisher: Optional[Publisher]
+    publisher: None | Publisher
 
     A_CONST = "Foo Bar"
 
