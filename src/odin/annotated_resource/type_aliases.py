@@ -1,5 +1,7 @@
 """Type aliases for string formatted types."""
-from typing import Any, Callable, Sequence, Tuple, Union
+
+from collections.abc import Callable, Sequence
+from typing import Any
 
 __all__ = (
     "Email",
@@ -12,11 +14,7 @@ __all__ = (
 )
 
 Validator = Callable[[Any], None]
-Choices = Union[
-    Sequence[Any],
-    Sequence[Tuple[str, Any]],
-    Sequence[Tuple[str, Any, str]],
-]
+Choices = Sequence[Any] | Sequence[tuple[str, Any]] | Sequence[tuple[str, Any, str]]
 
 
 class Email(str):

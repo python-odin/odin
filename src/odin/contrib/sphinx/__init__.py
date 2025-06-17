@@ -6,7 +6,7 @@ from sphinx.application import Sphinx
 from sphinx.ext.autodoc import (
     Documenter,
     ModuleLevelDocumenter,
-    ObjectMembers,
+    ObjectMember,
     bool_option,
 )
 from sphinx.util import logging
@@ -145,7 +145,7 @@ class ResourceDocumenter(ModuleLevelDocumenter):
             "\n".join(details).split("\n"),  # Details
         )
 
-    def get_object_members(self, want_all: bool) -> tuple[bool, ObjectMembers]:
+    def get_object_members(self, want_all: bool) -> tuple[bool, ObjectMember]:
         pass  # Not required; this implementation replaces the document_members method that calls get_object_members
 
     def document_members(self, all_members: bool = False) -> None:
