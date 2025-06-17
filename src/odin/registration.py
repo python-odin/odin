@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 from odin.utils import getmeta
 
@@ -41,8 +41,8 @@ class ResourceCache:
         Get a resource by name.
 
         :param resource_name: Name of the resource to find.
-        :returns: The resource type that matches requested name (case insensitive); or :const:`None` if the requested
-            name has not been registered.
+        :returns: The resource type that matches requested name (case insensitive); or :const:`None` if the
+            requested name has not been registered.
 
         """
         return self.resources.get(resource_name.lower())
@@ -107,7 +107,8 @@ class ResourceCache:
         for base_type, field_resolver in self.field_resolvers:
             if issubclass(obj_type, base_type):
                 return field_resolver(obj_type)
-        raise KeyError("No field resolver could be found for %r" % obj_type)
+        msg = f"No field resolver could be found for {obj_type!r}"
+        raise KeyError(msg)
 
     def register_validation_error_handler(self, error_type, handler):
         """

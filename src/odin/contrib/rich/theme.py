@@ -1,11 +1,10 @@
 """Rich Theme definition."""
-from typing import Dict
 
 from rich import get_console
 from rich.style import Style
 from rich.theme import Theme
 
-ODIN_STYLES: Dict[str, Style] = {
+ODIN_STYLES: dict[str, Style] = {
     "odin.resource.name": Style(color="bright_cyan"),
     "odin.resource.error": Style(color="red", underline=True),
     "odin.field.name": Style(color="bright_blue"),

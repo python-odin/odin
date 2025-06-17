@@ -1,10 +1,9 @@
 import math
-from typing import Tuple
 
 __all__ = ("latitude", "longitude", "latlng", "point")
 
 
-def to_dms(value: float, absolute: bool = False) -> Tuple[float, float, float]:
+def to_dms(value: float, absolute: bool = False) -> tuple[float, float, float]:
     """
     Split a float value into DMS (degree, minute, second) parts
 
@@ -22,7 +21,7 @@ def to_dms(value: float, absolute: bool = False) -> Tuple[float, float, float]:
     return (-degree if invert else degree), minute, second
 
 
-def to_dm(value: float, absolute: bool = False) -> Tuple[float, float]:
+def to_dm(value: float, absolute: bool = False) -> tuple[float, float]:
     """
     Split a float value into DM (degree, minute) parts
 
@@ -45,7 +44,7 @@ class latitude(float):  # NoQA
 
     def __new__(cls, x):
         lat = float.__new__(cls, x)
-        if lat > 90.0 or lat < -90.0:
+        if lat > 90.0 or lat < -90.0:  # noqa: PLR2004
             raise ValueError(f"not in range -90.0 -> 90.0: '{x}'")
         return lat
 
@@ -61,7 +60,7 @@ class longitude(float):  # NoQA
 
     def __new__(cls, x):
         lng = float.__new__(cls, x)
-        if lng > 180.0 or lng < -180.0:
+        if lng > 180.0 or lng < -180.0:  # noqa: PLR2004
             raise ValueError(f"not in range -180.0 -> 180.0: '{x}'")
         return lng
 
@@ -70,14 +69,12 @@ class longitude(float):  # NoQA
         return result + ("W" if self < 0 else "E")
 
 
-class latlng(tuple):
-    """
-    Combination latitude and longitude value.
-    """
+class latlng(tuple):  # noqa: N801 - This is for consistency
+    """Combination latitude and longitude value."""
 
     def __new__(cls, *args):
         # Unpack a tuple, list or latlng instance.
-        if len(args) == 1 and isinstance(args[0], (tuple, list)):
+        if len(args) == 1 and isinstance(args[0], tuple | list):
             args = args[0]
         try:
             lat, lng = args
@@ -100,13 +97,14 @@ class latlng(tuple):
         return "({}, {})".format(*self)
 
 
-class point(tuple):
-    """
-    A point in cartesian space. This type can be either 2D (on a plain) or 3D (includes a z-axis).
+class point(tuple):  # noqa: N801 - This is for consistency
+    """A point in cartesian space.
+
+    This type can be either 2D (on a plain) or 3D (includes a z-axis).
     """
 
     def __new__(cls, *args):
-        if len(args) == 1 and isinstance(args[0], (tuple, list)):
+        if len(args) == 1 and isinstance(args[0], tuple | list):
             args = args[0]
         if len(args) in (2, 3):
             return tuple.__new__(cls, (float(x) for x in args))
@@ -130,7 +128,7 @@ class point(tuple):
 
     @property
     def is_3d(self):
-        return len(self) == 3
+        return len(self) == 3  # noqa: PLR2004
 
     def __repr__(self):
         return ("point({}, {}, {})" if self.is_3d else "point({}, {})").format(*self)

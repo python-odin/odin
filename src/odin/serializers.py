@@ -1,11 +1,12 @@
 import datetime
-from typing import Any, Callable, Dict, Union
+from collections.abc import Callable
+from typing import Any
 
 from odin import datetimeutil
 from odin.compatibility import deprecated
 
 StringFormatter = Callable[[Any], str]
-STRING_TYPES: Dict[type, StringFormatter] = {}
+STRING_TYPES: dict[type, StringFormatter] = {}
 
 
 def register_string_type(data_type: type, serialise_method: StringFormatter):
@@ -39,7 +40,7 @@ class DatetimeIsoFormat:
     def __init__(self, default_timezone=datetimeutil.local):
         self.default_timezone = default_timezone
 
-    def __call__(self, value: Union[datetime.time, datetime.datetime]) -> str:
+    def __call__(self, value: datetime.time | datetime.datetime) -> str:
         if value.tzinfo is None:
             value = value.replace(tzinfo=self.default_timezone)
         return value.isoformat()

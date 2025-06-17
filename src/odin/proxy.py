@@ -7,7 +7,8 @@ The resource proxy is an object that provides an alternate interface to a shadow
 This could be as a means of providing a summary object, or for adding additional properties.
 
 """
-from typing import Optional
+
+from typing import Union
 
 from odin import registration
 from odin.bases import TypedResourceIterable
@@ -25,7 +26,7 @@ class FieldProxyDescriptor:
     __slots__ = ("attname", "readonly")
 
     def __init__(self, readonly=False):
-        self.attname: Optional[str] = None
+        self.attname: str | None = None
         self.readonly = readonly
 
     def __get__(self, instance, owner):
@@ -72,7 +73,7 @@ class ResourceProxyOptions(ResourceOptions):
     def __repr__(self):
         return f"<Proxy of {getmeta(self.resource)!r}>"
 
-    def contribute_to_class(self, cls, _):
+    def contribute_to_class(self, cls, _):  # noqa: PLR0912
         cls._meta = self
         cls_name = cls.__name__
         self.name = cls_name
@@ -90,7 +91,7 @@ class ResourceProxyOptions(ResourceOptions):
             raise AttributeError("`resource` has not been defined.")
         self.shadow = shadow = getmeta(self.resource)
 
-        # Extract all meta options and fetch from shadow if not defined
+        # Extract all meta-options and fetch from shadow if not defined
         proxy_attrs = {
             "name": cls_name,
             "verbose_name": cls_name.replace("_", " ").strip("_ "),
@@ -98,31 +99,32 @@ class ResourceProxyOptions(ResourceOptions):
         for attr_name in self.META_OPTION_NAMES:
             if attr_name in meta_attrs:
                 value = meta_attrs.pop(attr_name)
+                match attr_name:
+                    case "verbose_name":
+                        # If defined generate pluralised form base on this name.
+                        if "verbose_name_plural" not in proxy_attrs:
+                            proxy_attrs["verbose_name_plural"] = value + "s"
 
-                if attr_name == "verbose_name":
-                    # If defined generate pluralised form base on this name.
-                    if "verbose_name_plural" not in proxy_attrs:
-                        proxy_attrs["verbose_name_plural"] = value + "s"
+                    case "namespace":
+                        # Allow meta to be defined as namespace
+                        proxy_attrs["name_space"] = value
 
-                elif attr_name == "namespace":
-                    # Allow meta to be defined as namespace
-                    attr_name = "name_space"
+                    case "key_field_name":
+                        # Remap to key_field names
+                        proxy_attrs["key_field_names"] = [value]
 
-                elif attr_name == "key_field_name":
-                    # Remap to key_field names
-                    attr_name = "key_field_names"
-                    value = [value]
-
-                proxy_attrs[attr_name] = value
+                    case _:
+                        proxy_attrs[attr_name] = value
 
             elif hasattr(shadow, attr_name):
                 proxy_attrs.setdefault(attr_name, getattr(shadow, attr_name))
 
         # Any leftover attributes must be invalid.
         if meta_attrs != {}:
-            raise TypeError(
+            msg = (
                 f"'class Meta' got invalid attribute(s): {','.join(meta_attrs.keys())}"
             )
+            raise TypeError(msg)
         del self.meta
 
         # Apply to self
@@ -131,16 +133,12 @@ class ResourceProxyOptions(ResourceOptions):
 
     @lazy_property
     def readonly_fields(self):
-        """
-        Fields that can only be read from.
-        """
+        """Fields that can only be read from."""
         return tuple(f for f in self.fields if f.attname in self.readonly)
 
     @lazy_property
     def init_fields(self):
-        """
-        Fields used in the resource init
-        """
+        """Fields used in the resource init."""
         return tuple(f for f in self.fields if f.attname not in self.readonly)
 
 
@@ -169,10 +167,7 @@ class ResourceProxyType(type):
         module = attrs.pop("__module__")
         new_class = super_new(mcs, name, bases, {"__module__": module})
         attr_meta = attrs.pop("Meta", None)
-        if not attr_meta:
-            meta = getattr(new_class, "Meta", None)
-        else:
-            meta = attr_meta
+        meta = attr_meta if attr_meta else getattr(new_class, "Meta", None)
 
         new_meta = mcs.meta_options(meta)
         new_class.add_to_class("_meta", new_meta)
@@ -211,11 +206,8 @@ class ResourceProxyType(type):
         if new_meta.key_field_names:
             for field_name in new_meta.key_field_names:
                 if field_name not in new_meta.field_map:
-                    raise AttributeError(
-                        "Key field {!r} is not exist on this resource.".format(
-                            field_name
-                        )
-                    )
+                    msg = f"Key field {field_name!r} is not exist on this resource."
+                    raise AttributeError(msg)
 
         # Register resource
         registration.register_resources(new_class)
@@ -238,8 +230,9 @@ class ResourceProxyIter(TypedResourceIterable):
     Returned by `ResourceProxy.proxy` if an iterable is supplied.
     """
 
-    def __init__(self, objects, resource_type):
-        # type: (Union[List[ResourceBase]], ResourceProxyBase) -> None
+    def __init__(
+        self, objects: Union[list[ResourceBase], "ResourceProxyBase"], resource_type
+    ):
         super().__init__(resource_type)
         self.objects = objects
 

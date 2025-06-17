@@ -1,5 +1,6 @@
 """Integration with Rich for nicer CLI's!"""
-from typing import Iterable, Union
+
+from collections.abc import Iterable
 
 from rich.tree import Tree
 
@@ -11,7 +12,7 @@ def _all_str(iterable: Iterable) -> bool:
     return all(isinstance(item, str) for item in iterable)
 
 
-def _validation_error_to_tree(error_messages: Union[list, dict], tree: Tree):
+def _validation_error_to_tree(error_messages: list | dict, tree: Tree):
     """Internal recursive method."""
 
     if isinstance(error_messages, dict):

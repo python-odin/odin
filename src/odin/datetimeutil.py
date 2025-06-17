@@ -3,14 +3,13 @@ import re
 import time
 from email.utils import formatdate as format_http_datetime  # noqa
 from email.utils import parsedate_tz as parse_http_datetime
-from typing import Dict, Type, Union
 
 
 class IgnoreTimezone:
     pass
 
 
-IgnorableTimezone = Union[datetime.tzinfo, Type[IgnoreTimezone]]
+IgnorableTimezone = datetime.tzinfo | type[IgnoreTimezone]
 
 
 ZERO = datetime.timedelta(0)
@@ -22,7 +21,7 @@ LOCAL_DST_DIFF = LOCAL_DST_OFFSET - LOCAL_STD_OFFSET
 
 
 # Keep for backwards compatibility
-utc = datetime.timezone.utc
+utc = datetime.UTC
 
 
 class LocalTimezone(datetime.tzinfo):
@@ -70,7 +69,8 @@ local = LocalTimezone()
 
 
 class FixedTimezone(datetime.tzinfo):
-    """A fixed timezone for when a timezone is specified by a numerical offset and no dst information is available."""
+    """A fixed timezone for when a timezone is specified by a numerical offset
+    and no dst information is available."""
 
     __slots__ = ("offset", "name")
 
@@ -106,7 +106,7 @@ class FixedTimezone(datetime.tzinfo):
     @classmethod
     def from_groups(
         cls,
-        groups: Dict[str, Union[int, datetime.tzinfo]],
+        groups: dict[str, int | datetime.tzinfo],
         default_timezone: datetime.tzinfo = utc,
     ) -> datetime.tzinfo:
         """Generate a timezone from a grouped date."""
@@ -237,10 +237,11 @@ def parse_iso_time_string(
         raise ValueError("Expected ISO 8601 formatted time string.")
 
     groups = matches.groupdict()
-    if default_timezone is IgnoreTimezone:
-        tz = None
-    else:
-        tz = FixedTimezone.from_groups(groups, default_timezone)
+    tz = (
+        None
+        if default_timezone is IgnoreTimezone
+        else FixedTimezone.from_groups(groups, default_timezone)
+    )
     return datetime.time(
         int(groups["hour"]),
         int(groups["minute"]),
@@ -262,10 +263,11 @@ def parse_iso_datetime_string(
         raise ValueError("Expected ISO 8601 formatted datetime string.")
 
     groups = matches.groupdict()
-    if default_timezone is IgnoreTimezone:
-        tz = None
-    else:
-        tz = FixedTimezone.from_groups(groups, default_timezone)
+    tz = (
+        None
+        if default_timezone is IgnoreTimezone
+        else FixedTimezone.from_groups(groups, default_timezone)
+    )
     return datetime.datetime(
         int(groups["year"]),
         int(groups["month"]),
@@ -285,8 +287,8 @@ def to_ecma_datetime_string(
 
     See ECMA international standard: ECMA-262 section 15.9.1.15
 
-    ``assume_local_time`` if true will assume the date time is in local time if the object is a naive date time object;
-        else assumes the time value is utc.
+    ``assume_local_time`` if true will assume the date time is in local time if the object is a naive date time
+        object; else assumes the time value is utc.
     """
     dt = get_tz_aware_dt(dt, default_timezone).astimezone(utc)
     return (

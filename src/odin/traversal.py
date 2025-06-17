@@ -1,6 +1,8 @@
 """Traversal of a datastructure."""
+
 import itertools
-from typing import Any, Iterable, List, NamedTuple, Optional, Sequence, Union, cast
+from collections.abc import Iterable, Sequence
+from typing import Any, NamedTuple, Optional, Union, cast
 
 import odin
 from odin.exceptions import InvalidPathError, MultipleMatchesError, NoMatchError
@@ -15,7 +17,7 @@ class _NotSupplied:
 
 
 NotSupplied = _NotSupplied()
-NotSuppliedString = Union[str, _NotSupplied]
+NotSuppliedString = str | _NotSupplied
 
 
 class PathAtom(NamedTuple):
@@ -187,9 +189,9 @@ class ResourceTraversalIterator:
 
     __slots__ = ("_resource_iters", "_field_iters", "_path", "_resource_stack")
 
-    def __init__(self, resource: Union[ResourceBase, Sequence[ResourceBase]]):
+    def __init__(self, resource: ResourceBase | Sequence[ResourceBase]):
         """Initialise instance with the initial resource or sequence of resources."""
-        if isinstance(resource, (list, tuple)):
+        if isinstance(resource, list | tuple):
             # Stack of resource iterators (starts initially with entries from the list)
             self._resource_iters = [iter([(i, r) for i, r in enumerate(resource)])]
         else:
@@ -198,7 +200,7 @@ class ResourceTraversalIterator:
         # Stack of composite fields, found on each resource, each composite field is interrogated for resources.
         self._field_iters = []
         # The "path" to the current resource.
-        self._path: List[PathAtom] = [PathAtom.create()]
+        self._path: list[PathAtom] = [PathAtom.create()]
         self._resource_stack = [None]
 
     def __iter__(self) -> Iterable[ResourceBase]:
@@ -274,7 +276,7 @@ class ResourceTraversalIterator:
         return len(self._path) - 1
 
     @property
-    def current_resource(self) -> Optional[ResourceBase]:
+    def current_resource(self) -> ResourceBase | None:
         """The current resource being traversed."""
         if self._resource_stack:
             return self._resource_stack[-1]

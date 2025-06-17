@@ -5,7 +5,7 @@ Helpers
 A collection of useful convenience methods.
 """
 
-from typing import DefaultDict, Dict, List, Union
+from collections import defaultdict
 
 from odin import BaseField
 from odin.exceptions import NON_FIELD_ERRORS, ValidationError
@@ -31,13 +31,13 @@ class ValidationErrorCollection:
 
     def __init__(self):
         """Initialise collection."""
-        self.error_messages = DefaultDict[str, List[str]](list)
+        self.error_messages = defaultdict[str, list[str]](list)
 
     def __bool__(self):
         return bool(self.messages)
 
     @property
-    def messages(self) -> Dict[str, List[str]]:
+    def messages(self) -> dict[str, list[str]]:
         """Filtered messages that strips out empty messages."""
         return {
             field_name: messages
@@ -45,7 +45,7 @@ class ValidationErrorCollection:
             if messages
         }
 
-    def add_message(self, field: Union[str, BaseField], *messages):
+    def add_message(self, field: str | BaseField, *messages):
         """Append validation error message(s)."""
         field_name = field if isinstance(field, str) else field.attname
         self.error_messages[field_name].extend(messages)
