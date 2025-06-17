@@ -101,6 +101,7 @@ class ResourceProxyOptions(ResourceOptions):
                 value = meta_attrs.pop(attr_name)
                 match attr_name:
                     case "verbose_name":
+                        proxy_attrs["verbose_name"] = value
                         # If defined generate pluralised form base on this name.
                         if "verbose_name_plural" not in proxy_attrs:
                             proxy_attrs["verbose_name_plural"] = value + "s"
