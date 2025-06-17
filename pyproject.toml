@@ -24,6 +24,7 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
@@ -34,7 +35,7 @@ packages = [
 include = ["src/odin/py.typed"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.11"
 pyyaml = {version = "*", optional = true }
 toml = {version = "*", optional = true }
 pint = {version = "*", optional = true }
@@ -42,7 +43,7 @@ arrow = {version = "*", optional = true }
 msgpack = {version = "*", optional = true }
 rich = {version = "*", optional = true }
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "^7.0"
 pytest-cov = "*"
 sphinx = "*"
@@ -60,8 +61,8 @@ rich = ["rich"]
 line-length = 88
 indent-width = 4
 
-# Assume Python 3.8
-target-version = "py38"
+# Assume Python 3.11
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["N", "F", "I", "UP", "PL", "A", "G", "S", "E", "SIM", "B"]
