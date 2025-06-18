@@ -18,14 +18,12 @@ Changes
 
 - Update testing to cover Python 3.10, 3.11, 3.12 and 3.13
 
-
 Bugfix
 ------
 
 - functools.partial can used when registering types for type resolution
 
 - Options.validators now defaults to an empty list (caused an issue adding validators)
-
 
 
 2.10
