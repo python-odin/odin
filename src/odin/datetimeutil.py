@@ -21,7 +21,7 @@ LOCAL_DST_DIFF = LOCAL_DST_OFFSET - LOCAL_STD_OFFSET
 
 
 # Keep for backwards compatibility
-utc = datetime.UTC
+utc = datetime.timezone.utc
 
 
 class LocalTimezone(datetime.tzinfo):
