@@ -172,15 +172,15 @@ SIMPLE_TYPE_MAP = {
 def _create_field_from_list_type(args: tuple, options: Options) -> BaseField:
     """Handle the various types of list."""
     if args:
-        (field,) = args
+        (tp,) = args
         # Use get origin to determine if value is also sub-scripted. This is
         # required as issubclass cannot be used on sub-scripted fields.
-        if not (get_origin(field) or field is Any) and issubclass(field, ResourceBase):
-            options.field_args["resource"] = field
+        if not (tp is Any or get_origin(tp)) and issubclass(tp, ResourceBase):
+            options.field_args["resource"] = tp
             options.field_type = ListOf
 
         else:
-            options.field_args["field"] = process_attribute(field)
+            options.field_args["field"] = process_attribute(tp)
             options.field_type = TypedListField
     else:
         options.field_type = ListField
@@ -285,6 +285,9 @@ def _create_field_for_type(tp, options: Options) -> Field:
         # Is a basic type
         if isinstance(tp, type):
             _set_options_field_type(options, tp)
+        elif tp is Any:
+            # For Python 3.10
+            options.field_type = AnyField
         else:
             msg = f"Annotation is not a type instance {tp!r}"
             raise ResourceDefError(msg)
