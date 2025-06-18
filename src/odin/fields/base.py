@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from collections.abc import Callable
 
 
 class BaseField:
@@ -22,7 +22,7 @@ class BaseField:
         self.creation_counter = BaseField.creation_counter
         BaseField.creation_counter += 1
 
-        self.attname: Optional[str] = None
+        self.attname: str | None = None
 
     def __hash__(self):
         return self.creation_counter
@@ -36,7 +36,7 @@ class BaseField:
         return f"<{path}>"
 
     def set_attributes_from_name(
-        self, attname: str, name_formatter: Optional[Callable[[str], str]] = None
+        self, attname: str, name_formatter: Callable[[str], str] | None = None
     ):
         """Pre-populate names and accepts an optional name formatter method."""
         if not self.name:
@@ -51,7 +51,7 @@ class BaseField:
         """Prepare a value for serialisation."""
         return value
 
-    def as_string(self, value) -> Optional[str]:
+    def as_string(self, value) -> str | None:
         """Generate a string representation of a field."""
         if value is not None:
             return str(value)

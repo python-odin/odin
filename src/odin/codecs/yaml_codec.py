@@ -1,6 +1,7 @@
 """Codec to load/save Yaml documents."""
+
 from io import StringIO
-from typing import TextIO, Union
+from typing import TextIO
 
 from odin import ResourceAdapter, bases, resources
 from odin.exceptions import CodecEncodeError
@@ -31,7 +32,7 @@ class OdinDumper(SafeDumper):
         include_virtual_fields: bool = True,
         include_type_field: bool = True,
         *args,
-        **kwargs
+        **kwargs,
     ):
         SafeDumper.__init__(self, stream, *args, **kwargs)
         self.include_virtual_fields = include_virtual_fields
@@ -51,17 +52,17 @@ OdinDumper.add_multi_representer(bases.ResourceIterable, OdinDumper.represent_li
 
 
 def load(
-    fp: Union[TextIO, str],
+    fp: TextIO | str,
     resource: resources.ResourceBase = None,
     full_clean: bool = True,
     default_to_not_supplied: bool = False,
 ):
     """Load a resource from a YAML encoded file.
 
-    If a ``resource`` value is supplied it is used as the base resource for the supplied YAML. I one is not supplied a
-    resource type field ``$`` is used to obtain the type represented by the dictionary. A ``ValidationError`` will be
-    raised if either of these values are supplied and not compatible. It is valid for a type to be supplied in the file
-    to be a child object from within the inheritance tree.
+    If a ``resource`` value is supplied it is used as the base resource for the supplied YAML. I one is not supplied
+    a resource type field ``$`` is used to obtain the type represented by the dictionary. A ``ValidationError`` will
+    be raised if either of these values are supplied and not compatible. It is valid for a type to be supplied in the
+    file to be a child object from within the inheritance tree.
 
     :param fp: a file pointer to read YAML data fromat.
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a

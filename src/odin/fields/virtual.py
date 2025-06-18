@@ -1,4 +1,5 @@
-from typing import Any, Callable, Sequence, Union
+from collections.abc import Callable, Sequence
+from typing import Any
 
 from odin.utils import force_tuple, getmeta
 
@@ -13,14 +14,13 @@ __all__ = (
 
 
 class VirtualField(BaseField):
-    """
-    Base class for virtual fields. A virtual fields is treated like any other field during encoding/decoding (provided
-    it can be written to).
+    """Base class for virtual fields.
+    A virtual fields is treated like any other field during encoding/decoding (provided it can be written to).
     """
 
     data_type_name = None
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         verbose_name: str = None,
         verbose_name_plural: str = None,
@@ -30,8 +30,7 @@ class VirtualField(BaseField):
         is_attribute: bool = False,
         key: bool = False,
     ):
-        """
-        Initialisation of virtual field
+        """Initialisation of virtual field
 
         :param verbose_name: Display name of field.
         :param verbose_name_plural: Plural display name of field.
@@ -63,9 +62,7 @@ class VirtualField(BaseField):
 
 
 class ConstantField(VirtualField):
-    """
-    A field that provides a constant value.
-    """
+    """A field that provides a constant value."""
 
     __slots__ = ("value",)
 
@@ -78,8 +75,7 @@ class ConstantField(VirtualField):
 
 
 class CalculatedField(VirtualField):
-    """
-    A field whose value is calculated by an expression.
+    """A field whose value is calculated by an expression.
 
     The expression should accept a single "self" parameter that is a Resource instance.
     """
@@ -95,9 +91,7 @@ class CalculatedField(VirtualField):
 
 
 def calculated_field(method=None, **kwargs):
-    """
-    Decorator that converts an instance method into a calculated field.
-    """
+    """Decorator that converts an instance method into a calculated field."""
 
     def inner(expr):
         if method.__doc__ is not None:
@@ -110,17 +104,14 @@ def calculated_field(method=None, **kwargs):
 
 
 class MultiPartField(VirtualField):
-    """
-    A field whose value is the combination of several other fields.
+    """A field whose value is the combination of several other fields.
 
     This field should be included after the field that make up the multipart value.
     """
 
     __slots__ = ("field_names", "separator", "_fields")
 
-    def __init__(
-        self, field_names: Union[str, Sequence[str]], separator: str = "", **kwargs
-    ):
+    def __init__(self, field_names: str | Sequence[str], separator: str = "", **kwargs):
         """
         :param field_names: Name(s) of fields to make up key
         :param separator: Separator to use between values.

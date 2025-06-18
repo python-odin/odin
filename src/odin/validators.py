@@ -1,10 +1,11 @@
 # This file is largely verbatim from the Django project, the wheel works well, no need to re-invent it.
 #
-# A note: to use validators from the Django project install the baldr package. Baldr is an integration between Odin and
-# the Django framework, the integration includes support for handling the Django version of the ValidationError
+# A note: to use validators from the Django project install the baldr package. Baldr is an integration between Odin
+# and the Django framework, the integration includes support for handling the Django version of the ValidationError
 # exception within Odin.
 import re
-from typing import Any, Callable, Optional, TypeVar, Union
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 from odin import exceptions
 from odin.utils.ipv6 import is_valid_ipv6_address
@@ -18,11 +19,11 @@ class RegexValidator:
     regex = r""
     message = "Enter a valid value."
     code = "invalid"
-    description: Optional[str] = None
+    description: str | None = None
 
     def __init__(
         self,
-        regex: Union[str, re.Pattern] = None,
+        regex: str | re.Pattern = None,
         message: str = None,
         code: str = None,
         description: str = None,
@@ -199,7 +200,7 @@ _A = TypeVar("_A", bound=Callable[[Any], bool])
 
 
 def simple_validator(
-    assertion: Union[_A, Callable[[_A], _A]] = None,
+    assertion: _A | Callable[[_A], _A] = None,
     *,
     message: str = "The supplied value is invalid",
     code: str = "invalid",

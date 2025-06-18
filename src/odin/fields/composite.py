@@ -1,7 +1,9 @@
 """Composite fields for handling collections of resources."""
+
 import abc
+from collections.abc import Callable, Iterator
 from functools import cached_property
-from typing import Any, Callable, Iterator, Tuple
+from typing import Any
 
 from odin import bases, exceptions
 from odin.fields import Field
@@ -66,7 +68,7 @@ class CompositeField(Field, metaclass=abc.ABCMeta):
         self.use_container = use_container
 
         if not options.get("null", False):
-            options.setdefault("default", lambda: self.of())
+            options.setdefault("default", self.of)
 
         super().__init__(**options)
 
@@ -168,7 +170,7 @@ class ListOf(CompositeField):
         """Convert raw value to a python value."""
         if value is None:
             return None
-        if isinstance(value, (list, bases.ResourceIterable)):
+        if isinstance(value, list | bases.ResourceIterable):
             super_to_python = super().to_python
 
             def process(val):
@@ -278,7 +280,7 @@ class DictOf(CompositeField):
         # This does nothing, it does prevent inspections from complaining.
         return None  # NoQA
 
-    def item_iter_from_object(self, obj) -> Iterator[Tuple[str, Any]]:
+    def item_iter_from_object(self, obj) -> Iterator[tuple[str, Any]]:
         """Iterate object returning key/value pairs"""
         resources = self.value_from_object(obj)
         if resources:

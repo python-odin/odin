@@ -1,16 +1,11 @@
 """Mapping data between resources or other object types."""
+
 import abc
+from collections.abc import Callable, Iterable, Sequence
 from typing import (
     Any,
-    Callable,
-    Dict,
-    Iterable,
     NamedTuple,
-    Optional,
-    Sequence,
-    Type,
     TypeVar,
-    Union,
 )
 
 from odin import bases as base_types
@@ -25,11 +20,11 @@ from odin.utils import cached_property, getmeta
 __all__ = ("Mapping", "map_field", "map_list_field", "assign_field", "define", "assign")
 
 _V = TypeVar("_V")
-Action = Callable[[Any, "..."], Optional[Any]]
-BoundAction = Callable[["Mapping", Any, "..."], Optional[Any]]
+Action = Callable[[Any, "..."], Any | None]
+BoundAction = Callable[["Mapping", Any, "..."], Any | None]
 
 
-def force_tuple(value: Union[_V, Sequence[_V]]) -> Sequence[_V]:
+def force_tuple(value: _V | Sequence[_V]) -> Sequence[_V]:
     """Forces a value to be a tuple."""
     if isinstance(value, tuple):
         return value
@@ -44,18 +39,18 @@ EMPTY_LIST = ()
 class FieldMapping(NamedTuple):
     """Field mapping definition"""
 
-    from_field: Union[None, str, Sequence[str]]
-    action: Union[None, Action, BoundAction]
-    to_field: Union[None, str, Sequence[str]]
+    from_field: None | str | Sequence[str]
+    action: None | Action | BoundAction
+    to_field: None | str | Sequence[str]
     to_list: bool
     bind: bool
     skip_if_none: bool
 
 
-def define(
-    from_field: Union[None, str, Sequence[str]] = None,
-    action: Union[None, Action, BoundAction] = None,
-    to_field: Union[None, str, Sequence[str]] = None,
+def define(  # noqa: PLR0913
+    from_field: None | str | Sequence[str] = None,
+    action: None | Action | BoundAction = None,
+    to_field: None | str | Sequence[str] = None,
     to_list: bool = False,
     bind: bool = False,
     skip_if_none: bool = False,
@@ -82,8 +77,8 @@ def define(
 
 
 def assign(
-    to_field: Union[str, Sequence[str]],
-    action: Union[Action, BoundAction],
+    to_field: str | Sequence[str],
+    action: Action | BoundAction,
     to_list=False,
     bind=True,
     skip_if_none=False,
@@ -112,18 +107,18 @@ class FieldResolverBase(abc.ABC):
         self.obj = obj
 
     @cached_property
-    def from_field_dict(self) -> Dict[str, Optional[Field]]:
+    def from_field_dict(self) -> dict[str, Field | None]:
         """Property accessor for the attribute dict"""
         return self.get_from_field_dict()
 
-    def get_from_field_dict(self) -> Dict[str, Optional[Field]]:
+    def get_from_field_dict(self) -> dict[str, Field | None]:
         """Return a field map of source fields consisting of an attribute and a Field object (if one is used).
 
-        For resource objects the field object would be an Odin resource field, for Django models a model field etc. If
-        you are building a generic object mapper the field object can be :const:`None`.
+        For resource objects the field object would be an Odin resource field, for Django models a model field etc.
+        If you are building a generic object mapper the field object can be :const:`None`.
 
-        The field object is used to determine certain automatic mapping operations (ie Lists of Odin resources to other
-        Odin resources).
+        The field object is used to determine certain automatic mapping operations (ie Lists of Odin resources to
+        other Odin resources).
 
         :return: Dictionary
 
@@ -131,32 +126,32 @@ class FieldResolverBase(abc.ABC):
         return self.get_field_dict()
 
     @cached_property
-    def to_field_dict(self) -> Dict[str, Optional[Field]]:
+    def to_field_dict(self) -> dict[str, Field | None]:
         """Property accessor for the attribute dict"""
         return self.get_to_field_dict()
 
-    def get_to_field_dict(self) -> Dict[str, Optional[Field]]:
+    def get_to_field_dict(self) -> dict[str, Field | None]:
         """Return a field map consisting of an attribute and a Field object (if one is used).
 
-        For resource objects the field object would be an Odin resource field, for Django models a model field etc. If
-        you are building a generic object mapper the field object can be :const:`None`.
+        For resource objects the field object would be an Odin resource field, for Django models a model field etc.
+        If you are building a generic object mapper the field object can be :const:`None`.
 
-        The field object is used to determine certain automatic mapping operations (ie Lists of Odin resources to other
-        Odin resources).
+        The field object is used to determine certain automatic mapping operations (ie Lists of Odin resources to
+        other Odin resources).
 
         :return: Dictionary
         """
         return self.get_field_dict()
 
     @abc.abstractmethod
-    def get_field_dict(self) -> Dict[str, Optional[Field]]:
+    def get_field_dict(self) -> dict[str, Field | None]:
         """Return a field map consisting of an attribute and a Field object (if one is used).
 
-        For resource objects the field object would be an Odin resource field, for Django models a model field etc. If
-        you are building a generic object mapper the field object can be :const:`None`.
+        For resource objects the field object would be an Odin resource field, for Django models a model field etc.
+        If you are building a generic object mapper the field object can be :const:`None`.
 
-        The field object is used to determine certain automatic mapping operations (ie Lists of Odin resources to other
-        Odin resources).
+        The field object is used to determine certain automatic mapping operations (ie Lists of Odin resources to
+        other Odin resources).
 
         :return: Dictionary
         """
@@ -176,13 +171,13 @@ registration.register_field_resolver(ResourceFieldResolver, ResourceBase)
 class MappingMeta(type):
     """Metaclass for all Mappings"""
 
-    def __new__(mcs, name, bases, attrs):
+    def __new__(cls, name, bases, attrs):  # noqa: PLR0912, PLR0915
         super_new = super().__new__
 
         # attrs will never be empty for classes declared in the standard way
         # (ie. with the `class` keyword). This is quite robust.
         if name == "NewBase" and attrs == {}:
-            return super_new(mcs, name, bases, attrs)
+            return super_new(cls, name, bases, attrs)
 
         parents = [
             b
@@ -192,7 +187,7 @@ class MappingMeta(type):
         ]
         if not parents:
             # If this isn't a subclass of Mapping, don't do anything special.
-            return super_new(mcs, name, bases, attrs)
+            return super_new(cls, name, bases, attrs)
 
         # Backward compatibility from_resource -> from_obj
         from_obj = attrs.setdefault("from_obj", attrs.get("from_resource"))
@@ -224,7 +219,7 @@ class MappingMeta(type):
                 f"`to_obj` {to_obj!r} does not have an attribute resolver defined."
             ) from None
 
-        def attr_mapping_to_mapping_rule(m, def_type, ref):
+        def attr_mapping_to_mapping_rule(m, def_type, ref):  # noqa PLR0912
             """Parse, validate and normalise defined mapping rules so rules can be executed without having to perform
             checks during a mapping operation."""
             to_list = False
@@ -341,7 +336,7 @@ class MappingMeta(type):
         for field in unmapped_fields:
             if field in to_fields:
                 mapping_rules.append(
-                    mcs.generate_auto_mapping(field, from_fields, to_fields)
+                    cls.generate_auto_mapping(field, from_fields, to_fields)
                 )
 
         # Update attributes
@@ -349,7 +344,7 @@ class MappingMeta(type):
         attrs["_subs"] = {}
 
         # Create mapper instance
-        mapper = super_new(mcs, name, bases, attrs)
+        mapper = super_new(cls, name, bases, attrs)
         if register_mapping:
             registration.register_mapping(mapper)
             mapper = registration.get_mapping(from_obj, to_obj)
@@ -361,7 +356,7 @@ class MappingMeta(type):
         return mapper
 
     @classmethod
-    def generate_auto_mapping(mcs, name, from_fields, to_fields):
+    def generate_auto_mapping(cls, name, from_fields, to_fields):
         """Generate the auto mapping between two fields."""
         from_field = from_fields[name]
         to_field = to_fields[name]
@@ -369,16 +364,16 @@ class MappingMeta(type):
 
         # Handle ListOf fields
         if isinstance(from_field, ListOf) and isinstance(to_field, ListOf):
-            return mcs.generate_list_to_list_mapping(name, from_field, to_field)
+            return cls.generate_list_to_list_mapping(name, from_field, to_field)
 
         # Handle DictAs fields
         elif isinstance(from_field, DictAs) and isinstance(to_field, DictAs):
-            return mcs.generate_dict_to_dict_mapping(name, from_field, to_field)
+            return cls.generate_dict_to_dict_mapping(name, from_field, to_field)
 
         return define(name, "default_action")
 
     @classmethod
-    def generate_list_to_list_mapping(mcs, name, from_field, to_field):
+    def generate_list_to_list_mapping(cls, name, from_field, to_field):
         """Generate a mapping of list to list objects."""
         try:
             mapping = registration.get_mapping(from_field.of, to_field.of)
@@ -404,7 +399,7 @@ class MappingMeta(type):
                 )
 
     @classmethod
-    def generate_dict_to_dict_mapping(mcs, name, from_field, to_field):
+    def generate_dict_to_dict_mapping(cls, name, from_field, to_field):
         try:
             mapping = registration.get_mapping(from_field.of, to_field.of)
             return define(name, MapDictAs(mapping), name, bind=True)
@@ -454,7 +449,7 @@ class CachingMappingResult(MappingResult):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._cache: Optional[list] = None
+        self._cache: list | None = None
 
     def __iter__(self):
         if self._cache is None:
@@ -479,8 +474,8 @@ class CachingMappingResult(MappingResult):
 
 
 class MappingBase:
-    from_obj: Optional[type] = None
-    to_obj: Optional[type] = None
+    from_obj: type | None = None
+    to_obj: type | None = None
 
     # Pending deprecation, move to from_obj and to_obj terminology
     from_resource = None
@@ -501,7 +496,7 @@ class MappingBase:
         source_obj,
         context=None,
         allow_subclass: bool = False,
-        mapping_result: Type[MappingResult] = None,
+        mapping_result: type[MappingResult] = None,
     ):
         """
         Apply conversion either a single resource or a list of resources using the mapping defined by this class.
@@ -511,8 +506,8 @@ class MappingBase:
         :param source_obj: The source resource, this must be an instance of :py:attr:`Mapping.from_obj`.
         :param context: An optional context value, this can be any value you want to aid in mapping
         :param allow_subclass: Allow sub-classes of mapping resource to be included.
-        :param mapping_result: If an iterable is provided as the source object a mapping result is returned of the type
-            specified is returned.
+        :param mapping_result: If an iterable is provided as the source object a mapping result is returned of
+            the type specified is returned.
 
         """
         if context is None:
@@ -561,11 +556,10 @@ class MappingBase:
                 raise TypeError(
                     f"`source_resource` parameter must be an instance of subclass of {self.from_obj}"
                 )
-        else:
-            if source_obj.__class__ is not self.from_obj:
-                raise TypeError(
-                    f"`source_resource` parameter must be an instance of {self.from_obj}"
-                )
+        elif source_obj.__class__ is not self.from_obj:
+            raise TypeError(
+                f"`source_resource` parameter must be an instance of {self.from_obj}"
+            )
         self.source = source_obj
         self.context = context or {}
         self.ignore_not_provided = ignore_not_provided
@@ -604,10 +598,11 @@ class MappingBase:
         from_fields, action, to_fields, to_list, bind, skip_if_none = mapping_rule
 
         # This is an assignment rather than a mapping
-        if from_fields is None:
-            from_values = EMPTY_LIST
-        else:
-            from_values = tuple(getattr(self.source, f) for f in from_fields)
+        from_values = (
+            EMPTY_LIST
+            if from_fields is None
+            else tuple(getattr(self.source, f) for f in from_fields)
+        )
 
         if action is None:
             to_values = from_values
@@ -616,20 +611,16 @@ class MappingBase:
                 action = getattr(self, action)
 
             try:
-                if bind:
-                    to_values = action(self, *from_values)
-                else:
-                    to_values = action(*from_values)
+                to_values = action(self, *from_values) if bind else action(*from_values)
             except TypeError as ex:
                 raise MappingExecutionError(
                     f"{ex} applying rule {mapping_rule}"
                 ) from ex
 
         if to_list:
-            if isinstance(to_values, Iterable):
-                to_values = (list(to_values),)
-            else:
-                to_values = (to_values,)
+            to_values = (
+                (list(to_values) if isinstance(to_values, Iterable) else to_values),
+            )
         else:
             to_values = force_tuple(to_values)
 
@@ -752,10 +743,10 @@ _F = TypeVar("_F", bound=Callable[..., Any])
 def map_field(
     func: _F = None,
     *,
-    from_field: Union[None, str, Sequence[str]] = None,
-    to_field: Union[None, str, Sequence[str]] = None,
+    from_field: None | str | Sequence[str] = None,
+    to_field: None | str | Sequence[str] = None,
     to_list: bool = False,
-) -> Union[_F, Callable[[_F], _F]]:
+) -> _F | Callable[[_F], _F]:
     """Field decorator for custom mappings.
 
     :param func: Method being decorator is wrapping.
@@ -776,9 +767,9 @@ def map_field(
 def map_list_field(
     func: _F = None,
     *,
-    from_field: Union[None, str, Sequence[str]] = None,
-    to_field: Union[None, str, Sequence[str]] = None,
-) -> Union[_F, Callable[[_F], _F]]:
+    from_field: None | str | Sequence[str] = None,
+    to_field: None | str | Sequence[str] = None,
+) -> _F | Callable[[_F], _F]:
     """Field decorator for custom mappings that return a single list.
 
     This mapper also allows for returning an iterator or generator that will be converted into a list during the
@@ -792,9 +783,9 @@ def map_list_field(
 def assign_field(
     func: _F = None,
     *,
-    to_field: Union[None, str, Sequence[str]] = None,
+    to_field: None | str | Sequence[str] = None,
     to_list: bool = False,
-) -> Union[_F, Callable[[_F], _F]]:
+) -> _F | Callable[[_F], _F]:
     """Field decorator for assigning a value to destination field without requiring a corresponding source field.
 
     Allows for the mapping to calculate a value based on the context or other information. Useful when a destination
@@ -812,10 +803,10 @@ def assign_field(
     return inner(func) if func else inner
 
 
-def mapping_factory(
+def mapping_factory(  # noqa: PLR0913
     from_obj: Any,
     to_obj: Any,
-    base_mapping: Type[Mapping] = Mapping,
+    base_mapping: type[Mapping] = Mapping,
     generate_reverse: bool = True,
     mappings=None,
     reverse_mappings=None,
@@ -875,7 +866,7 @@ def mapping_factory(
 def forward_mapping_factory(
     from_obj: Any,
     to_obj: Any,
-    base_mapping: Type[Mapping] = Mapping,
+    base_mapping: type[Mapping] = Mapping,
     mappings=None,
     exclude_fields=None,
 ):
@@ -894,10 +885,10 @@ def forward_mapping_factory(
     )
 
 
-def dynamic_mapping_factory(
+def dynamic_mapping_factory(  # noqa: PLR0913
     from_obj: Any,
     to_obj: Any,
-    base_mapping: Type[Mapping] = Mapping,
+    base_mapping: type[Mapping] = Mapping,
     generate_reverse: bool = False,
     mappings=None,
     reverse_mappings=None,

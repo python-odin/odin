@@ -1,15 +1,8 @@
 import copy
+from collections.abc import Callable, Sequence
 from typing import (
     Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
     TypeVar,
-    Union,
     cast,
 )
 
@@ -51,25 +44,23 @@ class ResourceOptions:
         self.meta = meta
         self.parents = []
 
-        self.fields: List[Field] = []
-        self._key_fields: List[Field] = []
-        self.virtual_fields: List[BaseField] = []
+        self.fields: list[Field] = []
+        self._key_fields: list[Field] = []
+        self.virtual_fields: list[BaseField] = []
 
-        self.name: Optional[str] = None
-        self.class_name: Optional[str] = None
-        self.name_space: Union[str, Type[NotProvided]] = NotProvided
-        self.verbose_name: Optional[str] = None
-        self.verbose_name_plural: Optional[str] = None
+        self.name: str | None = None
+        self.class_name: str | None = None
+        self.name_space: str | type[NotProvided] = NotProvided
+        self.verbose_name: str | None = None
+        self.verbose_name_plural: str | None = None
         self.abstract: bool = False
-        self.doc_group: Optional[str] = None
-        self.type_field: Union[str, NotProvidedType] = NotProvided
-        self.key_field_names: Optional[Sequence[str]] = None
-        self.field_name_format: Union[
-            Callable[[str], str], NotProvidedType
-        ] = NotProvided
-        self.field_sorting: Union[bool, NotProvidedType] = NotProvided
-        self.user_data: Optional[Any] = None
-        self.allow_field_shadowing: Union[bool, NotProvidedType] = NotProvided
+        self.doc_group: str | None = None
+        self.type_field: str | NotProvidedType = NotProvided
+        self.key_field_names: Sequence[str] | None = None
+        self.field_name_format: Callable[[str], str] | NotProvidedType = NotProvided
+        self.field_sorting: bool | NotProvidedType = NotProvided
+        self.user_data: Any | None = None
+        self.allow_field_shadowing: bool | NotProvidedType = NotProvided
 
         self._cache = {}
 
@@ -95,14 +86,14 @@ class ResourceOptions:
 
                     # Allow meta to be defined as namespace
                     if attr_name == "namespace":
-                        attr_name = "name_space"
+                        self.name_space = value
 
                     # Allow key_field_names to be defined as key_field_name
                     elif attr_name == "key_field_name":
-                        attr_name = "key_field_names"
-                        value = [value]
+                        self.key_field_names = [value]
 
-                    setattr(self, attr_name, value)
+                    else:
+                        setattr(self, attr_name, value)
 
                 elif hasattr(self.meta, attr_name):
                     setattr(self, attr_name, getattr(self.meta, attr_name))
@@ -214,7 +205,7 @@ class ResourceOptions:
         )
 
     @cached_property
-    def field_map(self) -> Dict[str, Field]:
+    def field_map(self) -> dict[str, Field]:
         """Mapping of attribute name to field."""
         return {f.attname: f for f in self.fields}
 
@@ -234,7 +225,7 @@ class ResourceOptions:
         return tuple(f for f in self.fields if not f.is_attribute)
 
     @cached_property
-    def element_field_map(self) -> Dict[str, Field]:
+    def element_field_map(self) -> dict[str, Field]:
         """Mapping of attribute name to field for element fields."""
         return {f.attname: f for f in self.element_fields}
 
@@ -269,8 +260,8 @@ MOT = TypeVar("MOT", bound=ResourceOptions)
 
 
 def _new_meta_instance(
-    meta_options_type: Type[MOT],
-    meta_def: Optional[object],
+    meta_options_type: type[MOT],
+    meta_def: object | None,
     new_class: "ResourceType",
 ) -> MOT:
     """Instantiate meta options instance and handle inheritance of required fields."""
@@ -312,11 +303,12 @@ def _add_parent_fields_to_class(
                 ):
                     field._shadow = field
             else:
-                raise Exception(
-                    f"Local field{'s' if len(shadow_fields) > 2 else ''} "
+                msg = (
+                    f"Local field{'s' if len(shadow_fields) > 1 else ''} "
                     f"{', '.join(repr(f) for f in shadow_fields)} in class {new_meta.name!r} "
                     f"clashes with field from base class {base.__name__!r}"
                 )
+                raise Exception(msg)
 
         # Clone fields (but filter out fields already inherited)
         for field in (
@@ -432,10 +424,10 @@ class ResourceBase:
         fields_iter = iter(meta.init_fields)
         if args_len:
             if not kwargs:
-                for val, field in zip(args, fields_iter):
+                for val, field in zip(args, fields_iter, strict=False):
                     setattr(self, field.attname, val)
             else:
-                for val, field in zip(args, fields_iter):
+                for val, field in zip(args, fields_iter, strict=False):
                     setattr(self, field.attname, val)
                     kwargs.pop(field.name, None)
 
@@ -468,9 +460,10 @@ class ResourceBase:
         """Convert this resource into a `dict` of field_name/value pairs.
 
         .. note::
-            This method is not recursive, it only operates on this single resource, any sub resources are returned as
-            is. The use case that prompted the creation of this method is within codecs when a resource must be
-            converted into a type that can be serialised, these codecs then operate recursively on the returned `dict`.
+            This method is not recursive, it only operates on this single resource, any sub resources are returned
+            as is. The use case that prompted the creation of this method is within codecs when a resource must be
+            converted into a type that can be serialised, these codecs then operate recursively on the returned
+            `dict`.
 
         :param include_virtual: Include virtual fields when generating `dict`.
         """
@@ -481,8 +474,8 @@ class ResourceBase:
     def convert_to(self, to_resource, context=None, ignore_fields=None, **field_values):
         """Convert this resource into a specified resource.
 
-        A mapping must be defined for conversion between this resource and to_resource or an exception will be raised.
-
+        A mapping must be defined for conversion between this resource and to_resource or an exception will be
+        raised.
         """
         mapping = registration.get_mapping(self.__class__, to_resource)
         ignore_fields = ignore_fields or []
@@ -577,8 +570,8 @@ class Resource(ResourceBase, metaclass=ResourceType):
 
 
 def resolve_resource_type(
-    resource: Type[ResourceBase],
-) -> Tuple[Union[str, Type[ResourceBase]], str, str]:
+    resource: type[ResourceBase],
+) -> tuple[str | type[ResourceBase], str, str]:
     if isinstance(resource, type) and issubclass(resource, ResourceBase):
         meta = getmeta(resource)
         return meta.resource_name, meta.type_field, meta.name_space
@@ -616,13 +609,14 @@ def create_resource_from_iter(
 
     attrs = []
     errors = {}
-    for f, value in zip(fields, i):
-        if value is NotProvided:
+    for f, raw_value in zip(fields, i, strict=False):
+        value = raw_value
+        if raw_value is NotProvided:
             if not default_to_not_provided:
                 value = f.get_default() if f.use_default_if_not_provided else None
         else:
             try:
-                value = f.to_python(value)
+                value = f.to_python(raw_value)
             except ValidationError as ve:
                 errors[f.name] = ve.error_messages
         attrs.append(value)
@@ -649,7 +643,7 @@ def _resolve_type_from_resource(data, resource):
     resource_type = None
 
     # Convert to single resource then resolve document type
-    if isinstance(resource, (tuple, list)):
+    if isinstance(resource, tuple | list):
         resources = (resolve_resource_type(r) for r in resource)
     else:
         resources = [resolve_resource_type(resource)]
@@ -708,8 +702,8 @@ def _resolve_type_from_data(data):
 
 
 def create_resource_from_dict(
-    d: Dict[str, Any],
-    resource: Type[R] = None,
+    d: dict[str, Any],
+    resource: type[R] = None,
     full_clean: bool = True,
     copy_dict: bool = True,
     default_to_not_provided: bool = False,
@@ -718,8 +712,8 @@ def create_resource_from_dict(
 
     :param d: dictionary of data.
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
-        resource. If a list is supplied the first item will be used if a resource type is not supplied; this could also
-        be a parent(s) of any resource defined by the dict.
+        resource. If a list is supplied the first item will be used if a resource type is not supplied; this could
+        also be a parent(s) of any resource defined by the dict.
     :param full_clean: Perform a full clean as part of the creation.
     :param copy_dict: Use a copy of the input dictionary rather than destructively processing the input dict.
     :param default_to_not_provided: If a value is not supplied keep the value as NOT_PROVIDED. This is used
@@ -731,10 +725,11 @@ def create_resource_from_dict(
     if copy_dict:
         d = d.copy()
 
-    if resource:
-        resource_type = _resolve_type_from_resource(d, resource)
-    else:
-        resource_type = _resolve_type_from_data(d)
+    resource_type = (
+        _resolve_type_from_resource(d, resource)
+        if resource
+        else _resolve_type_from_data(d)
+    )
 
     attrs = []
     errors = {}
@@ -771,8 +766,8 @@ def create_resource_from_dict(
 
 
 def build_object_graph(
-    d: Dict[str, Any],
-    resource: Optional[Type[R]] = None,
+    d: dict[str, Any],
+    resource: type[R] | None = None,
     full_clean: bool = True,
     copy_dict: bool = True,
     default_to_not_supplied: bool = False,
@@ -781,12 +776,12 @@ def build_object_graph(
 
     :param d: Dictionary to build from
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
-        resource. If a list is supplied the first item will be used if a resource type is not supplied.
-    :param full_clean: Perform a full clean once built; default is True
-    :param copy_dict: Clone the dict before doing build; default is True
-    :param default_to_not_supplied: If a value is not supplied keep the value as NOT_PROVIDED. This is used
+        resource. If a list is supplied, the first item will be used if a resource type is not supplied.
+    :param full_clean: Perform a full clean once built; default is `True`
+    :param copy_dict: Clone the dict before doing build; default is `True`
+    :param default_to_not_supplied: If a value is not supplied, keep the value as NOT_PROVIDED. This is used
         to support merging an updated value.
-    :raises ValidationError: During building of the object graph and issues discovered are raised as a ValidationError.
+    :raises ValidationError: When building the object graph, any issues discovered are raised as a ValidationError.
     """
     if isinstance(d, dict):
         return create_resource_from_dict(

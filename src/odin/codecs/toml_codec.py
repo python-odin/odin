@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Sequence, Type, Union
+from collections.abc import Sequence
 
 from odin import ResourceAdapter, resources
 from odin.exceptions import CodecDecodeError
@@ -21,10 +21,10 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
     """
     Load a resource from a TOML encoded file.
 
-    If a ``resource`` value is supplied it is used as the base resource for the supplied YAML. If one is not supplied a
-    resource type field ``$`` is used to obtain the type represented by the dictionary. A ``ValidationError`` will be
-    raised if either of these values are supplied and not compatible. It is valid for a type to be supplied in the file
-    to be a child object from within the inheritance tree.
+    If a ``resource`` value is supplied it is used as the base resource for the supplied YAML. If one is not
+    supplied, a resource type field ``$`` is used to obtain the type represented by the dictionary. A
+    ``ValidationError`` will be raised if either of these values are supplied and not compatible. It is valid for a
+    type to be supplied in the file to be a child object from within the inheritance tree.
 
     :param fp: a file pointer to read TOML data format.
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
@@ -53,10 +53,10 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
 def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
     """Load a resource from a TOML encoded string.
 
-    If a ``resource`` value is supplied it is used as the base resource for the supplied YAML. If one is not supplied a
-    resource type field ``$`` is used to obtain the type represented by the dictionary. A ``ValidationError`` will be
-    raised if either of these values are supplied and not compatible. It is valid for a type to be supplied in the file
-    to be a child object from within the inheritance tree.
+    If a ``resource`` value is supplied it is used as the base resource for the supplied YAML. If one is not
+    supplied, a resource type field ``$`` is used to obtain the type represented by the dictionary. A
+    ``ValidationError`` will be raised if either of these values are supplied and not compatible. It is valid for a
+    type to be supplied in the file to be a child object from within the inheritance tree.
 
     :param s: a string containing TOML.
     :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
@@ -90,7 +90,7 @@ class OdinEncoder(toml.TomlEncoder):
         include_virtual_fields: bool = True,
         include_type_field: bool = True,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.include_virtual_fields = include_virtual_fields
@@ -104,7 +104,7 @@ class OdinEncoder(toml.TomlEncoder):
         return resource_dict
 
     def dump_value(self, v):
-        if isinstance(v, (ResourceBase, ResourceAdapter)):
+        if isinstance(v, ResourceBase | ResourceAdapter):
             resource_dict = self.resource_to_dict(v)
             return self.dump_inline_table(resource_dict)
 
@@ -113,21 +113,21 @@ class OdinEncoder(toml.TomlEncoder):
         return super().dump_value(v)
 
 
-RT = Union[
-    ResourceBase,
-    ResourceAdapter,
-    Sequence[ResourceBase],
-    Sequence[ResourceAdapter],
-    Dict,
-]
+RT = (
+    ResourceBase
+    | ResourceAdapter
+    | Sequence[ResourceBase]
+    | Sequence[ResourceAdapter]
+    | dict,
+)
 
 
 def dump(
     resource: RT,
     fp,
-    encoder: Optional[Type[OdinEncoder]] = None,
+    encoder: type[OdinEncoder] | None = None,
     include_virtual_fields: bool = True,
-    **kwargs
+    **kwargs,
 ):
     """Dump to a TOML encoded file.
 
@@ -139,7 +139,7 @@ def dump(
     """
     encoder = (encoder or OdinEncoder)(include_virtual_fields, **kwargs)
 
-    if isinstance(resource, (ResourceBase, ResourceAdapter)):
+    if isinstance(resource, ResourceBase | ResourceAdapter):
         resource = encoder.resource_to_dict(resource)
 
     toml.dump(resource, fp, encoder)
@@ -147,9 +147,9 @@ def dump(
 
 def dumps(
     resource: RT,
-    encoder: Optional[Type[OdinEncoder]] = None,
+    encoder: type[OdinEncoder] | None = None,
     include_virtual_fields: bool = True,
-    **kwargs
+    **kwargs,
 ) -> str:
     """Dump to a TOML encoded file.
 
@@ -161,7 +161,7 @@ def dumps(
     """
     encoder = (encoder or OdinEncoder)(include_virtual_fields, **kwargs)
 
-    if isinstance(resource, (ResourceBase, ResourceAdapter)):
+    if isinstance(resource, ResourceBase | ResourceAdapter):
         resource = encoder.resource_to_dict(resource)
 
     return toml.dumps(resource, encoder)

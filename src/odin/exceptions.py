@@ -1,5 +1,6 @@
 """Exceptions raised by Odin."""
-from typing import Dict, Final, List, Union
+
+from typing import Final
 
 from odin import registration
 
@@ -13,7 +14,7 @@ class ValidationError(Exception):
     def for_field(
         cls,
         field_name: str,
-        message: Union[str, List[str]],
+        message: str | list[str],
         *,
         code: str = None,
         params=None,
@@ -30,7 +31,7 @@ class ValidationError(Exception):
         return cls({field_name: message}, code, params)
 
     def __init__(
-        self, message: Union[Dict[str, List], List, str], code: str = None, params=None
+        self, message: dict[str, list] | list | str, code: str = None, params=None
     ):
         """
         ValidationError can be passed any object that can be printed (usually
@@ -63,7 +64,7 @@ class ValidationError(Exception):
         return f"ValidationError({self})"
 
     @property
-    def error_messages(self) -> Union[List, Dict[str, List]]:
+    def error_messages(self) -> list | dict[str, list]:
         """Return error messages."""
         if hasattr(self, "message_dict"):
             return self.message_dict
@@ -72,7 +73,7 @@ class ValidationError(Exception):
 
     def update_error_dict(
         self,
-        error_dict: Dict[str, Union[List, Dict[str, List]]],
+        error_dict: dict[str, list | dict[str, list]],
     ):
         """Update a dict with errors from this exception."""
         if hasattr(self, "message_dict"):

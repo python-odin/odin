@@ -1,11 +1,12 @@
 """Sphinx integration to document resources."""
-from typing import Any, Tuple
+
+from typing import Any
 
 from sphinx.application import Sphinx
 from sphinx.ext.autodoc import (
     Documenter,
     ModuleLevelDocumenter,
-    ObjectMembers,
+    ObjectMember,
     bool_option,
 )
 from sphinx.util import logging
@@ -102,7 +103,7 @@ class ResourceDocumenter(ModuleLevelDocumenter):
             )
             logger.debug("Error rendering validator.", exc_info=True)
 
-    def build_field_triple(self, field) -> Tuple:
+    def build_field_triple(self, field) -> tuple:
         """
         Build a field triple of (name, data_type, details)
 
@@ -144,8 +145,8 @@ class ResourceDocumenter(ModuleLevelDocumenter):
             "\n".join(details).split("\n"),  # Details
         )
 
-    def get_object_members(self, want_all: bool) -> Tuple[bool, ObjectMembers]:
-        pass  # Not required as this implementation replaces the document_members method that calls get_object_members
+    def get_object_members(self, want_all: bool) -> tuple[bool, ObjectMember]:
+        pass  # Not required; this implementation replaces the document_members method that calls get_object_members
 
     def document_members(self, all_members: bool = False) -> None:
         data_table = [
@@ -162,7 +163,7 @@ class ResourceDocumenter(ModuleLevelDocumenter):
             for name, data_type, details in data_table:
                 name_len = max(len(name), name_len)
                 data_type_len = max(len(data_type), data_type_len)
-                details_len = max(max(len(value) for value in details), details_len)
+                details_len = max(*(len(value) for value in details), details_len)
             name_len += 2  # Padding
             data_type_len += 2  # Padding
             details_len += 2  # Padding

@@ -4,8 +4,9 @@ import enum
 import pathlib
 import re
 import uuid
+from collections.abc import Sequence
 from functools import cached_property
-from typing import Any, Dict, Optional, Sequence, Tuple, Type, TypeVar
+from typing import Any, TypeVar
 
 from odin import datetimeutil, exceptions, registration
 from odin.utils import getmeta
@@ -63,7 +64,7 @@ class NotProvided:
     pass
 
 
-NotProvidedType = Type[NotProvided]
+NotProvidedType = type[NotProvided]
 
 # Backwards compatibility
 NOT_PROVIDED = NotProvided
@@ -93,18 +94,18 @@ class Field(BaseField):
         "resource",
     )
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         verbose_name: str = None,
         verbose_name_plural: str = None,
         name: str = None,
         null: bool = False,
-        choices: Optional[Sequence[Tuple[Any, str]]] = None,
+        choices: Sequence[tuple[Any, str]] | None = None,
         use_default_if_not_provided: bool = False,
         default=NotProvided,
         help_text: str = "",
         validators: Sequence = None,
-        error_messages: Dict[str, str] = None,
+        error_messages: dict[str, str] = None,
         is_attribute: bool = False,
         doc_text: str = "",
         key: bool = False,
@@ -137,11 +138,13 @@ class Field(BaseField):
         self.is_attribute = is_attribute
         self.key = key
 
-        # Check the choices match the spec
+        # Check choice's match the spec
         if choices and not all(
-            isinstance(choice, (tuple, list)) and len(choice) == 2 for choice in choices
+            isinstance(choice, tuple | list) and len(choice) == 2  # noqa: PLR2004
+            for choice in choices
         ):
-            raise ValueError("`choices` is required to be a value, doc string pair")
+            msg = "`choices` is required to be a value, doc string pair"
+            raise ValueError(msg)
         self.choices = choices
 
         messages = {}
@@ -166,7 +169,7 @@ class Field(BaseField):
             return tuple(c[0] for c in self.choices)
 
     @property
-    def choices_doc_text(self) -> Sequence[Tuple[str, str]]:
+    def choices_doc_text(self) -> Sequence[tuple[str, str]]:
         """Choices converted for documentation purposes."""
         return self.choices
 
@@ -693,7 +696,7 @@ class ListField(Field):
     def to_python(self, value):
         if value is None:
             return value
-        if isinstance(value, (list, tuple)):
+        if isinstance(value, list | tuple):
             return value
         msg = self.error_messages["invalid"]
         raise exceptions.ValidationError(msg)
@@ -718,7 +721,7 @@ class TypedListField(ListField):
         super().__init__(**options)
 
     @property
-    def choices_doc_text(self) -> Sequence[Tuple[Any, str]]:
+    def choices_doc_text(self) -> Sequence[tuple[Any, str]]:
         """Generate choices for documentation purposes."""
         if self.choices:
             return self.choices
@@ -784,7 +787,7 @@ class TypedListField(ListField):
 
     def prepare(self, value):
         """Prepare list for serialisation."""
-        if isinstance(value, (tuple, list)):
+        if isinstance(value, tuple | list):
             prepare = self.field.prepare
             return [prepare(i) for i in value]
         return value
@@ -816,7 +819,9 @@ class TypedDictField(DictField):
 
         return f"Dict<{key_type_name}, {value_type_name}>"
 
-    def __init__(self, value_field, key_field=StringField(), **options):
+    default_key_field = StringField()
+
+    def __init__(self, value_field, key_field=default_key_field, **options):
         self.key_field = key_field
         self.value_field = value_field
         super().__init__(**options)
@@ -832,7 +837,7 @@ class TypedDictField(DictField):
         value_errors = {}
         for key, val in value.items():
             try:
-                key = self.key_field.to_python(key)
+                key = self.key_field.to_python(key)  # noqa: PLW2901
             except exceptions.ValidationError as ve:
                 key_errors += ve.error_messages
 
@@ -893,7 +898,7 @@ class TypedDictField(DictField):
         value_errors = {}
         for key, val in value.items():
             try:
-                key = self.key_field.run_validators(key)
+                key = self.key_field.run_validators(key)  # noqa: PLW2901
             except exceptions.ValidationError as ve:
                 key_errors += ve.error_messages
 
@@ -996,7 +1001,7 @@ class UUIDField(Field):
             return value
 
         elif isinstance(value, bytes):
-            if len(value) == 16:
+            if len(value) == 16:  # noqa: PLR2004 length of a valid UUID
                 return uuid.UUID(bytes=value)
 
             try:
@@ -1010,7 +1015,7 @@ class UUIDField(Field):
             except ValueError as e:
                 raise exceptions.ValidationError(e.args[0], code="invalid") from None
 
-        elif isinstance(value, (tuple, list)):
+        elif isinstance(value, tuple | list):
             try:
                 return uuid.UUID(fields=value)
             except ValueError as e:
@@ -1033,7 +1038,7 @@ class EnumField(Field):
 
     data_type_name = "Enum"
 
-    def __init__(self, enum_type: Type[ET], **options):
+    def __init__(self, enum_type: type[ET], **options):
         """Initialise the field."""
 
         # Generate choices structure from choices
@@ -1048,7 +1053,7 @@ class EnumField(Field):
         """Choices converted for documentation purposes."""
         return tuple((v.value, n) for v, n in self.choices)
 
-    def to_python(self, value) -> Optional[ET]:
+    def to_python(self, value) -> ET | None:
         """Convert the value to an enum."""
         if value is None:
             return
@@ -1066,7 +1071,7 @@ class EnumField(Field):
                 self.error_messages["invalid_choice"] % value
             ) from None
 
-    def prepare(self, value: Optional[ET]):
+    def prepare(self, value: ET | None):
         """Prepare enum for serialisation."""
         if (value is not None) and isinstance(value, self.enum_type):
             return value.value
@@ -1080,7 +1085,7 @@ class PathField(Field):
     }
     data_type_name = "Path"
 
-    def to_python(self, value) -> Optional[pathlib.Path]:
+    def to_python(self, value) -> pathlib.Path | None:
         """Convert the value to a Path."""
         if value is None:
             return
@@ -1094,7 +1099,7 @@ class PathField(Field):
                 self.error_messages["invalid"] % value
             ) from None
 
-    def prepare(self, value: Optional[str]):
+    def prepare(self, value: str | None):
         """Prepare path for serialisation."""
         if isinstance(value, pathlib.Path):
             return value.as_posix()
@@ -1115,7 +1120,7 @@ class RegexField(Field):
     }
     data_type_name = "Regex"
 
-    def to_python(self, value) -> Optional[re.Pattern]:
+    def to_python(self, value) -> re.Pattern | None:
         """Convert the value to a regular expression."""
         if value is None:
             return
@@ -1133,7 +1138,7 @@ class RegexField(Field):
                 self.error_messages["syntax"] % (value, ex)
             ) from None
 
-    def prepare(self, value: Optional[re.Pattern]):
+    def prepare(self, value: re.Pattern | None):
         """Prepare regular expression for serialisation."""
         if isinstance(value, re.Pattern):
             return value.pattern

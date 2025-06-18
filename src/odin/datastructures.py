@@ -5,10 +5,11 @@ Odin Data-structures
 Custom data-structures used within odin.
 
 """
-from typing import Iterable, List
+
+from collections.abc import Iterable
 
 
-class CaseLessStringList(List[str]):
+class CaseLessStringList(list[str]):
     """List that assumes all elements are lists and performs case less comparisons on them.
 
     Like a standard list this structure makes a copy of the existing data, while converting all entries to upper case

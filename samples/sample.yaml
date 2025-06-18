@@ -1,0 +1,10 @@
+  name: "Sample Pipeline"
+  config: ""
+  approach:
+    $: org.odin.sample.DynamicApproach
+    max: 10
+    min: 1
+
+  processes:
+    -
+  $: org.odin.sample.Pipeline

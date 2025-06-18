@@ -12,7 +12,7 @@ utilised unchanged.
 
 """
 
-from typing import Any, Dict, Iterable, Tuple, Type
+from collections.abc import Iterable
 
 from odin import registration
 from odin.fields import BaseField
@@ -35,8 +35,9 @@ __all__ = (
 )
 
 
-def _iterate_attrs(attrs: Dict[str, Any]) -> Iterable[Tuple[str, BaseField]]:
+def _iterate_attrs(attrs: dict[str, ...]) -> Iterable[tuple[str, BaseField]]:
     """Iterate through attributes and combine with annotations."""
+
     annotations = attrs.pop("__annotations__", None) or {}
 
     # Yield any annotations processed into field instances
@@ -56,7 +57,7 @@ class AnnotatedResourceType(type):
         name: str,
         bases,
         attrs: dict,
-        meta_options_type: Type[MOT] = ResourceOptions,
+        meta_options_type: type[MOT] = ResourceOptions,
         abstract: bool = False,
     ):
         super_new = super().__new__
@@ -93,8 +94,8 @@ class AnnotatedResourceType(type):
             return r
 
         # Add all field attributes to the class.
-        for name, field in _iterate_attrs(attrs):
-            new_class.add_to_class(name, field)
+        for field_name, field in _iterate_attrs(attrs):
+            new_class.add_to_class(field_name, field)
 
         _add_parent_fields_to_class(new_class, new_meta, parents)
 

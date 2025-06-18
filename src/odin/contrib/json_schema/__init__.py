@@ -1,6 +1,8 @@
 """JSON schema support for Odin."""
+
 import json
-from typing import Any, Dict, Final, List, Sequence, TextIO, Tuple, Type, Union
+from collections.abc import Sequence
+from typing import Any, Final, TextIO
 
 import odin
 import odin.validators
@@ -42,14 +44,14 @@ class JSONSchema:
     """JSON Schema representation of an Odin resource."""
 
     def __init__(
-        self, resource: Type[ResourceBase], *, require_type_field: bool = True
+        self, resource: type[ResourceBase], *, require_type_field: bool = True
     ):
         self.resource = resource
         self.require_type_field = require_type_field
 
         self.defs = {}
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert the schema to a dictionary."""
         meta = getmeta(self.resource)
 
@@ -62,7 +64,7 @@ class JSONSchema:
 
         return schema
 
-    def _resource_to_schema(self, meta: ResourceOptions) -> Dict[str, Any]:
+    def _resource_to_schema(self, meta: ResourceOptions) -> dict[str, Any]:
         """Convert a resource to a JSON schema."""
         schema = {
             "type": "object",
@@ -79,14 +81,14 @@ class JSONSchema:
             required.append(meta.type_field)
         return required
 
-    def _fields_to_properties(self, meta: ResourceOptions) -> Dict[str, Any]:
+    def _fields_to_properties(self, meta: ResourceOptions) -> dict[str, Any]:
         """Convert a set of fields to JSON schema properties."""
         properties = {meta.type_field: {"const": meta.resource_name}}
         for field in meta.fields:
             properties[field.name] = self._field_to_schema(field)
         return properties
 
-    def _field_to_schema(self, field: odin.Field) -> Dict[str, Any]:
+    def _field_to_schema(self, field: odin.Field) -> dict[str, Any]:
         """Convert a field to a JSON schema."""
         if isinstance(field, odin.CompositeField):
             schema = self._composite_field_to_schema(field)
@@ -103,9 +105,7 @@ class JSONSchema:
 
         return schema
 
-    def _field_type(
-        self, field: odin.Field
-    ) -> Tuple[Union[str, List[str]], Dict[str, Any]]:
+    def _field_type(self, field: odin.Field) -> tuple[str | list[str], dict[str, Any]]:
         """Get the type of a field."""
 
         field_type = type(field)
@@ -139,7 +139,7 @@ class JSONSchema:
 
         return ([type_name, "null"] if field.null else type_name), schema
 
-    def _composite_field_to_schema(self, field: odin.CompositeField) -> Dict[str, Any]:
+    def _composite_field_to_schema(self, field: odin.CompositeField) -> dict[str, Any]:
         """Convert a composite field to a JSON schema."""
 
         # Handle abstract resources
@@ -165,7 +165,7 @@ class JSONSchema:
 
         return schema
 
-    def _schema_def(self, resource: Type[ResourceBase]) -> Dict[str, str]:
+    def _schema_def(self, resource: type[ResourceBase]) -> dict[str, str]:
         """Convert a resource to a JSON schema definition."""
         meta = getmeta(resource)
         ref = meta.resource_name
@@ -175,13 +175,13 @@ class JSONSchema:
         return {"$ref": f"#/$defs/{ref}"}
 
 
-def dumps(resource: Type[ResourceBase]) -> str:
+def dumps(resource: type[ResourceBase]) -> str:
     """Dump a JSON schema for the given resource."""
     schema = JSONSchema(resource).to_dict()
     return json.dumps(schema, indent=2)
 
 
-def dump(resource: Type[ResourceBase], fp: TextIO):
+def dump(resource: type[ResourceBase], fp: TextIO):
     """Dump a JSON schema for the given resource."""
     schema = JSONSchema(resource).to_dict()
     json.dump(schema, fp, indent=2)

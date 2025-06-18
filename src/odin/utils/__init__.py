@@ -1,19 +1,6 @@
 import re
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-)
-
-from odin.compatibility import deprecated
+from collections.abc import Iterable, Iterator, Sequence
+from typing import Any, TypeVar
 
 _CAMEL_CASE_RE = re.compile(r"[A-Z]")
 _LOWER_UNDERSCORE_CASE_RE = re.compile(r"_([a-z])")
@@ -99,23 +86,6 @@ class cached_property:  # noqa - Made to match property builtin
         return value
 
 
-@deprecated("Use the standard library functools.cached_property")
-class lazy_property:  # noqa - Made to match the property builtin
-    """The bottle cached property, requires an alternate name so as not to
-    clash with existing cached_property behaviour
-    """
-
-    def __init__(self, func):
-        self.func = func
-        self.__doc__ = func.__doc__
-
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        value = instance.__dict__[self.func.__name__] = self.func(instance)
-        return value
-
-
 EMPTY = []
 
 
@@ -124,7 +94,7 @@ def filter_fields(
     include: Iterable[str] = None,
     exclude: Iterable[str] = None,
     readonly: Iterable[str] = None,
-) -> Tuple[Set[str], Set[str]]:
+) -> tuple[set[str], set[str]]:
     """
     Filter a field iterable using the include/exclude/readonly options
 
@@ -182,8 +152,8 @@ def field_iter(resource, include_virtual: bool = True) -> Iterator:
 
 
 def field_iter_items(
-    resource, fields: Optional[Sequence] = None
-) -> Iterator[Tuple[str, Any]]:
+    resource, fields: Sequence | None = None
+) -> Iterator[tuple[str, Any]]:
     """Return an iterator that yields fields and their values from a resource.
 
     :param resource: Resource to iterate over.
@@ -198,7 +168,7 @@ def field_iter_items(
         yield f, f.prepare(f.value_from_object(resource))
 
 
-def virtual_field_iter_items(resource) -> Iterator[Tuple[str, Any]]:
+def virtual_field_iter_items(resource) -> Iterator[tuple[str, Any]]:
     """Return an iterator that yields virtual fields and their values from a resource.
 
     :param resource: Resource to iterate over.
@@ -209,8 +179,8 @@ def virtual_field_iter_items(resource) -> Iterator[Tuple[str, Any]]:
     return field_iter_items(resource, meta.virtual_fields)
 
 
-def attribute_field_iter_items(resource) -> Iterator[Tuple[str, Any]]:
-    """Return an iterator that yields fields and their values from a resource that have the attribute flag set.
+def attribute_field_iter_items(resource) -> Iterator[tuple[str, Any]]:
+    """Return an iterator that yields fields and their values from a resource that have the attribute flag.
 
     :param resource: Resource to iterate over.
     :returns: an iterator that returns (field, value) tuples.
@@ -222,8 +192,8 @@ def attribute_field_iter_items(resource) -> Iterator[Tuple[str, Any]]:
     return field_iter_items(resource, getmeta(resource).attribute_fields)
 
 
-def element_field_iter_items(resource) -> Iterator[Tuple[str, Any]]:
-    """Return an iterator that yields fields and their values from a resource that do not have the attribute flag set.
+def element_field_iter_items(resource) -> Iterator[tuple[str, Any]]:
+    """Return an iterator that yields fields and their values from a resource that do not have the attribute flag.
 
     :param resource: Resource to iterate over.
     :returns: an iterator that returns (field, value) tuples.
@@ -235,7 +205,7 @@ def element_field_iter_items(resource) -> Iterator[Tuple[str, Any]]:
     return field_iter_items(resource, getmeta(resource).element_fields)
 
 
-def extract_fields_from_dict(d: Dict[str, Any], resource) -> Dict[str, Any]:
+def extract_fields_from_dict(d: dict[str, Any], resource) -> dict[str, Any]:
     """
     Extract values from a dict that are defined on a resource.
 
@@ -249,7 +219,7 @@ def extract_fields_from_dict(d: Dict[str, Any], resource) -> Dict[str, Any]:
     return {f.name: d[f.name] for f in field_iter(resource) if f.name in d}
 
 
-def value_in_choices(value: Any, choices: List[Tuple[Any, str]]) -> bool:
+def value_in_choices(value: Any, choices: list[tuple[Any, str]]) -> bool:
     """Check if the value appears in the choices list (an iterable of tuples,
     the first value of which is the choice value).
 
@@ -257,23 +227,20 @@ def value_in_choices(value: Any, choices: List[Tuple[Any, str]]) -> bool:
     :param choices: List of choices
     :return: True if value is in the choices iterable.
     """
-    for choice, *_ in choices:
-        if value == choice:
-            return True
-    return False
+    return any(value == choice for choice, *_ in choices)
 
 
 _T = TypeVar("_T")
 
 
-def iter_to_choices(i: Iterable[_T]) -> Sequence[Tuple[_T, str]]:
+def iter_to_choices(i: Iterable[_T]) -> Sequence[tuple[_T, str]]:
     """Convert an iterator of strings (or types that can be converted to strings)
     and convert these into choice value pairs.
     """
     return tuple((v, str(v).title()) for v in i)
 
 
-def force_tuple(value: Union[_T, Sequence[_T]]) -> Sequence[_T]:
+def force_tuple(value: _T | Sequence[_T]) -> Sequence[_T]:
     """Forces a value to be a tuple.
 
     Either by converting into a tuple (if is a list) or changing value to be a tuple.

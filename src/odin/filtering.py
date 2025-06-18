@@ -1,6 +1,7 @@
 import abc
 import operator
-from typing import Any, Callable, Iterable, Sequence, Union
+from collections.abc import Callable, Iterable, Sequence
+from typing import Any
 
 from .exceptions import InvalidPathError
 from .resources import ResourceBase
@@ -95,7 +96,7 @@ class FilterComparison(FilterAtom, abc.ABC):
 
     def __init__(
         self,
-        field: Union[TraversalPath, str],
+        field: TraversalPath | str,
         value: Any,
         operation: Callable[[Any], Any] = None,
     ):
