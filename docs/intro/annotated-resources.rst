@@ -21,8 +21,8 @@ The annotated resource syntax offers many rich ways of representing your resourc
     class Book(odin.AnnotatedResource):
         title: str
         author: Author
-        genre: Optional[str] = odin.Options(max_length=255)
-        num_pages: int = odin.Options(min_value=1)
+        genre: Annotated[str | None, odin.Options(max_length=255)]
+        num_pages: Annotated[int, odin.Options(min_value=1)]
 
 
 
