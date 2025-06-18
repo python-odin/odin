@@ -1,18 +1,13 @@
 """Methods for resolving types to fields."""
+
 import datetime
 import enum
+import functools
 import pathlib
 import re
 import uuid
-from typing import Any, Dict, Final, List, Sequence, Type, Union, get_origin
-
-try:
-    # Handle the change in typing between 3.8 and later releases
-    from typing import KT, VT, T
-except ImportError:
-    T = None
-    KT = None
-    VT = None
+from types import UnionType
+from typing import Annotated, Any, Final, Union, get_args, get_origin
 
 import odin
 
@@ -58,22 +53,22 @@ class Options:
         "extra_args",
     )
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
-        default: Any = NotProvided,
-        field_type: Type[BaseField] = None,
+        default: ... = NotProvided,
+        field_type: type[Field] = None,
         *,
         verbose_name: str = None,
         verbose_name_plural: str = None,
         name: str = None,
-        validators: Sequence[Validator] = None,
-        choices: Choices = None,
+        validators: list[Validator] = None,
+        choices: Choices | None = None,
         use_default_if_not_provided: bool = True,
-        error_messages: Dict[str, str] = None,
+        error_messages: dict[str, str] | None = None,
         doc_text: str = "",
         is_attribute: bool = False,
         key: bool = False,
-        **extra_args: Any,
+        **extra_args: ...,
     ):
         self.field_type = field_type
         self.base_args = {
@@ -88,33 +83,58 @@ class Options:
         self.field_args = {
             "choices": choices,
             "use_default_if_not_provided": use_default_if_not_provided,
-            "default": default,
-            "validators": validators,
+            "validators": validators or [],
             "error_messages": error_messages,
         }
+        if default not in (None, NotProvided):
+            self.field_args["default"] = default
+
+    def __repr__(self):
+        summary = ", ".join(
+            f"{key}={val!r}" for key, val in self._kwargs().items() if val is not None
+        )
+        field_type = self.actual_field_type
+        return (
+            f"Options({field_type}, {summary})" if field_type else f"Options({summary})"
+        )
+
+    @property
+    def actual_field_type(self):
+        """Actual field type."""
+        field_type = self.field_type
+        return (
+            field_type.func if isinstance(field_type, functools.partial) else field_type
+        )
+
+    @property
+    def is_field_type_valid(self) -> bool:
+        """Have a valid field type."""
+        field_type = self.actual_field_type
+        return field_type is not None and issubclass(field_type, Field)
 
     def _kwargs(self):
         """Build kwargs used to instantiate field"""
-        final_args = self.base_args
-        if issubclass(self.field_type, Field):
-            final_args.update(self.field_args)
-        return final_args
+        if self.is_field_type_valid:
+            return {**self.base_args, **self.field_args}
+        return self.base_args
 
     def _improve_error(self, ex: TypeError):
         """Attempt to provide more context for the error"""
         message = str(ex)
 
-        for check in (
+        checks = [
             "Field.__init__()",
             "VirtualField.__init__()",
-            f"{self.field_type.__name__}.__init__()",
-        ):
-            if message.startswith(check):
-                raise ResourceDefError(
-                    f"{self.field_type.__name__}.__init__(){message[len(check):]}"
-                )
+        ]
+        if name := getattr(self.field_type, "__name__", None):
+            checks.append(f"{name}.__init__()")
 
-    def init_field(self):
+        for check in checks:
+            if message.startswith(check):
+                msg = f"{self.field_type.__name__}.__init__(){message[len(check) :]}"
+                raise ResourceDefError(msg)
+
+    def construct_field(self) -> Field:
         """Instantiate field object"""
         if self.field_type:
             try:
@@ -122,9 +142,9 @@ class Options:
             except TypeError as ex:
                 self._improve_error(ex)
                 raise
-        raise ResourceDefError(
-            f"Field type `{self.base_args.get('name', 'Unknown!')}` could not be resolved"
-        )
+
+        msg = f"Field type `{self.base_args.get('name', 'Unknown!')}` could not be resolved"
+        raise ResourceDefError(msg)
 
 
 SIMPLE_TYPE_MAP = {
@@ -145,140 +165,159 @@ SIMPLE_TYPE_MAP = {
     datetime.time: TimeField,
     Url: UrlField,
     uuid.UUID: UUIDField,
-    Any: AnyField,  # For Python 3.11
+    Any: AnyField,
 }
 
 
-def _resolve_field_from_type(options: Options, type_: type):
-    """Resolve a field from a basic type"""
-    if field_type := SIMPLE_TYPE_MAP.get(type_, None):
+def _create_field_from_list_type(args: tuple, options: Options) -> BaseField:
+    """Handle the various types of list."""
+    if args:
+        (field,) = args
+        # Use get origin to determine if value is also sub-scripted. This is
+        # required as issubclass cannot be used on sub-scripted fields.
+        if not (get_origin(field) or field is Any) and issubclass(field, ResourceBase):
+            options.field_args["resource"] = field
+            options.field_type = ListOf
+
+        else:
+            options.field_args["field"] = process_attribute(field)
+            options.field_type = TypedListField
+    else:
+        options.field_type = ListField
+
+    return options.construct_field()
+
+
+def _create_field_from_dict_type(args: tuple, options: Options) -> BaseField:
+    """Handle the various types of mapping."""
+    if args:
+        key_field, value_field = args
+        # Use get origin to determine if value is also sub-scripted. This is
+        # required as issubclass cannot be used on sub-scripted fields.
+        if not (get_origin(value_field) or value_field is Any) and issubclass(
+            value_field, ResourceBase
+        ):
+            options.field_args["resource"] = value_field
+            options.field_type = DictOf
+
+        else:
+            options.field_args["key_field"] = process_attribute(key_field)
+            options.field_args["value_field"] = process_attribute(value_field)
+            options.field_type = TypedDictField
+
+    else:
+        options.field_type = DictField
+
+    return options.construct_field()
+
+
+def _create_nullable_field(args, options: Options) -> BaseField:
+    """Handle union fields."""
+
+    type_none = type(None)
+
+    tp, nullable = None, False
+    for arg in args:
+        if arg is type_none:
+            nullable = True
+        elif tp is None:
+            tp = arg
+        else:
+            nullable = False
+            break
+
+    if not nullable or tp is None:
+        msg = "Union type are only supported with a single type and None"
+        raise ResourceDefError(msg)
+
+    options.field_args["null"] = True
+    return process_attribute(tp, options)
+
+
+def _set_options_field_type(options: Options, tp: type):
+    """Identify field type form a basic type."""
+
+    if field_type := SIMPLE_TYPE_MAP.get(tp):
         options.field_type = field_type
 
     # Is a resource; resolve as DictAs
-    elif issubclass(type_, ResourceBase):
-        options.field_args["resource"] = type_
+    elif issubclass(tp, ResourceBase):
+        options.field_args["resource"] = tp
         options.field_type = odin.DictAs
 
     # Is an enum; resolve as EnumType
-    elif issubclass(type_, enum.Enum):
-        options.field_args["enum_type"] = type_
+    elif issubclass(tp, enum.Enum):
+        options.field_args["enum_type"] = tp
         options.field_type = odin.EnumField
 
     else:
-        raise ResourceDefError(f"Unable to resolve field for type {type_}")
+        msg = f"Unable to resolve field for type {tp}"
+        raise ResourceDefError(msg)
 
 
-def is_optional(type_: Union) -> bool:
-    """Field is an optional type"""
-    args = type_.__args__
-    return (
-        len(args) == 2 and type(None) in args
-    )  # pylint: disable=unidiomatic-typecheck
+def _create_field_via_origin(origin, tp, options: Options) -> BaseField:
+    if origin is Union or origin is UnionType:
+        args = get_args(tp)
+        return _create_nullable_field(args, options)
 
-
-def _resolve_list_from_sub_scripted_type(args: Sequence[Any], options: Options):
-    """Handle the various types of sequence type"""
-    options.field_args["default"] = list
-
-    (field,) = args
-    # Required for Python 3.8
-    if field is T:
-        options.field_type = ListField
-
-    elif field is not Any and issubclass(field, ResourceBase):
-        options.field_args["resource"] = field
-        options.field_type = ListOf
-
-    else:
-        options.field_args["field"] = process_attribute(field)
-        options.field_type = TypedListField
-
-
-def _resolve_dict_from_sub_scripted_type(args: Sequence[Any], options: Options):
-    """Handle the various types of sequence type"""
-    options.field_args["default"] = dict
-
-    key_field, value_field = args
-    # Required for Python 3.8
-    if key_field is KT and value_field is VT:
-        options.field_type = DictField
-
-    # Use get origin to determine if value is also sub-scripted. This is
-    # required as issubclass cannot be used on sub-scripted fields.
-    elif not (get_origin(value_field) or value_field is Any) and issubclass(
-        value_field, ResourceBase
-    ):
-        options.field_args["resource"] = value_field
-        options.field_type = DictOf
-
-    else:
-        options.field_args["key_field"] = process_attribute(key_field)
-        options.field_args["value_field"] = process_attribute(value_field)
-        options.field_type = TypedDictField
-
-
-def _resolve_field_from_sub_scripted_type(origin: Type, options: Options, type_):
-    """Resolve a field from a generic type"""
-    args = getattr(type_, "__args__", None)
-    if not args:
-        # This occurs with the plain List and Dict types which are essentially
-        # just the native list/dict types
-        if origin in (list, dict):
-            return _resolve_field_from_annotation(options, origin)
-
-    elif origin is Union:
-        # Use nested if as `issubclass` cannot be used with Generic types
-        if is_optional(type_):
-            options.field_args["null"] = True
-            return _resolve_field_from_annotation(options, args[0])
-        else:
-            pass  # Resolve
-
-    elif origin is Final:
+    if origin is Final:
         # Constant
         options.field_type = ConstantField
-        value = options.field_args["default"]
-        if value is NotProvided:
-            raise ResourceDefError("Final fields require a value")
+        if (value := options.field_args.get("default")) is None:
+            msg = "Final fields require a value"
+            raise ResourceDefError(msg)
         options.base_args["value"] = value
-        return
+        return options.construct_field()
 
-    elif issubclass(origin, List):
-        return _resolve_list_from_sub_scripted_type(args, options)
+    elif issubclass(origin, list):
+        return _create_field_from_list_type(get_args(tp), options)
 
-    elif issubclass(origin, Dict):
-        return _resolve_dict_from_sub_scripted_type(args, options)
+    elif issubclass(origin, dict):
+        return _create_field_from_dict_type(get_args(tp), options)
 
-    raise ResourceDefError(f"Unable to resolve field for sub-scripted type {type_}")
+    msg = f"Unable to resolve field for sub-scripted type {tp!r}"
+    raise ResourceDefError(msg)
 
 
-def _resolve_field_from_annotation(options: Options, type_):
-    """
-    Resolve a field from a type annotation
+def _create_field_for_type(tp, options: Options) -> Field:
+    # If type already defined skip lookup
+    if not options.is_field_type_valid:
+        # Is a basic type
+        if isinstance(tp, type):
+            _set_options_field_type(options, tp)
+        else:
+            msg = f"Annotation is not a type instance {tp!r}"
+            raise ResourceDefError(msg)
 
-    Handles generics, sequences and optional types
-    """
-    # Is a sub-scripted type
-    if origin := get_origin(type_):
-        _resolve_field_from_sub_scripted_type(origin, options, type_)
+    return options.construct_field()
 
-    # Is a basic type
-    elif isinstance(type_, type):
-        _resolve_field_from_type(options, type_)
 
-    # Special case
-    elif type_ is Any:
-        options.field_type = AnyField
+def _create_field_via_annotated(tp, value) -> BaseField:
+    """Process an Annotated type."""
 
+    if isinstance(value, Options):
+        msg = "Options should included in the Annotation"
+        raise ResourceDefError(msg)
+
+    # Resolve sub-type and options
+    tp, metadata = get_args(tp)
+    if isinstance(metadata, Options):
+        options = metadata
+        options.field_args["default"] = value
     else:
-        raise ResourceDefError(f"Annotation is not a type instance {type_}")
+        options = Options(value)
+
+    if origin := get_origin(tp):
+        return _create_field_via_origin(origin, tp, options)
+    else:
+        return _create_field_for_type(tp, options)
 
 
 def process_attribute(
-    type_: Type,
-    value: Union[Options, Any] = NotProvided,
+    tp: type,
+    value: Options | Any = NotProvided,
     *,
-    _base_field: Type[BaseField] = BaseField,
+    _base_field: type[BaseField] = BaseField,
 ) -> BaseField:
     """Process an individual attribute and generate a field based off values passed"""
 
@@ -286,13 +325,13 @@ def process_attribute(
     if isinstance(value, _base_field):
         return value
 
-    # Value is a default, wrap with Options
-    if not isinstance(value, Options):
-        value = Options(value)
+    if origin := get_origin(tp):
+        if origin is Annotated:
+            return _create_field_via_annotated(tp, value)
 
-    # Resolve field type from annotation
-    if not value.field_type:
-        _resolve_field_from_annotation(value, type_)
+        options = value if isinstance(value, Options) else Options(value)
+        return _create_field_via_origin(origin, tp, options)
 
-    # Finally instantiate a field object
-    return value.init_field()
+    else:
+        options = value if isinstance(value, Options) else Options(value)
+        return _create_field_for_type(tp, options)

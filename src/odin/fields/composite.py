@@ -68,7 +68,7 @@ class CompositeField(Field, metaclass=abc.ABCMeta):
         self.use_container = use_container
 
         if not options.get("null", False):
-            options.setdefault("default", lambda: self.of())
+            options.setdefault("default", self.of)
 
         super().__init__(**options)
 

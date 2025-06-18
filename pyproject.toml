@@ -79,6 +79,9 @@ ignore = [
     "PLR2004", # Magic value used in comparison, ...
     "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
 ]
+"tests/annotated_resources/**.py" = [
+    "UP", # Allow the use of older types
+]
 
 [tool.ruff.lint.pycodestyle]
 max-line-length = 117
