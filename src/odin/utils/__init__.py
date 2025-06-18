@@ -2,8 +2,6 @@ import re
 from collections.abc import Iterable, Iterator, Sequence
 from typing import Any, TypeVar
 
-from odin.compatibility import deprecated
-
 _CAMEL_CASE_RE = re.compile(r"[A-Z]")
 _LOWER_UNDERSCORE_CASE_RE = re.compile(r"_([a-z])")
 _LOWER_DASH_CASE_RE = re.compile(r"-([a-z])")
@@ -85,23 +83,6 @@ class cached_property:  # noqa - Made to match property builtin
             except AttributeError:
                 cache = instance._cache = {}
             cache[self.__name__] = value
-        return value
-
-
-@deprecated("Use the standard library functools.cached_property")
-class lazy_property:  # noqa - Made to match the property builtin
-    """The bottle cached property, requires an alternate name so as not to
-    clash with existing cached_property behaviour
-    """
-
-    def __init__(self, func):
-        self.func = func
-        self.__doc__ = func.__doc__
-
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        value = instance.__dict__[self.func.__name__] = self.func(instance)
         return value
 
 
