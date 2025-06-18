@@ -14,7 +14,9 @@ Reading data from a CSV file::
             ...
 
 """
+
 import csv
+from functools import cached_property
 from io import StringIO
 
 from odin import bases
@@ -22,7 +24,7 @@ from odin.datastructures import CaseLessStringList
 from odin.exceptions import CodecDecodeError, ValidationError
 from odin.fields import NotProvided
 from odin.resources import create_resource_from_iter
-from odin.utils import getmeta, lazy_property
+from odin.utils import getmeta
 
 CONTENT_TYPE = "text/csv"
 
@@ -167,37 +169,29 @@ class Reader(bases.TypedResourceIterable):
         return self.csv_reader(f, self.csv_dialect, **kwargs)
 
     def _read_header(self):
-        """
-        Get the header, this needs to be called **once** only!
-        """
+        """Get the header, this needs to be called **once** only!"""
         header = next(self._reader)
         if self.ignore_header_case:
             header = CaseLessStringList(header)
         return header
 
-    @lazy_property
+    @cached_property
     def field_names(self):
-        """
-        Field names from resource.
-        """
+        """Field names from resource."""
         fields = getmeta(self.resource_type).fields
         if self.ignore_header_case:
             return CaseLessStringList(field.name for field in fields)
         else:
             return tuple(field.name for field in fields)
 
-    @lazy_property
+    @cached_property
     def extra_field_names(self):
-        """
-        Extra fields not included in header
-        """
+        """Extra fields not included in header."""
         return tuple(field for field in self.header if field not in self.field_names)
 
-    @lazy_property
+    @cached_property
     def field_mapping(self):
-        """
-        Index mapping of CSV fields to resource fields.
-        """
+        """Index mapping of CSV fields to resource fields."""
         mapping = []
 
         # Add expected fields
@@ -215,7 +209,7 @@ class Reader(bases.TypedResourceIterable):
         return tuple(mapping)
 
 
-def reader(
+def reader(  # noqa: PLR0913
     f,
     resource,
     includes_header=False,
@@ -223,7 +217,7 @@ def reader(
     full_clean=True,
     ignore_header_case=False,
     strict_fields=False,
-    **kwargs
+    **kwargs,
 ):
     """
     CSV reader that returns resource objects
@@ -248,7 +242,7 @@ def reader(
         includes_header=includes_header,
         ignore_header_case=ignore_header_case,
         strict_fields=strict_fields,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -266,7 +260,7 @@ def _get_resource_type(resources, resource_type):
         return resource_type or resources.resource_type
     elif isinstance(resources, bases.ResourceIterable) and resource_type:
         return resource_type
-    elif isinstance(resources, (list, tuple)):
+    elif isinstance(resources, list | tuple):
         if not len(resources):
             return
         # Use first resource to obtain field list

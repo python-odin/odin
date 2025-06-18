@@ -8,12 +8,13 @@ This could be as a means of providing a summary object, or for adding additional
 
 """
 
+from functools import cached_property
 from typing import Union
 
 from odin import registration
 from odin.bases import TypedResourceIterable
 from odin.resources import ResourceBase, ResourceOptions
-from odin.utils import filter_fields, getmeta, lazy_property
+from odin.utils import filter_fields, getmeta
 
 EMPTY = ()
 
@@ -132,12 +133,12 @@ class ResourceProxyOptions(ResourceOptions):
         for attr_name, value in proxy_attrs.items():
             setattr(self, attr_name, value)
 
-    @lazy_property
+    @cached_property
     def readonly_fields(self):
         """Fields that can only be read from."""
         return tuple(f for f in self.fields if f.attname in self.readonly)
 
-    @lazy_property
+    @cached_property
     def init_fields(self):
         """Fields used in the resource init."""
         return tuple(f for f in self.fields if f.attname not in self.readonly)
