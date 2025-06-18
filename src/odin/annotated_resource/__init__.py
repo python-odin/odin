@@ -86,6 +86,7 @@ class AnnotatedResourceType(type):
         new_meta = _new_meta_instance(
             meta_options_type, attrs.pop("Meta", None), new_class
         )
+        new_meta.abstract = abstract
 
         # Bail out early if we have already created this class.
         r = registration.get_resource(new_meta.resource_name)
