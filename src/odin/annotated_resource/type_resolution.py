@@ -147,7 +147,7 @@ class Options:
         raise ResourceDefError(msg)
 
 
-SIMPLE_TYPE_MAP = {
+SIMPLE_TYPE_MAP: dict[type, type[Field] | functools.partial] = {
     bool: BooleanField,
     datetime.date: DateField,
     datetime.datetime: DateTimeField,
