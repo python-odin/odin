@@ -147,7 +147,7 @@ class Options:
         raise ResourceDefError(msg)
 
 
-SIMPLE_TYPE_MAP = {
+SIMPLE_TYPE_MAP: dict[type, type[Field] | functools.partial] = {
     bool: BooleanField,
     datetime.date: DateField,
     datetime.datetime: DateTimeField,
@@ -269,10 +269,14 @@ def _create_field_via_origin(origin, tp, options: Options) -> BaseField:
         options.base_args["value"] = value
         return options.construct_field()
 
-    elif issubclass(origin, list):
+    # If type already defined skip lookup
+    if options.is_field_type_valid:
+        return options.construct_field()
+
+    if issubclass(origin, list):
         return _create_field_from_list_type(get_args(tp), options)
 
-    elif issubclass(origin, dict):
+    if issubclass(origin, dict):
         return _create_field_from_dict_type(get_args(tp), options)
 
     msg = f"Unable to resolve field for sub-scripted type {tp!r}"
@@ -281,16 +285,18 @@ def _create_field_via_origin(origin, tp, options: Options) -> BaseField:
 
 def _create_field_for_type(tp, options: Options) -> Field:
     # If type already defined skip lookup
-    if not options.is_field_type_valid:
-        # Is a basic type
-        if isinstance(tp, type):
-            _set_options_field_type(options, tp)
-        elif tp is Any:
-            # For Python 3.10
-            options.field_type = AnyField
-        else:
-            msg = f"Annotation is not a type instance {tp!r}"
-            raise ResourceDefError(msg)
+    if options.is_field_type_valid:
+        return options.construct_field()
+
+    # Is a basic type
+    if isinstance(tp, type):
+        _set_options_field_type(options, tp)
+    elif tp is Any:
+        # For Python 3.10
+        options.field_type = AnyField
+    else:
+        msg = f"Annotation is not a type instance {tp!r}"
+        raise ResourceDefError(msg)
 
     return options.construct_field()
 
