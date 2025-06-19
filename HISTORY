@@ -1,3 +1,17 @@
+2.11rc2
+=======
+
+Changes
+-------
+
+- Apply correct type annotations to `annotated_resource.type_resolution.SIMPLE_TYPE_MAP`
+
+Bugfix
+------
+
+- field_type as being overridden when `Annotated[list[str]]` was being used.
+
+
 2.11rc1
 =======
 
