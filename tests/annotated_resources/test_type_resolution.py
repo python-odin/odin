@@ -188,6 +188,18 @@ class TestAnyField:
             odin.NotProvided,
         ),
         (
+            Annotated[str, odin.Options(field_type=odin.EmailField)],
+            odin.NotProvided,
+            odin.EmailField,
+            odin.NotProvided,
+        ),
+        (
+            Annotated[list[str], odin.Options(field_type=odin.EmailField)],
+            odin.NotProvided,
+            odin.EmailField,
+            odin.NotProvided,
+        ),
+        (
             Annotated[str, odin.Options(verbose_name="Foo")],
             "foo",
             odin.StringField,
