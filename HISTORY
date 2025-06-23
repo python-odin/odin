@@ -1,3 +1,15 @@
+2.11rc3
+=======
+
+Changes
+-------
+
+- Move the inclusion of the type field (typically `$`) into the resource and not individual codecs.
+  Ensuring it is defined first.
+
+  This could cause a breaking change to any tests that expect existing field order.
+
+
 2.11rc2
 =======
 
