@@ -5,7 +5,6 @@ import uuid
 
 from odin import ResourceAdapter, bases, resources, serializers
 from odin.exceptions import CodecDecodeError, CodecEncodeError
-from odin.utils import getmeta
 
 LIST_TYPES = (bases.ResourceIterable, typing.ValuesView, typing.KeysView)
 JSON_TYPES = {
@@ -18,9 +17,7 @@ CONTENT_TYPE = "application/json"
 
 
 class OdinEncoder(json.JSONEncoder):
-    """
-    Encoder for Odin resources.
-    """
+    """Encoder for Odin resources."""
 
     def __init__(
         self, include_virtual_fields=True, include_type_field=True, *args, **kwargs
@@ -30,12 +27,8 @@ class OdinEncoder(json.JSONEncoder):
         self.include_type_field = include_type_field
 
     def default(self, o):
-        if isinstance(o, (resources.ResourceBase, ResourceAdapter)):
-            meta = getmeta(o)
-            obj = o.to_dict(self.include_virtual_fields)
-            if self.include_type_field:
-                obj[meta.type_field] = meta.resource_name
-            return obj
+        if isinstance(o, resources.ResourceBase | ResourceAdapter):
+            return o.to_dict(self.include_virtual_fields, self.include_type_field)
 
         elif isinstance(o, LIST_TYPES):
             return list(o)
@@ -53,11 +46,12 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
     See :py:meth:`loads` for more details of the loading operation.
 
     :param fp: a file pointer to read JSON data from.
-    :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
-        resource. If a list is supplied the first item will be used if a resource type is not supplied.
+    :param resource: A resource type, resource name or list of resources and names to
+        use as the base for creating a resource. If a list is supplied the first item
+        will be used if a resource type is not supplied.
     :param full_clean: Do a full clean of the object as part of the loading process.
-    :param default_to_not_supplied: Used for loading partial resources. Any fields not supplied are replaced with
-        NOT_SUPPLIED.
+    :param default_to_not_supplied: Used for loading partial resources. Any fields not
+        supplied are replaced with NOT_SUPPLIED.
     :returns: A resource object or object graph of resources loaded from file.
 
     """
@@ -68,18 +62,21 @@ def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
     """
     Load from a JSON encoded string.
 
-    If a ``resource`` value is supplied it is used as the base resource for the supplied JSON. I one is not supplied a
-    resource type field ``$`` is used to obtain the type represented by the dictionary. A ``ValidationError`` will be
-    raised if either of these values are supplied and not compatible. It is valid for a type to be supplied in the file
-    to be a child object from within the inheritance tree.
+    If a ``resource`` value is supplied it is used as the base resource for the
+    supplied JSON. I one is not supplied a resource type field ``$`` is used to obtain
+    the type represented by the dictionary. A ``ValidationError`` will be raised if
+    either of these values are supplied and not compatible. It is valid for a type to
+    be supplied in the file to be a child object from within the inheritance tree.
 
     :param s: String to load and parse.
-    :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
-        resource. If a list is supplied the first item will be used if a resource type is not supplied.
+    :param resource: A resource type, resource name or list of resources and names to
+        use as the base for creating a resource. If a list is supplied the first item
+        will be used if a resource type is not supplied.
     :param full_clean: Do a full clean of the object as part of the loading process.
-    :param default_to_not_supplied: Used for loading partial resources. Any fields not supplied are replaced with
-        NOT_SUPPLIED.
-    :returns: A resource object or object graph of resources parsed from supplied string.
+    :param default_to_not_supplied: Used for loading partial resources. Any fields not
+        supplied are replaced with NOT_SUPPLIED.
+    :returns: A resource object or object graph of resources parsed from supplied
+        string.
 
     """
     try:
@@ -95,7 +92,8 @@ def dump(resource, fp, cls=OdinEncoder, **kwargs):
     Dump to a JSON encoded file.
 
     :param resource: The root resource to dump to a JSON encoded file.
-    :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
+    :param cls: Encoder to use serializing to a string; default is the
+        :py:class:`OdinEncoder`.
     :param fp: The file pointer that represents the output file.
 
     """
@@ -110,7 +108,8 @@ def dumps(resource, cls=OdinEncoder, **kwargs):
     Dump to a JSON encoded string.
 
     :param resource: The root resource to dump to a JSON encoded file.
-    :param cls: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
+    :param cls: Encoder to use serializing to a string; default is the
+        :py:class:`OdinEncoder`.
     :returns: JSON encoded string.
 
     """

@@ -151,9 +151,7 @@ def field_iter(resource, include_virtual: bool = True) -> Iterator:
         return iter(meta.fields)
 
 
-def field_iter_items(
-    resource, fields: Sequence | None = None
-) -> Iterator[tuple[str, Any]]:
+def field_iter_items(resource, fields: Sequence | None = None) -> Iterator[tuple]:
     """Return an iterator that yields fields and their values from a resource.
 
     :param resource: Resource to iterate over.
@@ -168,7 +166,7 @@ def field_iter_items(
         yield f, f.prepare(f.value_from_object(resource))
 
 
-def virtual_field_iter_items(resource) -> Iterator[tuple[str, Any]]:
+def virtual_field_iter_items(resource) -> Iterator[tuple]:
     """Return an iterator that yields virtual fields and their values from a resource.
 
     :param resource: Resource to iterate over.
@@ -179,7 +177,7 @@ def virtual_field_iter_items(resource) -> Iterator[tuple[str, Any]]:
     return field_iter_items(resource, meta.virtual_fields)
 
 
-def attribute_field_iter_items(resource) -> Iterator[tuple[str, Any]]:
+def attribute_field_iter_items(resource) -> Iterator[tuple]:
     """Return an iterator that yields fields and their values from a resource that have the attribute flag.
 
     :param resource: Resource to iterate over.
@@ -192,7 +190,7 @@ def attribute_field_iter_items(resource) -> Iterator[tuple[str, Any]]:
     return field_iter_items(resource, getmeta(resource).attribute_fields)
 
 
-def element_field_iter_items(resource) -> Iterator[tuple[str, Any]]:
+def element_field_iter_items(resource) -> Iterator[tuple]:
     """Return an iterator that yields fields and their values from a resource that do not have the attribute flag.
 
     :param resource: Resource to iterate over.

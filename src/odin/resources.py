@@ -456,7 +456,7 @@ class ResourceBase:
         """Create a resource instance from a dictionary."""
         return create_resource_from_dict(d, cls, full_clean)
 
-    def to_dict(self, include_virtual=True):
+    def to_dict(self, include_virtual: bool = True, include_type_field: bool = False):
         """Convert this resource into a `dict` of field_name/value pairs.
 
         .. note::
@@ -466,10 +466,13 @@ class ResourceBase:
             `dict`.
 
         :param include_virtual: Include virtual fields when generating `dict`.
+        :param include_type_field: Include type field when generating `dict`.
         """
         meta = getmeta(self)
         fields = meta.all_fields if include_virtual else meta.fields
-        return {f.name: v for f, v in field_iter_items(self, fields)}
+        result = {meta.type_field: meta.resource_name} if include_type_field else {}
+        result.update((f.name, v) for f, v in field_iter_items(self, fields))
+        return result
 
     def convert_to(self, to_resource, context=None, ignore_fields=None, **field_values):
         """Convert this resource into a specified resource.
