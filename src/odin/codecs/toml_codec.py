@@ -3,7 +3,6 @@ from collections.abc import Sequence
 from odin import ResourceAdapter, resources
 from odin.exceptions import CodecDecodeError
 from odin.resources import ResourceBase
-from odin.utils import getmeta
 
 try:
     import toml
@@ -21,17 +20,20 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
     """
     Load a resource from a TOML encoded file.
 
-    If a ``resource`` value is supplied it is used as the base resource for the supplied YAML. If one is not
-    supplied, a resource type field ``$`` is used to obtain the type represented by the dictionary. A
-    ``ValidationError`` will be raised if either of these values are supplied and not compatible. It is valid for a
-    type to be supplied in the file to be a child object from within the inheritance tree.
+    If a ``resource`` value is supplied it is used as the base resource for the
+    supplied YAML. If one is not supplied, a resource type field ``$`` is used to
+    obtain the type represented by the dictionary. A ``ValidationError`` will be
+    raised if either of these values are supplied and not compatible. It is valid for a
+    type to be supplied in the file to be a child object from within the inheritance
+    tree.
 
     :param fp: a file pointer to read TOML data format.
-    :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
-        resource. If a list is supplied the first item will be used if a resource type is not supplied.
+    :param resource: A resource type, resource name or list of resources and names to
+        use as the base for creating a resource. If a list is supplied the first item
+        will be used if a resource type is not supplied.
     :param full_clean: Do a full clean of the object as part of the loading process.
-    :param default_to_not_supplied: Used for loading partial resources. Any fields not supplied are replaced with
-        NOT_SUPPLIED.
+    :param default_to_not_supplied: Used for loading partial resources. Any fields not
+        supplied are replaced with NOT_SUPPLIED.
     :returns: A resource object or object graph of resources loaded from file.
 
     """
@@ -53,17 +55,19 @@ def load(fp, resource=None, full_clean=True, default_to_not_supplied=False):
 def loads(s, resource=None, full_clean=True, default_to_not_supplied=False):
     """Load a resource from a TOML encoded string.
 
-    If a ``resource`` value is supplied it is used as the base resource for the supplied YAML. If one is not
-    supplied, a resource type field ``$`` is used to obtain the type represented by the dictionary. A
-    ``ValidationError`` will be raised if either of these values are supplied and not compatible. It is valid for a
-    type to be supplied in the file to be a child object from within the inheritance tree.
+    If a ``resource`` value is supplied it is used as the base resource for the
+    supplied YAML. If one is not supplied, a resource type field ``$`` is used to
+    obtain the type represented by the dictionary. A ``ValidationError`` will be raised
+    if either of these values are supplied and not compatible. It is valid for a type
+    to be supplied in the file to be a child object from within the inheritance tree.
 
     :param s: a string containing TOML.
-    :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
-        resource. If a list is supplied the first item will be used if a resource type is not supplied.
+    :param resource: A resource type, resource name or list of resources and names to
+        use as the base for creating a resource. If a list is supplied the first item
+        will be used if a resource type is not supplied.
     :param full_clean: Do a full clean of the object as part of the loading process.
-    :param default_to_not_supplied: Used for loading partial resources. Any fields not supplied are replaced with
-        NOT_SUPPLIED.
+    :param default_to_not_supplied: Used for loading partial resources. Any fields not
+        supplied are replaced with NOT_SUPPLIED.
     :returns: A resource object or object graph of resources loaded from file.
 
     """
@@ -97,11 +101,7 @@ class OdinEncoder(toml.TomlEncoder):
         self.include_type_field = include_type_field
 
     def resource_to_dict(self, v):
-        resource_dict = v.to_dict(self.include_virtual_fields)
-        if self.include_type_field:
-            meta = getmeta(v)
-            resource_dict[meta.type_field] = meta.resource_name
-        return resource_dict
+        return v.to_dict(self.include_virtual_fields, self.include_type_field)
 
     def dump_value(self, v):
         if isinstance(v, ResourceBase | ResourceAdapter):
@@ -133,7 +133,8 @@ def dump(
 
     :param resource: The root resource to dump to a JSON encoded file.
     :param fp: The file pointer that represents the output file.
-    :param encoder: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
+    :param encoder: Encoder to use serializing to a string; default is the
+        :py:class:`OdinEncoder`.
     :param include_virtual_fields: Include virtual fields in the output
     :param kwargs: Additional keyword arguments for the encoder.
     """
@@ -154,7 +155,8 @@ def dumps(
     """Dump to a TOML encoded file.
 
     :param resource: The root resource to dump to a JSON encoded file.
-    :param encoder: Encoder to use serializing to a string; default is the :py:class:`OdinEncoder`.
+    :param encoder: Encoder to use serializing to a string; default is the
+        :py:class:`OdinEncoder`.
     :param include_virtual_fields: Include virtual fields in the output
     :param kwargs: Additional keyword arguments for the encoder.
     :returns: TOML encoded string.

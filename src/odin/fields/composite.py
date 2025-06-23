@@ -60,9 +60,8 @@ class CompositeField(Field, metaclass=abc.ABCMeta):
                 self._of = resource
             else:
                 # Keep this pattern so old behaviour remains.
-                raise TypeError(
-                    f"{resource!r} is not a valid type for a related field."
-                )
+                msg = f"{resource!r} is not a valid type for a related field."
+                raise TypeError(msg)
         else:
             self._of = resource
         self.use_container = use_container
@@ -79,9 +78,8 @@ class CompositeField(Field, metaclass=abc.ABCMeta):
         if not hasattr(resource, "_meta") and callable(resource):
             resource = resource()
             if not hasattr(resource, "_meta"):
-                raise TypeError(
-                    f"{resource!r} is not a valid type for a related field."
-                )
+                msg = f"{resource!r} is not a valid type for a related field."
+                raise TypeError(msg)
         return resource
 
     def to_python(self, value):

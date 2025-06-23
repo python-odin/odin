@@ -5,7 +5,6 @@ from typing import TextIO
 
 from odin import ResourceAdapter, bases, resources
 from odin.exceptions import CodecEncodeError
-from odin.utils import getmeta
 
 try:
     import yaml
@@ -39,10 +38,7 @@ class OdinDumper(SafeDumper):
         self.include_type_field = include_type_field
 
     def represent_resource(self, data):
-        obj = data.to_dict(self.include_virtual_fields)
-        if self.include_type_field:
-            meta = getmeta(data)
-            obj[meta.type_field] = meta.resource_name
+        obj = data.to_dict(self.include_virtual_fields, self.include_type_field)
         return self.represent_dict(obj)
 
 
@@ -59,17 +55,19 @@ def load(
 ):
     """Load a resource from a YAML encoded file.
 
-    If a ``resource`` value is supplied it is used as the base resource for the supplied YAML. I one is not supplied
-    a resource type field ``$`` is used to obtain the type represented by the dictionary. A ``ValidationError`` will
-    be raised if either of these values are supplied and not compatible. It is valid for a type to be supplied in the
-    file to be a child object from within the inheritance tree.
+    If a ``resource`` value is supplied it is used as the base resource for the
+    supplied YAML. I one is not supplied a resource type field ``$`` is used to obtain
+    the type represented by the dictionary. A ``ValidationError`` will be raised if
+    either of these values are supplied and not compatible. It is valid for a type to
+    be supplied in the file to be a child object from within the inheritance tree.
 
     :param fp: a file pointer to read YAML data fromat.
-    :param resource: A resource type, resource name or list of resources and names to use as the base for creating a
-        resource. If a list is supplied the first item will be used if a resource type is not supplied.
+    :param resource: A resource type, resource name or list of resources and names to
+        use as the base for creating a resource. If a list is supplied the first item
+        will be used if a resource type is not supplied.
     :param full_clean: Do a full clean of the object as part of the loading process.
-    :param default_to_not_supplied: Used for loading partial resources. Any fields not supplied are replaced with
-        NOT_SUPPLIED.
+    :param default_to_not_supplied: Used for loading partial resources. Any fields not
+        supplied are replaced with NOT_SUPPLIED.
     :returns: A resource object or object graph of resources loaded from file.
 
     """
@@ -90,7 +88,8 @@ def dump(resource: resources.ResourceBase, fp: TextIO, dumper=OdinDumper, **kwar
     """Dump to a YAML encoded file.
 
     :param resource: The root resource to dump to a YAML encoded file.
-    :param dumper: Dumper to use serializing to a string; default is the :py:class:`OdinDumper`.
+    :param dumper: Dumper to use serializing to a string; default is the
+        :py:class:`OdinDumper`.
     :param fp: The file pointer that represents the output file.
 
     """
@@ -104,7 +103,8 @@ def dumps(resource: resources.ResourceBase, dumper=OdinDumper, **kwargs) -> str:
     """Dump to a YAML encoded string.
 
     :param resource: The root resource to dump to a YAML encoded file.
-    :param dumper: Dumper to use serializing to a string; default is the :py:class:`OdinDumper`.
+    :param dumper: Dumper to use serializing to a string; default is the
+        :py:class:`OdinDumper`.
     :returns: YAML encoded string.
 
     """
