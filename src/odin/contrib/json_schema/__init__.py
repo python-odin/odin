@@ -6,6 +6,7 @@ from typing import Any, Final, TextIO
 
 import odin
 import odin.validators
+from odin.annotated_resource.special_fields import AnyField
 from odin.registration import get_child_resources
 from odin.resources import ResourceBase, ResourceOptions
 from odin.utils import getmeta
@@ -128,6 +129,10 @@ class JSONSchema:
             type_name = "object"
             schema = {"additionalProperties": self._field_to_schema(field.value_field)}
 
+        elif isinstance(field, AnyField):
+            type_name = "string"
+            schema = {"type": "*"}
+
         else:
             for field_type, field_info in FIELD_SCHEMAS.items():
                 if isinstance(field, field_type):
@@ -135,7 +140,8 @@ class JSONSchema:
                     break
 
             else:
-                raise ValueError(f"Unknown field type: {field_type}")
+                msg = f"Unknown field type: {type(field)}"
+                raise ValueError(msg)
 
         return ([type_name, "null"] if field.null else type_name), schema
 
@@ -146,7 +152,10 @@ class JSONSchema:
         child_resources = get_child_resources(field.of)
         if child_resources:
             if len(child_resources) == 1:
-                schema = self._schema_def(child_resources[0])
+                schema = next(
+                    self._schema_def(child_resource)
+                    for child_resource in child_resources
+                )
             else:
                 schema = {
                     "oneOf": [
