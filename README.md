@@ -3,7 +3,7 @@
 Odin provides a declarative framework for defining resources (classes) and their relationships, validation of the fields
 that make up the resources and mapping between objects (either a resource, or other python structures).
 
-Odin also comes with built in serialisation tools for importing and exporting data from resources.
+Odin also comes with built-in serialisation tools for importing and exporting data from resources.
 
 <table>
 <tr>
@@ -77,7 +77,7 @@ Odin also comes with built in serialisation tools for importing and exporting da
 * Fields for building composite resources
 * Field and Resource level validation
 * Easy extension to support custom fields
-* Python 3.8+ and PyPy <sup>1</sup> supported
+* Python 3.10+ and PyPy <sup>1</sup> supported
 * Support for documenting resources with [Sphinx](http://sphinx-doc.org/)
 * Minimal dependencies
 
