@@ -14,6 +14,11 @@ utilised unchanged.
 
 from collections.abc import Iterable
 
+try:
+    import annotationlib
+except ImportError:
+    annotationlib = None
+
 from odin import registration
 from odin.fields import BaseField
 from odin.resources import (
@@ -34,11 +39,23 @@ __all__ = (
     "AResource",
 )
 
+def _resolve_annotations(attrs: dict[str, ...]) -> dict[str, type]:
+    """Resolve annotations.
+
+    Support delayed annotations in Python 3.14 by using annotationlib
+    """
+    if annotationlib is None:
+        return attrs.pop("__annotations__", None) or {}
+
+    af = annotationlib.get_annotate_from_class_namespace(attrs)
+    if af is None:
+        return {}
+    return annotationlib.call_annotate_function(af, annotationlib.Format.VALUE)
 
 def _iterate_attrs(attrs: dict[str, ...]) -> Iterable[tuple[str, BaseField]]:
     """Iterate through attributes and combine with annotations."""
 
-    annotations = attrs.pop("__annotations__", None) or {}
+    annotations = _resolve_annotations(attrs)
 
     # Yield any annotations processed into field instances
     for name, type_ in annotations.items():
