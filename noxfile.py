@@ -6,14 +6,11 @@ from nox.sessions import Session
 def tests(session: Session):
     # fmt: off
     session.run(
-        "poetry", "export",
-        "--with=dev",
-        "--output=requirements.txt",
-        "--extras=toml",
-        "--extras=yaml",
-        "--extras=arrow",
-        "--extras=msgpack",
-        "--extras=pint",
+        "uv", "export",
+        "--no-hashes",
+        "--all-extras",
+        "--group=dev",
+        "--output-file=requirements.txt",
         external=True,
     )
     # fmt: on

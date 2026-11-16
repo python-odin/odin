@@ -1,16 +1,17 @@
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
+[project]
 name = "odin"
 version = "2.11"
 description = "Data-structure definition/validation/traversal, mapping and serialisation toolkit for Python"
-authors = ["Tim Savage <tim@savage.company>"]
-license = "BSD-3-Clause"
 readme = "README.md"
-repository = "https://github.com/python-odin/odin"
-documentation = "https://odin.readthedocs.org"
+requires-python = ">=3.10"
+license = "BSD-3-Clause"
+authors = [
+    { name = "Tim Savage", email = "tim@savage.company" },
+]
 keywords = ["data-structure", "validation", "data-mapping"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -28,33 +29,27 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
-packages = [
-    { include = "odin", from = "src" },
-    { include = "tests", format = "sdist" },
-]
-include = ["src/odin/py.typed"]
+dependencies = []
 
-[tool.poetry.dependencies]
-python = "^3.10"
-pyyaml = {version = "*", optional = true }
-toml = {version = "*", optional = true }
-pint = {version = "*", optional = true }
-arrow = {version = "*", optional = true }
-msgpack = {version = "*", optional = true }
-rich = {version = "*", optional = true }
+[project.urls]
+Homepage = "https://github.com/python-odin/odin"
+Repository = "https://github.com/python-odin/odin"
+Documentation = "https://odin.readthedocs.org"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.0"
-pytest-cov = "*"
-sphinx = "*"
-
-[tool.poetry.extras]
+[project.optional-dependencies]
 yaml = ["pyyaml"]
 msgpack = ["msgpack"]
 toml = ["toml"]
 pint = ["pint"]
 arrow = ["arrow"]
 rich = ["rich"]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "sphinx",
+]
 
 [tool.ruff]
 # Same as Black.

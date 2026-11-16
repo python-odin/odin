@@ -13,6 +13,8 @@ dist
 build
 _build
 .tox
+.nox
+.venv
 reports/xunit-result-eek.xml
 requirements.txt
 
