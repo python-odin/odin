@@ -21,6 +21,13 @@ jobs:
       with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
 
+    - name: Cache SonarQube packages
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: ~/.sonar/cache
+        key: ${{ runner.os }}-sonar
+        restore-keys: ${{ runner.os }}-sonar
+
     - name: Install uv
       uses: astral-sh/setup-uv@v5
       with:
@@ -40,8 +47,7 @@ jobs:
           --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml \
           tests
 
-#    - name: Analyze with SonarCloud
-#      uses: sonarsource/sonarqube-scan-action@master
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    - name: SonarQube Scan
+      uses: SonarSource/sonarqube-scan-action@4d1dc0c91ee400dcf8a6dddf2f705ac36542e304 # v8.4.0
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
