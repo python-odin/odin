@@ -1,6 +1,7 @@
 """
 Tools for generating Swagger Specification from resources.
 """
+
 from odin import fields
 from odin.utils import getmeta
 

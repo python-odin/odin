@@ -111,7 +111,9 @@ def filter_fields(
     return field_names, readonly
 
 
-def getmeta(resource_or_instance: "odin.resources.ResourceBase | Type[odin.resources.ResourceBase]"):
+def getmeta(
+    resource_or_instance: "odin.resources.ResourceBase | Type[odin.resources.ResourceBase]",
+):
     """Get metaobject from a resource or resource instance.
 
     :param resource_or_instance: Resource or instance of a resource.

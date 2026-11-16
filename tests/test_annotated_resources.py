@@ -11,7 +11,7 @@ from tests.resources_annotated import (
     Library,
     Publisher,
     AltBook,
-    LibraryBook
+    LibraryBook,
 )
 
 

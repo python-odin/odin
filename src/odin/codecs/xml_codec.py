@@ -14,6 +14,7 @@ The TextField is for all intents and purposes just a StringField, other codecs
 will export any value as a String.
 
 """
+
 import datetime
 from io import StringIO
 from typing import TextIO

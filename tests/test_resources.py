@@ -18,7 +18,7 @@ from .resources import (
     Library,
     Subscriber,
     AltBook,
-    LibraryBook
+    LibraryBook,
 )
 
 
@@ -255,6 +255,7 @@ class TestMetaOptions:
         actual = target.abstract
 
         assert actual is False
+
 
 class TestConstructionMethods:
     def test_build_object_graph_empty_dict_no_clean(self):

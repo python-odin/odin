@@ -39,6 +39,7 @@ __all__ = (
     "AResource",
 )
 
+
 def _resolve_annotations(attrs: dict[str, ...]) -> dict[str, type]:
     """Resolve annotations.
 
@@ -51,6 +52,7 @@ def _resolve_annotations(attrs: dict[str, ...]) -> dict[str, type]:
     if af is None:
         return {}
     return annotationlib.call_annotate_function(af, annotationlib.Format.VALUE)
+
 
 def _iterate_attrs(attrs: dict[str, ...]) -> Iterable[tuple[str, BaseField]]:
     """Iterate through attributes and combine with annotations."""
