@@ -16,4 +16,4 @@ from odin.proxy import ResourceProxy  # noqa
 from odin.resources import Resource  # noqa
 
 __authors__ = "Tim Savage <tim@savage.company>"
-__copyright__ = "Copyright (C) 2021 Tim Savage"
+__copyright__ = "Copyright (C) 2026 Tim Savage"

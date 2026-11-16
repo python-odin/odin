@@ -1,6 +1,7 @@
 """
 Tests of polymorphic behaviours
 """
+
 import pytest
 
 import odin

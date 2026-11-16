@@ -18,7 +18,7 @@ from .resources import (
     Library,
     Subscriber,
     AltBook,
-    LibraryBook
+    LibraryBook,
 )
 
 
@@ -256,6 +256,7 @@ class TestMetaOptions:
 
         assert actual is False
 
+
 class TestConstructionMethods:
     def test_build_object_graph_empty_dict_no_clean(self):
         book = build_object_graph({}, Book, full_clean=False)
@@ -432,3 +433,33 @@ class TestConstructionMethods:
 
         assert book.isbn == "123456"
         assert book.title == "Foo"
+
+    def test_dynamic_add_field_clears_cached_properties(self):
+        class DynamicFieldResource(odin.Resource):
+            title = odin.StringField()
+
+        meta = getmeta(DynamicFieldResource)
+        # Access cached properties to populate cache
+        assert [f.attname for f in meta.all_fields] == ["title"]
+        assert "extra" not in meta.field_map
+
+        new_field = odin.IntegerField(name="extra")
+        new_field.attname = "extra"
+        meta.add_field(new_field)
+
+        # After add_field, cached properties are cleared and refreshed
+        assert [f.attname for f in meta.all_fields] == ["title", "extra"]
+        assert "extra" in meta.field_map
+
+    def test_dynamic_add_virtual_field_clears_cached_properties(self):
+        class DynamicVirtualFieldResource(odin.Resource):
+            title = odin.StringField()
+
+        meta = getmeta(DynamicVirtualFieldResource)
+        assert [f.attname for f in meta.all_fields] == ["title"]
+
+        new_vfield = odin.fields.virtual.ConstantField(value=42, name="v_extra")
+        new_vfield.attname = "v_extra"
+        meta.add_virtual_field(new_vfield)
+
+        assert [f.attname for f in meta.all_fields] == ["title", "v_extra"]

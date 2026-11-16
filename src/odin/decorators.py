@@ -9,11 +9,11 @@ _F = TypeVar("_F", bound=Callable[..., Any])
 
 
 def returns_resource(
-    func: _F = None,
+    func: _F | None = None,
     codec=None,
-    resource: type[ResourceBase] = None,
+    resource: type[ResourceBase] | None = None,
     full_clean: bool = True,
-    codec_opts: dict[str, Any] = None,
+    codec_opts: dict[str, Any] | None = None,
 ) -> _F | Callable[[_F], _F]:
     """Apply to a function that returns data that can be converted into a resource (or resources).
 

@@ -9,7 +9,13 @@ from typing import (
 from odin import bases, exceptions, registration
 from odin.exceptions import ResourceDefError, ValidationError
 from odin.fields import BaseField, Field, NotProvided, NotProvidedType
-from odin.utils import cached_property, field_iter_items, force_tuple, getmeta
+from odin.utils import (
+    cached_property,
+    clear_cached_properties,
+    field_iter_items,
+    force_tuple,
+    getmeta,
+)
 
 DEFAULT_TYPE_FIELD = "$"
 
@@ -61,8 +67,6 @@ class ResourceOptions:
         self.field_sorting: bool | NotProvidedType = NotProvided
         self.user_data: Any | None = None
         self.allow_field_shadowing: bool | NotProvidedType = NotProvided
-
-        self._cache = {}
 
     def __repr__(self):
         return f"<Options for {self.resource_name}>"
@@ -152,14 +156,14 @@ class ResourceOptions:
         self.fields.append(field)
         if field.key:
             self._add_key_field(field)
-        cached_property.clear_caches(self)
+        clear_cached_properties(self)
 
     def add_virtual_field(self, field):
         """Dynamically add a virtual field."""
         self.virtual_fields.append(field)
         if field.key:
             self._add_key_field(field)
-        cached_property.clear_caches(self)
+        clear_cached_properties(self)
 
     @property
     def resource_name(self) -> str:

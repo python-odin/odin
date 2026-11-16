@@ -1,6 +1,7 @@
 """
 Do load/dump tests on known valid and invalid documents.
 """
+
 import datetime
 
 import pytest
@@ -88,9 +89,10 @@ class TestKitchenSink:
         assert "Consider Phlebas" == library.books[0].title
 
     def test_load_invalid_data(self, fixture_path):
-        with pytest.raises(exceptions.ValidationError), (
-            fixture_path / "book-invalid.json"
-        ).open() as fp:
+        with (
+            pytest.raises(exceptions.ValidationError),
+            (fixture_path / "book-invalid.json").open() as fp,
+        ):
             json_codec.load(fp)
 
     def test_load_with_invalid_nested_data__where_full_clean_is_false(

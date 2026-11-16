@@ -17,11 +17,17 @@ These validators are provided with *odin*.
 
     .. autoclass:: MinValueValidator
 
+    .. autoclass:: BetweenValidator
+
     .. autoclass:: LengthValidator
 
     .. autoclass:: MaxLengthValidator
 
     .. autoclass:: MinLengthValidator
+
+    .. autoclass:: IPv4Address
+
+    .. autoclass:: EmailValidator
 
 
     Odin also includes a helper method for generating simple validators.

@@ -71,6 +71,4 @@ class TestXmlLoad:
 The Culture and the Idiran Empire are at war in a galaxy-spanning conflict.
 </Summary>
 </XMLBook>
-""" == xml_codec.dumps(
-            book, line_ending="\n"
-        )
+""" == xml_codec.dumps(book, line_ending="\n")

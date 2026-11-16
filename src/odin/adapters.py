@@ -42,9 +42,6 @@ class ResourceOptionsAdapter:
             if f.attname in include and f.attname not in exclude
         ]
 
-        # Work around so cached properties still work.
-        self._cache = {}
-
     def __getattr__(self, item):
         return getattr(self._wrapped, item)
 

@@ -189,3 +189,59 @@ class TestChunk:
     def test_small_values(self, value, size, expected):
         """Small scale test (eg small iterable that can be easily verified)"""
         assert [list(c) for c in utils.chunk(value, size)] == expected
+
+    def test_empty_iterable(self):
+        assert list(utils.chunk([], 3)) == []
+
+    def test_generator_consumption(self):
+        gen = (x for x in range(5))
+        assert list(utils.chunk(gen, 2)) == [(0, 1), (2, 3), (4,)]
+
+    def test_outer_generator_consumption_without_inner_exhaustion(self):
+        """Ensure chunk does not infinite loop when outer generator is collected into a list."""
+        chunks = list(utils.chunk("abcdef", 2))
+        assert chunks == [("a", "b"), ("c", "d"), ("e", "f")]
+
+    @pytest.mark.parametrize("size", (0, -1, -10))
+    def test_invalid_size(self, size):
+        with pytest.raises(ValueError, match="n must be at least 1"):
+            list(utils.chunk([1, 2, 3], size))
+
+
+class TestCachedProperty:
+    """
+    Tests for odin.utils.cached_property and clear_cached_properties
+    """
+
+    class TargetClass:
+        def __init__(self, value):
+            self.value = value
+            self.calc_count = 0
+
+        @utils.cached_property
+        def computed(self):
+            self.calc_count += 1
+            return self.value * 2
+
+    def test_cached_property_caches_value(self):
+        obj = self.TargetClass(5)
+        assert obj.calc_count == 0
+
+        assert obj.computed == 10
+        assert obj.calc_count == 1
+
+        # Second access uses cache
+        assert obj.computed == 10
+        assert obj.calc_count == 1
+
+    def test_clear_cached_properties(self):
+        obj = self.TargetClass(5)
+        assert obj.computed == 10
+        assert obj.calc_count == 1
+
+        obj.value = 7
+        utils.clear_cached_properties(obj)
+
+        # After clearing, computed is re-evaluated
+        assert obj.computed == 14
+        assert obj.calc_count == 2

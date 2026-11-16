@@ -1,6 +1,8 @@
+import itertools
 import re
 from collections.abc import Iterable, Iterator, Sequence
-from typing import Any, TypeVar
+from functools import cached_property
+from typing import Any, Type, TypeVar
 
 _CAMEL_CASE_RE = re.compile(r"[A-Z]")
 _LOWER_UNDERSCORE_CASE_RE = re.compile(r"_([a-z])")
@@ -60,40 +62,26 @@ def lower_dash_to_camel(value: str) -> str:
     return _LOWER_DASH_CASE_RE.sub(lambda m: m.group(1).upper(), value.lower())
 
 
-class cached_property:  # noqa - Made to match property builtin
-    """Acts like a standard class `property` except return values cached."""
-
-    @staticmethod
-    def clear_caches(instance):
-        instance._cache = {}
-
-    def __init__(self, func):
-        self.func = func
-        self.__doc__ = func.__doc__
-        self.__name__ = func.__name__
-        self.__module__ = func.__module__
-
-    def __get__(self, instance, owner):
+def clear_cached_properties(instance: Any) -> None:
+    """Clear all cached_property values on an instance."""
+    cls = instance.__class__
+    for name in dir(cls):
         try:
-            value = instance._cache[self.__name__]
-        except (KeyError, AttributeError):
-            value = self.func(instance)
-            try:
-                cache = instance._cache
-            except AttributeError:
-                cache = instance._cache = {}
-            cache[self.__name__] = value
-        return value
+            attr = getattr(cls, name)
+        except AttributeError:
+            continue
+        if isinstance(attr, cached_property):
+            instance.__dict__.pop(name, None)
 
 
-EMPTY = []
+EMPTY = ()
 
 
 def filter_fields(
     field_names: Iterable[str],
-    include: Iterable[str] = None,
-    exclude: Iterable[str] = None,
-    readonly: Iterable[str] = None,
+    include: Iterable[str] | None = None,
+    exclude: Iterable[str] | None = None,
+    readonly: Iterable[str] | None = None,
 ) -> tuple[set[str], set[str]]:
     """
     Filter a field iterable using the include/exclude/readonly options
@@ -123,7 +111,9 @@ def filter_fields(
     return field_names, readonly
 
 
-def getmeta(resource_or_instance):
+def getmeta(
+    resource_or_instance: "odin.resources.ResourceBase | Type[odin.resources.ResourceBase]",
+):
     """Get metaobject from a resource or resource instance.
 
     :param resource_or_instance: Resource or instance of a resource.
@@ -253,7 +243,7 @@ def force_tuple(value: _T | Sequence[_T]) -> Sequence[_T]:
     return (value,)
 
 
-def chunk(iterable: Iterable[_T], n: int) -> Iterable[Iterable[_T]]:
+def chunk(iterable: Iterable[_T], n: int) -> Iterator[tuple[_T, ...]]:
     """Return iterable of n items from an iterable.
 
     :param iterable: Iterable of items
@@ -261,15 +251,8 @@ def chunk(iterable: Iterable[_T], n: int) -> Iterable[Iterable[_T]]:
     :return: Iterable chunk of input iterable
 
     """
-    iterable = iter(iterable)
-    state = {"continue": True}
-
-    def inner():
-        for _ in range(n):
-            try:
-                yield next(iterable)
-            except StopIteration:
-                state["continue"] = False
-
-    while state["continue"]:
-        yield inner()
+    if n < 1:
+        raise ValueError("n must be at least 1")
+    it = iter(iterable)
+    while batch := tuple(itertools.islice(it, n)):
+        yield batch
