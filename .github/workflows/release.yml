@@ -2,45 +2,46 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
+    inputs:
+      pre-release:
+        description: 'This is a pre-release'
+        default: true
+        type: boolean
       
 jobs:
   release:
     runs-on: ubuntu-latest
     name: Build release package
+    permissions:
+      id-token: write  # Enable OIDC for PyPI publishing
+    environment:
+      name: pypi
+      url: https://pypi.org/p/odin
 
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-python@master
-        name: Setup Python 3.12
-        with:
-          python-version: 3.12
-
-      - name: Install dependencies
-        run: python -m pip install -U poetry
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
          
       - name: Build Package
         id: build_package
         run: |
           rm -rf dist
-          poetry build
+          uv build
           cd dist
           echo "source=$(ls *.tar.gz)" >> $GITHUB_OUTPUT
           echo "wheel=$(ls *.whl)" >> $GITHUB_OUTPUT
-          echo "version=$(poetry version -s)" >> $GITHUB_OUTPUT
+          echo "version=$(uv version --short)" >> $GITHUB_OUTPUT
       
       - name: Create a Release
         id: create_release
         uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.build_package.outputs.version }}
           release_name: Release ${{ steps.build_package.outputs.version }}
-          prerelease: false
+          prerelease: ${{ inputs.pre-release }}
 
       - name: Attach Release Wheel
         uses: actions/upload-release-asset@v1
@@ -54,8 +55,6 @@ jobs:
 
       - name: Attach Release Source
         uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./dist/${{ steps.build_package.outputs.source }}
@@ -63,7 +62,4 @@ jobs:
           asset_content_type: application/x-tar+gzip
 
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.5.0
-        with:
-            user: __token__
-            password: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # 1.14.3
